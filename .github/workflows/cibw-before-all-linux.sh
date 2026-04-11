@@ -7,8 +7,8 @@ SPKGS="${SPKGS:-_bootstrap _prereq}"
 TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc bliss coxeter3 mcqd meataxe sirocco tdlib}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
-"${SAGE_PYTHON}" -m ensurepip --upgrade || true
-"${SAGE_PYTHON}" -m pip install --upgrade pip setuptools wheel
+env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m ensurepip --upgrade || true
+env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade pip setuptools wheel
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
