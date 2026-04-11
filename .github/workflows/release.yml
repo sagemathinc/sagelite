@@ -69,7 +69,7 @@ jobs:
 
   sdists:
 
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name != 'pull_request' }}
     steps:
@@ -152,12 +152,12 @@ jobs:
 
   build_wheels:
     name: wheels ${{ matrix.build }}*_${{ matrix.arch }}
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, Linux, X64]
     needs: sdists
     strategy:
       fail-fast: false
       matrix:
-        os:      [ubuntu-latest]
+        os:      [self-hosted]
         arch:    [x86_64]
         build:   [manylinux]
     env:
