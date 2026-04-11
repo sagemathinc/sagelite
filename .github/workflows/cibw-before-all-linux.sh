@@ -4,7 +4,7 @@ set -euxo pipefail
 
 export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
-TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc bliss coxeter3 mcqd meataxe sirocco tdlib}"
+TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc pari bliss coxeter3 mcqd meataxe sirocco tdlib}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
 env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m ensurepip --upgrade || true
