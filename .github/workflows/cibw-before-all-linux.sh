@@ -2,6 +2,10 @@
 
 set -euxo pipefail
 
+export PATH="$(pwd)/build/bin:$PATH"
+SPKGS="${SPKGS:-_bootstrap _prereq}"
+TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc bliss coxeter3 mcqd meataxe sirocco tdlib}"
+
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
   $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian $SPKGS))
