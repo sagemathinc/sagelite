@@ -55,6 +55,11 @@ This requires you to clone the git repository (as described in this README) or d
 [sources](https://www.sagemath.org/download-source.html) in the form
 of a tarball.
 
+If you are looking for prebuilt installation artifacts rather than a source
+build, consult the Installation Guide and the assets attached to Sage release
+tags. Packaging and binary distribution are being migrated to the in-tree
+Python packaging and release workflows; this README focuses on source builds.
+
 If you have questions or encounter problems, please do not hesitate
 to email the [sage-support mailing list](https://groups.google.com/group/sage-support)
 or ask on the [Ask Sage questions and answers site](https://ask.sagemath.org).
@@ -623,10 +628,25 @@ install. You can make changes to documentation, source, etc., and very
 easily package the complete results up for redistribution just like we
 do.
 
-1.  To make a binary distribution with your currently installed packages,
-    visit [sagemath/binary-pkg](https://github.com/sagemath/binary-pkg).
+1.  To make source distributions of the Python packages that Sage publishes,
+    use:
 
-2.  To make your own source tarball of Sage, type:
+        $ make pypi-sdists
+
+    The resulting sdists are placed in the directory `upstream/`.
+
+2.  To make wheel artifacts from the packages in the current tree, use:
+
+        $ make pypi-wheels
+
+    or, for the full set of wheel-enabled packages:
+
+        $ make wheels
+
+    The resulting wheels are placed in the directory
+    `venv/var/lib/sage/wheels/`.
+
+3.  To make your own source tarball of Sage, type:
 
         $ make dist
 

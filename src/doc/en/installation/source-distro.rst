@@ -976,9 +976,11 @@ Sage-specific environment variables controlling the build process
   widest range of target CPUs set this variable to ``yes`` before
   building Sage or configure with ``--enable-fat-binary``.
   This does not make the binaries relocatable, it only
-  avoids newer CPU instruction set extensions. For relocatable (=can
-  be moved to a different directory) binaries, you must use
-  https://github.com/sagemath/binary-pkg
+  avoids newer CPU instruction set extensions. It does not, by itself,
+  provide a maintained workflow for relocatable (=can be moved to a
+  different directory) Sage binary distributions. For current packaging
+  automation, use the distribution targets and release workflows that are
+  part of the Sage source tree.
 
 .. envvar:: SAGE_SUDO
 
