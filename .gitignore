@@ -100,6 +100,10 @@ $RECYCLE.BIN/
 *.sage-chat
 *.sage-history
 *.syncdoc*
+*.chat
+*.term
+config.cache
+config.status.old
 
 # Jupyter
 .ipynb_checkpoints
