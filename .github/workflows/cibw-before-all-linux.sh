@@ -5,6 +5,7 @@ set -euxo pipefail
 export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
 TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc bliss coxeter3 mcqd meataxe sirocco tdlib}"
+SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
@@ -25,7 +26,7 @@ fi
 if [ -x ./config.status ]; then
   ./config.status
 else
-  ./configure --enable-build-as-root --prefix="/host/sage-${AUDITWHEEL_PLAT}"
+  ./configure --enable-build-as-root --with-python="${SAGE_PYTHON}" --prefix="/host/sage-${AUDITWHEEL_PLAT}"
   cp config.status prefix/
 fi
 
