@@ -165,7 +165,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap bliss coxeter3 mcqd meataxe sirocco tdlib
+      TARGETS_PRE: gmp mpfr mpc openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular bliss coxeter3 mcqd meataxe sirocco tdlib
       # Start with a single officially supported wheel target.
       CIBW_BUILD: "cp312-manylinux_x86_64"
       CIBW_ARCHS: ${{ matrix.arch }}
