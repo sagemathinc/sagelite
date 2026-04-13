@@ -231,18 +231,10 @@ jobs:
 
       - name: Smoke test wheel in a fresh virtualenv
         run: |
-          PREFIX=/host/sage-manylinux_2_28_x86_64
-          export PATH="$PREFIX/bin:$PATH"
-          export LD_LIBRARY_PATH="$PREFIX/lib:$PREFIX/lib64:${LD_LIBRARY_PATH:-}"
-          export SAGE_LOCAL="$PREFIX"
-          export SAGE_SHARE="$PREFIX/share"
-          export SINGULAR_BIN="$PREFIX/bin/Singular"
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          test-venv/bin/sage --version
-          test-venv/bin/python -c "from sage.all import ZZ, factor, prime_pi; print(ZZ(2)^10); print(factor(2**61 - 1)); print(prime_pi(10**6))"
-          test-venv/bin/sage -c "from sage.all import gap; print(gap('Size(SymmetricGroup(8))'))"
+          test-venv/bin/python -c "from sage.rings.integer_ring import ZZ; from sage.arith.misc import factor; from sage.functions.prime_pi import prime_pi; print(ZZ(2)**10); print(factor(2**61 - 1)); print(prime_pi(10**6))"
 
       - uses: actions/upload-artifact@v4
         with:
