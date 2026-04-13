@@ -75,22 +75,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Conda environment
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
-          miniforge-version: latest
-          use-mamba: true
-          channels: conda-forge
-          channel-priority: true
-          activate-environment: sage-dev
-          environment-file: environment-3.12-linux.yml
+          python-version: "3.12"
 
       - name: Create source distribution
-        shell: bash -l {0}
         run: |
-          conda install --yes python-build
-          python -m build --sdist --no-isolation --outdir dist .
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m build --sdist --outdir dist .
           ls -l dist
 
       - uses: actions/upload-artifact@v4
