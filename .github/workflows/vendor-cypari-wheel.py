@@ -14,9 +14,7 @@ from pathlib import Path
 
 
 def find_cypari_package(prefix: Path) -> Path:
-    matches = sorted(
-        path.parent for path in prefix.rglob("cypari2/__init__.py") if "site-packages" in path.as_posix()
-    )
+    matches = sorted(path.parent for path in prefix.rglob("cypari2/__init__.py"))
     if not matches:
         raise SystemExit(f"cypari2 package not found under {prefix}")
     if len(matches) > 1:

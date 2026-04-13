@@ -24,10 +24,13 @@ if [ ! -d "$prefix" ]; then
 fi
 
 python_bin="${PYTHON:-python3}"
+vendored_site="$tmpdir/cypari-site"
+
+env -u PIP_CONSTRAINT "$python_bin" -m pip install --no-deps --target "$vendored_site" cypari2
 
 "$python_bin" .github/workflows/vendor-cypari-wheel.py \
   --wheel "$raw_wheel" \
-  --prefix "$prefix" \
+  --prefix "$vendored_site" \
   --out "$tmpdir/${raw_wheel##*/}"
 
 auditwheel repair -w "$dest_dir" "$tmpdir/${raw_wheel##*/}"
