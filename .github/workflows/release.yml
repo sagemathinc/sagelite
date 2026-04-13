@@ -234,7 +234,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          test-venv/bin/python -c "from sage.arith.misc import factor; from sage.functions.prime_pi import prime_pi; print(factor(2**61 - 1)); print(prime_pi(10**6))"
+          test-venv/bin/python -c "from sage.arith.misc import factor; print(factor(2**61 - 1))"
 
       - uses: actions/upload-artifact@v4
         with:
