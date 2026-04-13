@@ -79,6 +79,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install sdist system prerequisites
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libpari-dev
+
       - name: Create source distribution
         run: |
           python -m pip install --upgrade pip
