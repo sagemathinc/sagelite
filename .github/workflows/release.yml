@@ -165,14 +165,14 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
+      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari cypari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
       # Start with a single officially supported wheel target.
       CIBW_BUILD: "cp312-manylinux_x86_64"
       CIBW_ARCHS: ${{ matrix.arch }}
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
       CIBW_PROJECT_REQUIRES_PYTHON: ">=3.12, <3.13"
       CIBW_BEFORE_ALL_LINUX: "bash .github/workflows/cibw-before-all-linux.sh"
-      CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair -w {dest_dir} {wheel}"
+      CIBW_REPAIR_WHEEL_COMMAND_LINUX: "bash .github/workflows/repair-wheel-linux.sh {wheel} {dest_dir}"
       # Environment during wheel build
       CIBW_ENVIRONMENT: "PATH=/host/sage-${AUDITWHEEL_PLAT}/bin:$(pwd)/prefix/bin:$PATH CPATH=/host/sage-${AUDITWHEEL_PLAT}/include:$(pwd)/prefix/include:$CPATH LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LIBRARY_PATH LD_LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LD_LIBRARY_PATH PKG_CONFIG_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/share/pkgconfig:$(pwd)/prefix/lib/pkgconfig:$(pwd)/prefix/share/pkgconfig:$PKG_CONFIG_PATH CMAKE_PREFIX_PATH=/host/sage-${AUDITWHEEL_PLAT}:$(pwd)/prefix:$CMAKE_PREFIX_PATH ACLOCAL_PATH=/usr/share/aclocal PIP_CONSTRAINT=$(pwd)/constraints.txt PIP_FIND_LINKS=file://$(pwd)/wheelhouse SAGE_NUM_THREADS=6"
       # Use 'build', not 'pip wheel'
@@ -235,6 +235,7 @@ jobs:
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
           test-venv/bin/python -c "from sage.arith.misc import factor; print(factor(2**61 - 1))"
+          test-venv/bin/python -c "import sage.all; from sage.libs.pari import pari; from sage.rings.integer_ring import ZZ; print(pari(ZZ(11))); print(sage.all.ModularSymbols(11).dimension())"
 
       - uses: actions/upload-artifact@v4
         with:
