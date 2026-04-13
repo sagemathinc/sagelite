@@ -75,20 +75,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Conda environment
+        uses: conda-incubator/setup-miniconda@v3
+        continue-on-error: true
+        id: conda1
         with:
-          python-version: "3.12"
+          python-version: 3.12
+          use-mamba: true
+          channels: conda-forge
+          channel-priority: true
+          activate-environment: sage-dev
+          environment-file: environment-3.12-linux.yml
 
-      - name: Install sdist system prerequisites
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libpari-dev
+      - name: Setup Conda environment (2nd time)
+        uses: conda-incubator/setup-miniconda@v3
+        if: steps.conda1.outcome == 'failure'
+        with:
+          python-version: 3.12
+          use-mamba: true
+          channels: conda-forge
+          channel-priority: true
+          activate-environment: sage-dev
+          environment-file: environment-3.12-linux.yml
 
       - name: Create source distribution
+        shell: bash -l {0}
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-          python -m build --sdist --outdir dist .
+          conda install --yes python-build
+          python -m build --sdist --no-isolation --outdir dist .
           ls -l dist
 
       - uses: actions/upload-artifact@v4
