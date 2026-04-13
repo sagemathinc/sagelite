@@ -231,6 +231,11 @@ jobs:
 
       - name: Smoke test wheel in a fresh virtualenv
         run: |
+          PREFIX=/host/sage-manylinux_2_28_x86_64
+          export PATH="$PREFIX/bin:$PATH"
+          export LD_LIBRARY_PATH="$PREFIX/lib:$PREFIX/lib64:${LD_LIBRARY_PATH:-}"
+          export SAGE_LOCAL="$PREFIX"
+          export SAGE_SHARE="$PREFIX/share"
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
