@@ -7,9 +7,9 @@ SPKGS="${SPKGS:-_bootstrap _prereq}"
 TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
-cat > build/bin/cython <<'EOF'
+cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
-exec python -m cython "$@"
+exec "${SAGE_PYTHON}" -m cython "\$@"
 EOF
 chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
