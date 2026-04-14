@@ -41,6 +41,26 @@ tools/check_deprecations.py <optional path to source folder>
 It is recommended to pass a subfolder of the source folder to the script to avoid checking the entire source folder, which most likely triggers a rate limit on the GitHub API.
 Alternatively, you can pass a [GitHub token](https://github.com/settings/tokens) via the `--token` argument to avoid the rate limit.
 
+## Analyze Doctest Logs
+
+This command reduces a large Sage doctest run into a smaller set of
+categories and fingerprints. It is useful when triaging a broad wheel or
+distribution validation run, where the raw log is too large to inspect
+manually.
+
+It combines the plain-text doctest log with the per-module stats JSON and can
+write both machine-readable JSON and a Markdown summary.
+
+Example:
+
+```bash
+python3 tools/analyze-doctest-log.py \
+  --log /path/to/doctest.log \
+  --stats /path/to/doctest.json \
+  --json-out /tmp/doctest-analysis.json \
+  --md-out /tmp/doctest-analysis.md
+```
+
 ## Update Version Number
 
 Increments the version number in the project. This command is useful when releasing a new version of the project.
