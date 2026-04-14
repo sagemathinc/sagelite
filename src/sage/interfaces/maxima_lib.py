@@ -132,13 +132,36 @@ from sage.structure.element import Expression
 from sage.symbolic.operators import FDerivativeOperator, add_vararg, mul_vararg
 from sage.symbolic.ring import SR
 
+if MAXIMA_FAS and not os.path.isfile(MAXIMA_FAS):
+    MAXIMA_FAS = ""
+if MAXIMA_PREFIX and not os.path.isdir(MAXIMA_PREFIX):
+    MAXIMA_PREFIX = ""
+
+
+def _require_maxima():
+    """
+    Load Maxima into ECL for library mode.
+
+    If the configured runtime points at a vanished build tree, or if Maxima
+    support is otherwise unavailable, surface this as an ImportError so runtime
+    feature checks can treat the module as absent instead of crashing.
+    """
+    try:
+        if MAXIMA_FAS:
+            ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
+        else:
+            ecl_eval("(require 'maxima)")
+    except RuntimeError as err:
+        detail = str(err).splitlines()[0]
+        raise ImportError(
+            f"Maxima library mode is unavailable in this Sage installation: {detail}"
+        ) from err
+
+
 # We begin here by initializing Maxima in library mode
 # i.e. loading it into ECL
 ecl_eval("(setf *load-verbose* NIL)")
-if MAXIMA_FAS:
-    ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
-else:
-    ecl_eval("(require 'maxima)")
+_require_maxima()
 ecl_eval("(in-package :maxima)")
 ecl_eval("(set-locale-subdir)")
 
