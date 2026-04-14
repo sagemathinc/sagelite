@@ -60,6 +60,21 @@ build, consult the Installation Guide and the assets attached to Sage release
 tags. Packaging and binary distribution are being migrated to the in-tree
 Python packaging and release workflows; this README focuses on source builds.
 
+The wheel-first distribution built from this repository is named `sagelite`.
+It keeps the existing `sage` import namespace:
+
+```bash
+uv pip install sagelite
+python -c "import sage.all"
+```
+
+`sagelite` targets the in-process Sage Python, C, C++, and Cython runtime.
+It does **not** promise that standalone executables such as GAP, Singular,
+GP/Pari, or Maxima are bundled with the wheel. Features that call those
+executables may still work when compatible versions are already installed on
+the user's `PATH`, but those integrations are optional rather than part of the
+core wheel contract.
+
 If you have questions or encounter problems, please do not hesitate
 to email the [sage-support mailing list](https://groups.google.com/group/sage-support)
 or ask on the [Ask Sage questions and answers site](https://ask.sagemath.org).
