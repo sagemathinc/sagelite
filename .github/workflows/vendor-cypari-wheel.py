@@ -83,7 +83,7 @@ def pack_wheel(root: Path, wheel_path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Merge the source-built cypari2 package into a raw sagemath wheel before auditwheel repair.",
+        description="Merge the source-built cypari2 package into a raw project wheel before auditwheel repair.",
     )
     parser.add_argument("--wheel", required=True, type=Path)
     parser.add_argument("--prefix", required=True, type=Path)
