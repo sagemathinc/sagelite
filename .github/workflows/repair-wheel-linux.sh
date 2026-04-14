@@ -26,7 +26,13 @@ fi
 python_bin="${PYTHON:-python3}"
 vendored_site="$tmpdir/cypari-site"
 
-env -u PIP_CONSTRAINT "$python_bin" -m pip install --no-deps --target "$vendored_site" cypari2
+# Build cypari2 from source against the same PARI that Sage linked against.
+# Installing the prebuilt wheel would reintroduce a second bundled libpari.
+env -u PIP_CONSTRAINT "$python_bin" -m pip install \
+  --no-deps \
+  --no-binary cypari2 \
+  --target "$vendored_site" \
+  cypari2
 
 "$python_bin" .github/workflows/vendor-cypari-wheel.py \
   --wheel "$raw_wheel" \

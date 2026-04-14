@@ -13,8 +13,8 @@ import zipfile
 from pathlib import Path
 
 
-def find_cypari_package(prefix: Path) -> Path:
-    matches = sorted(path.parent for path in prefix.rglob("cypari2/__init__.py"))
+def find_cypari_package_root(prefix: Path) -> Path:
+    matches = sorted(path.parent.parent for path in prefix.rglob("cypari2/__init__.py"))
     if not matches:
         raise SystemExit(f"cypari2 package not found under {prefix}")
     if len(matches) > 1:
@@ -34,8 +34,9 @@ def remove_external_cypari_requirement(metadata_path: Path) -> None:
     metadata_path.write_text("\n".join(filtered) + "\n", encoding="utf-8")
 
 
-def copy_cypari_package(src: Path, dest_root: Path) -> None:
-    dest = dest_root / "cypari2"
+def copytree_if_present(src: Path, dest: Path) -> None:
+    if not src.exists():
+        return
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(
@@ -43,6 +44,11 @@ def copy_cypari_package(src: Path, dest_root: Path) -> None:
         dest,
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
     )
+
+
+def copy_cypari_runtime(src_root: Path, dest_root: Path) -> None:
+    copytree_if_present(src_root / "cypari2", dest_root / "cypari2")
+    copytree_if_present(src_root / "cypari2.libs", dest_root / "cypari2.libs")
 
 
 def record_row(path: Path, root: Path) -> tuple[str, str, str]:
@@ -93,12 +99,12 @@ def main() -> int:
     if not args.wheel.is_file():
         raise SystemExit(f"raw wheel not found: {args.wheel}")
 
-    cypari_package = find_cypari_package(args.prefix)
+    cypari_root = find_cypari_package_root(args.prefix)
 
     with tempfile.TemporaryDirectory() as tempdir:
         root = Path(tempdir) / "wheel"
         unpack_wheel(args.wheel, root)
-        copy_cypari_package(cypari_package, root)
+        copy_cypari_runtime(cypari_root, root)
         metadata_path = next(root.glob("*.dist-info/METADATA"))
         remove_external_cypari_requirement(metadata_path)
         pack_wheel(root, args.out)
