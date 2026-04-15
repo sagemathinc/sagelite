@@ -75,6 +75,9 @@ executables may still work when compatible versions are already installed on
 the user's `PATH`, but those integrations are optional rather than part of the
 core wheel contract.
 
+The current `sagelite` product contract and release policy are documented in
+[SAGELITE.md](./SAGELITE.md).
+
 If you have questions or encounter problems, please do not hesitate
 to email the [sage-support mailing list](https://groups.google.com/group/sage-support)
 or ask on the [Ask Sage questions and answers site](https://ask.sagemath.org).
