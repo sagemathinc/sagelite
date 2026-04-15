@@ -9,13 +9,13 @@ SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
-exec python -m cython "\$@"
+exec "${SAGE_PYTHON}" -m cython "\$@"
 EOF
 chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
 
 env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m ensurepip --upgrade || true
-env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade pip setuptools wheel
+env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade pip setuptools wheel cython
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
