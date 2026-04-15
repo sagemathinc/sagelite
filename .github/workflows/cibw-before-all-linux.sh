@@ -9,7 +9,7 @@ SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
-exec "${SAGE_PYTHON}" -m cython "\$@"
+exec python -m cython "\$@"
 EOF
 chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
