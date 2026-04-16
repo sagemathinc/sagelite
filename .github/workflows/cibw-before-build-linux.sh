@@ -40,5 +40,14 @@ else
   cython "${tmpdir}/sanity.pyx"
 fi
 
+python_includes="$(python-config --includes)"
+ext_suffix="$(python - <<'PY'
+import sysconfig
+print(sysconfig.get_config_var("EXT_SUFFIX") or ".so")
+PY
+)"
+cc ${python_includes} -fPIC -c "${tmpdir}/sanity.c" -o "${tmpdir}/sanity.o"
+cc -shared "${tmpdir}/sanity.o" -o "${tmpdir}/sanity${ext_suffix}"
+
 echo "Build environment snapshot:"
 env | sort | grep -E '^(CYTHON|PATH|LD_LIBRARY_PATH|LIBRARY_PATH|CPATH|PKG_CONFIG_PATH|CMAKE_PREFIX_PATH|PIP_CONSTRAINT|PIP_FIND_LINKS)=' || true
