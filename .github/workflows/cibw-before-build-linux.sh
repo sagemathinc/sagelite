@@ -40,7 +40,17 @@ else
   cython "${tmpdir}/sanity.pyx"
 fi
 
-python_includes="$(python-config --includes)"
+python_includes="$(python - <<'PY'
+import sysconfig
+
+seen = set()
+for key in ("INCLUDEPY", "CONFINCLUDEPY"):
+    path = sysconfig.get_config_var(key)
+    if path and path not in seen:
+        seen.add(path)
+        print(f"-I{path}")
+PY
+)"
 ext_suffix="$(python - <<'PY'
 import sysconfig
 print(sysconfig.get_config_var("EXT_SUFFIX") or ".so")
