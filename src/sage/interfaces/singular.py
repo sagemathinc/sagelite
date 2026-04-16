@@ -344,6 +344,7 @@ import time
 
 import pexpect
 
+from sage.features import FeatureNotPresentError
 import sage.features.singular
 import sage.interfaces.abc
 import sage.rings.integer
@@ -2424,7 +2425,10 @@ def get_docstring(name, prefix=False, code=False):
     return result
 
 
-singular = Singular()
+try:
+    singular = Singular()
+except FeatureNotPresentError:
+    singular = None
 
 
 def reduce_load_Singular():
