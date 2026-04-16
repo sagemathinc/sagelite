@@ -245,7 +245,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          "${{ steps.python.outputs.python-path }}" -m cibuildwheel --output-dir wheelhouse unpacked/*
+          bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
       - name: Smoke test wheel in a fresh virtualenv
         run: |
