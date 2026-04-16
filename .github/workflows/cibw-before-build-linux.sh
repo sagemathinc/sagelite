@@ -39,3 +39,6 @@ if [ -n "${CYTHON:-}" ]; then
 else
   cython "${tmpdir}/sanity.pyx"
 fi
+
+echo "Build environment snapshot:"
+env | sort | grep -E '^(CYTHON|PATH|LD_LIBRARY_PATH|LIBRARY_PATH|CPATH|PKG_CONFIG_PATH|CMAKE_PREFIX_PATH|PIP_CONSTRAINT|PIP_FIND_LINKS)=' || true
