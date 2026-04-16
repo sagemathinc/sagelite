@@ -61,3 +61,17 @@ cc -shared "${tmpdir}/sanity.o" -o "${tmpdir}/sanity${ext_suffix}"
 
 echo "Build environment snapshot:"
 env | sort | grep -E '^(CYTHON|PATH|LD_LIBRARY_PATH|LIBRARY_PATH|CPATH|PKG_CONFIG_PATH|CMAKE_PREFIX_PATH|PIP_CONSTRAINT|PIP_FIND_LINKS)=' || true
+
+meson_probe_dir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}" "${meson_probe_dir}"' EXIT
+cat > "${meson_probe_dir}/meson.build" <<'EOF'
+project('cython-probe', 'cython')
+EOF
+
+if ! meson setup "${meson_probe_dir}/build" "${meson_probe_dir}/" --wipe; then
+  find "${meson_probe_dir}" -path '*/meson-logs/meson-log.txt' -print0 | while IFS= read -r -d '' logfile; do
+    echo "===== ${logfile} ====="
+    cat "${logfile}"
+  done
+  exit 1
+fi
