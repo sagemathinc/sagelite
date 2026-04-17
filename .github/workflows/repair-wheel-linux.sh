@@ -39,4 +39,9 @@ env -u PIP_CONSTRAINT "$python_bin" -m pip install \
   --prefix "$vendored_site" \
   --out "$tmpdir/${raw_wheel##*/}"
 
+if command -v ccache >/dev/null 2>&1; then
+  echo "Compiler cache stats after wheel build:"
+  ccache -s || true
+fi
+
 auditwheel repair -w "$dest_dir" "$tmpdir/${raw_wheel##*/}"

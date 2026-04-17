@@ -29,6 +29,24 @@ echo "Installing bootstrap prerequisites inside cibuildwheel container"
   exit 1
 )
 
+echo "Installing ccache inside cibuildwheel container"
+if command -v apt-get >/dev/null 2>&1; then
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y ccache
+elif command -v dnf >/dev/null 2>&1; then
+  dnf install -y ccache
+elif command -v yum >/dev/null 2>&1; then
+  yum install -y ccache
+elif command -v apk >/dev/null 2>&1; then
+  apk add --no-cache ccache
+else
+  echo "No known package manager available for installing ccache" >&2
+  exit 1
+fi
+
+mkdir -p "/host/ccache-${AUDITWHEEL_PLAT}"
+ccache --version
+
 if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
   chmod +x config.status
 fi

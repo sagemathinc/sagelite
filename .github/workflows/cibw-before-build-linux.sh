@@ -15,6 +15,13 @@ python -m pip install --upgrade \
   'numpy>=2.2.4' \
   'cypari2>=2.2.1'
 
+if command -v ccache >/dev/null 2>&1; then
+  echo "Compiler cache:"
+  ccache --version
+  ccache --show-config | grep -E '^(cache_dir|max_size|compiler_check|base_dir|hash_dir)' || true
+  ccache -z || true
+fi
+
 echo "Build Python:"
 which python
 python --version
