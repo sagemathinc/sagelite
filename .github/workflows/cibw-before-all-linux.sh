@@ -44,7 +44,7 @@ else
   exit 1
 fi
 
-mkdir -p "/host/ccache-${AUDITWHEEL_PLAT}"
+mkdir -p "${CCACHE_DIR:?CCACHE_DIR must be set}"
 ccache --version
 
 if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
