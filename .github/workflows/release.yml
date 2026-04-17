@@ -124,7 +124,7 @@ jobs:
         if: env.CAN_DEPLOY == 'true'
 
   release:
-    needs: [release_dist, sdists]
+    needs: [release_dist, sdists, build_wheels]
     runs-on: ubuntu-latest
     if: github.ref_type == 'tag'
     permissions:
@@ -138,6 +138,12 @@ jobs:
         with:
           name: dist
           path: dist
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-*-*-wheels"
+          path: wheelhouse
+          merge-multiple: true
 
       - name: Create release notes
         env:
@@ -162,6 +168,7 @@ jobs:
         with:
           files: |
             dist/*
+            wheelhouse/*.whl
             upstream/*
           token: ${{ secrets.RELEASE_CREATION_TOKEN }}
           body_path: release_notes
