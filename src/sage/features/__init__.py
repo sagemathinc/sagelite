@@ -751,8 +751,7 @@ class Executable(FileFeature):
         if path is not None:
             return path
         raise FeatureNotPresentError(self,
-                                     reason="Executable {executable!r} not found on PATH.".format(executable=self.executable),
-                                     resolution=self.resolution())
+                                     reason="Executable {executable!r} not found on PATH.".format(executable=self.executable))
 
 
 class StaticFile(FileFeature):
@@ -830,7 +829,7 @@ class StaticFile(FileFeature):
             if os.path.isfile(path) or os.path.isdir(path):
                 return os.path.abspath(path)
         reason = "{filename!r} not found in any of {search_path}".format(filename=self.filename, search_path=self.search_path)
-        raise FeatureNotPresentError(self, reason=reason, resolution=self.resolution())
+        raise FeatureNotPresentError(self, reason=reason)
 
 
 class CythonFeature(Feature):
