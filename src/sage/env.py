@@ -22,6 +22,7 @@ import socket
 import subprocess
 import sys
 import sysconfig
+from importlib import import_module
 from typing import Optional
 
 from platformdirs import site_data_dir, user_data_dir
@@ -50,6 +51,51 @@ def join(*args) -> str | None:
     if any(a is None for a in args):
         return None
     return os.path.join(*args)
+
+
+def _optional_runtime_value(module_name: str, attr_name: str) -> Optional[str]:
+    """
+    Return an optional runtime path from a companion package.
+
+    Any import or runtime failure is treated as "runtime unavailable" so that
+    optional companion packages do not become hard dependencies of ``sagelib``.
+    """
+    try:
+        module = import_module(module_name)
+    except ImportError:
+        return None
+
+    getter = getattr(module, attr_name, None)
+    if getter is None:
+        return None
+
+    try:
+        value = getter() if callable(getter) else getter
+    except Exception:
+        return None
+
+    if not value:
+        return None
+    return os.fspath(value)
+
+
+def _bootstrap_sagelite_maxima_runtime() -> None:
+    """
+    Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
+
+    This is only used when the user or the build configuration has not already
+    provided ``MAXIMA_PREFIX``/``MAXIMA_FAS``.
+    """
+    if os.environ.get("MAXIMA_PREFIX") or getattr(sage.config, "MAXIMA_PREFIX", None):
+        return
+
+    prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
+    fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+
+    if prefix:
+        os.environ.setdefault("MAXIMA_PREFIX", prefix)
+    if fas:
+        os.environ.setdefault("MAXIMA_FAS", fas)
 
 
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
@@ -202,6 +248,7 @@ MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
 MTXLIB = var("MTXLIB", join(SAGE_SHARE, "meataxe"))
 THREEJS_DIR = var("THREEJS_DIR")
 PPLPY_DOCS = var("PPLPY_DOCS", join(SAGE_SHARE, "doc", "pplpy"))
+_bootstrap_sagelite_maxima_runtime()
 MAXIMA = var("MAXIMA", "maxima")
 MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
