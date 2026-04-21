@@ -186,16 +186,28 @@ jobs:
           - os: runner
             arch: x86_64
             build: manylinux
+            python: cp312
+            python_version: "3.12"
+            requires_python: ">=3.12, <3.15"
+          - os: runner
+            arch: x86_64
+            build: manylinux
+            python: cp313
+            python_version: "3.13"
+            requires_python: ">=3.12, <3.15"
+          - os: runner
+            arch: x86_64
+            build: manylinux
             python: cp314
             python_version: "3.14"
-            requires_python: ">=3.14, <3.15"
+            requires_python: ">=3.12, <3.15"
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
-      # Start with one Python ABI at a time while expanding PyPI support.
+      # Build the supported Linux x86_64 Python ABI set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-manylinux_x86_64"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
       CIBW_ENABLE: "cpython-prerelease"
