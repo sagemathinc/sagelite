@@ -2436,7 +2436,7 @@ def get_docstring(name, prefix=False, code=False):
 
 try:
     singular = Singular()
-except FeatureNotPresentError:
+except (FeatureNotPresentError, RuntimeError):
     singular = None
 
 
