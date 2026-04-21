@@ -48,6 +48,12 @@ def _check_modular_symbols():
     return ModularSymbols(389, sign=1).T(2).fcp()
 
 
+def _check_elliptic_curve_rank():
+    from sage.all import EllipticCurve
+
+    return EllipticCurve([1, 2, 3, 4, 5]).rank()
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -79,6 +85,7 @@ def main() -> int:
         ("integer factorization", _check_factor),
         ("symbolic integration", _check_symbolic_integration),
         ("modular symbols", _check_modular_symbols),
+        ("elliptic curve rank", _check_elliptic_curve_rank),
     ]
 
     ok = True

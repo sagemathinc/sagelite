@@ -205,7 +205,49 @@ from sage.libs.all import *
 from sage.data_structures.all import *
 
 from sage.structure.all import *
-from sage.rings.all import *
+
+
+class _silence_optional_runtime_startup:
+    """
+    Suppress C-level startup chatter from optional runtimes in wheel installs.
+    """
+    def __enter__(self):
+        import ctypes
+        import os
+
+        if SAGE_ROOT or os.environ.get("SAGE_SINGULAR_VERBOSE_INIT"):
+            self._active = False
+            return
+
+        # In the sagelite wheel, libSingular is bundled without the complete
+        # Singular runtime tree. Some diagnostics bypass Python warnings and go
+        # straight to stdout/stderr while rings are imported.
+        self._active = True
+        self._stdout_fd = os.dup(1)
+        self._stderr_fd = os.dup(2)
+        self._devnull_fd = os.open(os.devnull, os.O_WRONLY)
+        ctypes.CDLL(None).fflush(None)
+        os.dup2(self._devnull_fd, 1)
+        os.dup2(self._devnull_fd, 2)
+
+    def __exit__(self, exc_type, exc, tb):
+        if not self._active:
+            return
+
+        import ctypes
+        import os
+
+        ctypes.CDLL(None).fflush(None)
+        os.dup2(self._stdout_fd, 1)
+        os.dup2(self._stderr_fd, 2)
+        os.close(self._stdout_fd)
+        os.close(self._stderr_fd)
+        os.close(self._devnull_fd)
+
+
+with _silence_optional_runtime_startup():
+    from sage.rings.all import *
+
 from sage.arith.all import *
 from sage.matrix.all import *
 

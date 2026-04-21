@@ -39,9 +39,25 @@ env -u PIP_CONSTRAINT "$python_bin" -m pip install \
   --prefix "$vendored_site" \
   --out "$tmpdir/${raw_wheel##*/}"
 
+pruned_dir="$tmpdir/pruned-wheel"
+packed_dir="$tmpdir/packed-wheel"
+
+# Cython sources and declarations are useful for source builds but are not
+# needed at runtime.  Dropping them buys several MB of PyPI size headroom.
+env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade wheel
+env -u PIP_CONSTRAINT "$python_bin" -m wheel unpack "$tmpdir/${raw_wheel##*/}" -d "$pruned_dir"
+find "$pruned_dir" -type f \( -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' \) -delete
+mkdir -p "$packed_dir"
+env -u PIP_CONSTRAINT "$python_bin" -m wheel pack "$pruned_dir"/* -d "$packed_dir"
+repaired_input="$(find "$packed_dir" -name '*.whl' -print -quit)"
+if [ -z "$repaired_input" ]; then
+  echo "failed to repack pruned wheel" >&2
+  exit 1
+fi
+
 if command -v ccache >/dev/null 2>&1; then
   echo "Compiler cache stats after wheel build:"
   ccache -s || true
 fi
 
-auditwheel repair -w "$dest_dir" "$tmpdir/${raw_wheel##*/}"
+auditwheel repair -w "$dest_dir" "$repaired_input"

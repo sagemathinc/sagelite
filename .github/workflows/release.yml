@@ -281,8 +281,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          test-venv/bin/python -c "from sage.arith.misc import factor; print(factor(2**61 - 1))"
-          test-venv/bin/python -c "import sage.all; from sage.libs.pari import pari; from sage.rings.integer_ring import ZZ; print(pari(ZZ(11))); print(sage.all.ModularSymbols(11).dimension())"
+          test-venv/bin/sagelite-selftest
 
       - uses: actions/upload-artifact@v4
         with:

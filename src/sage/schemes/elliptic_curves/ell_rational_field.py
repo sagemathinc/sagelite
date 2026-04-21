@@ -1964,6 +1964,17 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
             sage: with patch.object(type(E), 'database_attributes', missing_database):
             ....:     E.rank()
             1
+
+        If eclib/mwrank is not installed, the default rank computation falls
+        back to PARI::
+
+            sage: E = EllipticCurve([1,2,3,4,5])
+            sage: def missing_mwrank(self, verbose=False):
+            ....:     raise ModuleNotFoundError("No module named 'sage.libs.eclib.mwrank'")
+            sage: from unittest.mock import patch
+            sage: with patch.object(type(E), 'mwrank_curve', missing_mwrank):
+            ....:     E.rank(use_database=False)
+            1
         """
         if proof is None:
             from sage.structure.proof.proof import get_flag
@@ -2017,23 +2028,28 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
         if algorithm == 'mwrank_lib':
             verbose_verbose("using mwrank lib")
             E = self if self.is_integral() else self.integral_model()
-            C = E.mwrank_curve()
-            C.set_verbose(verbose)
-            rank = Integer(C.rank())
-            proven = C.certain()
-            self.__rank = (rank, proven)
-            if not proven:
-                if proof:
-                    print("Unable to compute the rank with certainty (lower bound=%s)." % rank)
-                    print("This could be because Sha(E/Q)[2] is nontrivial.")
-                    print("Try calling something like two_descent(second_limit=13) on the")
-                    print("curve then trying this command again.  You could also try rank")
-                    print("with only_use_mwrank=False.")
-                    del E.__mwrank_curve
-                    raise RuntimeError('rank not provably correct (lower bound: {})'.format(rank))
-                else:
-                    verbose_verbose("Warning -- rank not proven correct", level=1)
-            return rank
+            try:
+                C = E.mwrank_curve()
+            except ImportError:
+                verbose_verbose("mwrank lib unavailable; falling back to pari")
+                algorithm = 'pari'
+            else:
+                C.set_verbose(verbose)
+                rank = Integer(C.rank())
+                proven = C.certain()
+                self.__rank = (rank, proven)
+                if not proven:
+                    if proof:
+                        print("Unable to compute the rank with certainty (lower bound=%s)." % rank)
+                        print("This could be because Sha(E/Q)[2] is nontrivial.")
+                        print("Try calling something like two_descent(second_limit=13) on the")
+                        print("curve then trying this command again.  You could also try rank")
+                        print("with only_use_mwrank=False.")
+                        del E.__mwrank_curve
+                        raise RuntimeError('rank not provably correct (lower bound: {})'.format(rank))
+                    else:
+                        verbose_verbose("Warning -- rank not proven correct", level=1)
+                return rank
 
         if algorithm == 'mwrank_shell':
             verbose_verbose("using mwrank shell")
@@ -2071,20 +2087,32 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
             kpts = [ [x[0],x[1]] for x in self._known_points ]
             lower, upper, s, pts = ep.ellrank(pari_effort, kpts)
             ge = sorted([self.point([QQ(x[0]),QQ(x[1])], check=True) for x in pts])
-            ge = self.saturation(ge)[0]
+            try:
+                ge = self.saturation(ge)[0]
+            except ImportError:
+                saturated = False
+                # In sagelite, eclib/mwrank may be absent.  For the rank, it
+                # is enough to compare PARI's upper bound with the rank of the
+                # height pairing on the points PARI found; saturation is only
+                # needed before caching generators.
+                rank_lower = 0 if not ge else self.height_pairing_matrix(ge).rank()
+            else:
+                saturated = True
+                rank_lower = len(ge)
             self._known_points = ge
             # note that lower is only a conjectural
             # lower bound for the rank, the only
-            # proven lower bound is #ge.
-            if len(ge) == upper:
+            # proven lower bound is rank_lower.
+            if rank_lower == upper:
                 verbose_verbose(f"rank {upper} unconditionally determined by pari")
                 rank = Integer(upper)
                 self.__rank = (rank, True)
-                self.__gens = (ge, True)
+                if saturated:
+                    self.__gens = (ge, True)
                 return rank
             else:
                 verbose_verbose(f"Warning -- rank could not be determined by pari; ellrank returned {lower=}, {upper=}, {s=}, {pts=}", level=1)
-                raise RuntimeError(f"rank not provably correct (lower bound: {len(ge)}, upper bound:{upper}). Hint: increase pari_effort.")
+                raise RuntimeError(f"rank not provably correct (lower bound: {rank_lower}, upper bound:{upper}). Hint: increase pari_effort.")
         raise ValueError("unknown algorithm {!r}".format(algorithm))
 
     def gens(self, proof=None, **kwds):
