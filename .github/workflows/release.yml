@@ -176,31 +176,35 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
 
   build_wheels:
-    name: wheels ${{ matrix.build }}*_${{ matrix.arch }}
+    name: wheels ${{ matrix.python }} ${{ matrix.build }}*_${{ matrix.arch }}
     runs-on: runner
     needs: sdists
     strategy:
       fail-fast: false
       matrix:
-        os:      [runner]
-        arch:    [x86_64]
-        build:   [manylinux]
+        include:
+          - os: runner
+            arch: x86_64
+            build: manylinux
+            python: cp313
+            python_version: "3.13"
+            requires_python: ">=3.13, <3.14"
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
-      # Start with a single officially supported wheel target.
-      CIBW_BUILD: "cp312-manylinux_x86_64"
+      # Start with one Python ABI at a time while expanding PyPI support.
+      CIBW_BUILD: "${{ matrix.python }}-manylinux_x86_64"
       CIBW_ARCHS: ${{ matrix.arch }}
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
-      CIBW_PROJECT_REQUIRES_PYTHON: ">=3.12, <3.13"
+      CIBW_PROJECT_REQUIRES_PYTHON: "${{ matrix.requires_python }}"
       CIBW_BEFORE_ALL_LINUX: "bash .github/workflows/cibw-before-all-linux.sh"
       CIBW_BEFORE_BUILD: "bash .github/workflows/cibw-before-build-linux.sh"
       CIBW_REPAIR_WHEEL_COMMAND_LINUX: "bash .github/workflows/repair-wheel-linux.sh {wheel} {dest_dir}"
       # Environment during wheel build
-      CIBW_ENVIRONMENT: "PATH=/project/build/bin:$PATH:/host/sage-${AUDITWHEEL_PLAT}/bin:$(pwd)/prefix/bin CYTHON=/opt/python/cp312-cp312/bin/cython CPATH=/host/sage-${AUDITWHEEL_PLAT}/include:$(pwd)/prefix/include:$CPATH LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LIBRARY_PATH LD_LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LD_LIBRARY_PATH PKG_CONFIG_PATH=/opt/python/cp312-cp312/lib/pkgconfig:/opt/python/cp312-cp312/lib64/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/lib/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/share/pkgconfig:$(pwd)/prefix/lib/pkgconfig:$(pwd)/prefix/share/pkgconfig:$PKG_CONFIG_PATH CMAKE_PREFIX_PATH=/opt/python/cp312-cp312:/host/sage-${AUDITWHEEL_PLAT}:$(pwd)/prefix:$CMAKE_PREFIX_PATH ACLOCAL_PATH=/usr/share/aclocal PIP_CONSTRAINT=$(pwd)/constraints.txt PIP_FIND_LINKS=file://$(pwd)/wheelhouse SAGE_NUM_THREADS=6 CCACHE_DIR=/project/.ccache-wheel/${AUDITWHEEL_PLAT} CCACHE_BASEDIR=/project/unpacked CCACHE_COMPILERCHECK=content CCACHE_NOHASHDIR=1 CCACHE_MAXSIZE=2G CC='ccache cc' CXX='ccache c++'"
+      CIBW_ENVIRONMENT: "PATH=/project/build/bin:$PATH:/host/sage-${AUDITWHEEL_PLAT}/bin:$(pwd)/prefix/bin SAGE_PYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/python3 CYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/cython CPATH=/host/sage-${AUDITWHEEL_PLAT}/include:$(pwd)/prefix/include:$CPATH LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LIBRARY_PATH LD_LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LD_LIBRARY_PATH PKG_CONFIG_PATH=/opt/python/${{ matrix.python }}-${{ matrix.python }}/lib/pkgconfig:/opt/python/${{ matrix.python }}-${{ matrix.python }}/lib64/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/lib/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/share/pkgconfig:$(pwd)/prefix/lib/pkgconfig:$(pwd)/prefix/share/pkgconfig:$PKG_CONFIG_PATH CMAKE_PREFIX_PATH=/opt/python/${{ matrix.python }}-${{ matrix.python }}:/host/sage-${AUDITWHEEL_PLAT}:$(pwd)/prefix:$CMAKE_PREFIX_PATH ACLOCAL_PATH=/usr/share/aclocal PIP_CONSTRAINT=$(pwd)/constraints.txt PIP_FIND_LINKS=file://$(pwd)/wheelhouse SAGE_NUM_THREADS=6 CCACHE_DIR=/project/.ccache-wheel/${AUDITWHEEL_PLAT}-${{ matrix.python }} CCACHE_BASEDIR=/project/unpacked CCACHE_COMPILERCHECK=content CCACHE_NOHASHDIR=1 CCACHE_MAXSIZE=2G CC='ccache cc' CXX='ccache c++'"
       # Use 'build' without isolation so Meson uses the prepared build environment.
       CIBW_BUILD_FRONTEND: "build; args: --no-isolation"
     steps:
@@ -222,7 +226,7 @@ jobs:
         # Installing pipx follows the approach of https://github.com/pypa/cibuildwheel/pull/1743
         id: python
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python_version }}
           update-environment: false
 
       - name: Restore compiler cache
@@ -230,9 +234,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .ccache-wheel
-          key: wheel-ccache-${{ matrix.build }}-${{ matrix.arch }}-${{ github.run_id }}
+          key: wheel-ccache-${{ matrix.build }}-${{ matrix.arch }}-${{ matrix.python }}-${{ github.run_id }}
           restore-keys: |
-            wheel-ccache-${{ matrix.build }}-${{ matrix.arch }}-
+            wheel-ccache-${{ matrix.build }}-${{ matrix.arch }}-${{ matrix.python }}-
 
       - name: Bootstrap
         run: |
@@ -282,7 +286,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-wheels
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-${{ matrix.python }}-wheels
           path: ./wheelhouse/*.whl
 
   upload_wheels:
