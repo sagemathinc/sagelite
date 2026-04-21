@@ -64,8 +64,11 @@ The wheel-first distribution built from this repository is named `sagelite`.
 It keeps the existing `sage` import namespace:
 
 ```bash
+uv venv --no-project --python 3.12 .venv
+source .venv/bin/activate
 uv pip install sagelite
 python -c "import sage.all"
+sagelite-selftest
 ```
 
 `sagelite` targets the in-process Sage Python, C, C++, and Cython runtime.

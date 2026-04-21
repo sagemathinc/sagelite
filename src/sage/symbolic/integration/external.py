@@ -7,6 +7,8 @@ TESTS::
     sage: sympy_integrator(sin(x), x)                                                   # needs sympy
     -cos(x)
 """
+import warnings
+
 from sage.symbolic.expression import Expression
 from sage.symbolic.ring import SR
 
@@ -61,13 +63,19 @@ def sympy_integrator(expression, v, a=None, b=None):
         sin(x)
     """
     import sympy
-    ex = expression._sympy_()
-    v = v._sympy_()
-    if a is None:
-        result = sympy.integrate(ex, v)
-    else:
-        result = sympy.integrate(ex, (v, a._sympy_(), b._sympy_()))
-    return result._sage_()
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r"Resolving lazy import sympy_converter during startup",
+            category=UserWarning,
+        )
+        ex = expression._sympy_()
+        v = v._sympy_()
+        if a is None:
+            result = sympy.integrate(ex, v)
+        else:
+            result = sympy.integrate(ex, (v, a._sympy_(), b._sympy_()))
+        return result._sage_()
 
 
 def mma_free_integrator(expression, v, a=None, b=None):

@@ -71,7 +71,7 @@ import shutil
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from sage.env import SAGE_LOCAL, sage_data_paths
+from sage.env import SAGE_LOCAL, SAGE_ROOT, sage_data_paths
 
 
 class TrivialClasscallMetaClass(type):
@@ -571,16 +571,20 @@ def package_systems():
             SagePackageSystem,
         )
         _cache_package_systems = []
-        # Try to use scripts from SAGE_ROOT (or an installation of sage_bootstrap)
-        # to obtain system package advice.
-        try:
-            proc = run('sage-guess-package-system', shell=True, capture_output=True, text=True, check=True)
-            system_name = proc.stdout.strip()
-            if system_name != 'unknown':
-                _cache_package_systems = [PackageSystem(system_name)]
-        except CalledProcessError:
-            pass
-        more_package_systems = [SagePackageSystem(), PipPackageSystem()]
+        more_package_systems = []
+        if SAGE_ROOT:
+            # Try to use scripts from SAGE_ROOT (or an installation of sage_bootstrap)
+            # to obtain system package advice. Wheel-style installs do not have a
+            # Sage source tree or package manager, so avoid probing ``sage -p``.
+            try:
+                proc = run('sage-guess-package-system', shell=True, capture_output=True, text=True, check=True)
+                system_name = proc.stdout.strip()
+                if system_name != 'unknown':
+                    _cache_package_systems = [PackageSystem(system_name)]
+            except CalledProcessError:
+                pass
+            more_package_systems.append(SagePackageSystem())
+        more_package_systems.append(PipPackageSystem())
         _cache_package_systems += [ps for ps in more_package_systems if ps.is_present()]
 
     return _cache_package_systems

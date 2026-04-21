@@ -1780,13 +1780,27 @@ def lib(name):
         si_opt_2 &= ~Sy_bit(V_REDEFINE)
 
     cdef char* cname = omStrDup(str_to_bytes(name))
-    sig_on()
-    cdef bint failure = iiLibCmd(cname, 1, 1, 1)
-    sig_off()
+    cdef bint failure
+    cdef object error = None
+    start_catch_error()
+    try:
+        sig_on()
+        try:
+            failure = iiLibCmd(cname, 1, 1, 1)
+        finally:
+            sig_off()
+    finally:
+        error = check_error()
     si_opt_2 = vv
 
     if failure:
-        raise NameError("Singular library {!r} not found".format(name))
+        detail = " ({})".format(", ".join(error)) if error else ""
+        raise NameError(
+            "Singular library {!r} not found{}. The sagelite wheel does not "
+            "currently bundle the optional Singular runtime; install Singular "
+            "separately or configure SINGULAR_DEFAULT_DIR/SINGULAR_ROOT_DIR "
+            "to point at a compatible Singular installation.".format(name, detail)
+        )
 
     _loaded_libs.add(name)
 

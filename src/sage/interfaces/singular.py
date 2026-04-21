@@ -399,6 +399,15 @@ class Singular(ExtraTabCompletion, Expect):
             True
         """
         prompt = '> '
+        try:
+            singular_executable = sage.features.singular.Singular().absolute_filename()
+        except FeatureNotPresentError as err:
+            raise RuntimeError(
+                "The Singular executable is not available in this Sage installation. "
+                "The sagelite wheel does not currently bundle the optional Singular "
+                "runtime; install Singular separately and ensure it is on PATH, or "
+                "set SINGULAR_EXECUTABLE to its executable path."
+            ) from err
         Expect.__init__(self,
                         terminal_echo=False,
                         name='singular',
@@ -406,7 +415,7 @@ class Singular(ExtraTabCompletion, Expect):
                         # no tty, fine grained cputime()
                         # and do not display CTRL-C prompt
                         command="{} -t --ticks-per-sec 1000 --cntrlc=a".format(
-                            shlex.quote(sage.features.singular.Singular().absolute_filename())),
+                            shlex.quote(singular_executable)),
                         server=server,
                         server_tmpdir=server_tmpdir,
                         script_subdirectory=script_subdirectory,
