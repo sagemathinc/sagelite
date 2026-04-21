@@ -28,6 +28,7 @@ import os
 from warnings import warn
 
 from libc.stdint cimport int64_t
+from libc.stdio cimport fflush
 from sage.libs.singular.decl cimport *
 
 from sage.rings.polynomial.polydict import ETuple
@@ -1835,8 +1836,30 @@ cdef init_libsingular():
         err = dlerror()
         raise RuntimeError(f"Could not reload Singular library with RTLD_GLOBAL ({err})")
 
-    # load SINGULAR
-    siInit(lib)
+    # Load SINGULAR. In wheel-style installations, libSingular may be present
+    # without the full Singular runtime tree; upstream prints diagnostics about
+    # missing libraries and plugins directly to C-level output streams during
+    # siInit.
+    # Suppress that import-time noise by default so importing sage.all remains
+    # quiet. Users debugging Singular startup can set this variable to see it.
+    if os.environ.get("SAGE_SINGULAR_VERBOSE_INIT"):
+        siInit(lib)
+    else:
+        stdout_fd = os.dup(1)
+        stderr_fd = os.dup(2)
+        devnull_fd = os.open(os.devnull, os.O_WRONLY)
+        try:
+            fflush(NULL)
+            os.dup2(devnull_fd, 1)
+            os.dup2(devnull_fd, 2)
+            siInit(lib)
+        finally:
+            fflush(NULL)
+            os.dup2(stdout_fd, 1)
+            os.dup2(stderr_fd, 2)
+            os.close(stdout_fd)
+            os.close(stderr_fd)
+            os.close(devnull_fd)
 
     if handle:
         dlclose(handle)
