@@ -11,6 +11,8 @@ Symbolic Integration
 # (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************`
+import os
+
 from sage.structure.element import Expression
 from sage.symbolic.ring import SR
 from sage.symbolic.function import BuiltinFunction
@@ -30,6 +32,37 @@ available_integrators['mathematica_free'] = external.mma_free_integrator
 available_integrators['fricas'] = external.fricas_integrator
 available_integrators['giac'] = external.libgiac_integrator
 available_integrators['libgiac'] = external.libgiac_integrator
+
+
+def _automatic_integrators():
+    """
+    Return the automatic symbolic integration order.
+
+    Sagelite does not ship a Maxima runtime by default, so automatic
+    integration should prefer SymPy. Setting ``SAGE_INTEGRATION_DEFAULT`` to
+    ``maxima`` restores the traditional Sage order.
+    """
+    if os.environ.get("SAGE_INTEGRATION_DEFAULT", "").lower() == "maxima":
+        return [external.maxima_integrator,
+                external.libgiac_integrator,
+                external.sympy_integrator]
+
+    return [external.sympy_integrator,
+            external.libgiac_integrator,
+            external.maxima_integrator]
+
+
+def _handle_automatic_integration_error(integrator, err):
+    """
+    Handle an exception from automatic integration.
+
+    Historically, a ``ValueError`` in this loop came from Maxima and was
+    propagated as user-facing feedback. With SymPy first, a non-Maxima
+    ``ValueError`` should only mean "try the next automatic integrator".
+    """
+    if integrator is external.maxima_integrator:
+        raise err
+
 
 ######################################################
 #
@@ -88,9 +121,7 @@ class IndefiniteIntegral(BuiltinFunction):
         # The libgiac integrator may immediately return a symbolic
         # (unevaluated) answer if libgiac is unavailable. This essentially
         # causes it to be skipped.
-        self.integrators = [external.maxima_integrator,
-                            external.libgiac_integrator,
-                            external.sympy_integrator]
+        self.integrators = _automatic_integrators()
 
         BuiltinFunction.__init__(self, "integrate", nargs=2, conversions={'sympy': 'Integral',
                                                                           'giac': 'integrate'})
@@ -138,9 +169,8 @@ class IndefiniteIntegral(BuiltinFunction):
             except (NotImplementedError, TypeError,
                     AttributeError, RuntimeError):
                 pass
-            except ValueError:
-                # maxima is telling us something
-                raise
+            except ValueError as err:
+                _handle_automatic_integration_error(integrator, err)
             else:
                 if not hasattr(A, 'operator'):
                     return A
@@ -219,9 +249,7 @@ class DefiniteIntegral(BuiltinFunction):
         # in the given order. This is an attribute of the class instead of
         # a global variable in this module to enable customization by
         # creating a subclasses which define a different set of integrators
-        self.integrators = [external.maxima_integrator,
-                            external.libgiac_integrator,
-                            external.sympy_integrator]
+        self.integrators = _automatic_integrators()
 
         BuiltinFunction.__init__(self, "integrate", nargs=4, conversions={'sympy': 'Integral',
                                                                           'giac': 'integrate'})
@@ -264,9 +292,8 @@ class DefiniteIntegral(BuiltinFunction):
             except (NotImplementedError, TypeError,
                     AttributeError, RuntimeError):
                 pass
-            except ValueError:
-                # maxima is telling us something
-                raise
+            except ValueError as err:
+                _handle_automatic_integration_error(integrator, err)
             else:
                 if not hasattr(A, 'operator'):
                     return A
