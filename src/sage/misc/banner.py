@@ -163,6 +163,16 @@ def version_dict():
         SageMath major version is ...
         sage: version_dict()['major'] == int(sage.version.version.split('.')[0])
         True
+
+    Post-release versions of prereleases are still prereleases, and their
+    nonnumeric tiny component should not break banner rendering::
+
+        sage: from sage.misc import banner
+        sage: old_version = banner.SAGE_VERSION
+        sage: banner.SAGE_VERSION = '10.9.beta9.post1'
+        sage: version_dict()
+        {'major': 10, 'minor': 9, 'tiny': 0, 'prerelease': True}
+        sage: banner.SAGE_VERSION = old_version
     """
     v = SAGE_VERSION.split('.')
     dict = {}
@@ -175,7 +185,10 @@ def version_dict():
     except ValueError:  # when last entry is not an integer
         dict['prerelease'] = True
     if (len(v) == 3 and not dict['prerelease']) or len(v) > 3:
-        dict['tiny'] = int(v[2])
+        try:
+            dict['tiny'] = int(v[2])
+        except ValueError:
+            dict['tiny'] = 0
     try:
         teeny = int(v[3])
         dict['tiny'] += 0.1 * teeny
