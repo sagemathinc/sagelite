@@ -62,6 +62,7 @@ from sage.misc.cachefunc import cached_method
 from sage.misc.lazy_import import lazy_import
 from sage.misc.misc_c import prod, prod as mul
 from sage.misc.verbose import verbose as verbose_verbose
+from sage.features import FeatureNotPresentError
 from sage.modular.modsym.modsym import ModularSymbols
 from sage.modular.pollack_stevens.space import ps_modsym_from_elliptic_curve
 from sage.rings.complex_mpfr import ComplexField
@@ -1951,6 +1952,18 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
             Traceback (most recent call last):
             ...
             RuntimeError: rank not provably correct (lower bound: 0, upper bound:2). Hint: increase pari_effort.
+
+        If the Cremona database is not installed, the default database lookup
+        falls back to a direct rank computation::
+
+            sage: from sage.features import Feature, FeatureNotPresentError
+            sage: def missing_database(self):
+            ....:     raise FeatureNotPresentError(Feature('database_cremona_mini_ellcurve'))
+            sage: E = EllipticCurve([1,2,3,4,5])
+            sage: from unittest.mock import patch
+            sage: with patch.object(type(E), 'database_attributes', missing_database):
+            ....:     E.rank()
+            1
         """
         if proof is None:
             from sage.structure.proof.proof import get_flag
@@ -1966,8 +1979,8 @@ class EllipticCurve_rational_field(EllipticCurve_number_field):
         if use_database:
             try:
                 rank = Integer(self.database_attributes()['rank'])
-            except LookupError:
-                # curve not in database, or rank not known
+            except (LookupError, FeatureNotPresentError):
+                # curve not in database, rank not known, or database not installed
                 pass
             else:
                 self.__rank = (rank, True)
