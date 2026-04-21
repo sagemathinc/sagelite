@@ -197,6 +197,8 @@ jobs:
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
       # Start with one Python ABI at a time while expanding PyPI support.
       CIBW_BUILD: "${{ matrix.python }}-manylinux_x86_64"
+      # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
+      CIBW_ENABLE: "cpython-prerelease"
       CIBW_ARCHS: ${{ matrix.arch }}
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
       CIBW_PROJECT_REQUIRES_PYTHON: "${{ matrix.requires_python }}"
