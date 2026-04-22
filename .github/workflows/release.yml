@@ -187,8 +187,8 @@ jobs:
             arch: aarch64
             cibw_platform: manylinux_aarch64
             build: manylinux
-            python: cp313
-            python_version: "3.13"
+            python: cp314
+            python_version: "3.14"
             requires_python: ">=3.12, <3.15"
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
