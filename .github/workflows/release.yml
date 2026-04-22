@@ -187,8 +187,8 @@ jobs:
             arch: aarch64
             cibw_platform: manylinux_aarch64
             build: manylinux
-            python: cp312
-            python_version: "3.12"
+            python: cp313
+            python_version: "3.13"
             requires_python: ">=3.12, <3.15"
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
@@ -196,7 +196,7 @@ jobs:
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
-      # Start with one native Linux arm64 ABI while expanding PyPI platform support.
+      # Stage one native Linux arm64 ABI at a time while expanding PyPI platform support.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
       CIBW_ENABLE: "cpython-prerelease"
