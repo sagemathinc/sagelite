@@ -181,6 +181,9 @@ jobs:
     needs: sdists
     strategy:
       fail-fast: false
+      # The Sage native dependency build runs package autotuning steps; running
+      # several of them concurrently can make those benchmark-driven steps flaky.
+      max-parallel: 1
       matrix:
         include:
           - os: runner
