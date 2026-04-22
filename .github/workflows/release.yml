@@ -183,6 +183,41 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: runner
+            arch: x86_64
+            cibw_platform: manylinux_x86_64
+            build: manylinux
+            python: cp312
+            python_version: "3.12"
+            requires_python: ">=3.12, <3.15"
+          - os: runner
+            arch: x86_64
+            cibw_platform: manylinux_x86_64
+            build: manylinux
+            python: cp313
+            python_version: "3.13"
+            requires_python: ">=3.12, <3.15"
+          - os: runner
+            arch: x86_64
+            cibw_platform: manylinux_x86_64
+            build: manylinux
+            python: cp314
+            python_version: "3.14"
+            requires_python: ">=3.12, <3.15"
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+            cibw_platform: manylinux_aarch64
+            build: manylinux
+            python: cp312
+            python_version: "3.12"
+            requires_python: ">=3.12, <3.15"
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+            cibw_platform: manylinux_aarch64
+            build: manylinux
+            python: cp313
+            python_version: "3.13"
+            requires_python: ">=3.12, <3.15"
           - os: ubuntu-24.04-arm
             arch: aarch64
             cibw_platform: manylinux_aarch64
@@ -196,7 +231,7 @@ jobs:
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
-      # Stage one native Linux arm64 ABI at a time while expanding PyPI platform support.
+      # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
       CIBW_ENABLE: "cpython-prerelease"
