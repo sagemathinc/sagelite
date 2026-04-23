@@ -75,7 +75,8 @@ jobs:
 
   sdists:
 
-    runs-on: runner
+    # Source distributions do not need the custom wheel-build runner.
+    runs-on: ubuntu-latest
     env:
       CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
     steps:
