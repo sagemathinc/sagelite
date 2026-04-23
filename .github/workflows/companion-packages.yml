@@ -1,0 +1,104 @@
+name: Companion Packages
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'companion-packages/**'
+      - 'src/sage/env.py'
+      - 'src/sage/env_test.py'
+      - '.github/workflows/companion-packages.yml'
+  pull_request:
+    paths:
+      - 'companion-packages/**'
+      - 'src/sage/env.py'
+      - 'src/sage/env_test.py'
+      - '.github/workflows/companion-packages.yml'
+  workflow_dispatch:
+    inputs:
+      publish_to_pypi:
+        description: "Publish built companion distributions to PyPI"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: sagelite-database-cremona-mini
+            import_name: sagelite_database_cremona_mini
+            path: companion-packages/sagelite-database-cremona-mini
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+
+      - name: Build distributions
+        run: |
+          python -m build "${{ matrix.path }}" --outdir dist
+          ls -lh dist
+
+      - name: Smoke test VCS subdirectory install
+        run: |
+          python -m venv test-venv
+          test-venv/bin/python -m pip install --upgrade pip
+          test-venv/bin/python -m pip install "git+file://${GITHUB_WORKSPACE}#subdirectory=${{ matrix.path }}"
+          test-venv/bin/python - <<'PY'
+          import importlib
+          import importlib.metadata as metadata
+          import sqlite3
+
+          module = importlib.import_module("${{ matrix.import_name }}")
+          data_path = module.sage_data_path()
+          db_path = module.cremona_mini_path()
+          print("data_path=", data_path)
+          print("db_path=", db_path)
+          assert db_path.endswith("cremona_mini.db"), db_path
+          assert any(ep.name == "cremona_mini" for ep in metadata.entry_points(group="sagemath.data_paths"))
+          con = sqlite3.connect(db_path)
+          cur = con.cursor()
+          assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
+          assert cur.execute("select count(*) from t_curve").fetchone()[0] > 0
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}-dist
+          path: dist/*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
+    if: env.CAN_DEPLOY == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*-dist"
+          path: dist
+          merge-multiple: true
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.SAGEMATH_PYPI_API_TOKEN }}
+          packages-dir: dist/
+          skip-existing: true
+          verbose: true
