@@ -83,9 +83,7 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-    env:
-      CAN_DEPLOY: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
-    if: env.CAN_DEPLOY == 'true'
+    if: ${{ secrets.SAGEMATH_PYPI_API_TOKEN != '' && github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi }}
     permissions:
       contents: read
     steps:
