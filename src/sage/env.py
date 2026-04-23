@@ -22,7 +22,9 @@ import socket
 import subprocess
 import sys
 import sysconfig
+import importlib.metadata as importlib_metadata
 from importlib import import_module
+from os import PathLike
 from typing import Optional
 
 from platformdirs import site_data_dir, user_data_dir
@@ -555,4 +557,54 @@ def sage_data_paths(name: str = '') -> set[str]:
     else:
         paths = set(SAGE_DATA_PATH.split(os.pathsep))
 
+    paths.update(_registered_sage_data_paths())
+
     return {os.path.join(path, name) for path in paths if os.path.exists(path)}
+
+
+def _registered_sage_data_paths() -> set[str]:
+    r"""
+    Search paths contributed by companion packages.
+
+    Companion wheels can register an entry point in the
+    ``sagemath.data_paths`` group that returns either one directory or an
+    iterable of directories. Invalid entry points are ignored so that optional
+    data packages never become mandatory runtime dependencies.
+    """
+    try:
+        entry_points = importlib_metadata.entry_points(group="sagemath.data_paths")
+    except TypeError:
+        all_entry_points = importlib_metadata.entry_points()
+        if hasattr(all_entry_points, "select"):
+            entry_points = all_entry_points.select(group="sagemath.data_paths")
+        else:
+            entry_points = all_entry_points.get("sagemath.data_paths", ())
+
+    paths = set()
+    for entry_point in entry_points:
+        try:
+            value = entry_point.load()
+            value = value() if callable(value) else value
+        except Exception:
+            continue
+        paths.update(_coerce_sage_data_paths(value))
+    return {path for path in paths if os.path.exists(path)}
+
+
+def _coerce_sage_data_paths(value) -> set[str]:
+    r"""
+    Normalize a value returned by a ``sagemath.data_paths`` entry point.
+    """
+    if value is None:
+        return set()
+    if isinstance(value, (str, bytes, PathLike)):
+        return {os.fspath(value)}
+    try:
+        iterator = iter(value)
+    except TypeError:
+        return set()
+    return {
+        os.fspath(path)
+        for path in iterator
+        if isinstance(path, (str, bytes, PathLike))
+    }
