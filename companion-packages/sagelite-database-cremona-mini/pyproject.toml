@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sagelite-database-cremona-mini"
-version = "10.9b9.post5"
+version = "10.9"
 description = "Mini Cremona database companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"
