@@ -1,0 +1,88 @@
+name: Publish existing release artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: "Successful release.yml run ID whose artifacts should be published"
+        required: true
+        type: string
+      expected_sha:
+        description: "Optional expected commit SHA for the source run"
+        required: false
+        type: string
+      expected_version:
+        description: "Expected sagelite version"
+        required: true
+        default: "10.9"
+        type: string
+      publish_to_pypi:
+        description: "Publish downloaded artifacts to PyPI"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+      EXPECTED_VERSION: ${{ inputs.expected_version }}
+    steps:
+      - name: Verify source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_json="$(gh run view "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,headSha,status)"
+          echo "$run_json" | jq .
+
+          status="$(echo "$run_json" | jq -r .status)"
+          conclusion="$(echo "$run_json" | jq -r .conclusion)"
+          head_sha="$(echo "$run_json" | jq -r .headSha)"
+
+          test "$status" = completed
+          test "$conclusion" = success
+          if [ -n "$EXPECTED_SHA" ]; then
+            test "$head_sha" = "$EXPECTED_SHA"
+          fi
+
+      - name: Download PyPI artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/dist artifacts/wheels publish
+
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name dist --dir artifacts/dist
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern "*-wheels" --dir artifacts/wheels
+
+          find artifacts -type f \( -name "*.tar.gz" -o -name "*.whl" \) -exec cp -v {} publish/ \;
+          ls -lh publish
+
+      - name: Verify artifact set
+        run: |
+          set -euo pipefail
+          sdist_count="$(find publish -maxdepth 1 -type f -name "sagelite-${EXPECTED_VERSION}.tar.gz" | wc -l)"
+          wheel_count="$(find publish -maxdepth 1 -type f -name "sagelite-${EXPECTED_VERSION}-*.whl" | wc -l)"
+          all_count="$(find publish -maxdepth 1 -type f \( -name "*.tar.gz" -o -name "*.whl" \) | wc -l)"
+
+          test "$sdist_count" -eq 1
+          test "$wheel_count" -eq 6
+          test "$all_count" -eq 7
+
+          find publish -maxdepth 1 -type f | sort
+
+      - name: Publish to PyPI
+        if: inputs.publish_to_pypi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.SAGEMATH_PYPI_API_TOKEN }}
+          packages-dir: publish/
+          skip-existing: true
+          verbose: true
