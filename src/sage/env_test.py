@@ -15,6 +15,13 @@ if not hasattr(sage, "config") and _CONFIG_PATH.exists():
 import sage.env as env
 
 
+def _gap_root(tmp_path: Path, name: str) -> Path:
+    root = tmp_path / name
+    (root / "lib").mkdir(parents=True)
+    (root / "lib" / "init.g").write_text("# GAP init\n")
+    return root
+
+
 class _EntryPoint:
     def __init__(self, value):
         self._value = value
@@ -66,3 +73,51 @@ def test_sage_data_paths_ignores_broken_entry_points(monkeypatch, tmp_path):
     )
 
     assert env._registered_sage_data_paths() == {str(existing)}
+
+
+def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
+    configured = _gap_root(tmp_path, "configured")
+    companion = _gap_root(tmp_path, "companion")
+
+    monkeypatch.setenv("GAP_ROOT_PATHS", str(configured))
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    assert env._gap_root_paths().split(";") == [str(configured), str(companion)]
+
+
+def test_gap_root_paths_uses_companion_runtime(monkeypatch, tmp_path):
+    companion = _gap_root(tmp_path, "companion")
+    stale_config = tmp_path / "stale-build-root"
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(stale_config), raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+
+    assert env._gap_root_paths() == str(companion)
+
+
+def test_gap_root_paths_ignores_broken_companion(monkeypatch, tmp_path):
+    baked = _gap_root(tmp_path, "configured")
+    broken = tmp_path / "broken-companion"
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(baked), raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(broken),
+    )
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+
+    assert env._gap_root_paths() == str(baked)

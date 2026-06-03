@@ -100,6 +100,54 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         os.environ.setdefault("MAXIMA_FAS", fas)
 
 
+def _gap_root_path_contains_gap(root: str | None) -> bool:
+    """
+    Return whether ``root`` looks like a usable GAP root directory.
+    """
+    return bool(root) and os.path.exists(os.path.join(root, "lib", "init.g"))
+
+
+def _gap_root_paths() -> str:
+    """
+    Return GAP root paths, preferring an explicitly configured or companion
+    package GAP runtime.
+
+    Binary ``sagelite`` wheels bundle ``libgap`` but not the optional GAP
+    runtime tree.  The tree can be supplied by setting ``GAP_ROOT_PATHS`` or
+    by installing the ``sagelite-gap-runtime`` companion package.
+    """
+    roots = []
+
+    configured = os.environ.get("GAP_ROOT_PATHS") or ""
+    for root in configured.split(";"):
+        root = root.strip()
+        if _gap_root_path_contains_gap(root) and root not in roots:
+            roots.append(root)
+
+    companion = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_root_paths")
+    if companion:
+        for root in companion.split(";"):
+            root = root.strip()
+            if _gap_root_path_contains_gap(root) and root not in roots:
+                roots.append(root)
+
+    bundled = join(SAGE_EXTCODE, "gap_root")
+    if _gap_root_path_contains_gap(bundled) and bundled not in roots:
+        roots.append(bundled)
+
+    configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
+    for root in configured.split(";"):
+        root = root.strip()
+        if _gap_root_path_contains_gap(root) and root not in roots:
+            roots.append(root)
+
+    if roots:
+        return ";".join(roots)
+
+    return ";".join([join(SAGE_LOCAL, "lib", "gap"),
+                     join(SAGE_LOCAL, "share", "gap")])
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -292,9 +340,8 @@ SAGE_GAP_COMMAND = var('SAGE_GAP_COMMAND', None)
 
 # The semicolon-separated search path for GAP packages. It is passed
 # directly to GAP via the -l flag.
-GAP_ROOT_PATHS = var("GAP_ROOT_PATHS",
-                     ";".join([join(SAGE_LOCAL, "lib", "gap"),
-                               join(SAGE_LOCAL, "share", "gap")]))
+GAP_ROOT_PATHS = _gap_root_paths()
+SAGE_ENV["GAP_ROOT_PATHS"] = GAP_ROOT_PATHS
 
 # post process
 if DOT_SAGE is not None and ' ' in DOT_SAGE:

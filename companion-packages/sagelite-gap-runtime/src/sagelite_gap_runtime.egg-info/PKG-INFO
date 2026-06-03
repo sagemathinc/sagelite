@@ -1,0 +1,49 @@
+Metadata-Version: 2.4
+Name: sagelite-gap-runtime
+Version: 10.9
+Summary: Optional GAP runtime companion package for sagelite
+Author-email: The Sage Developers <sage-support@googlegroups.com>
+License-Expression: GPL-2.0-or-later
+Project-URL: Homepage, https://www.sagemath.org
+Classifier: Development Status :: 6 - Mature
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+
+# sagelite-gap-runtime
+
+Optional GAP runtime companion package for `sagelite`.
+
+The `sagelite` wheels include the `libgap` shared library but do not include
+GAP's runtime tree.  GAP needs files such as `lib/init.g` to initialize
+correctly.  Installing this package in the same Python environment gives
+`sagelite` a relocatable GAP root without requiring users to set
+`GAP_ROOT_PATHS`.
+
+This package is built by copying an existing GAP root into the wheel.  Set
+`SAGELITE_GAP_ROOT` to the root that contains `lib/init.g`:
+
+```bash
+SAGELITE_GAP_ROOT=/path/to/gap python -m build companion-packages/sagelite-gap-runtime
+```
+
+If `SAGELITE_GAP_ROOT` is not set, the build also checks entries in
+`GAP_ROOT_PATHS` and common system locations such as `/usr/share/gap`.
+
+To test installation directly from GitHub on a machine with a compatible GAP
+runtime installed:
+
+```bash
+pip install "git+https://github.com/sagemathinc/sagelite.git@develop#subdirectory=companion-packages/sagelite-gap-runtime"
+```
+
+For production wheels, build this package from the same Sage-built GAP prefix
+used to build the corresponding `sagelite` wheel.

@@ -78,6 +78,11 @@ executables may still work when compatible versions are already installed on
 the user's `PATH`, but those integrations are optional rather than part of the
 core wheel contract.
 
+Some optional runtimes are provided as companion packages. For example,
+`sagelite-gap-runtime` supplies GAP's runtime files for in-process `libgap`;
+once published, users can install it explicitly or with `pip install
+"sagelite[gap]"`.
+
 The current `sagelite` product contract and release policy are documented in
 [SAGELITE.md](./SAGELITE.md).
 
