@@ -296,6 +296,7 @@ jobs:
 
       - name: Bootstrap
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           export PATH=$(pwd)/build/bin:$PATH
           eval $(sage-print-system-package-command auto --sudo --yes --no-install-recommends --spkg install _bootstrap _prereq)
           ./bootstrap
@@ -343,7 +344,7 @@ jobs:
         if: matrix.python == 'cp312'
         run: |
           set -euo pipefail
-          gap_root="/host/sage-${{ matrix.auditwheel_plat }}/share/gap"
+          gap_root="/host/sage-${{ matrix.auditwheel_plat }}/lib/gap"
           test -f "${gap_root}/lib/init.g"
           "${{ steps.python.outputs.python-path }}" -m pip install --upgrade build setuptools wheel
           rm -rf gap-runtime-dist
