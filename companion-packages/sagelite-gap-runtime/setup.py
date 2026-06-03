@@ -95,7 +95,14 @@ if _bdist_wheel is not None:
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
             super().finalize_options()
-            self.root_is_pure = False
+            plat_name = os.environ.get("SAGELITE_GAP_RUNTIME_PLAT_NAME")
+            if plat_name:
+                self.root_is_pure = True
+                self.python_tag = "py3"
+                self.plat_name = plat_name
+                self.plat_name_supplied = True
+            else:
+                self.root_is_pure = False
 
     cmdclass["bdist_wheel"] = bdist_wheel
 
