@@ -198,7 +198,6 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
             cibw_platform: manylinux_x86_64
-            auditwheel_plat: manylinux_2_28_x86_64
             build: manylinux
             python: cp312
             python_version: "3.12"
@@ -206,7 +205,6 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
             cibw_platform: manylinux_x86_64
-            auditwheel_plat: manylinux_2_28_x86_64
             build: manylinux
             python: cp313
             python_version: "3.13"
@@ -214,7 +212,6 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
             cibw_platform: manylinux_x86_64
-            auditwheel_plat: manylinux_2_28_x86_64
             build: manylinux
             python: cp314
             python_version: "3.14"
@@ -222,7 +219,6 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: aarch64
             cibw_platform: manylinux_aarch64
-            auditwheel_plat: manylinux_2_28_aarch64
             build: manylinux
             python: cp312
             python_version: "3.12"
@@ -230,7 +226,6 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: aarch64
             cibw_platform: manylinux_aarch64
-            auditwheel_plat: manylinux_2_28_aarch64
             build: manylinux
             python: cp313
             python_version: "3.13"
@@ -238,7 +233,6 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: aarch64
             cibw_platform: manylinux_aarch64
-            auditwheel_plat: manylinux_2_28_aarch64
             build: manylinux
             python: cp314
             python_version: "3.14"
@@ -324,6 +318,7 @@ jobs:
 
       - name: Build wheel
         run: |
+          rm -rf gap-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
       - name: Save compiler cache
@@ -339,23 +334,6 @@ jobs:
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
           test-venv/bin/sagelite-selftest
-
-      - name: Build GAP runtime companion wheel
-        if: matrix.python == 'cp312'
-        run: |
-          set -euo pipefail
-          gap_root="/host/sage-${{ matrix.auditwheel_plat }}/lib/gap"
-          test -f "${gap_root}/lib/init.g"
-          "${{ steps.python.outputs.python-path }}" -m pip install --upgrade build setuptools wheel
-          rm -rf gap-runtime-dist
-          SAGELITE_GAP_ROOT="${gap_root}" \
-          SAGELITE_GAP_RUNTIME_PLAT_NAME="${{ matrix.auditwheel_plat }}" \
-            "${{ steps.python.outputs.python-path }}" -m build \
-              --wheel \
-              --no-isolation \
-              --outdir gap-runtime-dist \
-              companion-packages/sagelite-gap-runtime
-          ls -lh gap-runtime-dist
 
       - uses: actions/upload-artifact@v4
         with:
