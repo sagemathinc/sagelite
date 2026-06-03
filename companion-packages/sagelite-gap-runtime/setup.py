@@ -64,6 +64,7 @@ def _ignore_gap_files(directory: str, names: list[str]) -> set[str]:
         "example",
         "examples",
         "htm",
+        "mathjax",
         "test",
         "tests",
         "tst",
@@ -84,7 +85,7 @@ class build_py(_build_py):
         target = Path(self.build_lib) / "sagelite_gap_runtime" / "data" / "gap"
         shutil.rmtree(target, ignore_errors=True)
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(gap_root, target, ignore=_ignore_gap_files)
+        shutil.copytree(gap_root, target, ignore=_ignore_gap_files, ignore_dangling_symlinks=True)
 
 
 cmdclass = {"build_py": build_py}
