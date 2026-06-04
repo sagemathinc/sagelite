@@ -27,7 +27,7 @@ build_gap_runtime_companion() {
 
   local project_dir="/project"
   local companion_dir="$project_dir/companion-packages/sagelite-gap-runtime"
-  local output_dir="$project_dir/gap-runtime-dist"
+  local output_dir="$dest_dir"
   if [ ! -d "$companion_dir" ]; then
     echo "GAP runtime companion package not found: $companion_dir" >&2
     exit 1

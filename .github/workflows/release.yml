@@ -321,6 +321,15 @@ jobs:
           rm -rf gap-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
+      - name: Separate GAP runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p gap-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" -exec mv -v {} gap-runtime-dist/ \;
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh gap-runtime-dist
+
       - name: Save compiler cache
         if: always()
         uses: actions/cache/save@v4
@@ -345,6 +354,7 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-gap-runtime
           path: ./gap-runtime-dist/*.whl
+          if-no-files-found: error
 
   upload_wheels:
     # This needs to be a separate job because pypa/gh-action-pypi-publish cannot run on macOS
