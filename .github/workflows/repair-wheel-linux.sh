@@ -13,8 +13,8 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 build_gap_runtime_companion() {
-  case "${CIBW_BUILD:-}" in
-    cp312-*) ;;
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
     *) return 0 ;;
   esac
 
