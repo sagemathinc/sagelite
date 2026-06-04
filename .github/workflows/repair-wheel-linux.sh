@@ -18,9 +18,13 @@ build_gap_runtime_companion() {
     *) return 0 ;;
   esac
 
-  local gap_root="$prefix/lib/gap"
+  local gap_root
+  gap_root="$(
+    find "$prefix" -path '*/lib/init.g' -print -quit |
+      sed 's#/lib/init\.g$##'
+  )"
   if [ ! -f "$gap_root/lib/init.g" ]; then
-    echo "GAP root not found at $gap_root; searched prefix contents:" >&2
+    echo "GAP root not found under $prefix; searched prefix contents:" >&2
     find "$prefix" -maxdepth 4 \( -name init.g -o -name sysinfo.gap \) -print >&2 || true
     exit 1
   fi
