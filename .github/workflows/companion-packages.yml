@@ -36,6 +36,11 @@ jobs:
             path: companion-packages/sagelite-database-cremona-mini
             apt_packages: ""
             publish: true
+          - name: sagelite-database-ellcurves
+            import_name: sagelite_database_ellcurves
+            path: companion-packages/sagelite-database-ellcurves
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-graphs
             import_name: sagelite_database_graphs
             path: companion-packages/sagelite-database-graphs
@@ -148,6 +153,22 @@ jobs:
               con = sqlite3.connect(db_path)
               cur = con.cursor()
               assert cur.execute("select count(*) from graph_data").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-ellcurves":
+              data_path = module.sage_data_path()
+              ellcurves_path = module.ellcurves_data_path()
+              rank0_path = module.rank_file_path(0)
+              rank1_path = module.rank_file_path(1)
+              print("data_path=", data_path)
+              print("ellcurves_path=", ellcurves_path)
+              print("rank0_path=", rank0_path)
+              assert rank0_path.endswith("rank0"), rank0_path
+              assert os.path.exists(rank0_path)
+              assert os.path.exists(rank1_path)
+              assert os.path.getsize(rank0_path) > 0
+              assert os.path.getsize(rank1_path) > 0
+              assert any(ep.name == "ellcurves" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-polytopes":

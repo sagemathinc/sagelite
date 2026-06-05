@@ -85,9 +85,11 @@ R = ['rpy2 >=3.3']
 cremona = ['sagelite-database-cremona-mini ==10.9']
 databases = [
   'sagelite-database-cremona-mini ==10.9',
+  'sagelite-database-ellcurves ==10.9',
   'sagelite-database-graphs ==10.9',
   'sagelite-database-polytopes ==10.9',
 ]
+ellcurves = ['sagelite-database-ellcurves ==10.9']
 extra = [
   'igraph',
   'lrcalc ~=2.1; sys_platform != "win32"',
