@@ -93,9 +93,10 @@ extra = [
 ]
 gap = ['sagelite-gap-runtime ==10.9.post1']
 cremona = ['sagelite-database-cremona-mini ==10.9']
-databases = ['sagelite-database-cremona-mini ==10.9', 'sagelite-database-graphs ==10.9']
+databases = ['sagelite-database-cremona-mini ==10.9', 'sagelite-database-graphs ==10.9', 'sagelite-database-polytopes ==10.9']
 graphs = ['sagelite-database-graphs ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
+polytopes = ['sagelite-database-polytopes ==10.9']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)
 
 [project.readme]

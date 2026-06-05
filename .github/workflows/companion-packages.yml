@@ -41,6 +41,11 @@ jobs:
             path: companion-packages/sagelite-database-graphs
             apt_packages: ""
             publish: true
+          - name: sagelite-database-polytopes
+            import_name: sagelite_database_polytopes
+            path: companion-packages/sagelite-database-polytopes
+            apt_packages: ""
+            publish: true
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
@@ -143,6 +148,18 @@ jobs:
               con = sqlite3.connect(db_path)
               cur = con.cursor()
               assert cur.execute("select count(*) from graph_data").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-polytopes":
+              data_path = module.sage_data_path()
+              polytopes_path = module.reflexive_polytopes_path()
+              print("data_path=", data_path)
+              print("polytopes_path=", polytopes_path)
+              assert os.path.isdir(os.path.join(polytopes_path, "Full2d"))
+              assert os.path.isdir(os.path.join(polytopes_path, "Full3d"))
+              assert os.path.exists(os.path.join(polytopes_path, "reflexive_polytopes_2d"))
+              assert os.path.exists(os.path.join(polytopes_path, "reflexive_polytopes_3d"))
+              assert any(ep.name == "reflexive_polytopes" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-cremona-mini":
