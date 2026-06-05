@@ -276,6 +276,18 @@ def _check_database_symbolic_data():
     return f"{len(data.__dir__())} ideals available; Katsura_3 has {len(ideal.gens())} generators"
 
 
+def _check_database_odlyzko_zeta():
+    try:
+        import sagelite_database_odlyzko_zeta  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.odlyzko import zeta_zeros
+
+    zeros = zeta_zeros()
+    return f"{len(zeros)} zeta zeros available; zero 13 is {zeros[12]}"
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -325,6 +337,7 @@ def main() -> int:
         ("reflexive polytopes database runtime", _check_database_polytopes),
         ("mutation class database runtime", _check_database_mutation_class),
         ("SymbolicData database runtime", _check_database_symbolic_data),
+        ("Odlyzko zeta database runtime", _check_database_odlyzko_zeta),
     ]
 
     ok = True

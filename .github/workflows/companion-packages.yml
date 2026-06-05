@@ -60,6 +60,11 @@ jobs:
             path: companion-packages/sagelite-database-mutation-class
             apt_packages: ""
             publish: true
+          - name: sagelite-database-odlyzko-zeta
+            import_name: sagelite_database_odlyzko_zeta
+            path: companion-packages/sagelite-database-odlyzko-zeta
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-polytopes
             import_name: sagelite_database_polytopes
             path: companion-packages/sagelite-database-polytopes
@@ -279,6 +284,19 @@ jobs:
               assert os.path.exists(os.path.join(resources_path, "INTPS", "Katsura_3.xml"))
               assert os.path.exists(os.path.join(resources_path, "GenPS", "Curves.curve3_20.xml"))
               assert any(ep.name == "symbolic_data" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-odlyzko-zeta":
+              data_path = module.sage_data_path()
+              odlyzko_path = module.odlyzko_data_path()
+              sobj_path = module.zeros_sobj_path()
+              print("data_path=", data_path)
+              print("odlyzko_path=", odlyzko_path)
+              print("sobj_path=", sobj_path)
+              assert sobj_path.endswith("zeros.sobj"), sobj_path
+              assert os.path.exists(sobj_path)
+              assert os.path.getsize(sobj_path) > 0
+              assert any(ep.name == "odlyzko" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-cremona-mini":

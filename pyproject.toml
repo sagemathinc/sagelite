@@ -95,6 +95,7 @@ databases = [
   'sagelite-database-graphs ==10.9',
   'sagelite-database-jones-numfield ==10.9',
   'sagelite-database-mutation-class ==10.9',
+  'sagelite-database-odlyzko-zeta ==10.9',
   'sagelite-database-polytopes ==10.9',
   'sagelite-database-symbolic-data ==10.9',
 ]
@@ -115,6 +116,7 @@ matroids = ['matroid-database ==0.3']
 maxima = ['sagelite-maxima-runtime ==10.9']
 mutation-class = ['sagelite-database-mutation-class ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
+odlyzko-zeta = ['sagelite-database-odlyzko-zeta ==10.9']
 pari-data = ['sagelite-pari-data ==10.9']
 polytopes = ['sagelite-database-polytopes ==10.9']
 singular = ['sagelite-singular-runtime ==10.9']
