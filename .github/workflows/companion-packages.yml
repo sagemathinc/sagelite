@@ -39,7 +39,7 @@ jobs:
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
-            apt_packages: gap
+            apt_packages: gap gap-gapdoc gap-smallgrp gap-transgrp gap-primgrp gap-character-tables gap-table-of-marks
             publish: false
 
     steps:
@@ -83,9 +83,19 @@ jobs:
           if "${{ matrix.name }}" == "sagelite-gap-runtime":
               runtime = importlib.import_module("sagelite_gap_runtime.runtime")
               gap_root = runtime.gap_root()
+              gap_root_paths = runtime.gap_root_paths()
               print("gap_root=", gap_root)
+              print("gap_root_paths=", gap_root_paths)
               assert os.path.exists(os.path.join(gap_root, "lib", "init.g"))
-              assert runtime.gap_root_paths() == gap_root
+              assert gap_root in gap_root_paths.split(";")
+              os.environ["GAP_ROOT_PATHS"] = gap_root_paths
+              import subprocess
+              subprocess.run(
+                  ["gap", "-r", "-q", "--bare", "--nointeract"],
+                  input='LoadPackage("gapdoc");; NumberSmallGroups(16);; NrTransitiveGroups(5);;\\n',
+                  text=True,
+                  check=True,
+              )
               raise SystemExit(0)
 
           data_path = module.sage_data_path()

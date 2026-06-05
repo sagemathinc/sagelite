@@ -74,6 +74,7 @@ env:
   FROM_DOCKER_TARGET:     "with-targets"
   FROM_DOCKER_TAG:        ${{ github.event.inputs.docker_tag || 'dev'}}
   EXTRA_CONFIGURE_ARGS:   --enable-fat-binary
+  SAGELITE_FULL_TEST_TARGETS: gap_packages
 
 jobs:
   test-long:
@@ -156,7 +157,7 @@ jobs:
             NUMPROC=6
             USE_MAKEFLAGS=-k V=0 SAGE_NUM_THREADS=4 --output-sync=recurse
             TARGETS_PRE=build/make/Makefile
-            TARGETS=${{ needs.test-new.outputs.build_targets }}
+            TARGETS=${{ env.SAGELITE_FULL_TEST_TARGETS }}
 
       - name: Start container
         id: container
@@ -273,7 +274,7 @@ jobs:
             NUMPROC=6
             USE_MAKEFLAGS=-k V=0 SAGE_NUM_THREADS=4 --output-sync=recurse
             TARGETS_PRE=build/make/Makefile
-            TARGETS=${{ needs.test-new.outputs.build_targets }}
+            TARGETS=${{ env.SAGELITE_FULL_TEST_TARGETS }}
 
       - name: Start container
         id: container
