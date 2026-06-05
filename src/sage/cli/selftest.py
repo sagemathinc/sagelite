@@ -67,6 +67,14 @@ def _check_eclib_mwrank():
     return curve.conductor()
 
 
+def _check_brial_pbori():
+    from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+
+    ring = BooleanPolynomialRing(3, "x")
+    x0, x1, x2 = ring.gens()
+    return (x0 * x1 + x1 * x0 + x2).degree()
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -100,6 +108,7 @@ def main() -> int:
         ("modular symbols", _check_modular_symbols),
         ("elliptic curve rank", _check_elliptic_curve_rank),
         ("eclib mwrank library", _check_eclib_mwrank),
+        ("brial pbori library", _check_brial_pbori),
     ]
 
     ok = True

@@ -242,7 +242,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
+      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
       # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
