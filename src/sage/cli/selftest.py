@@ -263,6 +263,19 @@ def _check_database_mutation_class():
     return f"{len(data)} rank-2 mutation class entries available"
 
 
+def _check_database_symbolic_data():
+    try:
+        import sagelite_database_symbolic_data  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.symbolic_data import SymbolicData
+
+    data = SymbolicData()
+    ideal = data.get_ideal("Katsura_3")
+    return f"{len(data.__dir__())} ideals available; Katsura_3 has {len(ideal.gens())} generators"
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -311,6 +324,7 @@ def main() -> int:
         ("Jones number field database runtime", _check_database_jones_numfield),
         ("reflexive polytopes database runtime", _check_database_polytopes),
         ("mutation class database runtime", _check_database_mutation_class),
+        ("SymbolicData database runtime", _check_database_symbolic_data),
     ]
 
     ok = True
