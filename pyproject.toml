@@ -82,6 +82,12 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
+cremona = ['sagelite-database-cremona-mini ==10.9']
+databases = [
+  'sagelite-database-cremona-mini ==10.9',
+  'sagelite-database-graphs ==10.9',
+  'sagelite-database-polytopes ==10.9',
+]
 extra = [
   'igraph',
   'lrcalc ~=2.1; sys_platform != "win32"',
@@ -92,8 +98,6 @@ extra = [
   'symengine >= 0.6.1', # Only used in tests
 ]
 gap = ['sagelite-gap-runtime ==10.9.post1']
-cremona = ['sagelite-database-cremona-mini ==10.9']
-databases = ['sagelite-database-cremona-mini ==10.9', 'sagelite-database-graphs ==10.9', 'sagelite-database-polytopes ==10.9']
 graphs = ['sagelite-database-graphs ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
 polytopes = ['sagelite-database-polytopes ==10.9']
