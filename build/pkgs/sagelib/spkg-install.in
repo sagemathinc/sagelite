@@ -51,6 +51,9 @@ SITEPACKAGESDIR=$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["pur
 # does not shadow the namespace package sage during the build.
 (cd "$SITEPACKAGESDIR" && rm -f sage/__init__.py)
 if [ "$SAGE_EDITABLE" = yes ]; then
+    # The base Docker images can carry an old Meson editable build dir whose
+    # coredata references options that no longer exist in this source tree.
+    rm -rf build/sage-distro
     sdh_pip_editable_install . \
         --config-settings=build-dir="build/sage-distro" \
         --config-settings=setup-args="--native-file=$SAGE_PKGS/../platform/meson/sage-configure-native-file.ini" \
