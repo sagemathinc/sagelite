@@ -362,6 +362,11 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
+          for companion_dist in gap-runtime-dist maxima-runtime-dist nauty-runtime-dist; do
+            if compgen -G "$companion_dist/*.whl" > /dev/null; then
+              test-venv/bin/python -m pip install "$companion_dist"/*.whl
+            fi
+          done
           test-venv/bin/sagelite-selftest
 
       - uses: actions/upload-artifact@v4

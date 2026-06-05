@@ -100,6 +100,17 @@ def _check_gapdoc_runtime():
     )
 
 
+def _check_maxima_runtime():
+    try:
+        import sagelite_maxima  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.interfaces.maxima_lib import maxima_lib
+
+    return maxima_lib.eval("1+1")
+
+
 def _check_nauty_runtime():
     try:
         import sagelite_nauty  # noqa: F401
@@ -198,6 +209,7 @@ def main() -> int:
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
+        ("Maxima library runtime", _check_maxima_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("graphs database runtime", _check_database_graphs),
         ("ellcurves database runtime", _check_database_ellcurves),
