@@ -82,7 +82,6 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
-gap = ['sagelite-gap-runtime ==10.9.post1']
 extra = [
   'igraph',
   'lrcalc ~=2.1; sys_platform != "win32"',
@@ -92,6 +91,7 @@ extra = [
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
 ]
+gap = ['sagelite-gap-runtime ==10.9.post1']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)
 
 [project.readme]
