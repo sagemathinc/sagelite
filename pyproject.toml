@@ -97,6 +97,7 @@ databases = [
   'sagelite-database-mutation-class ==10.9',
   'sagelite-database-odlyzko-zeta ==10.9',
   'sagelite-database-polytopes ==10.9',
+  'sagelite-database-stein-watkins-mini ==10.9',
   'sagelite-database-symbolic-data ==10.9',
 ]
 ellcurves = ['sagelite-database-ellcurves ==10.9']
@@ -120,6 +121,7 @@ odlyzko-zeta = ['sagelite-database-odlyzko-zeta ==10.9']
 pari-data = ['sagelite-pari-data ==10.9']
 polytopes = ['sagelite-database-polytopes ==10.9']
 singular = ['sagelite-singular-runtime ==10.9']
+stein-watkins-mini = ['sagelite-database-stein-watkins-mini ==10.9']
 symbolic-data = ['sagelite-database-symbolic-data ==10.9']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)
 

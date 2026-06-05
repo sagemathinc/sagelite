@@ -70,6 +70,11 @@ jobs:
             path: companion-packages/sagelite-database-polytopes
             apt_packages: ""
             publish: true
+          - name: sagelite-database-stein-watkins-mini
+            import_name: sagelite_database_stein_watkins_mini
+            path: companion-packages/sagelite-database-stein-watkins-mini
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-symbolic-data
             import_name: sagelite_database_symbolic_data
             path: companion-packages/sagelite-database-symbolic-data
@@ -297,6 +302,22 @@ jobs:
               assert os.path.exists(sobj_path)
               assert os.path.getsize(sobj_path) > 0
               assert any(ep.name == "odlyzko" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-stein-watkins-mini":
+              data_path = module.sage_data_path()
+              stein_watkins_path = module.stein_watkins_data_path()
+              all0_path = module.all_data_path(0)
+              all1_path = module.all_data_path(1)
+              prime0_path = module.prime_data_path(0)
+              print("data_path=", data_path)
+              print("stein_watkins_path=", stein_watkins_path)
+              print("all0_path=", all0_path)
+              assert os.path.exists(all0_path)
+              assert os.path.exists(all1_path)
+              assert os.path.exists(prime0_path)
+              assert os.path.getsize(all0_path) > 0
+              assert any(ep.name == "stein_watkins" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-cremona-mini":

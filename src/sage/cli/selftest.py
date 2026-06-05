@@ -288,6 +288,25 @@ def _check_database_odlyzko_zeta():
     return f"{len(zeros)} zeta zeros available; zero 13 is {zeros[12]}"
 
 
+def _check_database_stein_watkins_mini():
+    try:
+        import sagelite_database_stein_watkins_mini  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.stein_watkins import SteinWatkinsAllData
+    from sage.databases.stein_watkins import SteinWatkinsPrimeData
+
+    first_all = next(SteinWatkinsAllData(0))
+    first_all_1 = next(SteinWatkinsAllData(1))
+    first_prime = next(SteinWatkinsPrimeData(0))
+    return (
+        "first conductors: "
+        f"all={first_all.conductor}, all1={first_all_1.conductor}, "
+        f"prime={first_prime.conductor}"
+    )
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -338,6 +357,7 @@ def main() -> int:
         ("mutation class database runtime", _check_database_mutation_class),
         ("SymbolicData database runtime", _check_database_symbolic_data),
         ("Odlyzko zeta database runtime", _check_database_odlyzko_zeta),
+        ("Stein-Watkins mini database runtime", _check_database_stein_watkins_mini),
     ]
 
     ok = True

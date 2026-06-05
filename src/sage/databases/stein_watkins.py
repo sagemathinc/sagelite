@@ -334,9 +334,9 @@ class SteinWatkinsPrimeData(SteinWatkinsAllData):
         """
         EXAMPLES::
 
-            sage: d = SteinWatkinsPrimeData(1)
+            sage: d = SteinWatkinsPrimeData(0)
             sage: d
-            Stein-Watkins Prime Conductor Database p.1 Iterator
+            Stein-Watkins Prime Conductor Database p.0 Iterator
         """
         return "Stein-Watkins Prime Conductor Database p.%s Iterator" % self.num
 
