@@ -146,6 +146,7 @@ build/pkgs/wheel/version_requirements.txt
 /pkgs/*/.tox
 /pkgs/*/venv*
 /pkgs/*/.venv*
+/companion-packages/*/build/
 /companion-packages/*/src/*.egg-info/
 
 /pkgs/sagemath-objects/setup.cfg
