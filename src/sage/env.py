@@ -17,12 +17,12 @@ AUTHORS:
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+import importlib.metadata as importlib_metadata
 import os
 import socket
 import subprocess
 import sys
 import sysconfig
-import importlib.metadata as importlib_metadata
 from importlib import import_module
 from os import PathLike
 from typing import Optional
@@ -86,24 +86,52 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
 
     This is only used when the user or the build configuration has not already
-    provided a usable ``MAXIMA_PREFIX``.  Binary wheels can contain build-time
-    Maxima paths that no longer exist after installation; those stale paths
-    should not prevent a companion runtime from being used.
+    provided usable Maxima paths.  Binary wheels can contain build-time Maxima
+    paths that no longer exist after installation; those stale paths should not
+    prevent a companion runtime from being used.
     """
-    if os.environ.get("MAXIMA_PREFIX"):
-        return
-
     configured_prefix = getattr(sage.config, "MAXIMA_PREFIX", None)
-    if configured_prefix and os.path.isdir(os.fspath(configured_prefix)):
+    configured_fas = getattr(sage.config, "MAXIMA_FAS", None)
+    configured_command = getattr(sage.config, "MAXIMA", None)
+
+    needs_prefix = (
+        not os.environ.get("MAXIMA_PREFIX")
+        and not (configured_prefix and os.path.isdir(os.fspath(configured_prefix)))
+    )
+    needs_fas = (
+        not os.environ.get("MAXIMA_FAS")
+        and not (configured_fas and os.path.isfile(os.fspath(configured_fas)))
+    )
+    needs_command = (
+        not os.environ.get("MAXIMA")
+        and not (
+            configured_command
+            and os.path.isfile(os.fspath(configured_command))
+            and os.access(os.fspath(configured_command), os.X_OK)
+        )
+    )
+    if not (needs_prefix or needs_fas or needs_command):
         return
 
-    prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
-    fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    prefix = fas = command = None
+    if needs_prefix:
+        prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
+    if needs_fas:
+        fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    if needs_command:
+        command = _optional_runtime_value("sagelite_maxima.runtime", "maxima_command")
 
-    if prefix and os.path.isdir(prefix):
+    if needs_prefix and prefix and os.path.isdir(prefix):
         os.environ.setdefault("MAXIMA_PREFIX", os.fspath(prefix))
-    if fas and os.path.isfile(fas):
+    if needs_fas and fas and os.path.isfile(fas):
         os.environ.setdefault("MAXIMA_FAS", os.fspath(fas))
+    if (
+        needs_command
+        and command
+        and os.path.isfile(command)
+        and os.access(command, os.X_OK)
+    ):
+        os.environ.setdefault("MAXIMA", os.fspath(command))
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:

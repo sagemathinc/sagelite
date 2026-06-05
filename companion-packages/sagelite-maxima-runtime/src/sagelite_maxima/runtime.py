@@ -1,5 +1,5 @@
-from importlib.resources import files
 import os
+from importlib.resources import files
 
 
 def _maxima_version_dir():
@@ -24,4 +24,11 @@ def maxima_fas() -> str:
     return os.fspath(files(__package__).joinpath("data", "lib", "ecl", "maxima.fas"))
 
 
-__all__ = ["maxima_fas", "maxima_prefix"]
+def maxima_command() -> str:
+    """
+    Return the bundled Maxima command used as ``MAXIMA``.
+    """
+    return os.fspath(files(__package__).joinpath("data", "bin", "maxima"))
+
+
+__all__ = ["maxima_command", "maxima_fas", "maxima_prefix"]

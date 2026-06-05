@@ -75,9 +75,22 @@ build_maxima_runtime_companion() {
       tail -1
   )"
   local maxima_fas="$prefix/lib/ecl/maxima.fas"
-  if [ -z "$maxima_prefix" ] || [ ! -d "$maxima_prefix/share" ] || [ ! -f "$maxima_fas" ]; then
+  local maxima_imagesdir="$prefix/lib/maxima/$(basename "$maxima_prefix")"
+  local maxima_ecldir
+  maxima_ecldir="$(
+    find "$prefix/lib" -maxdepth 1 -type d -name 'ecl-*' -print |
+      sort -V |
+      tail -1
+  )"
+  if [ -z "$maxima_prefix" ] || [ ! -d "$maxima_prefix/share" ] ||
+     [ ! -f "$maxima_fas" ] ||
+     [ ! -f "$maxima_imagesdir/binary-ecl/maxima" ] ||
+     [ -z "$maxima_ecldir" ]; then
     echo "Maxima runtime not found under $prefix; searched prefix contents:" >&2
-    find "$prefix" -maxdepth 6 \( -name maxima.fas -o -path '*/share/maxima*/*/src' \) -print >&2 || true
+    find "$prefix" -maxdepth 6 \
+      \( -name maxima.fas -o -path '*/share/maxima*/*/src' \
+         -o -path '*/binary-ecl/maxima' -o -name 'ecl-*' \) \
+      -print >&2 || true
     exit 1
   fi
 
@@ -93,6 +106,9 @@ build_maxima_runtime_companion() {
   mkdir -p "$output_dir"
   SAGELITE_MAXIMA_PREFIX="$maxima_prefix" \
   SAGELITE_MAXIMA_FAS="$maxima_fas" \
+  SAGELITE_MAXIMA_IMAGESDIR="$maxima_imagesdir" \
+  SAGELITE_MAXIMA_ECLDIR="$maxima_ecldir" \
+  SAGELITE_MAXIMA_LIBDIR="$prefix/lib" \
   SAGELITE_MAXIMA_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \
