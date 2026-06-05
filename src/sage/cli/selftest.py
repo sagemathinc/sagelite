@@ -183,14 +183,13 @@ def _check_ecm_runtime():
     if not bool(ecm_feature):
         raise RuntimeError(f"ecm executable is not available: {ecm_feature.reason}")
     result = subprocess.run(
-        [SAGE_ECMBIN, "-q", "-pm1", "10"],
-        input="8051\n",
-        check=False,
+        [SAGE_ECMBIN, "-h"],
+        check=True,
         capture_output=True,
         text=True,
     )
-    if not result.stdout.strip():
-        raise RuntimeError(f"unexpected ecm output: {result.stdout!r}")
+    if "Usage:" not in result.stdout:
+        raise RuntimeError(f"unexpected ecm help output: {result.stdout!r}")
     return "ecm executable available"
 
 

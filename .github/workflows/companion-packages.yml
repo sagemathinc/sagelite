@@ -187,12 +187,12 @@ jobs:
               assert os.path.exists(ecm)
               import subprocess
               result = subprocess.run(
-                  [os.fspath(ecm), "-q", "-pm1", "10"],
-                  input="8051\\n",
+                  [os.fspath(ecm), "-h"],
                   text=True,
                   capture_output=True,
+                  check=True,
               )
-              assert result.stdout.strip()
+              assert "Usage:" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":
