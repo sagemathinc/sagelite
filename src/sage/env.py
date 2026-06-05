@@ -86,17 +86,23 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
 
     This is only used when the user or the build configuration has not already
-    provided ``MAXIMA_PREFIX``/``MAXIMA_FAS``.
+    provided a usable ``MAXIMA_PREFIX``.  Binary wheels can contain build-time
+    Maxima paths that no longer exist after installation; those stale paths
+    should not prevent a companion runtime from being used.
     """
-    if os.environ.get("MAXIMA_PREFIX") or getattr(sage.config, "MAXIMA_PREFIX", None):
+    if os.environ.get("MAXIMA_PREFIX"):
+        return
+
+    configured_prefix = getattr(sage.config, "MAXIMA_PREFIX", None)
+    if configured_prefix and os.path.isdir(os.fspath(configured_prefix)):
         return
 
     prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
     fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
 
-    if prefix:
+    if prefix and os.path.isdir(prefix):
         os.environ.setdefault("MAXIMA_PREFIX", prefix)
-    if fas:
+    if fas and os.path.isfile(fas):
         os.environ.setdefault("MAXIMA_FAS", fas)
 
 

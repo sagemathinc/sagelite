@@ -242,7 +242,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap singular ecl lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
+      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
       # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
@@ -319,6 +319,7 @@ jobs:
       - name: Build wheel
         run: |
           rm -rf gap-runtime-dist
+          rm -rf maxima-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
       - name: Separate GAP runtime companion wheel
@@ -329,6 +330,15 @@ jobs:
           find wheelhouse -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" -exec mv -v {} gap-runtime-dist/ \;
           test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" | wc -l)" -eq 1
           ls -lh gap-runtime-dist
+
+      - name: Separate Maxima runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p maxima-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_maxima_runtime-*.whl" -exec mv -v {} maxima-runtime-dist/ \;
+          test "$(find maxima-runtime-dist -maxdepth 1 -type f -name "sagelite_maxima_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh maxima-runtime-dist
 
       - name: Save compiler cache
         if: always()
@@ -354,6 +364,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-gap-runtime
           path: ./gap-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-maxima-runtime
+          path: ./maxima-runtime-dist/*.whl
           if-no-files-found: error
 
   upload_wheels:
@@ -406,5 +423,35 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: gap-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_maxima_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-maxima-runtime"
+          path: maxima-runtime-dist
+          merge-multiple: true
+
+      - name: Verify Maxima runtime artifact set
+        run: |
+          set -euo pipefail
+          find maxima-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find maxima-runtime-dist -maxdepth 1 -type f -name "sagelite_maxima_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find maxima-runtime-dist -maxdepth 1 -type f -name "sagelite_maxima_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find maxima-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: maxima-runtime-dist/
           skip-existing: true
           verbose: true

@@ -61,6 +61,47 @@ build_gap_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_maxima_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local maxima_prefix
+  maxima_prefix="$(
+    find "$prefix" -path '*/share/maxima*/*/src' -type d -print |
+      sed 's#/src$##' |
+      sort -V |
+      tail -1
+  )"
+  local maxima_fas="$prefix/lib/ecl/maxima.fas"
+  if [ -z "$maxima_prefix" ] || [ ! -d "$maxima_prefix/share" ] || [ ! -f "$maxima_fas" ]; then
+    echo "Maxima runtime not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 6 \( -name maxima.fas -o -path '*/share/maxima*/*/src' \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-maxima-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Maxima runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_MAXIMA_PREFIX="$maxima_prefix" \
+  SAGELITE_MAXIMA_FAS="$maxima_fas" \
+  SAGELITE_MAXIMA_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -111,3 +152,4 @@ fi
 
 auditwheel repair -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
+build_maxima_runtime_companion

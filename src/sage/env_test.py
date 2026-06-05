@@ -22,6 +22,16 @@ def _gap_root(tmp_path: Path, name: str) -> Path:
     return root
 
 
+def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    root = tmp_path / name
+    prefix = root / "share" / "maxima" / "5.47.0"
+    fas = root / "lib" / "ecl" / "maxima.fas"
+    prefix.mkdir(parents=True)
+    fas.parent.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
+    return prefix, fas
+
+
 class _EntryPoint:
     def __init__(self, value):
         self._value = value
@@ -121,3 +131,45 @@ def test_gap_root_paths_ignores_broken_companion(monkeypatch, tmp_path):
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
 
     assert env._gap_root_paths() == str(baked)
+
+
+def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix, fas = _maxima_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
+    monkeypatch.delenv("MAXIMA_FAS", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", str(tmp_path / "stale"), raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", str(tmp_path / "stale.fas"), raising=False)
+
+    def runtime_value(module_name, attr_name):
+        values = {
+            ("sagelite_maxima.runtime", "maxima_prefix"): prefix,
+            ("sagelite_maxima.runtime", "maxima_fas"): fas,
+        }
+        return values.get((module_name, attr_name))
+
+    monkeypatch.setattr(env, "_optional_runtime_value", runtime_value)
+
+    env._bootstrap_sagelite_maxima_runtime()
+
+    assert env.os.environ["MAXIMA_PREFIX"] == str(prefix)
+    assert env.os.environ["MAXIMA_FAS"] == str(fas)
+
+
+def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix, fas = _maxima_runtime(tmp_path, "companion")
+    existing = tmp_path / "configured"
+
+    monkeypatch.setenv("MAXIMA_PREFIX", str(existing))
+    monkeypatch.delenv("MAXIMA_FAS", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix if attr_name == "maxima_prefix" else fas),
+    )
+
+    env._bootstrap_sagelite_maxima_runtime()
+
+    assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
+    assert "MAXIMA_FAS" not in env.os.environ
