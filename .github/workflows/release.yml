@@ -153,6 +153,12 @@ jobs:
           path: gap-runtime-dist
           merge-multiple: true
 
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-pari-data"
+          path: pari-data-dist
+          merge-multiple: true
+
       - name: Create release notes
         env:
           GITHUB_PAT: ${{ github.token }}
@@ -178,6 +184,7 @@ jobs:
             dist/*
             wheelhouse/*.whl
             gap-runtime-dist/*.whl
+            pari-data-dist/*.whl
             upstream/*
           token: ${{ github.token }}
           body_path: release_notes
@@ -321,6 +328,7 @@ jobs:
           rm -rf gap-runtime-dist
           rm -rf maxima-runtime-dist
           rm -rf nauty-runtime-dist
+          rm -rf pari-data-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
       - name: Separate GAP runtime companion wheel
@@ -350,6 +358,15 @@ jobs:
           test "$(find nauty-runtime-dist -maxdepth 1 -type f -name "sagelite_nauty_runtime-*.whl" | wc -l)" -eq 1
           ls -lh nauty-runtime-dist
 
+      - name: Separate PARI data companion wheel
+        if: matrix.python == 'cp312' && matrix.arch == 'x86_64'
+        run: |
+          set -euo pipefail
+          mkdir -p pari-data-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_pari_data-*.whl" -exec mv -v {} pari-data-dist/ \;
+          test "$(find pari-data-dist -maxdepth 1 -type f -name "sagelite_pari_data-*.whl" | wc -l)" -eq 1
+          ls -lh pari-data-dist
+
       - name: Save compiler cache
         if: always()
         uses: actions/cache/save@v4
@@ -362,7 +379,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist maxima-runtime-dist nauty-runtime-dist; do
+          for companion_dist in gap-runtime-dist maxima-runtime-dist nauty-runtime-dist pari-data-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -393,6 +410,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-nauty-runtime
           path: ./nauty-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312' && matrix.arch == 'x86_64'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-pari-data
+          path: ./pari-data-dist/*.whl
           if-no-files-found: error
 
   upload_wheels:
@@ -505,5 +529,34 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: nauty-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_pari_data:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-pari-data"
+          path: pari-data-dist
+          merge-multiple: true
+
+      - name: Verify PARI data artifact set
+        run: |
+          set -euo pipefail
+          find pari-data-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find pari-data-dist -maxdepth 1 -type f -name "sagelite_pari_data-10.9-py3-none-any.whl" | wc -l)" -eq 1
+          test "$(find pari-data-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 1
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: pari-data-dist/
           skip-existing: true
           verbose: true

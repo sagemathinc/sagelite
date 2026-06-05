@@ -151,6 +151,46 @@ build_nauty_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_pari_data_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+  case "$AUDITWHEEL_PLAT" in
+    manylinux*_x86_64) ;;
+    *) return 0 ;;
+  esac
+
+  local pari_root="$prefix/share/pari"
+  if [ ! -d "$pari_root" ] || ! find "$pari_root" -maxdepth 1 -type d \
+      \( -name galdata -o -name elldata -o -name seadata -o -name galpol -o -name nftables \) \
+      -print -quit | grep -q .; then
+    echo "PARI data not found under $pari_root; searched prefix contents:" >&2
+    find "$prefix/share" -maxdepth 3 \
+      \( -name galdata -o -name elldata -o -name seadata -o -name galpol -o -name nftables \) \
+      -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-pari-data"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "PARI data companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_PARI_DATA_DIR="$pari_root" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -203,3 +243,4 @@ auditwheel repair -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
 build_maxima_runtime_companion
 build_nauty_runtime_companion
+build_pari_data_companion

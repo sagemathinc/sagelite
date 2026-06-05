@@ -173,7 +173,22 @@ call individually::
 
 from cypari2 import Pari
 
+from sage.env import _optional_runtime_value
 from sage.ext.memory import init_memory_functions
+
+
+def _bootstrap_sagelite_pari_data(P):
+    """
+    Point PARI at an optional ``sagelite-pari-data`` companion package.
+
+    Binary ``sagelite`` wheels bundle ``libpari`` via ``cypari2`` but not the
+    optional PARI data directories such as ``galdata``.  Without this, PARI can
+    retain the wheel build prefix as its ``datadir`` and fail at runtime when
+    galois or elliptic-curve data files are needed.
+    """
+    datadir = _optional_runtime_value("sagelite_pari_data.runtime", "pari_data_dir")
+    if datadir:
+        P.default("datadir", datadir)
 
 
 def _get_pari_instance():
@@ -194,6 +209,7 @@ def _get_pari_instance():
     # PARI sets debugmem=1 by default but we do not want those warning
     # messages in Sage.
     P.default("debugmem", 0)
+    _bootstrap_sagelite_pari_data(P)
 
     # Make sure pari doesn't use threads, regardless of how it was compiled.
     # Threads cause some doctest failures (memory issues). Those could probably

@@ -8,12 +8,14 @@ on:
       - 'companion-packages/**'
       - 'src/sage/env.py'
       - 'src/sage/env_test.py'
+      - 'src/sage/libs/pari/__init__.py'
       - '.github/workflows/companion-packages.yml'
   pull_request:
     paths:
       - 'companion-packages/**'
       - 'src/sage/env.py'
       - 'src/sage/env_test.py'
+      - 'src/sage/libs/pari/__init__.py'
       - '.github/workflows/companion-packages.yml'
   workflow_dispatch:
     inputs:
@@ -61,6 +63,11 @@ jobs:
             path: companion-packages/sagelite-nauty-runtime
             apt_packages: nauty
             publish: false
+          - name: sagelite-pari-data
+            import_name: sagelite_pari_data
+            path: companion-packages/sagelite-pari-data
+            apt_packages: pari-galdata pari-seadata
+            publish: false
 
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +94,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
             export SAGELITE_NAUTY_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-pari-data" ]; then
+            export SAGELITE_PARI_DATA_DIR=/usr/share/pari
           fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
@@ -136,6 +146,14 @@ jobs:
               assert shutil.which("genposetg")
               subprocess.run(["geng", "-q", "3"], check=True, capture_output=True, text=True)
               subprocess.run(["genposetg", "-q", "3"], check=True, capture_output=True, text=True)
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-pari-data":
+              runtime = importlib.import_module("sagelite_pari_data.runtime")
+              data_dir = runtime.pari_data_dir()
+              print("pari_data_dir=", data_dir)
+              assert os.path.exists(os.path.join(data_dir, "galdata", "COS8_49_45"))
+              assert os.path.exists(os.path.join(data_dir, "seadata"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-graphs":

@@ -81,6 +81,18 @@ def _check_lrcalc():
     return lrcoef([2], [1], [1])
 
 
+def _check_pari_data():
+    try:
+        import sagelite_pari_data  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.libs.pari import pari
+
+    result = pari("polgalois(x^8 - 2)")
+    return f"datadir={pari.default('datadir')}, polgalois={result}"
+
+
 def _check_libbraiding():
     from sage.all import BraidGroup
     from sage.libs.braiding import leftnormalform
@@ -239,6 +251,7 @@ def main() -> int:
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
+        ("PARI data runtime", _check_pari_data),
         ("libbraiding library", _check_libbraiding),
         ("libhomfly library", _check_libhomfly),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
