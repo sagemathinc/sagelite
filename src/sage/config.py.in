@@ -84,8 +84,7 @@ def get_editable_root() -> tuple[Path, Path] | None:
     install.
     Both the actual source directory and the build directory are returned, and are
     guaranteed to exist.
-    If not using an editable install, or if the source/build directories do not
-    exist, return None.
+    If the source/build directories do not exist, return None.
 
     EXAMPLES::
 
@@ -93,11 +92,7 @@ def get_editable_root() -> tuple[Path, Path] | None:
         sage: get_editable_root() # random
         (WindowsPath('<path_to_sage>/sage'), WindowsPath('<path_to_sage>/sage/build/cp312'))
     """
-    if (
-        not is_editable_install()
-        or r"@EDITABLE_SRC@" == ""
-        or r"@EDITABLE_BUILD@" == ""
-    ):
+    if r"@EDITABLE_SRC@" == "" or r"@EDITABLE_BUILD@" == "":
         return None
 
     src = Path(r"@EDITABLE_SRC@").resolve()
@@ -132,5 +127,6 @@ def get_include_dirs() -> list[Path]:
     if editable_root is not None:
         # We return both the source and build directory,
         # because some headers are generated in the build directory.
-        dirs.extend([root / "src" for root in editable_root])
-    return [dir for dir in dirs if dir.is_dir()]
+        for root in editable_root:
+            dirs.extend([root / "src", root])
+    return list(dict.fromkeys(dir for dir in dirs if dir.is_dir()))
