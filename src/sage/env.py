@@ -101,9 +101,9 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
 
     if prefix and os.path.isdir(prefix):
-        os.environ.setdefault("MAXIMA_PREFIX", prefix)
+        os.environ.setdefault("MAXIMA_PREFIX", os.fspath(prefix))
     if fas and os.path.isfile(fas):
-        os.environ.setdefault("MAXIMA_FAS", fas)
+        os.environ.setdefault("MAXIMA_FAS", os.fspath(fas))
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:
