@@ -79,6 +79,31 @@ braiding = dependency(
   required: false,
   disabler: true,
 )
+if not braiding.found()
+  # Debian/Ubuntu package the shared library and headers but not a pkg-config
+  # file, so fall back to a direct compiler/linker probe.
+  braiding = cpp.find_library(
+    'braiding',
+    has_headers: ['braiding.h', 'cbraid.h'],
+    required: false,
+    disabler: true,
+  )
+endif
+if braiding.found() and not cpp.compiles(
+  '''
+  #include <braiding.h>
+
+  int main(void) {
+    std::list<sint16> word;
+    Braiding::CyclicSlidings(3, word);
+    return 0;
+  }
+  ''',
+  dependencies: braiding,
+  name: 'libbraiding Sage wrapper API',
+)
+  braiding = disabler()
+endif
 gc = dependency(
   ['bdw-gc-threaded', 'bdw-gc'],
   version: '>=7.6.4',
