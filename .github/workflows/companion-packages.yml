@@ -55,6 +55,11 @@ jobs:
             path: companion-packages/sagelite-database-jones-numfield
             apt_packages: ""
             publish: true
+          - name: sagelite-database-mutation-class
+            import_name: sagelite_database_mutation_class
+            path: companion-packages/sagelite-database-mutation-class
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-polytopes
             import_name: sagelite_database_polytopes
             path: companion-packages/sagelite-database-polytopes
@@ -242,6 +247,19 @@ jobs:
               assert os.path.exists(os.path.join(polytopes_path, "reflexive_polytopes_2d"))
               assert os.path.exists(os.path.join(polytopes_path, "reflexive_polytopes_3d"))
               assert any(ep.name == "reflexive_polytopes" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-mutation-class":
+              data_path = module.sage_data_path()
+              quiver_path = module.cluster_algebra_quiver_data_path()
+              rank2_path = module.mutation_classes_path(2)
+              print("data_path=", data_path)
+              print("quiver_path=", quiver_path)
+              print("rank2_path=", rank2_path)
+              assert rank2_path.endswith("mutation_classes_2.dig6"), rank2_path
+              assert os.path.exists(rank2_path)
+              assert os.path.getsize(rank2_path) > 0
+              assert any(ep.name == "cluster_algebra_quiver" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-cremona-mini":

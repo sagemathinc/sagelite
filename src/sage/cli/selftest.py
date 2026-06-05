@@ -249,6 +249,20 @@ def _check_database_polytopes():
     return "2d/3d reflexive polytope data available"
 
 
+def _check_database_mutation_class():
+    try:
+        import sagelite_database_mutation_class  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.combinat.cluster_algebra_quiver.mutation_type import load_data
+
+    data = load_data(2, user=False)
+    if ("G", 2) not in data:
+        raise RuntimeError("cluster algebra quiver mutation class data is unavailable")
+    return f"{len(data)} rank-2 mutation class entries available"
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -296,6 +310,7 @@ def main() -> int:
         ("ellcurves database runtime", _check_database_ellcurves),
         ("Jones number field database runtime", _check_database_jones_numfield),
         ("reflexive polytopes database runtime", _check_database_polytopes),
+        ("mutation class database runtime", _check_database_mutation_class),
     ]
 
     ok = True

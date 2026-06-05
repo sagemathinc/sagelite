@@ -94,6 +94,7 @@ databases = [
   'sagelite-database-ellcurves ==10.9',
   'sagelite-database-graphs ==10.9',
   'sagelite-database-jones-numfield ==10.9',
+  'sagelite-database-mutation-class ==10.9',
   'sagelite-database-polytopes ==10.9',
 ]
 ellcurves = ['sagelite-database-ellcurves ==10.9']
@@ -111,6 +112,7 @@ jones-numfield = ['sagelite-database-jones-numfield ==10.9']
 knotinfo = ['database-knotinfo >=2026.3.1']
 matroids = ['matroid-database ==0.3']
 maxima = ['sagelite-maxima-runtime ==10.9']
+mutation-class = ['sagelite-database-mutation-class ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
 pari-data = ['sagelite-pari-data ==10.9']
 polytopes = ['sagelite-database-polytopes ==10.9']
