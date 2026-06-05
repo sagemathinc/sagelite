@@ -30,6 +30,7 @@ def _looks_like_gap_root(root: Path) -> bool:
 
 def _candidate_gap_roots() -> list[Path]:
     roots = []
+    roots.extend(_split_roots(os.environ.get("SAGELITE_GAP_ROOTS")))
     roots.extend(_split_roots(os.environ.get("SAGELITE_GAP_ROOT")))
     roots.extend(_split_roots(os.environ.get("GAP_ROOT_PATHS")))
     roots.extend(
@@ -43,15 +44,41 @@ def _candidate_gap_roots() -> list[Path]:
     return roots
 
 
-def _find_gap_root() -> Path:
+def _deduplicate_existing_roots(roots: list[Path]) -> list[Path]:
+    seen = set()
+    deduped = []
+    for root in roots:
+        root = root.resolve()
+        if root in seen or not root.exists():
+            continue
+        seen.add(root)
+        deduped.append(root)
+    return deduped
+
+
+def _looks_like_gap_package_root(root: Path) -> bool:
+    pkg = root / "pkg"
+    if not pkg.is_dir():
+        return False
+    return any(pkg.glob("*/PackageInfo.g"))
+
+
+def _find_gap_roots() -> list[Path]:
+    valid = []
     for root in _candidate_gap_roots():
-        if _looks_like_gap_root(root):
-            return root
+        if _looks_like_gap_root(root) or _looks_like_gap_package_root(root):
+            valid.append(root)
+
+    roots = _deduplicate_existing_roots(valid)
+    init_roots = [root for root in roots if _looks_like_gap_root(root)]
+    package_only_roots = [root for root in roots if root not in init_roots]
+    if init_roots:
+        return init_roots + package_only_roots
 
     searched = "\n  ".join(os.fspath(root) for root in _candidate_gap_roots())
     raise RuntimeError(
-        "could not find a GAP root containing lib/init.g. "
-        "Set SAGELITE_GAP_ROOT to the GAP root built with sagelite.\n"
+        "could not find GAP roots containing lib/init.g and package data. "
+        "Set SAGELITE_GAP_ROOTS to the GAP roots built with sagelite.\n"
         f"Searched:\n  {searched}"
     )
 
@@ -81,11 +108,17 @@ class build_py(_build_py):
     def run(self):
         super().run()
 
-        gap_root = _find_gap_root()
-        target = Path(self.build_lib) / "sagelite_gap_runtime" / "data" / "gap"
+        gap_roots = _find_gap_roots()
+        target = Path(self.build_lib) / "sagelite_gap_runtime" / "data"
         shutil.rmtree(target, ignore_errors=True)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(gap_root, target, ignore=_ignore_gap_files, ignore_dangling_symlinks=True)
+        target.mkdir(parents=True, exist_ok=True)
+        for idx, gap_root in enumerate(gap_roots):
+            shutil.copytree(
+                gap_root,
+                target / f"gap{idx}",
+                ignore=_ignore_gap_files,
+                ignore_dangling_symlinks=True,
+            )
 
 
 cmdclass = {"build_py": build_py}
