@@ -233,6 +233,23 @@ def _check_database_jones_numfield():
     return f"{len(fields)} quadratic fields unramified outside 2"
 
 
+def _check_database_kohel():
+    try:
+        import sagelite_database_kohel  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.db_class_polynomials import HilbertClassPolynomialDatabase
+    from sage.databases.db_modular_polynomials import ClassicalModularPolynomialDatabase
+
+    mod_poly = ClassicalModularPolynomialDatabase()[29]
+    class_poly = HilbertClassPolynomialDatabase()[-23]
+    return (
+        "Kohel database available: "
+        f"Phi_29 degree={mod_poly.degree()}, H_-23 degree={class_poly.degree()}"
+    )
+
+
 def _check_database_polytopes():
     try:
         import sagelite_database_polytopes  # noqa: F401
@@ -353,6 +370,7 @@ def main() -> int:
         ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
         ("Jones number field database runtime", _check_database_jones_numfield),
+        ("Kohel polynomial database runtime", _check_database_kohel),
         ("reflexive polytopes database runtime", _check_database_polytopes),
         ("mutation class database runtime", _check_database_mutation_class),
         ("SymbolicData database runtime", _check_database_symbolic_data),

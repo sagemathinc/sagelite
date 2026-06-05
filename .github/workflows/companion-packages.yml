@@ -55,6 +55,11 @@ jobs:
             path: companion-packages/sagelite-database-jones-numfield
             apt_packages: ""
             publish: true
+          - name: sagelite-database-kohel
+            import_name: sagelite_database_kohel
+            path: companion-packages/sagelite-database-kohel
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-mutation-class
             import_name: sagelite_database_mutation_class
             path: companion-packages/sagelite-database-mutation-class
@@ -250,6 +255,22 @@ jobs:
               assert os.path.exists(sobj_path)
               assert os.path.getsize(sobj_path) > 0
               assert any(ep.name == "jones" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-kohel":
+              data_path = module.sage_data_path()
+              kohel_path = module.kohel_data_path()
+              cls_path = module.modular_polynomial_path("Cls", 29)
+              atk_path = module.modular_polynomial_path("Atk", 2)
+              hilbert_path = module.hilbert_class_polynomial_path(-23)
+              print("data_path=", data_path)
+              print("kohel_path=", kohel_path)
+              print("cls_path=", cls_path)
+              assert os.path.exists(cls_path)
+              assert os.path.exists(atk_path)
+              assert os.path.exists(hilbert_path)
+              assert os.path.getsize(cls_path) > 0
+              assert any(ep.name == "kohel" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-polytopes":

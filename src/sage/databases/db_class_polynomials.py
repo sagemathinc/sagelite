@@ -69,7 +69,7 @@ class ClassPolynomialDatabase:
             sage: db[123913912]
             Traceback (most recent call last):
             ...
-            ValueError: file not found in the Kohel database
+            FileNotFoundError: file not found in the Kohel database
         """
         from sage.rings.integer_ring import ZZ
         from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
