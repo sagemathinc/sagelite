@@ -85,7 +85,11 @@ urls = { Homepage = "https://www.sagemath.org" }
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
 cremona = ['sagelite-database-cremona-mini ==10.9']
+cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 databases = [
+  'database-cubic-hecke ==2022.4.4',
+  'database-knotinfo >=2026.3.1',
+  'matroid-database ==0.3',
   'sagelite-database-cremona-mini ==10.9',
   'sagelite-database-ellcurves ==10.9',
   'sagelite-database-graphs ==10.9',
@@ -102,6 +106,8 @@ extra = [
 ]
 gap = ['sagelite-gap-runtime ==10.9.post1']
 graphs = ['sagelite-database-graphs ==10.9']
+knotinfo = ['database-knotinfo >=2026.3.1']
+matroids = ['matroid-database ==0.3']
 maxima = ['sagelite-maxima-runtime ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
 pari-data = ['sagelite-pari-data ==10.9']
