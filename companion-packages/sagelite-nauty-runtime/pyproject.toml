@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sagelite-nauty-runtime"
+version = "10.9"
+description = "Optional nauty executable companion package for sagelite"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "GPL-2.0-or-later"
+authors = [
+  { name = "The Sage Developers", email = "sage-support@googlegroups.com" },
+]
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+urls = { Homepage = "https://www.sagemath.org" }
+
+[project.scripts]
+addedgeg = "sagelite_nauty.runtime:addedgeg"
+addptg = "sagelite_nauty.runtime:addptg"
+amtog = "sagelite_nauty.runtime:amtog"
+ancestorg = "sagelite_nauty.runtime:ancestorg"
+assembleg = "sagelite_nauty.runtime:assembleg"
+biplabg = "sagelite_nauty.runtime:biplabg"
+catg = "sagelite_nauty.runtime:catg"
+complg = "sagelite_nauty.runtime:complg"
+converseg = "sagelite_nauty.runtime:converseg"
+copyg = "sagelite_nauty.runtime:copyg"
+countg = "sagelite_nauty.runtime:countg"
+countneg = "sagelite_nauty.runtime:countneg"
+cubhamg = "sagelite_nauty.runtime:cubhamg"
+deledgeg = "sagelite_nauty.runtime:deledgeg"
+delptg = "sagelite_nauty.runtime:delptg"
+dimacs2g = "sagelite_nauty.runtime:dimacs2g"
+directg = "sagelite_nauty.runtime:directg"
+dreadnaut = "sagelite_nauty.runtime:dreadnaut"
+dretodot = "sagelite_nauty.runtime:dretodot"
+dretog = "sagelite_nauty.runtime:dretog"
+edgetransg = "sagelite_nauty.runtime:edgetransg"
+genbg = "sagelite_nauty.runtime:genbg"
+genbgL = "sagelite_nauty.runtime:genbgL"
+geng = "sagelite_nauty.runtime:geng"
+gengL = "sagelite_nauty.runtime:gengL"
+genktreeg = "sagelite_nauty.runtime:genktreeg"
+genposetg = "sagelite_nauty.runtime:genposetg"
+genquarticg = "sagelite_nauty.runtime:genquarticg"
+genrang = "sagelite_nauty.runtime:genrang"
+genspecialg = "sagelite_nauty.runtime:genspecialg"
+gentourng = "sagelite_nauty.runtime:gentourng"
+gentreeg = "sagelite_nauty.runtime:gentreeg"
+hamheuristic = "sagelite_nauty.runtime:hamheuristic"
+labelg = "sagelite_nauty.runtime:labelg"
+linegraphg = "sagelite_nauty.runtime:linegraphg"
+listg = "sagelite_nauty.runtime:listg"
+multig = "sagelite_nauty.runtime:multig"
+nbrhoodg = "sagelite_nauty.runtime:nbrhoodg"
+newedgeg = "sagelite_nauty.runtime:newedgeg"
+NRswitchg = "sagelite_nauty.runtime:NRswitchg"
+pickg = "sagelite_nauty.runtime:pickg"
+planarg = "sagelite_nauty.runtime:planarg"
+productg = "sagelite_nauty.runtime:productg"
+ranlabg = "sagelite_nauty.runtime:ranlabg"
+ransubg = "sagelite_nauty.runtime:ransubg"
+shortg = "sagelite_nauty.runtime:shortg"
+showg = "sagelite_nauty.runtime:showg"
+subdivideg = "sagelite_nauty.runtime:subdivideg"
+twohamg = "sagelite_nauty.runtime:twohamg"
+underlyingg = "sagelite_nauty.runtime:underlyingg"
+uniqg = "sagelite_nauty.runtime:uniqg"
+vcolg = "sagelite_nauty.runtime:vcolg"
+watercluster2 = "sagelite_nauty.runtime:watercluster2"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]

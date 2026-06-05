@@ -41,6 +41,11 @@ jobs:
             path: companion-packages/sagelite-gap-runtime
             apt_packages: gap gap-gapdoc gap-smallgrp gap-transgrp gap-primgrp gap-character-tables gap-table-of-marks
             publish: false
+          - name: sagelite-nauty-runtime
+            import_name: sagelite_nauty
+            path: companion-packages/sagelite-nauty-runtime
+            apt_packages: nauty
+            publish: false
 
     steps:
       - uses: actions/checkout@v4
@@ -65,6 +70,9 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-gap-runtime" ]; then
             export SAGELITE_GAP_ROOT=/usr/share/gap
           fi
+          if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
+            export SAGELITE_NAUTY_BINDIR=/usr/bin
+          fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
 
@@ -73,6 +81,7 @@ jobs:
           python -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install dist/*.whl
+          export PATH="$PWD/test-venv/bin:$PATH"
           test-venv/bin/python - <<'PY'
           import importlib
           import importlib.metadata as metadata
@@ -96,6 +105,22 @@ jobs:
                   text=True,
                   check=True,
               )
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-nauty-runtime":
+              runtime = importlib.import_module("sagelite_nauty.runtime")
+              geng = runtime.executable_path("geng")
+              genposetg = runtime.executable_path("genposetg")
+              print("geng=", geng)
+              print("genposetg=", genposetg)
+              assert geng.exists()
+              assert genposetg.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("geng")
+              assert shutil.which("genposetg")
+              subprocess.run(["geng", "-q", "3"], check=True, capture_output=True, text=True)
+              subprocess.run(["genposetg", "-q", "3"], check=True, capture_output=True, text=True)
               raise SystemExit(0)
 
           data_path = module.sage_data_path()
