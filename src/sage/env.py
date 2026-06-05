@@ -182,6 +182,31 @@ def _gap_root_paths() -> str:
                      join(SAGE_LOCAL, "share", "gap")])
 
 
+def _bootstrap_sagelite_ecm_runtime() -> None:
+    """
+    Seed ``SAGE_ECMBIN`` from an optional ``sagelite_ecm`` package.
+
+    Binary wheels can contain a build-time ``ecm`` path that no longer exists
+    after installation.  The companion package supplies a relocatable
+    executable and should be used when no environment override is already set.
+    """
+    configured = getattr(sage.config, "SAGE_ECMBIN", None)
+    needs_command = (
+        not os.environ.get("SAGE_ECMBIN")
+        and not (
+            configured
+            and os.path.isfile(os.fspath(configured))
+            and os.access(os.fspath(configured), os.X_OK)
+        )
+    )
+    if not needs_command:
+        return
+
+    command = _optional_runtime_value("sagelite_ecm.runtime", "ecm_command")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("SAGE_ECMBIN", os.fspath(command))
+
+
 def _bootstrap_sagelite_singular_runtime() -> None:
     """
     Seed Singular data-root variables from an optional companion package.
@@ -359,6 +384,7 @@ MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
 KENZO_FAS = var("KENZO_FAS")
 SAGE_NAUTY_BINS_PREFIX = var("SAGE_NAUTY_BINS_PREFIX", "")
+_bootstrap_sagelite_ecm_runtime()
 SAGE_ECMBIN = var("SAGE_ECMBIN", "ecm")
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
 FOURTITWO_HILBERT = var("FOURTITWO_HILBERT")

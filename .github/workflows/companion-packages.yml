@@ -90,6 +90,11 @@ jobs:
             path: companion-packages/sagelite-gap-runtime
             apt_packages: gap gap-gapdoc gap-smallgrp gap-transgrp gap-primgrp gap-character-tables gap-table-of-marks
             publish: false
+          - name: sagelite-ecm-runtime
+            import_name: sagelite_ecm
+            path: companion-packages/sagelite-ecm-runtime
+            apt_packages: gmp-ecm
+            publish: false
           - name: sagelite-nauty-runtime
             import_name: sagelite_nauty
             path: companion-packages/sagelite-nauty-runtime
@@ -128,6 +133,9 @@ jobs:
         run: |
           if [ "${{ matrix.name }}" = "sagelite-gap-runtime" ]; then
             export SAGELITE_GAP_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
+            export SAGELITE_ECM_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
             export SAGELITE_NAUTY_BINDIR=/usr/bin
@@ -170,6 +178,21 @@ jobs:
                   text=True,
                   check=True,
               )
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-ecm-runtime":
+              runtime = importlib.import_module("sagelite_ecm.runtime")
+              ecm = runtime.ecm_command()
+              print("ecm=", ecm)
+              assert os.path.exists(ecm)
+              import subprocess
+              result = subprocess.run(
+                  [os.fspath(ecm), "-q", "-pm1", "10"],
+                  input="8051\\n",
+                  text=True,
+                  capture_output=True,
+              )
+              assert result.stdout.strip()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":

@@ -19,7 +19,7 @@ from sage import env
 
 @pytest.fixture(autouse=True)
 def clean_runtime_environment():
-    keys = ["GAP_ROOT_PATHS", "MAXIMA", "MAXIMA_FAS", "MAXIMA_PREFIX"]
+    keys = ["GAP_ROOT_PATHS", "MAXIMA", "MAXIMA_FAS", "MAXIMA_PREFIX", "SAGE_ECMBIN"]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
     for key, value in before.items():
@@ -48,6 +48,14 @@ def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return prefix, fas, command
+
+
+def _ecm_runtime(tmp_path: Path, name: str) -> Path:
+    command = tmp_path / name / "bin" / "ecm"
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
 
 
 class _EntryPoint:
@@ -217,3 +225,43 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     assert env.os.environ["MAXIMA"] == str(existing_command)
     assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
     assert env.os.environ["MAXIMA_FAS"] == str(existing_fas)
+
+
+def test_ecm_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    command = _ecm_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_ECMBIN", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "SAGE_ECMBIN",
+        str(tmp_path / "stale-bin" / "ecm"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command
+        if (module_name, attr_name) == ("sagelite_ecm.runtime", "ecm_command")
+        else None,
+    )
+
+    env._bootstrap_sagelite_ecm_runtime()
+
+    assert env.os.environ["SAGE_ECMBIN"] == str(command)
+
+
+def test_ecm_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    command = _ecm_runtime(tmp_path, "companion")
+    existing_command = _ecm_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("SAGE_ECMBIN", str(existing_command))
+    monkeypatch.setattr(env.sage.config, "SAGE_ECMBIN", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_ecm_runtime()
+
+    assert env.os.environ["SAGE_ECMBIN"] == str(existing_command)

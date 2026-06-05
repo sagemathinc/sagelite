@@ -169,6 +169,31 @@ def _check_nauty_runtime():
     return "geng and genposetg available"
 
 
+def _check_ecm_runtime():
+    try:
+        import sagelite_ecm  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    import subprocess
+
+    from sage.env import SAGE_ECMBIN
+    from sage.features.ecm import Ecm
+    ecm_feature = Ecm().is_present()
+    if not bool(ecm_feature):
+        raise RuntimeError(f"ecm executable is not available: {ecm_feature.reason}")
+    result = subprocess.run(
+        [SAGE_ECMBIN, "-q", "-pm1", "10"],
+        input="8051\n",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if not result.stdout.strip():
+        raise RuntimeError(f"unexpected ecm output: {result.stdout!r}")
+    return "ecm executable available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -366,6 +391,7 @@ def main() -> int:
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
+        ("ECM executable runtime", _check_ecm_runtime),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
