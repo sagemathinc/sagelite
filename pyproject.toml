@@ -53,6 +53,7 @@ dependencies = [
   'ipython >=8.9.0',
   'ipywidgets >=7.5.1',
   'jupyter-client',
+  'lrcalc ~=2.1; sys_platform != "win32"',
   'matplotlib >=3.7.0',
   'memory_allocator',
   'mpmath >=1.1.0',
@@ -92,7 +93,6 @@ databases = [
 ellcurves = ['sagelite-database-ellcurves ==10.9']
 extra = [
   'igraph',
-  'lrcalc ~=2.1; sys_platform != "win32"',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64

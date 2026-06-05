@@ -75,6 +75,12 @@ def _check_brial_pbori():
     return (x0 * x1 + x1 * x0 + x2).degree()
 
 
+def _check_lrcalc():
+    from sage.libs.lrcalc.lrcalc import lrcoef
+
+    return lrcoef([2], [1], [1])
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -109,6 +115,7 @@ def main() -> int:
         ("elliptic curve rank", _check_elliptic_curve_rank),
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
+        ("lrcalc python library", _check_lrcalc),
     ]
 
     ok = True
