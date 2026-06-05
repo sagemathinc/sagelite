@@ -92,7 +92,9 @@ def _check_gapdoc_runtime():
     loaded = libgap.LoadPackage("gapdoc")
     if not bool(loaded):
         raise RuntimeError('GAP package "gapdoc" did not load')
-    return "loaded"
+    small_groups = libgap.eval("NumberSmallGroups(16)")
+    transitive_groups = libgap.eval("NrTransitiveGroups(5)")
+    return f"gapdoc loaded, SmallGroups(16)={small_groups}, TransitiveGroups(5)={transitive_groups}"
 
 
 def _optional_runtime_summary() -> None:
