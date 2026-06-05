@@ -36,6 +36,11 @@ jobs:
             path: companion-packages/sagelite-database-cremona-mini
             apt_packages: ""
             publish: true
+          - name: sagelite-database-graphs
+            import_name: sagelite_database_graphs
+            path: companion-packages/sagelite-database-graphs
+            apt_packages: ""
+            publish: true
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
@@ -123,16 +128,37 @@ jobs:
               subprocess.run(["genposetg", "-q", "3"], check=True, capture_output=True, text=True)
               raise SystemExit(0)
 
-          data_path = module.sage_data_path()
-          db_path = module.cremona_mini_path()
-          print("data_path=", data_path)
-          print("db_path=", db_path)
-          assert db_path.endswith("cremona_mini.db"), db_path
-          assert any(ep.name == "cremona_mini" for ep in metadata.entry_points(group="sagemath.data_paths"))
-          con = sqlite3.connect(db_path)
-          cur = con.cursor()
-          assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
-          assert cur.execute("select count(*) from t_curve").fetchone()[0] > 0
+          if "${{ matrix.name }}" == "sagelite-database-graphs":
+              data_path = module.sage_data_path()
+              graphs_path = module.graphs_data_path()
+              db_path = module.graphs_db_path()
+              print("data_path=", data_path)
+              print("graphs_path=", graphs_path)
+              print("db_path=", db_path)
+              assert db_path.endswith("graphs.db"), db_path
+              assert os.path.exists(os.path.join(graphs_path, "brouwer_srg_database.json"))
+              assert os.path.exists(os.path.join(graphs_path, "isgci_sage.xml"))
+              assert os.path.exists(os.path.join(graphs_path, "smallgraphs.txt"))
+              assert any(ep.name == "graphs" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              con = sqlite3.connect(db_path)
+              cur = con.cursor()
+              assert cur.execute("select count(*) from graph_data").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-cremona-mini":
+              data_path = module.sage_data_path()
+              db_path = module.cremona_mini_path()
+              print("data_path=", data_path)
+              print("db_path=", db_path)
+              assert db_path.endswith("cremona_mini.db"), db_path
+              assert any(ep.name == "cremona_mini" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              con = sqlite3.connect(db_path)
+              cur = con.cursor()
+              assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
+              assert cur.execute("select count(*) from t_curve").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          raise AssertionError("unhandled companion package")
           PY
 
       - uses: actions/upload-artifact@v4
