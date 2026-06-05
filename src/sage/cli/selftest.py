@@ -213,6 +213,26 @@ def _check_database_ellcurves():
     return "rank files available"
 
 
+def _check_database_jones_numfield():
+    try:
+        import sagelite_database_jones_numfield  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.jones import JonesDatabase
+    from sage.features.databases import DatabaseJones
+
+    database = DatabaseJones().is_present()
+    if not bool(database):
+        raise RuntimeError(
+            f"Jones number field database is not available: {database.reason}"
+        )
+    from sage.rings.integer_ring import ZZ
+
+    fields = JonesDatabase().unramified_outside([ZZ(2)], ZZ(2))
+    return f"{len(fields)} quadratic fields unramified outside 2"
+
+
 def _check_database_polytopes():
     try:
         import sagelite_database_polytopes  # noqa: F401
@@ -274,6 +294,7 @@ def main() -> int:
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
+        ("Jones number field database runtime", _check_database_jones_numfield),
         ("reflexive polytopes database runtime", _check_database_polytopes),
     ]
 

@@ -50,6 +50,11 @@ jobs:
             path: companion-packages/sagelite-database-graphs
             apt_packages: ""
             publish: true
+          - name: sagelite-database-jones-numfield
+            import_name: sagelite_database_jones_numfield
+            path: companion-packages/sagelite-database-jones-numfield
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-polytopes
             import_name: sagelite_database_polytopes
             path: companion-packages/sagelite-database-polytopes
@@ -212,6 +217,19 @@ jobs:
               assert os.path.getsize(rank0_path) > 0
               assert os.path.getsize(rank1_path) > 0
               assert any(ep.name == "ellcurves" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-jones-numfield":
+              data_path = module.sage_data_path()
+              jones_path = module.jones_data_path()
+              sobj_path = module.jones_sobj_path()
+              print("data_path=", data_path)
+              print("jones_path=", jones_path)
+              print("sobj_path=", sobj_path)
+              assert sobj_path.endswith("jones.sobj"), sobj_path
+              assert os.path.exists(sobj_path)
+              assert os.path.getsize(sobj_path) > 0
+              assert any(ep.name == "jones" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-polytopes":

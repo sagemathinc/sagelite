@@ -1,0 +1,42 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=68", "wheel"]
+
+[project]
+authors = [
+  { name = "The Sage Developers", email = "sage-support@googlegroups.com" },
+]
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+description = "Jones number field database companion package for sagelite"
+license = "GPL-2.0-or-later"
+name = "sagelite-database-jones-numfield"
+readme = "README.md"
+requires-python = ">=3.12"
+urls = { Homepage = "https://www.sagemath.org" }
+version = "10.9"
+
+[project.entry-points."sagemath.data_paths"]
+jones = "sagelite_database_jones_numfield:sage_data_path"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_database_jones_numfield = [
+  "data/jones/jones.sobj",
+]
