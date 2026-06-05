@@ -68,11 +68,11 @@ jobs:
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
 
-      - name: Smoke test VCS subdirectory install
+      - name: Smoke test built wheel
         run: |
           python -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
-          test-venv/bin/python -m pip install "git+file://${GITHUB_WORKSPACE}#subdirectory=${{ matrix.path }}"
+          test-venv/bin/python -m pip install dist/*.whl
           test-venv/bin/python - <<'PY'
           import importlib
           import importlib.metadata as metadata
