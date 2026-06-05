@@ -66,6 +66,7 @@ dependencies = [
   'pplpy >=0.8.6; sys_platform != "win32"',
   'primecountpy; sys_platform != "win32"',
   'ptyprocess > 0.5',
+  'pytest >=8.0',
   'requests >=2.13.0',
   'scipy >=1.11',
   'sphinx >=6.2',
