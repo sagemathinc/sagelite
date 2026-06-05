@@ -40,16 +40,15 @@ def _looks_like_singular_root(root: Path) -> bool:
 
 
 def _singular_module_dirs(root: Path) -> list[Path]:
-    return [
-        path
-        for path in (
-            root / "lib" / "singular",
-            root / "libexec" / "singular",
-            root / "lib" / "x86_64-linux-gnu" / "singular",
-            root / "lib" / "aarch64-linux-gnu" / "singular",
-        )
-        if path.is_dir()
-    ]
+    module_dirs: list[Path] = []
+    for base in (root / "lib", root / "libexec"):
+        if not base.is_dir():
+            continue
+        for module in base.rglob("MOD/freealgebra.so"):
+            singular_dir = module.parent.parent
+            if singular_dir.is_dir() and singular_dir not in module_dirs:
+                module_dirs.append(singular_dir)
+    return module_dirs
 
 
 def _find_singular_root() -> Path:

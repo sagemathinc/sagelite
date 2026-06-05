@@ -174,8 +174,11 @@ jobs:
               print("singular_default_dir=", default_dir)
               assert os.path.exists(os.path.join(root_dir, "share", "singular", "LIB", "standard.lib"))
               assert os.path.exists(os.path.join(default_dir, "share", "singular", "LIB", "freegb.lib"))
-              import glob
-              assert glob.glob(os.path.join(root_dir, "lib*", "**", "singular", "MOD", "freealgebra.so"), recursive=True)
+              assert any(
+                  "MOD/freealgebra.so" in os.path.join(path, filename)
+                  for path, _, filenames in os.walk(root_dir)
+                  for filename in filenames
+              )
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-graphs":

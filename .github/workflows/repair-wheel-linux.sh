@@ -204,12 +204,12 @@ build_singular_runtime_companion() {
   local singular_root="$prefix"
   if [ ! -f "$singular_root/share/singular/LIB/standard.lib" ] ||
      [ ! -f "$singular_root/share/singular/LIB/freegb.lib" ] ||
-     ! find "$singular_root/lib" "$singular_root/libexec" -path '*/singular/MOD/freealgebra.so' -print -quit 2>/dev/null | grep -q .; then
+     ! find "$singular_root/lib" "$singular_root/libexec" -ipath '*/singular/MOD/freealgebra.so' -print -quit 2>/dev/null | grep -q .; then
     echo "Singular runtime data not found under $singular_root; searched prefix contents:" >&2
     find "$prefix/share" "$prefix/lib" "$prefix/libexec" -maxdepth 5 \
       \( -name standard.lib -o -name freegb.lib -o -name all.lib \) \
       -print >&2 || true
-    find "$prefix/lib" "$prefix/libexec" -maxdepth 5 -name freealgebra.so -print >&2 || true
+    find "$prefix/lib" "$prefix/libexec" -maxdepth 5 -iname freealgebra.so -print >&2 || true
     exit 1
   fi
 
