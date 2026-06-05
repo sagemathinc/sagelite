@@ -81,6 +81,21 @@ def _check_lrcalc():
     return lrcoef([2], [1], [1])
 
 
+def _check_libbraiding():
+    from sage.all import BraidGroup
+    from sage.libs.braiding import leftnormalform
+
+    braid = BraidGroup(3)([1, 2, 1, -2])
+    return leftnormalform(braid)
+
+
+def _check_libhomfly():
+    from sage.libs.homfly import homfly_polynomial_dict
+
+    trefoil = "1 6 0 1  1 -1  2 1  0 -1  1 1  2 -1 0 1 1 1 2 1"
+    return homfly_polynomial_dict(trefoil)
+
+
 def _check_gapdoc_runtime():
     try:
         import sagelite_gap_runtime  # noqa: F401
@@ -208,6 +223,8 @@ def main() -> int:
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
+        ("libbraiding library", _check_libbraiding),
+        ("libhomfly library", _check_libhomfly),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
