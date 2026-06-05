@@ -81,6 +81,20 @@ def _check_lrcalc():
     return lrcoef([2], [1], [1])
 
 
+def _check_gapdoc_runtime():
+    try:
+        import sagelite_gap_runtime  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.libs.gap.libgap import libgap
+
+    loaded = libgap.LoadPackage("gapdoc")
+    if not bool(loaded):
+        raise RuntimeError('GAP package "gapdoc" did not load')
+    return "loaded"
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -116,6 +130,7 @@ def main() -> int:
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
+        ("GAPDoc package runtime", _check_gapdoc_runtime),
     ]
 
     ok = True
