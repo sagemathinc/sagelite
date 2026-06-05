@@ -34,16 +34,16 @@ jobs:
     - name: Code style check with ruff
       if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
       run: |
-        uv run --frozen --only-group lint -- ruff check --output-format github --config .github/workflows/ruff.toml --no-preview
-        uv run --frozen --only-group lint -- ruff check --output-format github --config .github/workflows/ruff.toml --preview
+        uv run --no-project --with ruff==0.14.13 -- ruff check --output-format github --config .github/workflows/ruff.toml --no-preview
+        uv run --no-project --with ruff==0.14.13 -- ruff check --output-format github --config .github/workflows/ruff.toml --preview
 
     - name: Code style check with relint
       if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
-      run: uv run --frozen --only-group lint -- relint -c src/.relint.yml -- src/sage/
+      run: uv run --no-project --with relint==3.3.1 -- relint -c src/.relint.yml -- src/sage/
 
     - name: Validate docstring markup as RST
       if: ${{ !cancelled() && steps.deps.outcome == 'success' }}
-      run: uv run --frozen --only-group lint -- flake8 --select=RST src/sage/ --config src/tox.ini
+      run: uv run --no-project --with flake8==7.3.0 --with flake8-rst-docstrings==0.4.0 -- flake8 --select=RST src/sage/ --config src/tox.ini
     
     - name: TOML format check with taplo
       uses: docker://tamasfe/taplo:0.10.0

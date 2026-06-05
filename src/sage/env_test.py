@@ -12,7 +12,7 @@ if not hasattr(sage, "config") and _CONFIG_PATH.exists():
     _spec.loader.exec_module(_module)
     sage.config = _module
 
-import sage.env as env
+from sage import env
 
 
 def _gap_root(tmp_path: Path, name: str) -> Path:

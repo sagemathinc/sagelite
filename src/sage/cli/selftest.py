@@ -6,7 +6,10 @@ from __future__ import annotations
 
 import sys
 import traceback
-from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def _run_check(name: str, check: Callable[[], object]) -> bool:

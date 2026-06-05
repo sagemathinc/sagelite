@@ -213,7 +213,6 @@ class _silence_optional_runtime_startup:
     """
     def __enter__(self):
         import ctypes
-        import os
 
         if SAGE_ROOT or os.environ.get("SAGE_SINGULAR_VERBOSE_INIT"):
             self._active = False
@@ -235,7 +234,6 @@ class _silence_optional_runtime_startup:
             return
 
         import ctypes
-        import os
 
         ctypes.CDLL(None).fflush(None)
         os.dup2(self._stdout_fd, 1)
