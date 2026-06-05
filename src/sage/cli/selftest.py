@@ -94,7 +94,72 @@ def _check_gapdoc_runtime():
         raise RuntimeError('GAP package "gapdoc" did not load')
     small_groups = libgap.eval("NumberSmallGroups(16)")
     transitive_groups = libgap.eval("NrTransitiveGroups(5)")
-    return f"gapdoc loaded, SmallGroups(16)={small_groups}, TransitiveGroups(5)={transitive_groups}"
+    return (
+        "gapdoc loaded, "
+        f"SmallGroups(16)={small_groups}, TransitiveGroups(5)={transitive_groups}"
+    )
+
+
+def _check_nauty_runtime():
+    try:
+        import sagelite_nauty  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    import subprocess
+
+    from sage.features.nauty import Nauty
+
+    nauty = Nauty().is_present()
+    if not bool(nauty):
+        raise RuntimeError(f"nauty executables are not available: {nauty.reason}")
+    subprocess.run(["geng", "-q", "3"], check=True, capture_output=True, text=True)
+    subprocess.run(["genposetg", "-q", "3"], check=True, capture_output=True, text=True)
+    return "geng and genposetg available"
+
+
+def _check_database_graphs():
+    try:
+        import sagelite_database_graphs  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseGraphs
+
+    database = DatabaseGraphs().is_present()
+    if not bool(database):
+        raise RuntimeError(f"graphs database is not available: {database.reason}")
+    return "graphs.db available"
+
+
+def _check_database_ellcurves():
+    try:
+        import sagelite_database_ellcurves  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseEllcurves
+
+    database = DatabaseEllcurves().is_present()
+    if not bool(database):
+        raise RuntimeError(f"ellcurves database is not available: {database.reason}")
+    return "rank files available"
+
+
+def _check_database_polytopes():
+    try:
+        import sagelite_database_polytopes  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseReflexivePolytopes
+
+    database = DatabaseReflexivePolytopes().is_present()
+    if not bool(database):
+        raise RuntimeError(
+            f"reflexive polytope database is not available: {database.reason}"
+        )
+    return "2d/3d reflexive polytope data available"
 
 
 def _optional_runtime_summary() -> None:
@@ -133,6 +198,10 @@ def main() -> int:
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
+        ("nauty executable runtime", _check_nauty_runtime),
+        ("graphs database runtime", _check_database_graphs),
+        ("ellcurves database runtime", _check_database_ellcurves),
+        ("reflexive polytopes database runtime", _check_database_polytopes),
     ]
 
     ok = True
