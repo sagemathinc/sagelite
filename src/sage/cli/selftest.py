@@ -158,6 +158,22 @@ def _check_database_graphs():
     return "graphs.db available"
 
 
+def _check_database_cremona_mini():
+    try:
+        import sagelite_database_cremona_mini  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseCremona
+
+    database = DatabaseCremona("cremona_mini").is_present()
+    if not bool(database):
+        raise RuntimeError(
+            f"Cremona mini database is not available: {database.reason}"
+        )
+    return "cremona_mini.db available"
+
+
 def _check_database_ellcurves():
     try:
         import sagelite_database_ellcurves  # noqa: F401
@@ -229,6 +245,7 @@ def main() -> int:
         ("Maxima library runtime", _check_maxima_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("graphs database runtime", _check_database_graphs),
+        ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
         ("reflexive polytopes database runtime", _check_database_polytopes),
     ]
