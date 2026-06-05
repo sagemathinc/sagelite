@@ -47,6 +47,11 @@ fi
 mkdir -p "${CCACHE_DIR:?CCACHE_DIR must be set}"
 ccache --version
 
+# fflas-ffpack autotuning can throw FFPACK::CharpolyFailed in CI.
+# The installed library works with default thresholds; avoid making wheel
+# builds depend on a benchmarking pass.
+export SAGE_FFLAS_FFPACK_SKIP_AUTOTUNE=yes
+
 if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
   chmod +x config.status
 fi

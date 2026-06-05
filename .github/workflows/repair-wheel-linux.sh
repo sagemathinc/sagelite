@@ -12,6 +12,55 @@ dest_dir="$2"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
+build_gap_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local gap_roots
+  gap_roots="$(
+    {
+      find "$prefix" -path '*/lib/init.g' -print |
+        sed 's#/lib/init\.g$##'
+      find "$prefix" -path '*/pkg/*/PackageInfo.g' -print |
+        sed 's#/pkg/[^/]*/PackageInfo\.g$##'
+    } | sort -u | paste -sd ';' -
+  )"
+  local has_gap_init
+  has_gap_init="no"
+  while IFS= read -r gap_root; do
+    if [ -f "$gap_root/lib/init.g" ]; then
+      has_gap_init="yes"
+      break
+    fi
+  done < <(printf '%s' "$gap_roots" | tr ';' '\n')
+  if [ -z "$gap_roots" ] || [ "$has_gap_init" != "yes" ]; then
+    echo "GAP root not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g -o -name sysinfo.gap \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-gap-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "GAP runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_GAP_ROOTS="$gap_roots" \
+  SAGELITE_GAP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -61,3 +110,4 @@ if command -v ccache >/dev/null 2>&1; then
 fi
 
 auditwheel repair -w "$dest_dir" "$repaired_input"
+build_gap_runtime_companion

@@ -147,6 +147,12 @@ jobs:
           path: wheelhouse
           merge-multiple: true
 
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-gap-runtime"
+          path: gap-runtime-dist
+          merge-multiple: true
+
       - name: Create release notes
         env:
           GITHUB_PAT: ${{ github.token }}
@@ -171,6 +177,7 @@ jobs:
           files: |
             dist/*
             wheelhouse/*.whl
+            gap-runtime-dist/*.whl
             upstream/*
           token: ${{ github.token }}
           body_path: release_notes
@@ -283,6 +290,7 @@ jobs:
 
       - name: Bootstrap
         run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
           export PATH=$(pwd)/build/bin:$PATH
           eval $(sage-print-system-package-command auto --sudo --yes --no-install-recommends --spkg install _bootstrap _prereq)
           ./bootstrap
@@ -310,7 +318,17 @@ jobs:
 
       - name: Build wheel
         run: |
+          rm -rf gap-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
+
+      - name: Separate GAP runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p gap-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" -exec mv -v {} gap-runtime-dist/ \;
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh gap-runtime-dist
 
       - name: Save compiler cache
         if: always()
@@ -330,6 +348,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-${{ matrix.python }}-wheels
           path: ./wheelhouse/*.whl
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-gap-runtime
+          path: ./gap-runtime-dist/*.whl
+          if-no-files-found: error
 
   upload_wheels:
     # This needs to be a separate job because pypa/gh-action-pypi-publish cannot run on macOS
@@ -353,3 +378,33 @@ jobs:
           skip-existing: true
           verbose: true
         if: env.CAN_DEPLOY == 'true'
+
+  upload_gap_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-gap-runtime"
+          path: gap-runtime-dist
+          merge-multiple: true
+
+      - name: Verify GAP runtime artifact set
+        run: |
+          set -euo pipefail
+          find gap-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post1-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post1-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: gap-runtime-dist/
+          skip-existing: true
+          verbose: true

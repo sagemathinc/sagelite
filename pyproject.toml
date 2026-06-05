@@ -82,6 +82,7 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
+gap = ['sagelite-gap-runtime ==10.9.post1']
 extra = [
   'igraph',
   'lrcalc ~=2.1; sys_platform != "win32"',
@@ -287,8 +288,10 @@ ignore = [
 ]
 
 select = [
+  "C4", # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
   "F", # pyflakes - https://docs.astral.sh/ruff/rules/#pyflakes-f
   "I", # isort - https://docs.astral.sh/ruff/rules/#isort-i
+  "TC", # flake8-type-checking - https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc
   "W", # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
 
   # flake8-pie - https://docs.astral.sh/ruff/rules/#flake8-pie-pie
@@ -297,8 +300,6 @@ select = [
   # ruff-specific rules - https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
   "RUF013",
   "RUF036",
-
-  "TC", # flake8-type-checking - https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc
 
   # perflint - https://docs.astral.sh/ruff/rules/#perflint-perf
   "PERF101",
