@@ -47,12 +47,10 @@ fi
 mkdir -p "${CCACHE_DIR:?CCACHE_DIR must be set}"
 ccache --version
 
-if [ "${AUDITWHEEL_PLAT:-}" = "manylinux_2_28_aarch64" ]; then
-  # fflas-ffpack autotuning can throw FFPACK::CharpolyFailed on aarch64 CI.
-  # The installed library works with default thresholds; avoid making wheel
-  # builds depend on a benchmarking pass.
-  export SAGE_FFLAS_FFPACK_SKIP_AUTOTUNE=yes
-fi
+# fflas-ffpack autotuning can throw FFPACK::CharpolyFailed in CI.
+# The installed library works with default thresholds; avoid making wheel
+# builds depend on a benchmarking pass.
+export SAGE_FFLAS_FFPACK_SKIP_AUTOTUNE=yes
 
 if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
   chmod +x config.status
