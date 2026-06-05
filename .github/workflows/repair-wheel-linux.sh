@@ -191,6 +191,48 @@ build_pari_data_companion() {
   ls -lh "$output_dir"
 }
 
+build_singular_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+  case "$AUDITWHEEL_PLAT" in
+    manylinux*_x86_64) ;;
+    *) return 0 ;;
+  esac
+
+  local singular_root="$prefix"
+  if [ ! -f "$singular_root/share/singular/LIB/standard.lib" ] ||
+     [ ! -f "$singular_root/share/singular/LIB/freegb.lib" ] ||
+     ! find "$singular_root/lib" "$singular_root/libexec" -path '*/singular/MOD/freealgebra.so' -print -quit 2>/dev/null | grep -q .; then
+    echo "Singular runtime data not found under $singular_root; searched prefix contents:" >&2
+    find "$prefix/share" "$prefix/lib" "$prefix/libexec" -maxdepth 5 \
+      \( -name standard.lib -o -name freegb.lib -o -name all.lib \) \
+      -print >&2 || true
+    find "$prefix/lib" "$prefix/libexec" -maxdepth 5 -name freealgebra.so -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-singular-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Singular runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_SINGULAR_ROOT="$singular_root" \
+  SAGELITE_SINGULAR_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -244,3 +286,4 @@ build_gap_runtime_companion
 build_maxima_runtime_companion
 build_nauty_runtime_companion
 build_pari_data_companion
+build_singular_runtime_companion

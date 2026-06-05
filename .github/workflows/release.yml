@@ -159,6 +159,12 @@ jobs:
           path: pari-data-dist
           merge-multiple: true
 
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-singular-runtime"
+          path: singular-runtime-dist
+          merge-multiple: true
+
       - name: Create release notes
         env:
           GITHUB_PAT: ${{ github.token }}
@@ -185,6 +191,7 @@ jobs:
             wheelhouse/*.whl
             gap-runtime-dist/*.whl
             pari-data-dist/*.whl
+            singular-runtime-dist/*.whl
             upstream/*
           token: ${{ github.token }}
           body_path: release_notes
@@ -329,6 +336,7 @@ jobs:
           rm -rf maxima-runtime-dist
           rm -rf nauty-runtime-dist
           rm -rf pari-data-dist
+          rm -rf singular-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
       - name: Separate GAP runtime companion wheel
@@ -367,6 +375,15 @@ jobs:
           test "$(find pari-data-dist -maxdepth 1 -type f -name "sagelite_pari_data-*.whl" | wc -l)" -eq 1
           ls -lh pari-data-dist
 
+      - name: Separate Singular runtime companion wheel
+        if: matrix.python == 'cp312' && matrix.arch == 'x86_64'
+        run: |
+          set -euo pipefail
+          mkdir -p singular-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_singular_runtime-*.whl" -exec mv -v {} singular-runtime-dist/ \;
+          test "$(find singular-runtime-dist -maxdepth 1 -type f -name "sagelite_singular_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh singular-runtime-dist
+
       - name: Save compiler cache
         if: always()
         uses: actions/cache/save@v4
@@ -379,7 +396,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist maxima-runtime-dist nauty-runtime-dist pari-data-dist; do
+          for companion_dist in gap-runtime-dist maxima-runtime-dist nauty-runtime-dist pari-data-dist singular-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -417,6 +434,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-pari-data
           path: ./pari-data-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312' && matrix.arch == 'x86_64'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-singular-runtime
+          path: ./singular-runtime-dist/*.whl
           if-no-files-found: error
 
   upload_wheels:
@@ -558,5 +582,34 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: pari-data-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_singular_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-singular-runtime"
+          path: singular-runtime-dist
+          merge-multiple: true
+
+      - name: Verify Singular runtime artifact set
+        run: |
+          set -euo pipefail
+          find singular-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find singular-runtime-dist -maxdepth 1 -type f -name "sagelite_singular_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find singular-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 1
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: singular-runtime-dist/
           skip-existing: true
           verbose: true

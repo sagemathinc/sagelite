@@ -182,6 +182,27 @@ def _gap_root_paths() -> str:
                      join(SAGE_LOCAL, "share", "gap")])
 
 
+def _bootstrap_sagelite_singular_runtime() -> None:
+    """
+    Seed Singular data-root variables from an optional companion package.
+
+    Binary ``sagelite`` wheels link against libSingular, but Singular's
+    library files can live outside the wheel.  The companion package supplies
+    that tree without making it a hard dependency.
+    """
+    root = _optional_runtime_value(
+        "sagelite_singular_runtime.runtime", "singular_root_dir"
+    )
+    default_dir = _optional_runtime_value(
+        "sagelite_singular_runtime.runtime", "singular_default_dir"
+    )
+
+    if root and os.path.isdir(os.path.join(root, "share", "singular", "LIB")):
+        os.environ.setdefault("SINGULAR_ROOT_DIR", os.fspath(root))
+    if default_dir and os.path.isdir(os.path.join(default_dir, "share", "singular", "LIB")):
+        os.environ.setdefault("SINGULAR_DEFAULT_DIR", os.fspath(default_dir))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -353,6 +374,7 @@ ECL_CONFIG = var("ECL_CONFIG", "ecl-config")
 NTL_INCDIR = var("NTL_INCDIR")
 NTL_LIBDIR = var("NTL_LIBDIR")
 LIE_INFO_DIR = var("LIE_INFO_DIR", join(SAGE_LOCAL, "lib", "LiE"))
+_bootstrap_sagelite_singular_runtime()
 SINGULAR_BIN = var("SINGULAR_BIN") or "Singular"
 
 # OpenMP

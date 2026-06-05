@@ -93,6 +93,19 @@ def _check_pari_data():
     return f"datadir={pari.default('datadir')}, polgalois={result}"
 
 
+def _check_singular_runtime():
+    try:
+        import sagelite_singular_runtime  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.libs.singular.function import lib as singular_lib
+    from sage.libs.singular.function import singular_function
+
+    singular_lib("freegb.lib")
+    return singular_function("freeAlgebra")
+
+
 def _check_libbraiding():
     from sage.all import BraidGroup
     from sage.libs.braiding import leftnormalform
@@ -252,6 +265,7 @@ def main() -> int:
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
         ("PARI data runtime", _check_pari_data),
+        ("Singular library runtime", _check_singular_runtime),
         ("libbraiding library", _check_libbraiding),
         ("libhomfly library", _check_libhomfly),
         ("GAPDoc package runtime", _check_gapdoc_runtime),

@@ -106,6 +106,7 @@ maxima = ['sagelite-maxima-runtime ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
 pari-data = ['sagelite-pari-data ==10.9']
 polytopes = ['sagelite-database-polytopes ==10.9']
+singular = ['sagelite-singular-runtime ==10.9']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)
 
 [project.readme]
