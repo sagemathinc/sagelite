@@ -57,6 +57,16 @@ def _check_elliptic_curve_rank():
     return EllipticCurve([1, 2, 3, 4, 5]).rank()
 
 
+def _check_eclib_mwrank():
+    from sage.all import EllipticCurve
+    from sage.libs.eclib.all import mwrank_EllipticCurve
+
+    curve = EllipticCurve([0, 0, 1, -7, 6]).mwrank_curve()
+    if not isinstance(curve, mwrank_EllipticCurve):
+        raise TypeError(f"expected mwrank_EllipticCurve, got {type(curve)!r}")
+    return curve.conductor()
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -89,6 +99,7 @@ def main() -> int:
         ("symbolic integration", _check_symbolic_integration),
         ("modular symbols", _check_modular_symbols),
         ("elliptic curve rank", _check_elliptic_curve_rank),
+        ("eclib mwrank library", _check_eclib_mwrank),
     ]
 
     ok = True
