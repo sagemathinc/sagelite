@@ -95,11 +95,6 @@ jobs:
             path: companion-packages/sagelite-ecm-runtime
             apt_packages: gmp-ecm
             publish: false
-          - name: sagelite-maxima-runtime
-            import_name: sagelite_maxima
-            path: companion-packages/sagelite-maxima-runtime
-            apt_packages: maxima-sage ecl libecl-dev
-            publish: false
           - name: sagelite-nauty-runtime
             import_name: sagelite_nauty
             path: companion-packages/sagelite-nauty-runtime
@@ -142,16 +137,6 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
-          fi
-          if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
-            maxima_prefix="$(find /usr/share/maxima-sage /usr/share/maxima -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | tail -n1)"
-            maxima_version="$(basename "$maxima_prefix")"
-            export SAGELITE_MAXIMA_PREFIX="$maxima_prefix"
-            export SAGELITE_MAXIMA_FAS=/usr/lib/ecl/maxima.fas
-            export SAGELITE_MAXIMA_IMAGESDIR="/usr/lib/maxima-sage/$maxima_version"
-            export SAGELITE_MAXIMA_ECLDIR="$(find /usr/lib -path '*/ecl-*' -type d | sort | tail -n1)"
-            export SAGELITE_MAXIMA_LIBDIR=/usr/lib/x86_64-linux-gnu
-            export SAGELITE_MAXIMA_RUNTIME_PLAT_NAME=linux_x86_64
           fi
           if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
             export SAGELITE_NAUTY_BINDIR=/usr/bin
@@ -209,27 +194,6 @@ jobs:
                   check=True,
               )
               assert "Usage:" in result.stdout
-              raise SystemExit(0)
-
-          if "${{ matrix.name }}" == "sagelite-maxima-runtime":
-              runtime = importlib.import_module("sagelite_maxima.runtime")
-              maxima = runtime.maxima_command()
-              prefix = runtime.maxima_prefix()
-              fas = runtime.maxima_fas()
-              print("maxima=", maxima)
-              print("maxima_prefix=", prefix)
-              print("maxima_fas=", fas)
-              assert os.path.exists(maxima)
-              assert os.path.exists(os.path.join(prefix, "share"))
-              assert os.path.exists(fas)
-              import subprocess
-              result = subprocess.run(
-                  [os.fspath(maxima), "--very-quiet", "--batch-string=2+3;"],
-                  text=True,
-                  capture_output=True,
-                  check=True,
-              )
-              assert "5" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":
