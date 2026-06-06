@@ -56,7 +56,9 @@ endforeach
 
 install_data(
   'hypellfrob/README',
+  'hypellfrob/hypellfrob.cpp',
   'hypellfrob/hypellfrob.h',
+  'hypellfrob/recurrences_ntl.cpp',
   'hypellfrob/recurrences_ntl.h',
   install_dir: sage_install_dir / 'schemes/hyperelliptic_curves/hypellfrob',
 )
