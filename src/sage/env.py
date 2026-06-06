@@ -111,10 +111,11 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         )
     )
     needs_ecldir = not os.environ.get("ECLDIR")
-    if not (needs_prefix or needs_fas or needs_command or needs_ecldir):
+    needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
+    if not (needs_prefix or needs_fas or needs_command or needs_ecldir or needs_layout):
         return
 
-    prefix = fas = command = ecldir = None
+    prefix = fas = command = ecldir = layout = None
     if needs_prefix:
         prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
     if needs_fas:
@@ -123,6 +124,10 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         command = _optional_runtime_value("sagelite_maxima.runtime", "maxima_command")
     if needs_ecldir:
         ecldir = _optional_runtime_value("sagelite_maxima.runtime", "ecl_dir")
+    if needs_layout:
+        layout = _optional_runtime_value(
+            "sagelite_maxima.runtime", "maxima_layout_autotools"
+        )
 
     if needs_prefix and prefix and os.path.isdir(prefix):
         os.environ.setdefault("MAXIMA_PREFIX", os.fspath(prefix))
@@ -137,6 +142,8 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         os.environ.setdefault("MAXIMA", os.fspath(command))
     if needs_ecldir and ecldir and os.path.isdir(ecldir):
         os.environ.setdefault("ECLDIR", os.fspath(ecldir))
+    if needs_layout and layout:
+        os.environ.setdefault("MAXIMA_LAYOUT_AUTOTOOLS", os.fspath(layout))
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:

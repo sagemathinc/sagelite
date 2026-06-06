@@ -166,7 +166,7 @@ def _write_maxima_command(path: Path, version: str, ecl_dir_name: str) -> None:
         f"""#!/bin/sh
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PREFIX=$(dirname "$HERE")
-export MAXIMA_PREFIX="${{MAXIMA_PREFIX:-$PREFIX/share/maxima/{version}}}"
+export MAXIMA_PREFIX="${{MAXIMA_PREFIX:-$PREFIX}}"
 export MAXIMA_LAYOUT_AUTOTOOLS=true
 export MAXIMA_IMAGESDIR="$PREFIX/lib/maxima/{version}"
 export ECLDIR="$PREFIX/lib/{ecl_dir_name}/"
@@ -210,6 +210,24 @@ def _patch_maxima_fas(path: Path) -> None:
         ) from err
 
 
+def _copy_maxima_info_indexes(maxima_prefix: Path, target: Path) -> None:
+    """
+    Copy the small CL-INFO indexes used during Maxima startup if available.
+    """
+    source = maxima_prefix.parents[1] / "info"
+    if not source.is_dir():
+        return
+
+    files = sorted(source.glob("maxima-index*.lisp"))
+    if not files:
+        return
+
+    info_target = target / "share" / "info"
+    info_target.mkdir(parents=True, exist_ok=True)
+    for path in files:
+        shutil.copy2(path, info_target / path.name)
+
+
 class build_py(_build_py):
     def run(self):
         super().run()
@@ -231,6 +249,7 @@ class build_py(_build_py):
             ignore=_ignore_maxima_files,
             ignore_dangling_symlinks=True,
         )
+        _copy_maxima_info_indexes(maxima_prefix, target)
 
         fas_target = target / "lib" / "ecl" / "maxima.fas"
         fas_target.parent.mkdir(parents=True, exist_ok=True)

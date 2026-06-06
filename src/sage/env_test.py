@@ -19,7 +19,15 @@ from sage import env
 
 @pytest.fixture(autouse=True)
 def clean_runtime_environment():
-    keys = ["GAP_ROOT_PATHS", "MAXIMA", "MAXIMA_FAS", "MAXIMA_PREFIX", "SAGE_ECMBIN"]
+    keys = [
+        "ECLDIR",
+        "GAP_ROOT_PATHS",
+        "MAXIMA",
+        "MAXIMA_FAS",
+        "MAXIMA_LAYOUT_AUTOTOOLS",
+        "MAXIMA_PREFIX",
+        "SAGE_ECMBIN",
+    ]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
     for key, value in before.items():
@@ -38,10 +46,10 @@ def _gap_root(tmp_path: Path, name: str) -> Path:
 
 def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
     root = tmp_path / name
-    prefix = root / "share" / "maxima" / "5.47.0"
+    prefix = root
     fas = root / "lib" / "ecl" / "maxima.fas"
     command = root / "bin" / "maxima"
-    prefix.mkdir(parents=True)
+    (root / "share" / "maxima" / "5.47.0").mkdir(parents=True)
     fas.parent.mkdir(parents=True)
     command.parent.mkdir(parents=True)
     fas.write_text("maxima fas\n")
@@ -179,6 +187,7 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
             ("sagelite_maxima.runtime", "maxima_command"): command,
             ("sagelite_maxima.runtime", "maxima_prefix"): prefix,
             ("sagelite_maxima.runtime", "maxima_fas"): fas,
+            ("sagelite_maxima.runtime", "maxima_layout_autotools"): "true",
         }
         return values.get((module_name, attr_name))
 
@@ -189,6 +198,7 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
     assert env.os.environ["MAXIMA"] == str(command)
     assert env.os.environ["MAXIMA_PREFIX"] == str(prefix)
     assert env.os.environ["MAXIMA_FAS"] == str(fas)
+    assert env.os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "true"
 
 
 def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
@@ -205,6 +215,8 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     monkeypatch.setenv("MAXIMA", str(existing_command))
     monkeypatch.setenv("MAXIMA_PREFIX", str(existing))
     monkeypatch.setenv("MAXIMA_FAS", str(existing_fas))
+    monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "true")
+    monkeypatch.setenv("ECLDIR", str(existing / "lib" / "ecl"))
     monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", "", raising=False)

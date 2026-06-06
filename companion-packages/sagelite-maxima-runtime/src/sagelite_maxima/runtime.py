@@ -12,9 +12,19 @@ def _maxima_version_dir():
 
 def maxima_prefix() -> str:
     """
-    Return the bundled Maxima share directory used as ``MAXIMA_PREFIX``.
+    Return the bundled Maxima install root used as ``MAXIMA_PREFIX``.
+
+    Maxima's autotools layout expects this directory to contain
+    ``share/maxima/<version>``, not to point at ``<version>`` itself.
     """
-    return os.fspath(_maxima_version_dir())
+    return os.fspath(files(__package__).joinpath("data"))
+
+
+def maxima_layout_autotools() -> str:
+    """
+    Return the Maxima layout mode for the bundled install tree.
+    """
+    return "true"
 
 
 def maxima_fas() -> str:
@@ -46,4 +56,10 @@ def ecl_dir() -> str:
     return os.fspath(versions[-1]) + os.sep
 
 
-__all__ = ["ecl_dir", "maxima_command", "maxima_fas", "maxima_prefix"]
+__all__ = [
+    "ecl_dir",
+    "maxima_command",
+    "maxima_fas",
+    "maxima_layout_autotools",
+    "maxima_prefix",
+]

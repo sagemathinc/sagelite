@@ -10,8 +10,10 @@ environment gives `sagelite` relocatable `MAXIMA`, `MAXIMA_PREFIX`, and
 them manually.
 
 This package is built by copying an existing Sage-built Maxima runtime. Set
-`SAGELITE_MAXIMA_PREFIX` to the Maxima share directory and
-`SAGELITE_MAXIMA_FAS` to the matching `maxima.fas`. Production Linux wheels
+`SAGELITE_MAXIMA_PREFIX` to the versioned Maxima share directory and
+`SAGELITE_MAXIMA_FAS` to the matching `maxima.fas`. The runtime helper reports
+the bundled install root containing `share/maxima/<version>` as
+`MAXIMA_PREFIX`, matching Maxima's autotools layout. Production Linux wheels
 should also set `SAGELITE_MAXIMA_IMAGESDIR`, `SAGELITE_MAXIMA_ECLDIR`, and
 `SAGELITE_MAXIMA_LIBDIR` from the same Sage prefix. When building a companion
 for a repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ECL_SONAME` to the
