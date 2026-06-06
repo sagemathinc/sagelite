@@ -84,25 +84,25 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
-cremona = ['sagelite-database-cremona-mini ==10.9']
+cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 databases = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'matroid-database ==0.3',
-  'sagelite-database-cremona-mini ==10.9',
-  'sagelite-database-ellcurves ==10.9',
-  'sagelite-database-graphs ==10.9',
-  'sagelite-database-jones-numfield ==10.9',
-  'sagelite-database-kohel ==10.9',
-  'sagelite-database-mutation-class ==10.9',
-  'sagelite-database-odlyzko-zeta ==10.9',
-  'sagelite-database-polytopes ==10.9',
-  'sagelite-database-stein-watkins-mini ==10.9',
-  'sagelite-database-symbolic-data ==10.9',
+  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-ellcurves >=10.9,<10.10',
+  'sagelite-database-graphs >=10.9,<10.10',
+  'sagelite-database-jones-numfield >=10.9,<10.10',
+  'sagelite-database-kohel >=10.9,<10.10',
+  'sagelite-database-mutation-class >=10.9,<10.10',
+  'sagelite-database-odlyzko-zeta >=10.9,<10.10',
+  'sagelite-database-polytopes >=10.9,<10.10',
+  'sagelite-database-stein-watkins-mini >=10.9,<10.10',
+  'sagelite-database-symbolic-data >=10.9,<10.10',
 ]
-ecm = ['sagelite-ecm-runtime ==10.9']
-ellcurves = ['sagelite-database-ellcurves ==10.9']
+ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
+ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
 extra = [
   'igraph',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
@@ -119,53 +119,53 @@ full = [
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
-  'sagelite-database-cremona-mini ==10.9',
-  'sagelite-database-ellcurves ==10.9',
-  'sagelite-database-graphs ==10.9',
-  'sagelite-database-jones-numfield ==10.9',
-  'sagelite-database-kohel ==10.9',
-  'sagelite-database-mutation-class ==10.9',
-  'sagelite-database-odlyzko-zeta ==10.9',
-  'sagelite-database-polytopes ==10.9',
-  'sagelite-database-stein-watkins-mini ==10.9',
-  'sagelite-database-symbolic-data ==10.9',
-  'sagelite-ecm-runtime ==10.9',
-  'sagelite-gap-runtime ==10.9.post1',
-  'sagelite-maxima-runtime ==10.9',
-  'sagelite-meataxe-runtime ==10.9',
-  'sagelite-mwrank-runtime ==10.9',
-  'sagelite-nauty-runtime ==10.9',
-  'sagelite-pari-data ==10.9',
-  'sagelite-singular-runtime ==10.9',
+  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-ellcurves >=10.9,<10.10',
+  'sagelite-database-graphs >=10.9,<10.10',
+  'sagelite-database-jones-numfield >=10.9,<10.10',
+  'sagelite-database-kohel >=10.9,<10.10',
+  'sagelite-database-mutation-class >=10.9,<10.10',
+  'sagelite-database-odlyzko-zeta >=10.9,<10.10',
+  'sagelite-database-polytopes >=10.9,<10.10',
+  'sagelite-database-stein-watkins-mini >=10.9,<10.10',
+  'sagelite-database-symbolic-data >=10.9,<10.10',
+  'sagelite-ecm-runtime >=10.9,<10.10',
+  'sagelite-gap-runtime >=10.9,<10.10',
+  'sagelite-maxima-runtime >=10.9,<10.10',
+  'sagelite-meataxe-runtime >=10.9,<10.10',
+  'sagelite-mwrank-runtime >=10.9,<10.10',
+  'sagelite-nauty-runtime >=10.9,<10.10',
+  'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-singular-runtime >=10.9,<10.10',
   'symengine >= 0.6.1', # Only used in tests
 ]
-gap = ['sagelite-gap-runtime ==10.9.post1']
-graphs = ['sagelite-database-graphs ==10.9']
-jones-numfield = ['sagelite-database-jones-numfield ==10.9']
+gap = ['sagelite-gap-runtime >=10.9,<10.10']
+graphs = ['sagelite-database-graphs >=10.9,<10.10']
+jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
-kohel = ['sagelite-database-kohel ==10.9']
+kohel = ['sagelite-database-kohel >=10.9,<10.10']
 matroids = ['matroid-database ==0.3']
-maxima = ['sagelite-maxima-runtime ==10.9']
-meataxe = ['sagelite-meataxe-runtime ==10.9']
-mutation-class = ['sagelite-database-mutation-class ==10.9']
-mwrank = ['sagelite-mwrank-runtime ==10.9']
-nauty = ['sagelite-nauty-runtime ==10.9']
-odlyzko-zeta = ['sagelite-database-odlyzko-zeta ==10.9']
-pari-data = ['sagelite-pari-data ==10.9']
-polytopes = ['sagelite-database-polytopes ==10.9']
+maxima = ['sagelite-maxima-runtime >=10.9,<10.10']
+meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
+mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
+mwrank = ['sagelite-mwrank-runtime >=10.9,<10.10']
+nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
+odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
+pari-data = ['sagelite-pari-data >=10.9,<10.10']
+polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 runtime = [
-  'sagelite-ecm-runtime ==10.9',
-  'sagelite-gap-runtime ==10.9.post1',
-  'sagelite-maxima-runtime ==10.9',
-  'sagelite-meataxe-runtime ==10.9',
-  'sagelite-mwrank-runtime ==10.9',
-  'sagelite-nauty-runtime ==10.9',
-  'sagelite-pari-data ==10.9',
-  'sagelite-singular-runtime ==10.9',
+  'sagelite-ecm-runtime >=10.9,<10.10',
+  'sagelite-gap-runtime >=10.9,<10.10',
+  'sagelite-maxima-runtime >=10.9,<10.10',
+  'sagelite-meataxe-runtime >=10.9,<10.10',
+  'sagelite-mwrank-runtime >=10.9,<10.10',
+  'sagelite-nauty-runtime >=10.9,<10.10',
+  'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-singular-runtime >=10.9,<10.10',
 ]
-singular = ['sagelite-singular-runtime ==10.9']
-stein-watkins-mini = ['sagelite-database-stein-watkins-mini ==10.9']
-symbolic-data = ['sagelite-database-symbolic-data ==10.9']
+singular = ['sagelite-singular-runtime >=10.9,<10.10']
+stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
+symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)
 
 [project.readme]
