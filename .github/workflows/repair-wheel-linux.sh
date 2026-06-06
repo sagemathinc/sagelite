@@ -290,6 +290,39 @@ build_nauty_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_palp_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local palp_bindir="$prefix/bin"
+  if [ ! -x "$palp_bindir/poly.x" ] || [ ! -x "$palp_bindir/nef.x" ]; then
+    echo "PALP executables not found under $palp_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name 'poly.x' -o -name 'nef.x' -o -name 'class.x' -o -name 'cws.x' \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-palp-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "PALP runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_PALP_BINDIR="$palp_bindir" \
+  SAGELITE_PALP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_pari_data_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -427,5 +460,6 @@ build_mwrank_runtime_companion
 build_maxima_runtime_companion
 build_meataxe_runtime_companion
 build_nauty_runtime_companion
+build_palp_runtime_companion
 build_pari_data_companion
 build_singular_runtime_companion
