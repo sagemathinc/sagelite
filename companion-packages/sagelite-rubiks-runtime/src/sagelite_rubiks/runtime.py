@@ -8,6 +8,10 @@ import sys
 PROGRAMS = ["cu2", "cubex", "dikcube", "mcube", "optimal", "size222"]
 
 
+def bin_prefix() -> str:
+    return os.fspath(Path(__file__).resolve().parent / "data" / "bin") + os.sep
+
+
 def executable_path(program: str) -> Path:
     return Path(__file__).resolve().parent / "data" / "bin" / program
 

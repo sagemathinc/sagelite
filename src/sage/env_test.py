@@ -27,7 +27,9 @@ def clean_runtime_environment():
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
         "MWRANK",
+        "RUBIKS_BINS_PREFIX",
         "SAGE_ECMBIN",
+        "SAGE_NAUTY_BINS_PREFIX",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
@@ -73,6 +75,15 @@ def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return command
+
+
+def _runtime_bin_prefix(tmp_path: Path, name: str, program: str) -> Path:
+    prefix = tmp_path / name / "bin"
+    prefix.mkdir(parents=True)
+    command = prefix / program
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return prefix
 
 
 class _EntryPoint:
@@ -326,3 +337,83 @@ def test_mwrank_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_mwrank_runtime()
 
     assert env.os.environ["MWRANK"] == str(existing_command)
+
+
+def test_nauty_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "geng")
+
+    monkeypatch.delenv("SAGE_NAUTY_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "SAGE_NAUTY_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_nauty.runtime", "bin_prefix")
+        else None,
+    )
+
+    env._bootstrap_sagelite_nauty_runtime()
+
+    assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_nauty_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "geng")
+    existing = _runtime_bin_prefix(tmp_path, "existing", "geng")
+
+    monkeypatch.setenv("SAGE_NAUTY_BINS_PREFIX", str(existing) + env.os.sep)
+    monkeypatch.setattr(env.sage.config, "SAGE_NAUTY_BINS_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep,
+    )
+
+    env._bootstrap_sagelite_nauty_runtime()
+
+    assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == str(existing) + env.os.sep
+
+
+def test_rubiks_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "cubex")
+
+    monkeypatch.delenv("RUBIKS_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "RUBIKS_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_rubiks.runtime", "bin_prefix")
+        else None,
+    )
+
+    env._bootstrap_sagelite_rubiks_runtime()
+
+    assert env.os.environ["RUBIKS_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_rubiks_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "cubex")
+    existing = _runtime_bin_prefix(tmp_path, "existing", "cubex")
+
+    monkeypatch.setenv("RUBIKS_BINS_PREFIX", str(existing) + env.os.sep)
+    monkeypatch.setattr(env.sage.config, "RUBIKS_BINS_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep,
+    )
+
+    env._bootstrap_sagelite_rubiks_runtime()
+
+    assert env.os.environ["RUBIKS_BINS_PREFIX"] == str(existing) + env.os.sep

@@ -290,6 +290,50 @@ def _bootstrap_sagelite_meataxe_runtime() -> None:
         os.environ.setdefault("MTXLIB", os.fspath(table_dir))
 
 
+def _bootstrap_sagelite_nauty_runtime() -> None:
+    """
+    Seed ``SAGE_NAUTY_BINS_PREFIX`` from an optional ``sagelite_nauty`` package.
+
+    Sage's nauty interfaces call several standalone graph-generation
+    executables.  The companion package supplies relocatable copies for
+    installed wheels.
+    """
+    configured = getattr(sage.config, "SAGE_NAUTY_BINS_PREFIX", None)
+    needs_prefix = (
+        not os.environ.get("SAGE_NAUTY_BINS_PREFIX")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "geng"))
+        )
+    )
+    if not needs_prefix:
+        return
+
+    prefix = _optional_runtime_value("sagelite_nauty.runtime", "bin_prefix")
+    if prefix and os.path.isfile(os.path.join(prefix, "geng")):
+        os.environ.setdefault("SAGE_NAUTY_BINS_PREFIX", os.fspath(prefix))
+
+
+def _bootstrap_sagelite_rubiks_runtime() -> None:
+    """
+    Seed ``RUBIKS_BINS_PREFIX`` from an optional ``sagelite_rubiks`` package.
+    """
+    configured = getattr(sage.config, "RUBIKS_BINS_PREFIX", None)
+    needs_prefix = (
+        not os.environ.get("RUBIKS_BINS_PREFIX")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "cubex"))
+        )
+    )
+    if not needs_prefix:
+        return
+
+    prefix = _optional_runtime_value("sagelite_rubiks.runtime", "bin_prefix")
+    if prefix and os.path.isfile(os.path.join(prefix, "cubex")):
+        os.environ.setdefault("RUBIKS_BINS_PREFIX", os.fspath(prefix))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -446,11 +490,13 @@ MAXIMA = var("MAXIMA", "maxima")
 MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
 KENZO_FAS = var("KENZO_FAS")
+_bootstrap_sagelite_nauty_runtime()
 SAGE_NAUTY_BINS_PREFIX = var("SAGE_NAUTY_BINS_PREFIX", "")
 _bootstrap_sagelite_ecm_runtime()
 SAGE_ECMBIN = var("SAGE_ECMBIN", "ecm")
 _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
+_bootstrap_sagelite_rubiks_runtime()
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
 FOURTITWO_HILBERT = var("FOURTITWO_HILBERT")
 FOURTITWO_MARKOV = var("FOURTITWO_MARKOV")
