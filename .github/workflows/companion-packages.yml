@@ -441,12 +441,19 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    environment: pypi
     steps:
       - uses: actions/download-artifact@v4
         with:
           pattern: "*-dist"
           path: dist
           merge-multiple: true
+
+      - name: Verify publishable companion distributions
+        run: |
+          set -euo pipefail
+          find dist -maxdepth 1 -type f -print | sort
+          test "$(find dist -maxdepth 1 -type f \( -name '*.whl' -o -name '*.tar.gz' \) | wc -l)" -gt 0
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
