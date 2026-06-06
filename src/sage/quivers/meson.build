@@ -2,6 +2,7 @@ py.install_sources(
   '__init__.py',
   'algebra.py',
   'algebra_elements.pxd',
+  'algebra_elements.pxi',
   'algebra_elements.pyx',
   'all.py',
   'ar_quiver.py',
@@ -29,4 +30,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cysignals, gmp],
   )
 endforeach
-

@@ -10,6 +10,7 @@ py.install_sources(
   'fan_isomorphism.py',
   'fan_morphism.py',
   'hasse_diagram.py',
+  'integral_points.pxi',
   'integral_points.py',
   'integral_points_generic_dense.pyx',
   'integral_points_integer_dense.pyx',

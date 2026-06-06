@@ -63,6 +63,8 @@ py.install_sources(
   'matrix_modn_dense_double.pyx',
   'matrix_modn_dense_float.pxd',
   'matrix_modn_dense_float.pyx',
+  'matrix_modn_dense_template.pxi',
+  'matrix_modn_dense_template_header.pxi',
   'matrix_modn_sparse.pxd',
   'matrix_modn_sparse.pyx',
   'matrix_mpolynomial_dense.pxd',
@@ -238,4 +240,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: deps,
   )
 endforeach
-

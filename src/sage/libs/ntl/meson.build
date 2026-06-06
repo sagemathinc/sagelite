@@ -14,12 +14,14 @@ py.install_sources(
   'conversion.pxd',
   'convert.pxd',
   'convert.pyx',
+  'decl.pxi',
   'error.pyx',
   'lzz_p.pxd',
   'lzz_pX.pxd',
   'mat_GF2.pxd',
   'mat_GF2E.pxd',
   'mat_ZZ.pxd',
+  'misc.pxi',
   'ntl_GF2.pxd',
   'ntl_GF2.pyx',
   'ntl_GF2E.pxd',
@@ -29,6 +31,7 @@ py.install_sources(
   'ntl_GF2EX.pxd',
   'ntl_GF2EX.pyx',
   'ntl_GF2X.pxd',
+  'ntl_GF2X_linkage.pxi',
   'ntl_GF2X.pyx',
   'ntl_ZZ.pxd',
   'ntl_ZZ.pyx',
@@ -43,6 +46,7 @@ py.install_sources(
   'ntl_ZZ_pEContext.pxd',
   'ntl_ZZ_pEContext.pyx',
   'ntl_ZZ_pEX.pxd',
+  'ntl_ZZ_pEX_linkage.pxi',
   'ntl_ZZ_pEX.pyx',
   'ntl_ZZ_pX.pxd',
   'ntl_ZZ_pX.pyx',
@@ -108,4 +112,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: [py_dep, cysignals, gmp, m, ntl],
   )
 endforeach
-

@@ -139,6 +139,7 @@ py.install_sources(
   'nmod_mpoly_factor.pxd',
   'nmod_poly.pxd',
   'nmod_poly_factor.pxd',
+  'nmod_poly_linkage.pxi',
   'nmod_poly_mat.pxd',
   'nmod_vec.pxd',
   'ntl_interface.pxd',
@@ -186,4 +187,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cysignals, flint, gmp, mpfr],
   )
 endforeach
-

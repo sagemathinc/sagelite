@@ -288,6 +288,7 @@ foreach name, pyx : extension_data_cpp
 endforeach
 
 install_subdir('asymptotic', install_dir: sage_install_dir / 'rings')
+install_subdir('bernmm', install_dir: sage_install_dir / 'rings')
 subdir('convert')
 subdir('finite_rings')
 subdir('function_field')

@@ -78,6 +78,8 @@ py.install_sources(
   'polynomial_ring_homomorphism.pxd',
   'polynomial_ring_homomorphism.pyx',
   'polynomial_singular_interface.py',
+  'polynomial_template.pxi',
+  'polynomial_template_header.pxi',
   'polynomial_zmod_flint.pxd',
   'polynomial_zmod_flint.pyx',
   'polynomial_zz_pex.pxd',

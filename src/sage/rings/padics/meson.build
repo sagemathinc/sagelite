@@ -1,10 +1,18 @@
 py.install_sources(
   '__init__.py',
   'all.py',
+  'CA_template.pxi',
+  'CA_template_header.pxi',
   'common_conversion.pxd',
   'common_conversion.pyx',
+  'CR_template.pxi',
+  'CR_template_header.pxi',
   'eisenstein_extension_generic.py',
   'factory.py',
+  'FM_template.pxi',
+  'FM_template_header.pxi',
+  'FP_template.pxi',
+  'FP_template_header.pxi',
   'generic_nodes.py',
   'lattice_precision.py',
   'local_generic.py',
@@ -23,6 +31,8 @@ py.install_sources(
   'padic_ZZ_pX_element.pyx',
   'padic_base_generic.py',
   'padic_base_leaves.py',
+  'padic_template_element.pxi',
+  'padic_template_element_header.pxi',
   'padic_capped_absolute_element.pxd',
   'padic_capped_absolute_element.pyx',
   'padic_capped_relative_element.pxd',
@@ -73,6 +83,9 @@ py.install_sources(
   'relative_ramified_FM.pyx',
   'relative_ramified_FP.pxd',
   'relative_ramified_FP.pyx',
+  'relaxed_template.pxi',
+  'relaxed_template_header.pxi',
+  'README.txt',
   'tests.py',
   'tutorial.py',
   'unramified_extension_generic.py',
@@ -180,4 +193,3 @@ foreach name, pyx : extension_data_cpp
   )
 
 endforeach
-

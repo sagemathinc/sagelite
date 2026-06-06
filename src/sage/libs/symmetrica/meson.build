@@ -11,6 +11,14 @@ endif
 py.install_sources(
   '__init__.py',
   'all.py',
+  'kostka.pxi',
+  'part.pxi',
+  'plet.pxi',
+  'sab.pxi',
+  'sb.pxi',
+  'sc.pxi',
+  'schur.pxi',
+  'symmetrica.pxi',
   'symmetrica.pyx',
   subdir: 'sage/libs/symmetrica',
 )
@@ -27,4 +35,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cysignals, gmp, symmetrica],
   )
 endforeach
-
