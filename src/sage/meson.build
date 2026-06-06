@@ -85,11 +85,9 @@ endforeach
 conf_data.set('SAGE_NAUTY_BINS_PREFIX', nauty_bins_prefix)
 # Packages that need no processing and can be installed directly
 no_processing = [
-  'cli',
   'databases',
   'doctest',
   'ext_data',
-  'features',
   'game_theory',
   'homology',
   'knots',
@@ -118,7 +116,9 @@ py.install_sources(
   subdir: 'sage',
 )
 
+subdir('cli')
 subdir('cpython')
+subdir('features')
 subdir('libs')
 subdir('misc')
 subdir('structure')

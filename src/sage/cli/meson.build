@@ -1,0 +1,15 @@
+py.install_sources(
+  '__init__.py',
+  '__main__.py',
+  'eval_cmd.py',
+  'eval_cmd_test.py',
+  'interactive_shell_cmd.py',
+  'notebook_cmd.py',
+  'notebook_cmd_test.py',
+  'options.py',
+  'run_file_cmd.py',
+  'run_file_cmd_test.py',
+  'selftest.py',
+  'version_cmd.py',
+  subdir: 'sage/cli',
+)
