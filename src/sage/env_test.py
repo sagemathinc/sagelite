@@ -213,6 +213,34 @@ def test_gap_root_paths_ignores_broken_companion(monkeypatch, tmp_path):
     assert env._gap_root_paths() == str(baked)
 
 
+def test_gap_root_paths_returns_empty_when_no_runtime_exists(monkeypatch, tmp_path):
+    stale_config = tmp_path / "stale-build-root"
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(stale_config), raising=False)
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda module_name, attr_name: None)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+
+    assert env._gap_root_paths() == ""
+
+
+def test_installed_command_or_fallback_ignores_stale_absolute_path(tmp_path):
+    stale = tmp_path / "missing" / "ecl-config"
+
+    assert env._installed_command_or_fallback(str(stale), "ecl-config") == "ecl-config"
+
+
+def test_gap_feature_is_absent_without_runtime(monkeypatch):
+    from sage.features.sagemath import sage__libs__gap
+
+    monkeypatch.setattr(env, "GAP_ROOT_PATHS", "")
+
+    presence = sage__libs__gap().is_present()
+
+    assert not presence
+    assert "GAP runtime files are not available" in presence.reason
+
+
 def test_gap_runtime_sets_pexpect_command(monkeypatch, tmp_path):
     command = _gap_runtime_command(tmp_path, "companion")
 

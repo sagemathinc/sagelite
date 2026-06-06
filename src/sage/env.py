@@ -190,8 +190,16 @@ def _gap_root_paths() -> str:
     if roots:
         return ";".join(roots)
 
-    return ";".join([join(SAGE_LOCAL, "lib", "gap"),
-                     join(SAGE_LOCAL, "share", "gap")])
+    return ""
+
+
+def _installed_command_or_fallback(command: str | None, fallback: str) -> str:
+    """
+    Return ``command`` unless it is a stale absolute path.
+    """
+    if command and os.path.isabs(command) and not os.path.exists(command):
+        return fallback
+    return command or fallback
 
 
 def _bootstrap_sagelite_gap_runtime() -> None:
@@ -564,6 +572,11 @@ FOURTITWO_PPI = var("FOURTITWO_PPI")
 FOURTITWO_CIRCUITS = var("FOURTITWO_CIRCUITS")
 FOURTITWO_GROEBNER = var("FOURTITWO_GROEBNER")
 ECL_CONFIG = var("ECL_CONFIG", "ecl-config")
+ECL_CONFIG = var(
+    "ECL_CONFIG",
+    _installed_command_or_fallback(ECL_CONFIG, "ecl-config"),
+    force=True,
+)
 NTL_INCDIR = var("NTL_INCDIR")
 NTL_LIBDIR = var("NTL_LIBDIR")
 LIE_INFO_DIR = var("LIE_INFO_DIR", join(SAGE_LOCAL, "lib", "LiE"))

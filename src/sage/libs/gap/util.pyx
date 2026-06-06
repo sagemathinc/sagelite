@@ -212,6 +212,13 @@ cdef initialize():
     """
     global _gap_is_initialized
     if _gap_is_initialized: return
+
+    if not sage.env.GAP_ROOT_PATHS:
+        raise RuntimeError(
+            "GAP runtime files are not available. Install sagelite-gap-runtime "
+            "or set GAP_ROOT_PATHS to a GAP root containing lib/init.g."
+        )
+
     # Hack to ensure that all symbols provided by libgap are loaded into the
     # global symbol table
     # Note: we could use RTLD_NOLOAD and avoid the subsequent dlclose() but

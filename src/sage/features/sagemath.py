@@ -39,7 +39,7 @@ Hence, we conditionalize this doctest on the presence of the feature
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
-from . import PythonModule, StaticFile
+from . import FeatureTestResult, PythonModule, StaticFile
 from .join_feature import JoinFeature
 
 
@@ -426,6 +426,23 @@ class sage__libs__gap(JoinFeature):
                               PythonModule('sage.groups.matrix_gps.unitary_gap'),
                               PythonModule('sage.matrix.matrix_gap'),
                               PythonModule('sage.rings.universal_cyclotomic_field')])
+
+    def _is_present(self):
+        """
+        Test whether Sage's GAP interface has both modules and runtime data.
+        """
+        from sage.env import GAP_ROOT_PATHS
+
+        if not GAP_ROOT_PATHS:
+            return FeatureTestResult(
+                self,
+                False,
+                reason=(
+                    "GAP runtime files are not available. Install "
+                    "sagelite-gap-runtime or set GAP_ROOT_PATHS."
+                ),
+            )
+        return super()._is_present()
 
 
 class sage__libs__linbox(JoinFeature):
