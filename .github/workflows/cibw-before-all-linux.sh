@@ -15,7 +15,12 @@ chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
 
 env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m ensurepip --upgrade || true
-env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade pip setuptools wheel cython
+env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade \
+  pip \
+  setuptools \
+  wheel \
+  cython \
+  'cysignals>=1.12.1'
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
