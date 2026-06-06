@@ -86,7 +86,6 @@ conf_data.set('SAGE_NAUTY_BINS_PREFIX', nauty_bins_prefix)
 # Packages that need no processing and can be installed directly
 no_processing = [
   'databases',
-  'doctest',
   'ext_data',
   'game_theory',
   'homology',
@@ -94,7 +93,6 @@ no_processing = [
   'logic',
   'manifolds',
   'parallel',
-  'repl',
   'sandpiles',
   'tensor',
   'topology',
@@ -118,9 +116,11 @@ py.install_sources(
 
 subdir('cli')
 subdir('cpython')
+subdir('doctest')
 subdir('features')
 subdir('libs')
 subdir('misc')
+subdir('repl')
 subdir('structure')
 subdir('algebras')
 subdir('arith')
