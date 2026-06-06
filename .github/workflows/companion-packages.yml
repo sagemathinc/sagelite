@@ -126,6 +126,7 @@ jobs:
       - name: Install system payload dependencies
         if: ${{ matrix.apt_packages != '' }}
         run: |
+          sudo add-apt-repository --yes universe
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ${{ matrix.apt_packages }}
 
