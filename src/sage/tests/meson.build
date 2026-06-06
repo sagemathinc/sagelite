@@ -7,6 +7,7 @@ py.install_sources(
   'book_schilling_zabrocki_kschur_primer.py',
   'book_stein_ent.py',
   'book_stein_modform.py',
+  'cmdline.py',
   'combinatorial_hopf_algebras.py',
   'cython.pyx',
   'finite_poset.py',
