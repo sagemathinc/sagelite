@@ -40,7 +40,7 @@ def _candidate_bindirs() -> list[Path]:
 
 def _find_bindir() -> Path:
     for bindir in _candidate_bindirs():
-        if all((bindir / program).is_file() for program in REQUIRED_PROGRAMS):
+        if all(_program_path(bindir, program) for program in REQUIRED_PROGRAMS):
             return bindir.resolve()
     searched = "\n  ".join(os.fspath(path) for path in _candidate_bindirs())
     raise RuntimeError(
@@ -48,6 +48,13 @@ def _find_bindir() -> Path:
         f"{', '.join(REQUIRED_PROGRAMS)}. Set SAGELITE_4TI2_BINDIR to the "
         f"Sage-built bin directory.\nSearched:\n  {searched}"
     )
+
+
+def _program_path(bindir: Path, program: str) -> Path | None:
+    for candidate in (bindir / program, bindir / f"4ti2-{program}"):
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 class build_py(_build_py):
@@ -59,8 +66,8 @@ class build_py(_build_py):
         shutil.rmtree(target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
         for program in PROGRAMS:
-            source = bindir / program
-            if source.is_file():
+            source = _program_path(bindir, program)
+            if source is not None:
                 shutil.copy2(source, target / program)
 
 

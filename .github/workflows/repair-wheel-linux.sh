@@ -127,6 +127,42 @@ build_mwrank_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_four_ti_2_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local four_ti_2_bindir="$prefix/bin"
+  if { [ ! -x "$four_ti_2_bindir/hilbert" ] && [ ! -x "$four_ti_2_bindir/4ti2-hilbert" ]; } ||
+     { [ ! -x "$four_ti_2_bindir/zsolve" ] && [ ! -x "$four_ti_2_bindir/4ti2-zsolve" ]; } ||
+     { [ ! -x "$four_ti_2_bindir/qsolve" ] && [ ! -x "$four_ti_2_bindir/4ti2-qsolve" ]; } ||
+     { [ ! -x "$four_ti_2_bindir/groebner" ] && [ ! -x "$four_ti_2_bindir/4ti2-groebner" ]; }; then
+    echo "4ti2 executables not found under $four_ti_2_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name hilbert -o -name 4ti2-hilbert -o -name zsolve -o -name 4ti2-zsolve -o -name qsolve -o -name 4ti2-qsolve -o -name groebner -o -name 4ti2-groebner \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-4ti2-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "4ti2 runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_4TI2_BINDIR="$four_ti_2_bindir" \
+  SAGELITE_4TI2_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_maxima_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -282,6 +318,41 @@ build_nauty_runtime_companion() {
   mkdir -p "$output_dir"
   SAGELITE_NAUTY_BINDIR="$nauty_bindir" \
   SAGELITE_NAUTY_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_rubiks_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local rubiks_bindir="$prefix/bin"
+  if [ ! -x "$rubiks_bindir/cu2" ] || [ ! -x "$rubiks_bindir/cubex" ] ||
+     [ ! -x "$rubiks_bindir/dikcube" ] || [ ! -x "$rubiks_bindir/mcube" ] ||
+     [ ! -x "$rubiks_bindir/optimal" ] || [ ! -x "$rubiks_bindir/size222" ]; then
+    echo "Rubiks executables not found under $rubiks_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name cu2 -o -name cubex -o -name dikcube -o -name mcube -o -name optimal -o -name size222 \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-rubiks-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Rubiks runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_RUBIKS_BINDIR="$rubiks_bindir" \
+  SAGELITE_RUBIKS_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \
       --no-isolation \
@@ -457,9 +528,11 @@ auditwheel repair -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
 build_ecm_runtime_companion
 build_mwrank_runtime_companion
+build_four_ti_2_runtime_companion
 build_maxima_runtime_companion
 build_meataxe_runtime_companion
 build_nauty_runtime_companion
+build_rubiks_runtime_companion
 build_palp_runtime_companion
 build_pari_data_companion
 build_singular_runtime_companion

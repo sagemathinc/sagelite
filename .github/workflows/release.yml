@@ -298,7 +298,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python packages to install as spkgs
-      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
+      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib
       # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
@@ -377,10 +377,12 @@ jobs:
         run: |
           rm -rf gap-runtime-dist
           rm -rf ecm-runtime-dist
+          rm -rf four-ti-2-runtime-dist
           rm -rf maxima-runtime-dist
           rm -rf meataxe-runtime-dist
           rm -rf mwrank-runtime-dist
           rm -rf nauty-runtime-dist
+          rm -rf rubiks-runtime-dist
           rm -rf palp-runtime-dist
           rm -rf pari-data-dist
           rm -rf singular-runtime-dist
@@ -437,6 +439,15 @@ jobs:
           test "$(find ecm-runtime-dist -maxdepth 1 -type f -name "sagelite_ecm_runtime-*.whl" | wc -l)" -eq 1
           ls -lh ecm-runtime-dist
 
+      - name: Separate 4ti2 runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p four-ti-2-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_4ti2_runtime-*.whl" -exec mv -v {} four-ti-2-runtime-dist/ \;
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh four-ti-2-runtime-dist
+
       - name: Separate Maxima runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -472,6 +483,15 @@ jobs:
           find wheelhouse -maxdepth 1 -type f -name "sagelite_nauty_runtime-*.whl" -exec mv -v {} nauty-runtime-dist/ \;
           test "$(find nauty-runtime-dist -maxdepth 1 -type f -name "sagelite_nauty_runtime-*.whl" | wc -l)" -eq 1
           ls -lh nauty-runtime-dist
+
+      - name: Separate Rubiks runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p rubiks-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_rubiks_runtime-*.whl" -exec mv -v {} rubiks-runtime-dist/ \;
+          test "$(find rubiks-runtime-dist -maxdepth 1 -type f -name "sagelite_rubiks_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh rubiks-runtime-dist
 
       - name: Separate PALP runtime companion wheel
         if: matrix.python == 'cp312'
@@ -512,7 +532,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist ecm-runtime-dist maxima-runtime-dist meataxe-runtime-dist mwrank-runtime-dist nauty-runtime-dist palp-runtime-dist pari-data-dist singular-runtime-dist; do
+          for companion_dist in gap-runtime-dist ecm-runtime-dist four-ti-2-runtime-dist maxima-runtime-dist meataxe-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist pari-data-dist singular-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -541,6 +561,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: matrix.python == 'cp312'
         with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-four-ti-2-runtime
+          path: ./four-ti-2-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-maxima-runtime
           path: ./maxima-runtime-dist/*.whl
           if-no-files-found: error
@@ -564,6 +591,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-nauty-runtime
           path: ./nauty-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-rubiks-runtime
+          path: ./rubiks-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -667,6 +701,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: ecm-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_four_ti_2_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-four-ti-2-runtime"
+          path: four-ti-2-runtime-dist
+          merge-multiple: true
+
+      - name: Verify 4ti2 runtime artifact set
+        run: |
+          set -euo pipefail
+          find four-ti-2-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: four-ti-2-runtime-dist/
           skip-existing: true
           verbose: true
 
@@ -787,6 +851,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: nauty-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_rubiks_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-rubiks-runtime"
+          path: rubiks-runtime-dist
+          merge-multiple: true
+
+      - name: Verify Rubiks runtime artifact set
+        run: |
+          set -euo pipefail
+          find rubiks-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find rubiks-runtime-dist -maxdepth 1 -type f -name "sagelite_rubiks_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find rubiks-runtime-dist -maxdepth 1 -type f -name "sagelite_rubiks_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find rubiks-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: rubiks-runtime-dist/
           skip-existing: true
           verbose: true
 
