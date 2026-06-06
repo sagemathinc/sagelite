@@ -142,6 +142,8 @@ py.install_sources(
   subdir: 'sage/rings',
 )
 
+install_subdir('bernmm', install_dir: sage_install_dir / 'rings')
+
 extension_data = {
   'abc': files('abc.pyx'),
   'complex_arb': files('complex_arb.pyx'),
