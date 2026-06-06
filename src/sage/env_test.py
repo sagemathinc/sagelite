@@ -31,6 +31,7 @@ def clean_runtime_environment():
         "FOURTITWO_RAYS",
         "FOURTITWO_ZSOLVE",
         "GAP_ROOT_PATHS",
+        "KENZO_FAS",
         "MAXIMA",
         "MAXIMA_FAS",
         "MAXIMA_LAYOUT_AUTOTOOLS",
@@ -77,6 +78,13 @@ def _ecm_runtime(tmp_path: Path, name: str) -> Path:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return command
+
+
+def _kenzo_runtime(tmp_path: Path, name: str) -> Path:
+    fas = tmp_path / name / "lib" / "ecl" / "kenzo.fas"
+    fas.parent.mkdir(parents=True)
+    fas.write_text("kenzo fas\n")
+    return fas
 
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
@@ -347,6 +355,46 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     assert env.os.environ["MAXIMA"] == str(existing_command)
     assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
     assert env.os.environ["MAXIMA_FAS"] == str(existing_fas)
+
+
+def test_kenzo_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    fas = _kenzo_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("KENZO_FAS", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "KENZO_FAS",
+        str(tmp_path / "stale-lib" / "ecl" / "kenzo.fas"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: fas
+        if (module_name, attr_name) == ("sagelite_kenzo.runtime", "kenzo_fas")
+        else None,
+    )
+
+    env._bootstrap_sagelite_kenzo_runtime()
+
+    assert env.os.environ["KENZO_FAS"] == str(fas)
+
+
+def test_kenzo_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    fas = _kenzo_runtime(tmp_path, "companion")
+    existing_fas = _kenzo_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("KENZO_FAS", str(existing_fas))
+    monkeypatch.setattr(env.sage.config, "KENZO_FAS", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: fas,
+    )
+
+    env._bootstrap_sagelite_kenzo_runtime()
+
+    assert env.os.environ["KENZO_FAS"] == str(existing_fas)
 
 
 def test_ecm_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

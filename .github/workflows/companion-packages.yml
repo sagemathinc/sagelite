@@ -110,6 +110,11 @@ jobs:
             path: companion-packages/sagelite-meataxe-runtime
             apt_packages: ""
             publish: false
+          - name: sagelite-kenzo-runtime
+            import_name: sagelite_kenzo
+            path: companion-packages/sagelite-kenzo-runtime
+            apt_packages: ""
+            publish: false
           - name: sagelite-maxima-runtime
             import_name: sagelite_maxima
             path: companion-packages/sagelite-maxima-runtime
@@ -200,6 +205,10 @@ jobs:
             for field in 2 3 4 5 7 8 9 11 13 16 17 19 23 25 27 29 31 32 37 41 43 47 49 53 59 61 64 67 71 73 79 81 83 89 97 101 103 107 109 113 121 125 127 128 131 137 139 149 151 157 163 167 169 173 179 181 191 193 197 199 211 223 227 229 233 239 241 243 251; do
               printf 'synthetic table for GF(%s)\n' "$field" > "$SAGELITE_MEATAXE_DIR/p$(printf '%03d' "$field").zzz"
             done
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-kenzo-runtime" ]; then
+            export SAGELITE_KENZO_FAS="$RUNNER_TEMP/kenzo.fas"
+            printf 'synthetic kenzo image\n' > "$SAGELITE_KENZO_FAS"
           fi
           if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
             export SAGELITE_MAXIMA_RUNTIME_PLAT_NAME=linux_x86_64
@@ -324,6 +333,14 @@ jobs:
               assert os.path.exists(os.path.join(meataxe_dir, "p009.zzz"))
               assert os.path.exists(os.path.join(meataxe_dir, "p025.zzz"))
               assert os.path.exists(os.path.join(meataxe_dir, "p049.zzz"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-kenzo-runtime":
+              runtime = importlib.import_module("sagelite_kenzo.runtime")
+              fas = runtime.kenzo_fas()
+              print("kenzo_fas=", fas)
+              assert os.path.exists(fas)
+              assert os.path.basename(fas) == "kenzo.fas"
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-maxima-runtime":

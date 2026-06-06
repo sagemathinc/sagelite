@@ -146,6 +146,27 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         os.environ.setdefault("MAXIMA_LAYOUT_AUTOTOOLS", os.fspath(layout))
 
 
+def _bootstrap_sagelite_kenzo_runtime() -> None:
+    """
+    Seed Kenzo runtime variables from an optional ``sagelite_kenzo`` package.
+
+    Binary ``sagelite`` wheels can contain a build-prefix ``KENZO_FAS`` path
+    that does not exist after installation.  A companion package can provide a
+    relocatable ECL image without making Kenzo a hard dependency.
+    """
+    configured_fas = getattr(sage.config, "KENZO_FAS", None)
+    needs_fas = (
+        not os.environ.get("KENZO_FAS")
+        and not (configured_fas and os.path.isfile(os.fspath(configured_fas)))
+    )
+    if not needs_fas:
+        return
+
+    fas = _optional_runtime_value("sagelite_kenzo.runtime", "kenzo_fas")
+    if fas and os.path.isfile(fas):
+        os.environ.setdefault("KENZO_FAS", os.fspath(fas))
+
+
 def _gap_root_path_contains_gap(root: str | None) -> bool:
     """
     Return whether ``root`` looks like a usable GAP root directory.
@@ -552,6 +573,7 @@ _bootstrap_sagelite_maxima_runtime()
 MAXIMA = var("MAXIMA", "maxima")
 MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
+_bootstrap_sagelite_kenzo_runtime()
 KENZO_FAS = var("KENZO_FAS")
 _bootstrap_sagelite_nauty_runtime()
 SAGE_NAUTY_BINS_PREFIX = var("SAGE_NAUTY_BINS_PREFIX", "")
