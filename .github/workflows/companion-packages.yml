@@ -105,6 +105,11 @@ jobs:
             path: companion-packages/sagelite-meataxe-runtime
             apt_packages: ""
             publish: false
+          - name: sagelite-maxima-runtime
+            import_name: sagelite_maxima
+            path: companion-packages/sagelite-maxima-runtime
+            apt_packages: maxima-sage maxima-sage-share
+            publish: false
           - name: sagelite-mwrank-runtime
             import_name: sagelite_mwrank
             path: companion-packages/sagelite-mwrank-runtime
@@ -159,6 +164,14 @@ jobs:
             for field in 2 3 4 5 7 8 9 11 13 16 17 19 23 25 27 29 31 32 37 41 43 47 49 53 59 61 64 67 71 73 79 81 83 89 97 101 103 107 109 113 121 125 127 128 131 137 139 149 151 157 163 167 169 173 179 181 191 193 197 199 211 223 227 229 233 239 241 243 251; do
               printf 'synthetic table for GF(%s)\n' "$field" > "$SAGELITE_MEATAXE_DIR/p$(printf '%03d' "$field").zzz"
             done
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
+            export SAGELITE_MAXIMA_PREFIX=/usr/share/maxima-sage/5.45.1
+            export SAGELITE_MAXIMA_FAS=/usr/lib/ecl/maxima.fas
+            export SAGELITE_MAXIMA_IMAGESDIR=/usr/lib/maxima-sage/5.45.1
+            export SAGELITE_MAXIMA_ECLDIR=/usr/lib/x86_64-linux-gnu/ecl-24.5.10
+            export SAGELITE_MAXIMA_LIBDIR=/usr/lib/x86_64-linux-gnu
+            export SAGELITE_MAXIMA_RUNTIME_PLAT_NAME=linux_x86_64
           fi
           if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
             export SAGELITE_MWRANK_BINDIR=/usr/bin
@@ -259,6 +272,30 @@ jobs:
               assert os.path.exists(os.path.join(meataxe_dir, "p009.zzz"))
               assert os.path.exists(os.path.join(meataxe_dir, "p025.zzz"))
               assert os.path.exists(os.path.join(meataxe_dir, "p049.zzz"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-maxima-runtime":
+              runtime = importlib.import_module("sagelite_maxima.runtime")
+              maxima = runtime.maxima_command()
+              prefix = runtime.maxima_prefix()
+              fas = runtime.maxima_fas()
+              ecldir = runtime.ecl_dir()
+              print("maxima=", maxima)
+              print("maxima_prefix=", prefix)
+              print("maxima_fas=", fas)
+              print("ecldir=", ecldir)
+              assert os.path.exists(maxima)
+              assert os.path.isdir(os.path.join(prefix, "share", "maxima"))
+              assert os.path.exists(fas)
+              assert os.path.exists(os.path.join(ecldir, "sockets.fas"))
+              import subprocess
+              result = subprocess.run(
+                  [maxima, "--very-quiet", "--batch-string=2+3;"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "5" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":
