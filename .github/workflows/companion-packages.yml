@@ -108,7 +108,7 @@ jobs:
           - name: sagelite-maxima-runtime
             import_name: sagelite_maxima
             path: companion-packages/sagelite-maxima-runtime
-            apt_packages: maxima maxima-share
+            apt_packages: maxima-sage maxima-sage-share
             publish: false
           - name: sagelite-mwrank-runtime
             import_name: sagelite_mwrank
@@ -142,6 +142,24 @@ jobs:
         if: ${{ matrix.apt_packages != '' }}
         run: |
           sudo add-apt-repository --yes universe
+          if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
+            cat <<'EOF' | sudo tee /etc/apt/sources.list.d/sagelite-maxima-sage.sources
+          Types: deb
+          URIs: http://archive.ubuntu.com/ubuntu
+          Suites: questing
+          Components: universe
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          EOF
+            cat <<'EOF' | sudo tee /etc/apt/preferences.d/sagelite-maxima-sage
+          Package: *
+          Pin: release n=questing
+          Pin-Priority: 100
+
+          Package: maxima-sage maxima-sage-share libecl24.5
+          Pin: release n=questing
+          Pin-Priority: 990
+          EOF
+          fi
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ${{ matrix.apt_packages }}
 
