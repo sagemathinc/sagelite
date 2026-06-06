@@ -209,6 +209,54 @@ PY
   ls -lh "$output_dir"
 }
 
+build_meataxe_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+  case "$AUDITWHEEL_PLAT" in
+    manylinux*_x86_64) ;;
+    *) return 0 ;;
+  esac
+
+  local meataxe_dir="$prefix/share/meataxe"
+  local zcv="$prefix/bin/zcv"
+  if [ ! -f "$meataxe_dir/p009.zzz" ] && [ ! -x "$zcv" ]; then
+    echo "MeatAxe tables and zcv were not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 \( -name 'p009.zzz' -o -name zcv \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-meataxe-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "MeatAxe runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  if [ -f "$meataxe_dir/p009.zzz" ]; then
+    SAGELITE_MEATAXE_DIR="$meataxe_dir" \
+    SAGELITE_MEATAXE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+      env -u PIP_CONSTRAINT "$python_bin" -m build \
+        --wheel \
+        --no-isolation \
+        --outdir "$output_dir" \
+        "$companion_dir"
+  else
+    SAGELITE_MEATAXE_ZCV="$zcv" \
+    SAGELITE_MEATAXE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+      env -u PIP_CONSTRAINT "$python_bin" -m build \
+        --wheel \
+        --no-isolation \
+        --outdir "$output_dir" \
+        "$companion_dir"
+  fi
+  ls -lh "$output_dir"
+}
+
 build_nauty_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -377,6 +425,7 @@ build_gap_runtime_companion
 build_ecm_runtime_companion
 build_mwrank_runtime_companion
 build_maxima_runtime_companion
+build_meataxe_runtime_companion
 build_nauty_runtime_companion
 build_pari_data_companion
 build_singular_runtime_companion

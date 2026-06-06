@@ -151,6 +151,19 @@ def _check_maxima_runtime():
     return maxima_lib.eval("1+1")
 
 
+def _check_meataxe_runtime():
+    try:
+        import sagelite_meataxe  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.all import GF, matrix
+
+    field = GF(9, "a")
+    mat = matrix(field, 2, [1, 0, 0, 1], implementation="meataxe")
+    return f"MTXLIB matrix over {field}: {mat.nrows()}x{mat.ncols()}"
+
+
 def _check_nauty_runtime():
     try:
         import sagelite_nauty  # noqa: F401
@@ -389,6 +402,7 @@ def main() -> int:
         ("libhomfly library", _check_libhomfly),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
+        ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
         ("graphs database runtime", _check_database_graphs),

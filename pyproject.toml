@@ -132,6 +132,7 @@ full = [
   'sagelite-ecm-runtime ==10.9',
   'sagelite-gap-runtime ==10.9.post1',
   'sagelite-maxima-runtime ==10.9',
+  'sagelite-meataxe-runtime ==10.9',
   'sagelite-mwrank-runtime ==10.9',
   'sagelite-nauty-runtime ==10.9',
   'sagelite-pari-data ==10.9',
@@ -145,6 +146,7 @@ knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel ==10.9']
 matroids = ['matroid-database ==0.3']
 maxima = ['sagelite-maxima-runtime ==10.9']
+meataxe = ['sagelite-meataxe-runtime ==10.9']
 mutation-class = ['sagelite-database-mutation-class ==10.9']
 mwrank = ['sagelite-mwrank-runtime ==10.9']
 nauty = ['sagelite-nauty-runtime ==10.9']
@@ -155,6 +157,7 @@ runtime = [
   'sagelite-ecm-runtime ==10.9',
   'sagelite-gap-runtime ==10.9.post1',
   'sagelite-maxima-runtime ==10.9',
+  'sagelite-meataxe-runtime ==10.9',
   'sagelite-mwrank-runtime ==10.9',
   'sagelite-nauty-runtime ==10.9',
   'sagelite-pari-data ==10.9',

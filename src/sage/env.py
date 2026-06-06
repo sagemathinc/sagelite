@@ -233,6 +233,30 @@ def _bootstrap_sagelite_singular_runtime() -> None:
         os.environ.setdefault("SINGULAR_DEFAULT_DIR", os.fspath(default_dir))
 
 
+def _bootstrap_sagelite_meataxe_runtime() -> None:
+    """
+    Seed ``MTXLIB`` from an optional ``sagelite_meataxe`` package.
+
+    Binary wheels can bundle the MeatAxe extension and shared library without
+    Sage's generated finite-field multiplication tables.  The companion package
+    supplies a relocatable table directory.
+    """
+    configured = getattr(sage.config, "MTXLIB", None) or join(SAGE_SHARE, "meataxe")
+    needs_tables = (
+        not os.environ.get("MTXLIB")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "p009.zzz"))
+        )
+    )
+    if not needs_tables:
+        return
+
+    table_dir = _optional_runtime_value("sagelite_meataxe.runtime", "meataxe_dir")
+    if table_dir and os.path.isfile(os.path.join(table_dir, "p009.zzz")):
+        os.environ.setdefault("MTXLIB", os.fspath(table_dir))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -380,6 +404,7 @@ POLYTOPE_DATA_DIR = var("POLYTOPE_DATA_DIR")
 # installation directories for various packages
 JMOL_DIR = var("JMOL_DIR")
 MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
+_bootstrap_sagelite_meataxe_runtime()
 MTXLIB = var("MTXLIB", join(SAGE_SHARE, "meataxe"))
 THREEJS_DIR = var("THREEJS_DIR")
 PPLPY_DOCS = var("PPLPY_DOCS", join(SAGE_SHARE, "doc", "pplpy"))
