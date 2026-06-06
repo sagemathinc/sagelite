@@ -31,4 +31,19 @@ def maxima_command() -> str:
     return os.fspath(files(__package__).joinpath("data", "bin", "maxima"))
 
 
-__all__ = ["maxima_command", "maxima_fas", "maxima_prefix"]
+def ecl_dir() -> str:
+    """
+    Return the bundled ECL support directory used as ``ECLDIR``.
+    """
+    root = files(__package__).joinpath("data", "lib")
+    versions = sorted(
+        path
+        for path in root.iterdir()
+        if path.is_dir() and path.name.startswith("ecl-")
+    )
+    if not versions:
+        raise RuntimeError("bundled ECL support directory is missing")
+    return os.fspath(versions[-1]) + os.sep
+
+
+__all__ = ["ecl_dir", "maxima_command", "maxima_fas", "maxima_prefix"]

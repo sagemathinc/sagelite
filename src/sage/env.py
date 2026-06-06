@@ -110,16 +110,19 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
             and os.access(os.fspath(configured_command), os.X_OK)
         )
     )
-    if not (needs_prefix or needs_fas or needs_command):
+    needs_ecldir = not os.environ.get("ECLDIR")
+    if not (needs_prefix or needs_fas or needs_command or needs_ecldir):
         return
 
-    prefix = fas = command = None
+    prefix = fas = command = ecldir = None
     if needs_prefix:
         prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
     if needs_fas:
         fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
     if needs_command:
         command = _optional_runtime_value("sagelite_maxima.runtime", "maxima_command")
+    if needs_ecldir:
+        ecldir = _optional_runtime_value("sagelite_maxima.runtime", "ecl_dir")
 
     if needs_prefix and prefix and os.path.isdir(prefix):
         os.environ.setdefault("MAXIMA_PREFIX", os.fspath(prefix))
@@ -132,6 +135,8 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         and os.access(command, os.X_OK)
     ):
         os.environ.setdefault("MAXIMA", os.fspath(command))
+    if needs_ecldir and ecldir and os.path.isdir(ecldir):
+        os.environ.setdefault("ECLDIR", os.fspath(ecldir))
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:

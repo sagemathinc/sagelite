@@ -168,6 +168,30 @@ build_maxima_runtime_companion() {
     exit 1
   fi
 
+  local repaired_sagelite_wheel ecl_soname
+  repaired_sagelite_wheel="$(find "$dest_dir" -maxdepth 1 -type f -name 'sagelite-*.whl' -print -quit)"
+  if [ -z "$repaired_sagelite_wheel" ]; then
+    echo "repaired sagelite wheel not found in $dest_dir" >&2
+    exit 1
+  fi
+  ecl_soname="$(
+    "$python_bin" - "$repaired_sagelite_wheel" <<'PY'
+import os
+import sys
+import zipfile
+
+with zipfile.ZipFile(sys.argv[1]) as wheel:
+    matches = sorted(
+        os.path.basename(name)
+        for name in wheel.namelist()
+        if name.startswith("sagelite.libs/libecl") and name.endswith(".so.24.5.10")
+    )
+if len(matches) != 1:
+    raise SystemExit(f"expected one bundled libecl, found {matches}")
+print(matches[0])
+PY
+  )"
+
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_MAXIMA_PREFIX="$maxima_prefix" \
@@ -175,6 +199,7 @@ build_maxima_runtime_companion() {
   SAGELITE_MAXIMA_IMAGESDIR="$maxima_imagesdir" \
   SAGELITE_MAXIMA_ECLDIR="$maxima_ecldir" \
   SAGELITE_MAXIMA_LIBDIR="$prefix/lib" \
+  SAGELITE_MAXIMA_ECL_SONAME="$ecl_soname" \
   SAGELITE_MAXIMA_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \

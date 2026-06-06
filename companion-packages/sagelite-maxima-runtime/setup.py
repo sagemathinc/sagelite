@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from setuptools import setup
@@ -177,6 +178,38 @@ exec "$PREFIX/lib/maxima/{version}/binary-ecl/maxima" \\
     path.chmod(0o755)
 
 
+def _patch_maxima_fas(path: Path) -> None:
+    """
+    Make the ECL-loaded Maxima image compatible with the sagelite wheel.
+
+    In library mode, Sage has already loaded the auditwheel-renamed ECL shared
+    library bundled in ``sagelite.libs``.  If ``maxima.fas`` still depends on
+    the original ``libecl.so`` SONAME, dlopen can load a second ECL runtime and
+    crash the process.  Release builds pass the repaired sagelite ECL SONAME so
+    this image binds to the already-loaded library.
+    """
+    ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
+    if not ecl_soname:
+        return
+
+    try:
+        subprocess.run(
+            [
+                "patchelf",
+                "--replace-needed",
+                "libecl.so.24.5",
+                ecl_soname,
+                os.fspath(path),
+            ],
+            check=True,
+        )
+        subprocess.run(["patchelf", "--remove-rpath", os.fspath(path)], check=True)
+    except FileNotFoundError as err:
+        raise RuntimeError(
+            "patchelf is required when SAGELITE_MAXIMA_ECL_SONAME is set"
+        ) from err
+
+
 class build_py(_build_py):
     def run(self):
         super().run()
@@ -202,6 +235,7 @@ class build_py(_build_py):
         fas_target = target / "lib" / "ecl" / "maxima.fas"
         fas_target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(maxima_fas, fas_target)
+        _patch_maxima_fas(fas_target)
 
         images_target = target / "lib" / "maxima" / maxima_prefix.name
         shutil.copytree(maxima_images_dir, images_target, ignore_dangling_symlinks=True)
