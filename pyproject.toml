@@ -85,8 +85,8 @@ urls = { Homepage = "https://www.sagemath.org" }
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
-cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
+cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 databases = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
