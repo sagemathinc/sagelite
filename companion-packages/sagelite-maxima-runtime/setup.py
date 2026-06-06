@@ -92,18 +92,11 @@ def _find_maxima_prefix() -> Path:
     )
 
 
-def _find_maxima_images_dir(maxima_prefix: Path) -> Path:
+def _find_maxima_images_dir(maxima_prefix: Path) -> Path | None:
     for images_dir in _candidate_images_dirs(maxima_prefix):
         if _looks_like_images_dir(images_dir):
             return images_dir.resolve()
-    searched = "\n  ".join(
-        os.fspath(path) for path in _candidate_images_dirs(maxima_prefix)
-    )
-    raise RuntimeError(
-        "could not find the Maxima binary image directory containing "
-        "binary-ecl/maxima. Set SAGELITE_MAXIMA_IMAGESDIR to the Sage-built "
-        f"Maxima image directory.\nSearched:\n  {searched}"
-    )
+    return None
 
 
 def _find_maxima_fas() -> Path:
@@ -180,6 +173,15 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     if not any(path.name.startswith("libgmp.so") for path in libraries):
         libraries.append(_find_library_with_prefix("libgmp.so"))
 
+    by_name = {path.name: path for path in libraries}
+    return sorted(by_name.values())
+
+
+def _fallback_runtime_libraries() -> list[Path]:
+    libraries = [
+        _find_library_with_prefix("libecl.so"),
+        _find_library_with_prefix("libgmp.so"),
+    ]
     by_name = {path.name: path for path in libraries}
     return sorted(by_name.values())
 
@@ -297,19 +299,27 @@ class build_py(_build_py):
         _patch_maxima_fas(fas_target)
 
         images_target = target / "lib" / "maxima" / maxima_prefix.name
-        shutil.copytree(maxima_images_dir, images_target, ignore_dangling_symlinks=True)
+        if maxima_images_dir is not None:
+            shutil.copytree(
+                maxima_images_dir, images_target, ignore_dangling_symlinks=True
+            )
 
         ecl_target = target / "lib" / ecl_dir.name
         shutil.copytree(ecl_dir, ecl_target, ignore_dangling_symlinks=True)
 
         runtime_target = target / "lib" / "runtime"
         runtime_target.mkdir(parents=True, exist_ok=True)
-        for library in _runtime_libraries(maxima_images_dir / "binary-ecl" / "maxima"):
+        if maxima_images_dir is None:
+            libraries = _fallback_runtime_libraries()
+        else:
+            libraries = _runtime_libraries(maxima_images_dir / "binary-ecl" / "maxima")
+        for library in libraries:
             shutil.copy2(library, runtime_target / library.name)
 
-        _write_maxima_command(
-            target / "bin" / "maxima", maxima_prefix.name, ecl_dir.name
-        )
+        if maxima_images_dir is not None:
+            _write_maxima_command(
+                target / "bin" / "maxima", maxima_prefix.name, ecl_dir.name
+            )
 
 
 cmdclass = {"build_py": build_py}
