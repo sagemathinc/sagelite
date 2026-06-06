@@ -18,4 +18,24 @@ py.install_sources(
   subdir: 'sage/repl/rich_output',
 )
 
-install_data('example.png', install_dir: sage_install_dir / 'repl/rich_output')
+install_data(
+  'example.avi',
+  'example.canvas3d',
+  'example.dvi',
+  'example.flv',
+  'example.gif',
+  'example.jpg',
+  'example.mkv',
+  'example.mov',
+  'example.mp4',
+  'example.ogv',
+  'example.pdf',
+  'example.png',
+  'example.svg',
+  'example.webm',
+  'example.wmv',
+  'example_jmol.spt.zip',
+  'example_wavefront_scene.mtl',
+  'example_wavefront_scene.obj',
+  install_dir: sage_install_dir / 'repl/rich_output',
+)

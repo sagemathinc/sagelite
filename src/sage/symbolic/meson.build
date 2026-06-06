@@ -150,3 +150,4 @@ foreach name, pyx : extension_data_cpp
 endforeach
 
 install_subdir('integration', install_dir: sage_install_dir / 'symbolic')
+install_subdir('ginac', install_dir: sage_install_dir / 'symbolic')
