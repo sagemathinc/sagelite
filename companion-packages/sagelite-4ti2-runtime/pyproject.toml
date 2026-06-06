@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sagelite-4ti2-runtime"
+version = "10.9"
+description = "Optional 4ti2 executable companion package for sagelite"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "GPL-2.0-or-later"
+authors = [
+  { name = "The Sage Developers", email = "sage-support@googlegroups.com" },
+]
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+urls = { Homepage = "https://www.sagemath.org" }
+
+[project.scripts]
+circuits = "sagelite_four_ti_2.runtime:circuits"
+graver = "sagelite_four_ti_2.runtime:graver"
+groebner = "sagelite_four_ti_2.runtime:groebner"
+hilbert = "sagelite_four_ti_2.runtime:hilbert"
+markov = "sagelite_four_ti_2.runtime:markov"
+ppi = "sagelite_four_ti_2.runtime:ppi"
+qsolve = "sagelite_four_ti_2.runtime:qsolve"
+rays = "sagelite_four_ti_2.runtime:rays"
+zsolve = "sagelite_four_ti_2.runtime:zsolve"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]

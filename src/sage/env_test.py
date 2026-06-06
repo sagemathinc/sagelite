@@ -21,6 +21,15 @@ from sage import env
 def clean_runtime_environment():
     keys = [
         "ECLDIR",
+        "FOURTITWO_CIRCUITS",
+        "FOURTITWO_GRAVER",
+        "FOURTITWO_GROEBNER",
+        "FOURTITWO_HILBERT",
+        "FOURTITWO_MARKOV",
+        "FOURTITWO_PPI",
+        "FOURTITWO_QSOLVE",
+        "FOURTITWO_RAYS",
+        "FOURTITWO_ZSOLVE",
         "GAP_ROOT_PATHS",
         "MAXIMA",
         "MAXIMA_FAS",
@@ -93,6 +102,14 @@ def _runtime_bin_prefix(tmp_path: Path, name: str, program: str) -> Path:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return prefix
+
+
+def _runtime_executable(tmp_path: Path, name: str, program: str) -> Path:
+    command = tmp_path / name / "bin" / program
+    command.parent.mkdir(parents=True, exist_ok=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
 
 
 class _EntryPoint:
@@ -462,3 +479,49 @@ def test_rubiks_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_rubiks_runtime()
 
     assert env.os.environ["RUBIKS_BINS_PREFIX"] == str(existing) + env.os.sep
+
+
+def test_four_ti_2_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    hilbert = _runtime_executable(tmp_path, "companion", "hilbert")
+    zsolve = _runtime_executable(tmp_path, "companion", "zsolve")
+
+    monkeypatch.delenv("FOURTITWO_HILBERT", raising=False)
+    monkeypatch.delenv("FOURTITWO_ZSOLVE", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "FOURTITWO_HILBERT",
+        str(tmp_path / "stale-bin" / "hilbert"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_four_ti_2.runtime", "hilbert_command"): str(hilbert),
+            ("sagelite_four_ti_2.runtime", "zsolve_command"): str(zsolve),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_four_ti_2_runtime()
+
+    assert env.os.environ["FOURTITWO_HILBERT"] == str(hilbert)
+    assert env.os.environ["FOURTITWO_ZSOLVE"] == str(zsolve)
+
+
+def test_four_ti_2_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    companion = _runtime_executable(tmp_path, "companion", "hilbert")
+    existing = _runtime_executable(tmp_path, "existing", "hilbert")
+
+    monkeypatch.setenv("FOURTITWO_HILBERT", str(existing))
+    monkeypatch.setattr(env.sage.config, "FOURTITWO_HILBERT", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion)
+        if (module_name, attr_name) == ("sagelite_four_ti_2.runtime", "hilbert_command")
+        else None,
+    )
+
+    env._bootstrap_sagelite_four_ti_2_runtime()
+
+    assert env.os.environ["FOURTITWO_HILBERT"] == str(existing)

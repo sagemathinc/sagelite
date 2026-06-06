@@ -350,6 +350,45 @@ def _bootstrap_sagelite_rubiks_runtime() -> None:
         os.environ.setdefault("RUBIKS_BINS_PREFIX", os.fspath(prefix))
 
 
+def _bootstrap_sagelite_four_ti_2_runtime() -> None:
+    """
+    Seed 4ti2 executable variables from an optional companion package.
+
+    Sage's 4ti2 interface looks up individual ``FOURTITWO_*`` variables before
+    falling back to commands on ``PATH``.  The companion package supplies
+    relocatable executable copies for installed wheels.
+    """
+    for program in (
+        "hilbert",
+        "markov",
+        "graver",
+        "zsolve",
+        "qsolve",
+        "rays",
+        "ppi",
+        "circuits",
+        "groebner",
+    ):
+        variable = f"FOURTITWO_{program.upper()}"
+        configured = getattr(sage.config, variable, None)
+        needs_command = (
+            not os.environ.get(variable)
+            and not (
+                configured
+                and os.path.isfile(os.fspath(configured))
+                and os.access(os.fspath(configured), os.X_OK)
+            )
+        )
+        if not needs_command:
+            continue
+
+        command = _optional_runtime_value(
+            "sagelite_four_ti_2.runtime", f"{program}_command"
+        )
+        if command and os.path.isfile(command) and os.access(command, os.X_OK):
+            os.environ.setdefault(variable, os.fspath(command))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -514,6 +553,7 @@ _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
 _bootstrap_sagelite_rubiks_runtime()
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
+_bootstrap_sagelite_four_ti_2_runtime()
 FOURTITWO_HILBERT = var("FOURTITWO_HILBERT")
 FOURTITWO_MARKOV = var("FOURTITWO_MARKOV")
 FOURTITWO_GRAVER = var("FOURTITWO_GRAVER")

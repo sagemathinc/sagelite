@@ -127,6 +127,7 @@ full = [
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
+  'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
@@ -151,6 +152,7 @@ full = [
   'sagelite-singular-runtime >=10.9,<10.10',
   'symengine >= 0.6.1', # Only used in tests
 ]
+4ti2 = ['sagelite-4ti2-runtime >=10.9,<10.10']
 gap = ['sagelite-gap-runtime >=10.9,<10.10']
 gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
@@ -168,6 +170,7 @@ palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 runtime = [
+  'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9,<10.10',

@@ -198,6 +198,24 @@ def _check_nauty_runtime():
     return "geng and genposetg available"
 
 
+def _check_four_ti_2_runtime():
+    try:
+        import sagelite_four_ti_2  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    import subprocess
+
+    from sage.env import FOURTITWO_HILBERT
+    from sage.features.four_ti_2 import FourTi2
+
+    four_ti_2 = FourTi2().is_present()
+    if not bool(four_ti_2):
+        raise RuntimeError(f"4ti2 executables are not available: {four_ti_2.reason}")
+    subprocess.run([FOURTITWO_HILBERT, "-h"], check=True, capture_output=True, text=True)
+    return "4ti2 executables available"
+
+
 def _check_ecm_runtime():
     try:
         import sagelite_ecm  # noqa: F401
@@ -451,6 +469,7 @@ def main() -> int:
         ("Maxima library runtime", _check_maxima_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
+        ("4ti2 executable runtime", _check_four_ti_2_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
         ("mwrank executable runtime", _check_mwrank_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
