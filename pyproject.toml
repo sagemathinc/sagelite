@@ -21,7 +21,12 @@ requires = [
 # This actually covers all current subprojects; so just don't install any of them. 
 install = ['--skip-subprojects']
 # Ensure that ``library`` targets are built as static, and nothing gets installed
-setup = ['--default-library=static']
+setup = [
+  '--default-library=static',
+  '-Declib=enabled',
+  '-Dlibhomfly=enabled',
+  '-Drankwidth=enabled',
+]
 
 [project]
 authors = [
@@ -209,6 +214,7 @@ host-requires = [
   "pkg:generic/cddlib",
   "pkg:generic/cliquer",
   "pkg:generic/ecl",
+  "pkg:generic/eclib",
   "pkg:generic/ecm",
   "pkg:generic/fflas-ffpack",
   "pkg:generic/flint",
@@ -262,7 +268,6 @@ extra = [
   "pkg:generic/bliss",
   "pkg:generic/brial",
   "pkg:generic/coxeter3",
-  "pkg:generic/eclib",
   "pkg:generic/mcqd",
   "pkg:generic/meataxe",
   "pkg:generic/sirocco",

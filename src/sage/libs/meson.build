@@ -76,7 +76,7 @@ endif
 braiding = dependency(
   'libbraiding',
   version: '>=1.3.1',
-  required: get_option('libbraiding'),
+  required: false,
   disabler: true,
 )
 if not braiding.found()
@@ -102,6 +102,9 @@ if braiding.found() and not cpp.compiles(
   dependencies: braiding,
   name: 'libbraiding Sage wrapper API',
 )
+  if get_option('libbraiding').enabled()
+    error('libbraiding does not provide the API required by Sage')
+  endif
   braiding = disabler()
 endif
 gc = dependency(
@@ -116,7 +119,7 @@ if not homfly.found()
   homfly = cc.find_library(
     'homfly',
     has_headers: ['homfly.h'],
-    required: false,
+    required: get_option('libhomfly'),
     disabler: true,
   )
 endif

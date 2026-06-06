@@ -56,6 +56,13 @@ option(
 )
 
 option(
+  'libhomfly',
+  type: 'feature',
+  value: 'auto',
+  description: 'libhomfly interface for HOMFLY polynomial computations',
+)
+
+option(
   'mcqd',
   type: 'feature',
   value: 'auto',
