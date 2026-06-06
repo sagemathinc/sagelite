@@ -226,3 +226,10 @@ py.install_sources(
   'conftest.py',
   subdir: 'sage',
 )
+
+meson.add_install_script(
+  py,
+  files('tools/install-sage-sidecars.py'),
+  root / 'src' / 'sage',
+  py.get_install_dir() / 'sage',
+)
