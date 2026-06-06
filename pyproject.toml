@@ -101,8 +101,8 @@ databases = [
   'sagelite-database-stein-watkins-mini ==10.9',
   'sagelite-database-symbolic-data ==10.9',
 ]
-ellcurves = ['sagelite-database-ellcurves ==10.9']
 ecm = ['sagelite-ecm-runtime ==10.9']
+ellcurves = ['sagelite-database-ellcurves ==10.9']
 extra = [
   'igraph',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
