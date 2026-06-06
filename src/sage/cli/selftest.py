@@ -222,6 +222,23 @@ def _check_ecm_runtime():
     return "ecm executable available"
 
 
+def _check_mwrank_runtime():
+    try:
+        import sagelite_mwrank  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    import shlex
+
+    from sage.env import MWRANK
+    from sage.interfaces.mwrank import Mwrank_class
+
+    command = Mwrank_class("-v 0").command()
+    if not command.startswith(shlex.quote(MWRANK)):
+        raise RuntimeError(f"mwrank interface is not using companion runtime: {command}")
+    return "mwrank executable available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -435,6 +452,7 @@ def main() -> int:
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
+        ("mwrank executable runtime", _check_mwrank_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),

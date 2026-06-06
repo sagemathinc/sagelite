@@ -19,6 +19,7 @@ Interface to mwrank
 
 import os
 import re
+import shlex
 import weakref
 
 from sage.interfaces.expect import Expect
@@ -186,10 +187,14 @@ class Mwrank_class(Expect):
             sage: from sage.interfaces.mwrank import Mwrank_class
             sage: TestSuite(Mwrank_class).run()
         """
+        from sage.env import MWRANK
+
+        command = " ".join([shlex.quote(MWRANK), options])
+
         Expect.__init__(self,
                         name='mwrank',
                         prompt='Enter curve: ',
-                        command="mwrank %s" % options,
+                        command=command,
                         server=server,
                         server_tmpdir=server_tmpdir,
                         restart_on_ctrlc=True,

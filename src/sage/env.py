@@ -219,6 +219,32 @@ def _bootstrap_sagelite_ecm_runtime() -> None:
         os.environ.setdefault("SAGE_ECMBIN", os.fspath(command))
 
 
+def _bootstrap_sagelite_mwrank_runtime() -> None:
+    """
+    Seed ``MWRANK`` from an optional ``sagelite_mwrank`` package.
+
+    Sage mostly uses eclib's in-process mwrank library, but some doctests and
+    interfaces still invoke Cremona's standalone ``mwrank`` executable.  The
+    companion package supplies that executable for installed ``sagelite``
+    wheels without requiring it as a core dependency.
+    """
+    configured = getattr(sage.config, "MWRANK", None)
+    needs_command = (
+        not os.environ.get("MWRANK")
+        and not (
+            configured
+            and os.path.isfile(os.fspath(configured))
+            and os.access(os.fspath(configured), os.X_OK)
+        )
+    )
+    if not needs_command:
+        return
+
+    command = _optional_runtime_value("sagelite_mwrank.runtime", "mwrank_command")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("MWRANK", os.fspath(command))
+
+
 def _bootstrap_sagelite_singular_runtime() -> None:
     """
     Seed Singular data-root variables from an optional companion package.
@@ -423,6 +449,8 @@ KENZO_FAS = var("KENZO_FAS")
 SAGE_NAUTY_BINS_PREFIX = var("SAGE_NAUTY_BINS_PREFIX", "")
 _bootstrap_sagelite_ecm_runtime()
 SAGE_ECMBIN = var("SAGE_ECMBIN", "ecm")
+_bootstrap_sagelite_mwrank_runtime()
+MWRANK = var("MWRANK", "mwrank")
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
 FOURTITWO_HILBERT = var("FOURTITWO_HILBERT")
 FOURTITWO_MARKOV = var("FOURTITWO_MARKOV")

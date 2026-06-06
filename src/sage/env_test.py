@@ -26,6 +26,7 @@ def clean_runtime_environment():
         "MAXIMA_FAS",
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
+        "MWRANK",
         "SAGE_ECMBIN",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
@@ -60,6 +61,14 @@ def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
 
 def _ecm_runtime(tmp_path: Path, name: str) -> Path:
     command = tmp_path / name / "bin" / "ecm"
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
+
+
+def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
+    command = tmp_path / name / "bin" / "mwrank"
     command.parent.mkdir(parents=True)
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
@@ -277,3 +286,43 @@ def test_ecm_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_ecm_runtime()
 
     assert env.os.environ["SAGE_ECMBIN"] == str(existing_command)
+
+
+def test_mwrank_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    command = _mwrank_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("MWRANK", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "MWRANK",
+        str(tmp_path / "stale-bin" / "mwrank"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command
+        if (module_name, attr_name) == ("sagelite_mwrank.runtime", "mwrank_command")
+        else None,
+    )
+
+    env._bootstrap_sagelite_mwrank_runtime()
+
+    assert env.os.environ["MWRANK"] == str(command)
+
+
+def test_mwrank_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    command = _mwrank_runtime(tmp_path, "companion")
+    existing_command = _mwrank_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("MWRANK", str(existing_command))
+    monkeypatch.setattr(env.sage.config, "MWRANK", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_mwrank_runtime()
+
+    assert env.os.environ["MWRANK"] == str(existing_command)
