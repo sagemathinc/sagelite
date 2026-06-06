@@ -32,6 +32,7 @@ py.install_sources(
   'matroid.pyx',
   'matroids_catalog.py',
   'matroids_plot_helpers.py',
+  'minorfix.h',
   'minor_matroid.py',
   'rank_matroid.py',
   'set_system.pxd',
@@ -72,4 +73,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cysignals, gmp],
   )
 endforeach
-

@@ -24,3 +24,4 @@ foreach name, pyx : extension_data
   )
 endforeach
 
+install_data('test_jupyter.rst', install_dir: sage_install_dir / 'interacts')

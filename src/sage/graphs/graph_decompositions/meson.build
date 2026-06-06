@@ -16,10 +16,12 @@ py.install_sources(
   'fast_digraph.pxd',
   'fast_digraph.pyx',
   'graph_products.pyx',
+  'modular_decomposition.hpp',
   'modular_decomposition.pxd',
   'modular_decomposition.pyx',
   'rankwidth.pxd',
   'rankwidth.pyx',
+  'sage_tdlib.cpp',
   'slice_decomposition.pxd',
   'slice_decomposition.pyx',
   'tdlib.pyx',
@@ -82,4 +84,3 @@ py.extension_module(
   include_directories: [inc_cpython, inc_data_structures],
   dependencies: [py_dep, cysignals, tdlib],
 )
-

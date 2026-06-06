@@ -1,6 +1,7 @@
 py.install_sources(
   '__init__.py',
   'all.py',
+  'dancing_links_c.h',
   'dancing_links.pyx',
   'dlxcpp.py',
   'hadamard_matrix.py',
@@ -21,4 +22,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: [py_dep, cysignals, gmp],
   )
 endforeach
-

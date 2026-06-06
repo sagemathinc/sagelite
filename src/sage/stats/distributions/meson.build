@@ -2,7 +2,11 @@ py.install_sources(
   '__init__.py',
   'all.py',
   'catalog.py',
+  'dgs.h',
   'dgs.pxd',
+  'dgs_bern.h',
+  'dgs_gauss.h',
+  'dgs_misc.h',
   'discrete_gaussian_integer.pxd',
   'discrete_gaussian_integer.pyx',
   'discrete_gaussian_lattice.py',
@@ -30,4 +34,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cypari2, cysignals, gmp, mpfr],
   )
 endforeach
-

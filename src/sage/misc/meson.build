@@ -50,6 +50,7 @@ py.install_sources(
   'gperftools.py',
   'html.py',
   'inherit_comparison.pxd',
+  'inherit_comparison_impl.c',
   'inherit_comparison.pyx',
   'inline_fortran.py',
   'instancedoc.pyx',
@@ -181,3 +182,4 @@ foreach name, pyx : extension_data
   )
 endforeach
 
+install_subdir('notes', install_dir: sage_install_dir / 'misc')

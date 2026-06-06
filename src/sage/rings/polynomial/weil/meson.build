@@ -1,6 +1,7 @@
 py.install_sources(
   '__init__.py',
   'all.py',
+  'power_sums.c',
   'power_sums.h',
   'weil_polynomials.pyx',
   subdir: 'sage/rings/polynomial/weil',
@@ -18,4 +19,3 @@ foreach name, pyx : extension_data
     dependencies: [py_dep, cysignals, flint, gmp],
   )
 endforeach
-

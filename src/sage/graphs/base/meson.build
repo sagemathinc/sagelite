@@ -1,6 +1,7 @@
 py.install_sources(
   '__init__.py',
   'all.py',
+  'boost_interface.cpp',
   'boost_graph.pxd',
   'boost_graph.pyx',
   'c_graph.pxd',
@@ -66,4 +67,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: deps,
   )
 endforeach
-

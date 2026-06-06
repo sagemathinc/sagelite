@@ -87,6 +87,7 @@ py.install_sources(
   'relaxed_template_header.pxi',
   'README.txt',
   'tests.py',
+  'transcendental.c',
   'tutorial.py',
   'unramified_extension_generic.py',
   'witt_vector.py',

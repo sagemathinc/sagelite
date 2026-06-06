@@ -2,10 +2,13 @@ py.install_sources(
   '__init__.py',
   'all.py',
   'base.pyx',
+  'data.h',
   'data.pxd',
   'element.py',
+  'functions.h',
   'functions.pxd',
   'point_configuration.py',
+  'triangulations.h',
   'triangulations.pxd',
   subdir: 'sage/geometry/triangulation',
 )
@@ -25,4 +28,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: [py_dep, gmp],
   )
 endforeach
-

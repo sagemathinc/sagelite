@@ -54,3 +54,9 @@ foreach name, pyx : extension_data_cpp
   )
 endforeach
 
+install_data(
+  'hypellfrob/README',
+  'hypellfrob/hypellfrob.h',
+  'hypellfrob/recurrences_ntl.h',
+  install_dir: sage_install_dir / 'schemes/hyperelliptic_curves/hypellfrob',
+)

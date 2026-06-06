@@ -31,3 +31,4 @@ foreach name, pyx : extension_data
 endforeach
 
 subdir('interpreters')
+install_subdir('mac-app', install_dir: sage_install_dir / 'ext')

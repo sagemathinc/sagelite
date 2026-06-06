@@ -11,6 +11,7 @@ py.install_sources(
   'mwrank.pyx',
   'newforms.pxd',
   'newforms.pyx',
+  'wrap.cpp',
   subdir: 'sage/libs/eclib',
 )
 
@@ -32,4 +33,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: [py_dep, cysignals, ec, ecl, flint, gmp],
   )
 endforeach
-

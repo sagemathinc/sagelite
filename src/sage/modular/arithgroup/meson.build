@@ -11,7 +11,9 @@ py.install_sources(
   'congroup_gammaH.py',
   'congroup_generic.py',
   'congroup_sl2z.py',
+  'farey.hpp',
   'farey_symbol.pyx',
+  'sl2z.hpp',
   'tests.py',
   subdir: 'sage/modular/arithgroup',
 )
@@ -66,4 +68,3 @@ foreach name, pyx : extension_data_cpp
     dependencies: [py_dep, cysignals, flint, gmp, gmpxx],
   )
 endforeach
-

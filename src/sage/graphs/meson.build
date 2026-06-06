@@ -178,6 +178,8 @@ py.extension_module(
 )
 
 subdir('base')
+install_subdir('bliss_cpp', install_dir: sage_install_dir / 'graphs')
+install_subdir('cliquer', install_dir: sage_install_dir / 'graphs')
 subdir('generators')
 subdir('graph_decompositions')
 subdir('tests')

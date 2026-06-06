@@ -36,6 +36,8 @@ interpreters = custom_target(
   install_tag: 'python-runtime',
 )
 
+install_data('README', install_dir: sage_install_dir / 'ext/interpreters')
+
 # Use this once https://github.com/mesonbuild/meson/issues/7372 is fixed
 #foreach file : interpreters.to_list()
 #  py.install_sources(
