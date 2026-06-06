@@ -95,6 +95,11 @@ jobs:
             path: companion-packages/sagelite-ecm-runtime
             apt_packages: gmp-ecm
             publish: false
+          - name: sagelite-mwrank-runtime
+            import_name: sagelite_mwrank
+            path: companion-packages/sagelite-mwrank-runtime
+            apt_packages: eclib-tools
+            publish: false
           - name: sagelite-nauty-runtime
             import_name: sagelite_nauty
             path: companion-packages/sagelite-nauty-runtime
@@ -137,6 +142,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
+            export SAGELITE_MWRANK_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
             export SAGELITE_NAUTY_BINDIR=/usr/bin
@@ -194,6 +202,24 @@ jobs:
                   check=True,
               )
               assert "Usage:" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-mwrank-runtime":
+              runtime = importlib.import_module("sagelite_mwrank.runtime")
+              mwrank = runtime.mwrank_command()
+              print("mwrank=", mwrank)
+              assert os.path.exists(mwrank)
+              import shutil
+              import subprocess
+              assert shutil.which("mwrank")
+              result = subprocess.run(
+                  ["mwrank", "-v0", "-q"],
+                  input="0 0 0 0 1\n",
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "Curve [0,0,0,0,1]" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":

@@ -94,6 +94,39 @@ build_ecm_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_mwrank_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local mwrank_bindir="$prefix/bin"
+  if [ ! -x "$mwrank_bindir/mwrank" ]; then
+    echo "mwrank executable not found under $mwrank_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name mwrank -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-mwrank-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "mwrank runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_MWRANK_BINDIR="$mwrank_bindir" \
+  SAGELITE_MWRANK_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_maxima_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -317,6 +350,7 @@ fi
 auditwheel repair -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
 build_ecm_runtime_companion
+build_mwrank_runtime_companion
 build_maxima_runtime_companion
 build_nauty_runtime_companion
 build_pari_data_companion
