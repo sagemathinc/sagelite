@@ -37,6 +37,7 @@ SIDECAR_SUFFIXES = {
     ".html",
     ".htm",
     ".hpp",
+    ".in",
     ".ini",
     ".jpg",
     ".jpeg",
@@ -75,10 +76,15 @@ SIDECAR_SUFFIXES = {
     ".wmv",
     ".xz",
     ".zip",
+    ".gaprc",
 }
 
 SIDECAR_NAMES = {
+    "nodoctest",
+    "PRIMES",
     "README",
+    "spec",
+    "testall",
 }
 
 IGNORED_DIRS = {
@@ -112,6 +118,8 @@ def resolve_install_dir(install_dir: Path) -> Path:
 
 
 def is_sidecar(path: Path) -> bool:
+    if path.name.startswith("ex-") and path.parent.name == "dokchitser":
+        return True
     return path.name in SIDECAR_NAMES or path.suffix in SIDECAR_SUFFIXES
 
 
