@@ -1,5 +1,7 @@
-from importlib.resources import files
 import os
+import subprocess
+import sys
+from importlib.resources import files
 
 
 def gap_root() -> str:
@@ -21,4 +23,24 @@ def gap_root_paths() -> str:
     return ";".join(roots)
 
 
-__all__ = ["gap_root", "gap_root_paths"]
+def gap_command() -> str | None:
+    """
+    Return the bundled GAP executable command, if present.
+    """
+    command = files(__package__).joinpath("data", "bin", "gap")
+    if not command.is_file():
+        return None
+    return os.fspath(command)
+
+
+def gap() -> None:
+    """
+    Run the bundled GAP executable.
+    """
+    command = gap_command()
+    if command is None:
+        raise RuntimeError("gap executable is missing from companion package")
+    raise SystemExit(subprocess.call([command, *sys.argv[1:]]))
+
+
+__all__ = ["gap", "gap_command", "gap_root", "gap_root_paths"]

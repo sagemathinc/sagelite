@@ -26,6 +26,9 @@ classifiers = [
 ]
 urls = { Homepage = "https://www.sagemath.org" }
 
+[project.scripts]
+gap = "sagelite_gap_runtime.runtime:gap"
+
 [tool.setuptools]
 zip-safe = false
 

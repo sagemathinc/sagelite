@@ -44,6 +44,25 @@ def _candidate_gap_roots() -> list[Path]:
     return roots
 
 
+def _candidate_gap_bindirs() -> list[Path]:
+    dirs = []
+    for variable in ("SAGELITE_GAP_BINDIR", "GAP_BINDIR"):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "bin")
+    dirs.extend([Path("/usr/bin"), Path("/usr/local/bin")])
+    return dirs
+
+
+def _find_gap_executable() -> Path | None:
+    for bindir in _candidate_gap_bindirs():
+        command = bindir / "gap"
+        if command.is_file():
+            return command.resolve()
+    return None
+
+
 def _deduplicate_existing_roots(roots: list[Path]) -> list[Path]:
     seen = set()
     deduped = []
@@ -119,6 +138,12 @@ class build_py(_build_py):
                 ignore=_ignore_gap_files,
                 ignore_dangling_symlinks=True,
             )
+
+        gap_executable = _find_gap_executable()
+        if gap_executable is not None:
+            bin_target = target / "bin"
+            bin_target.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(gap_executable, bin_target / "gap")
 
 
 cmdclass = {"build_py": build_py}

@@ -1,3 +1,3 @@
-from .runtime import gap_root, gap_root_paths
+from .runtime import gap, gap_command, gap_root, gap_root_paths
 
-__all__ = ["gap_root", "gap_root_paths"]
+__all__ = ["gap", "gap_command", "gap_root", "gap_root_paths"]

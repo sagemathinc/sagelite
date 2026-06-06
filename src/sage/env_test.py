@@ -28,6 +28,7 @@ def clean_runtime_environment():
         "MAXIMA_PREFIX",
         "MWRANK",
         "RUBIKS_BINS_PREFIX",
+        "SAGE_GAP_COMMAND",
         "SAGE_ECMBIN",
         "SAGE_NAUTY_BINS_PREFIX",
     ]
@@ -71,6 +72,14 @@ def _ecm_runtime(tmp_path: Path, name: str) -> Path:
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
     command = tmp_path / name / "bin" / "mwrank"
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
+
+
+def _gap_runtime_command(tmp_path: Path, name: str) -> Path:
+    command = tmp_path / name / "bin" / "gap"
     command.parent.mkdir(parents=True)
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
@@ -185,6 +194,42 @@ def test_gap_root_paths_ignores_broken_companion(monkeypatch, tmp_path):
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
 
     assert env._gap_root_paths() == str(baked)
+
+
+def test_gap_runtime_sets_pexpect_command(monkeypatch, tmp_path):
+    command = _gap_runtime_command(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_GAP_COMMAND", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: (
+            str(command)
+            if (module_name, attr_name)
+            == ("sagelite_gap_runtime.runtime", "gap_command")
+            else None
+        ),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert env.os.environ["SAGE_GAP_COMMAND"] == str(command)
+
+
+def test_gap_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
+    existing = _gap_runtime_command(tmp_path, "existing")
+    companion = _gap_runtime_command(tmp_path, "companion")
+
+    monkeypatch.setenv("SAGE_GAP_COMMAND", str(existing))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert env.os.environ["SAGE_GAP_COMMAND"] == str(existing)
 
 
 def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

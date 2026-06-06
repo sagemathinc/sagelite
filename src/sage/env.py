@@ -194,6 +194,22 @@ def _gap_root_paths() -> str:
                      join(SAGE_LOCAL, "share", "gap")])
 
 
+def _bootstrap_sagelite_gap_runtime() -> None:
+    """
+    Seed ``SAGE_GAP_COMMAND`` from an optional GAP runtime companion package.
+
+    ``GAP_ROOT_PATHS`` is handled separately because it is needed by libgap at
+    import time.  The command is for Sage's pexpect GAP interface, whose
+    doctests still invoke a standalone ``gap`` executable.
+    """
+    if os.environ.get("SAGE_GAP_COMMAND"):
+        return
+
+    command = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_command")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("SAGE_GAP_COMMAND", os.fspath(command))
+
+
 def _bootstrap_sagelite_ecm_runtime() -> None:
     """
     Seed ``SAGE_ECMBIN`` from an optional ``sagelite_ecm`` package.
@@ -529,6 +545,7 @@ SAGE_IMPORTALL = var("SAGE_IMPORTALL", "yes")
 # GAP memory and args
 
 SAGE_GAP_MEMORY = var('SAGE_GAP_MEMORY', None)
+_bootstrap_sagelite_gap_runtime()
 SAGE_GAP_COMMAND = var('SAGE_GAP_COMMAND', None)
 
 # The semicolon-separated search path for GAP packages. It is passed
