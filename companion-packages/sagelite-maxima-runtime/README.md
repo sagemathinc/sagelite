@@ -24,5 +24,6 @@ python -m build companion-packages/sagelite-maxima-runtime
 ```
 
 If the variables are not set, the build checks common Sage and system
-locations. For production wheels, build this package from the same Sage prefix
-used to build the corresponding `sagelite` wheel.
+locations, including Debian/Ubuntu's `maxima-sage` layout. For production
+wheels, build this package from the same Sage prefix used to build the
+corresponding `sagelite` wheel.

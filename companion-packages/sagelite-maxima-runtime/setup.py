@@ -45,6 +45,7 @@ def _candidate_images_dirs(maxima_prefix: Path) -> list[Path]:
     if os.environ.get("SAGELITE_MAXIMA_IMAGESDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_IMAGESDIR"]))
     version = maxima_prefix.name
+    dirs.extend(Path("/usr/lib").glob(f"maxima-sage/{version}"))
     dirs.extend(Path("/usr/lib").glob(f"maxima/{version}"))
     dirs.extend(Path("/usr/local/lib").glob(f"maxima/{version}"))
     return dirs
@@ -54,6 +55,8 @@ def _candidate_ecl_dirs() -> list[Path]:
     dirs = []
     if os.environ.get("SAGELITE_MAXIMA_ECLDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_ECLDIR"]))
+    for directory in Path("/usr/lib").glob("*-linux-gnu"):
+        dirs.extend(directory.glob("ecl-*"))
     dirs.extend(Path("/usr/lib").glob("ecl-*"))
     dirs.extend(Path("/usr/local/lib").glob("ecl-*"))
     return dirs
@@ -63,12 +66,13 @@ def _candidate_library_dirs() -> list[Path]:
     dirs = []
     if os.environ.get("SAGELITE_MAXIMA_LIBDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_LIBDIR"]))
+    dirs.extend(Path("/usr/lib").glob("*-linux-gnu"))
     dirs.extend([Path("/usr/lib"), Path("/usr/local/lib")])
     return dirs
 
 
 def _looks_like_maxima_prefix(path: Path) -> bool:
-    return (path / "src").is_dir() and (path / "share").is_dir()
+    return (path / "share").is_dir()
 
 
 def _looks_like_images_dir(path: Path) -> bool:
@@ -81,7 +85,7 @@ def _find_maxima_prefix() -> Path:
             return prefix.resolve()
     searched = "\n  ".join(os.fspath(path) for path in _candidate_prefixes())
     raise RuntimeError(
-        "could not find a Maxima prefix containing src/ and share/. "
+        "could not find a Maxima prefix containing share/. "
         "Set SAGELITE_MAXIMA_PREFIX to the Sage-built Maxima share directory.\n"
         f"Searched:\n  {searched}"
     )
