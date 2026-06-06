@@ -117,7 +117,7 @@ import os
 import sage.rings.real_double
 import sage.symbolic.expression
 import sage.symbolic.integration.integral
-from sage.env import MAXIMA_FAS, MAXIMA_PREFIX
+from sage.env import MAXIMA_FAS, MAXIMA_PREFIX, _optional_runtime_value
 from sage.interfaces.maxima_abstract import (
     MaximaAbstract,
     MaximaAbstractElement,
@@ -132,10 +132,29 @@ from sage.structure.element import Expression
 from sage.symbolic.operators import FDerivativeOperator, add_vararg, mul_vararg
 from sage.symbolic.ring import SR
 
-if MAXIMA_FAS and not os.path.isfile(MAXIMA_FAS):
-    MAXIMA_FAS = ""
-if MAXIMA_PREFIX and not os.path.isdir(MAXIMA_PREFIX):
-    MAXIMA_PREFIX = ""
+def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
+    """
+    Return usable Maxima library-mode paths.
+
+    Binary wheels can carry build-time ``sage.config`` paths that are invalid
+    after installation.  If that happens and the optional sagelite Maxima
+    companion package is installed, use its relocatable runtime paths directly.
+    """
+    if not maxima_fas or not os.path.isfile(maxima_fas):
+        maxima_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    if not maxima_prefix or not os.path.isdir(maxima_prefix):
+        maxima_prefix = _optional_runtime_value(
+            "sagelite_maxima.runtime", "maxima_prefix"
+        )
+
+    if maxima_fas and not os.path.isfile(maxima_fas):
+        maxima_fas = ""
+    if maxima_prefix and not os.path.isdir(maxima_prefix):
+        maxima_prefix = ""
+    return maxima_fas, maxima_prefix
+
+
+MAXIMA_FAS, MAXIMA_PREFIX = _configured_maxima_paths(MAXIMA_FAS, MAXIMA_PREFIX)
 
 
 def _require_maxima():
