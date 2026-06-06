@@ -161,6 +161,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-four-ti-2-runtime"
+          path: four-ti-2-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-maxima-runtime"
           path: maxima-runtime-dist
           merge-multiple: true
@@ -181,6 +187,12 @@ jobs:
         with:
           pattern: "*-nauty-runtime"
           path: nauty-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-rubiks-runtime"
+          path: rubiks-runtime-dist
           merge-multiple: true
 
       - uses: actions/download-artifact@v6
@@ -227,10 +239,12 @@ jobs:
             wheelhouse/*.whl
             gap-runtime-dist/*.whl
             ecm-runtime-dist/*.whl
+            four-ti-2-runtime-dist/*.whl
             maxima-runtime-dist/*.whl
             meataxe-runtime-dist/*.whl
             mwrank-runtime-dist/*.whl
             nauty-runtime-dist/*.whl
+            rubiks-runtime-dist/*.whl
             palp-runtime-dist/*.whl
             pari-data-dist/*.whl
             singular-runtime-dist/*.whl
