@@ -12,6 +12,13 @@ def gap3_root() -> str:
     return os.fspath(files(__package__).joinpath("data", "gap3"))
 
 
+def gap3_command() -> str:
+    """
+    Return the bundled GAP3 startup command.
+    """
+    return os.fspath(files(__package__).joinpath("data", "gap3", "bin", "gap.sh"))
+
+
 def main() -> None:
     """
     Execute the bundled GAP3 startup script.
@@ -21,4 +28,4 @@ def main() -> None:
         os.execv(os.fspath(executable), ["gap3", *sys.argv[1:]])
 
 
-__all__ = ["gap3_root", "main"]
+__all__ = ["gap3_command", "gap3_root", "main"]

@@ -239,6 +239,22 @@ def _bootstrap_sagelite_gap_runtime() -> None:
         os.environ.setdefault("SAGE_GAP_COMMAND", os.fspath(command))
 
 
+def _bootstrap_sagelite_gap3_runtime() -> None:
+    """
+    Seed ``SAGE_GAP3_COMMAND`` from an optional GAP3 runtime companion package.
+
+    Sage's GAP3 interface is pexpect-based and normally looks for ``gap3`` on
+    ``PATH``.  The companion package supplies a relocatable startup script for
+    installed wheels.
+    """
+    if os.environ.get("SAGE_GAP3_COMMAND"):
+        return
+
+    command = _optional_runtime_value("sagelite_gap3.runtime", "gap3_command")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("SAGE_GAP3_COMMAND", os.fspath(command))
+
+
 def _bootstrap_sagelite_ecm_runtime() -> None:
     """
     Seed ``SAGE_ECMBIN`` from an optional ``sagelite_ecm`` package.
@@ -674,6 +690,8 @@ SAGE_IMPORTALL = var("SAGE_IMPORTALL", "yes")
 SAGE_GAP_MEMORY = var('SAGE_GAP_MEMORY', None)
 _bootstrap_sagelite_gap_runtime()
 SAGE_GAP_COMMAND = var('SAGE_GAP_COMMAND', None)
+_bootstrap_sagelite_gap3_runtime()
+SAGE_GAP3_COMMAND = var("SAGE_GAP3_COMMAND", "gap3")
 
 # The semicolon-separated search path for GAP packages. It is passed
 # directly to GAP via the -l flag.

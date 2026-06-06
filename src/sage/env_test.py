@@ -40,6 +40,7 @@ def clean_runtime_environment():
         "MWRANK",
         "PALP_BINS_PREFIX",
         "RUBIKS_BINS_PREFIX",
+        "SAGE_GAP3_COMMAND",
         "SAGE_GAP_COMMAND",
         "SAGE_ECMBIN",
         "SAGE_NAUTY_BINS_PREFIX",
@@ -285,6 +286,41 @@ def test_gap_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
     env._bootstrap_sagelite_gap_runtime()
 
     assert env.os.environ["SAGE_GAP_COMMAND"] == str(existing)
+
+
+def test_gap3_runtime_sets_pexpect_command(monkeypatch, tmp_path):
+    command = _runtime_executable(tmp_path, "companion", "gap.sh")
+
+    monkeypatch.delenv("SAGE_GAP3_COMMAND", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: (
+            str(command)
+            if (module_name, attr_name) == ("sagelite_gap3.runtime", "gap3_command")
+            else None
+        ),
+    )
+
+    env._bootstrap_sagelite_gap3_runtime()
+
+    assert env.os.environ["SAGE_GAP3_COMMAND"] == str(command)
+
+
+def test_gap3_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
+    existing = _runtime_executable(tmp_path, "existing", "gap3")
+    companion = _runtime_executable(tmp_path, "companion", "gap.sh")
+
+    monkeypatch.setenv("SAGE_GAP3_COMMAND", str(existing))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    env._bootstrap_sagelite_gap3_runtime()
+
+    assert env.os.environ["SAGE_GAP3_COMMAND"] == str(existing)
 
 
 def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
