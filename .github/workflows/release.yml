@@ -155,6 +155,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-gfan-runtime"
+          path: gfan-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-ecm-runtime"
           path: ecm-runtime-dist
           merge-multiple: true
@@ -238,6 +244,7 @@ jobs:
             dist/*
             wheelhouse/*.whl
             gap-runtime-dist/*.whl
+            gfan-runtime-dist/*.whl
             ecm-runtime-dist/*.whl
             four-ti-2-runtime-dist/*.whl
             maxima-runtime-dist/*.whl
@@ -390,6 +397,7 @@ jobs:
       - name: Build wheel
         run: |
           rm -rf gap-runtime-dist
+          rm -rf gfan-runtime-dist
           rm -rf ecm-runtime-dist
           rm -rf four-ti-2-runtime-dist
           rm -rf maxima-runtime-dist
@@ -443,6 +451,15 @@ jobs:
           find wheelhouse -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" -exec mv -v {} gap-runtime-dist/ \;
           test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-*.whl" | wc -l)" -eq 1
           ls -lh gap-runtime-dist
+
+      - name: Separate gfan runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p gfan-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_gfan_runtime-*.whl" -exec mv -v {} gfan-runtime-dist/ \;
+          test "$(find gfan-runtime-dist -maxdepth 1 -type f -name "sagelite_gfan_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh gfan-runtime-dist
 
       - name: Separate ECM runtime companion wheel
         if: matrix.python == 'cp312'
@@ -546,7 +563,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist ecm-runtime-dist four-ti-2-runtime-dist maxima-runtime-dist meataxe-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist pari-data-dist singular-runtime-dist; do
+          for companion_dist in gap-runtime-dist gfan-runtime-dist ecm-runtime-dist four-ti-2-runtime-dist maxima-runtime-dist meataxe-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist pari-data-dist singular-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -563,6 +580,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-gap-runtime
           path: ./gap-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-gfan-runtime
+          path: ./gfan-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -685,6 +709,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: gap-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_gfan_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-gfan-runtime"
+          path: gfan-runtime-dist
+          merge-multiple: true
+
+      - name: Verify gfan runtime artifact set
+        run: |
+          set -euo pipefail
+          find gfan-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find gfan-runtime-dist -maxdepth 1 -type f -name "sagelite_gfan_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find gfan-runtime-dist -maxdepth 1 -type f -name "sagelite_gfan_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find gfan-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: gfan-runtime-dist/
           skip-existing: true
           verbose: true
 

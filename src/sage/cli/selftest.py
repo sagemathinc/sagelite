@@ -156,6 +156,24 @@ def _check_gapdoc_runtime():
     )
 
 
+def _check_gfan_runtime():
+    try:
+        import sagelite_gfan  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.gfan import GfanExecutable
+    from sage.interfaces.gfan import gfan
+
+    feature = GfanExecutable().is_present()
+    if not bool(feature):
+        raise RuntimeError(f"gfan executable is not available: {feature.reason}")
+    result = gfan("Q[x,y]{x^2-y-1,y^2-x*y-2/3}", cmd="bases")
+    if "Q[x,y]" not in result:
+        raise RuntimeError(f"unexpected gfan output: {result!r}")
+    return "gfan executable available"
+
+
 def _check_maxima_runtime():
     try:
         import sagelite_maxima  # noqa: F401
@@ -480,6 +498,7 @@ def main() -> int:
         ("libbraiding library", _check_libbraiding),
         ("libhomfly library", _check_libhomfly),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
+        ("gfan executable runtime", _check_gfan_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
