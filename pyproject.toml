@@ -85,11 +85,13 @@ urls = { Homepage = "https://www.sagemath.org" }
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
+cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 databases = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'matroid-database ==0.3',
+  'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
@@ -119,6 +121,7 @@ full = [
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
+  'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',

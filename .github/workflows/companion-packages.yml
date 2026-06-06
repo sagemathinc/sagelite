@@ -35,6 +35,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: sagelite-cunningham-tables
+            import_name: sagelite_cunningham_tables
+            path: companion-packages/sagelite-cunningham-tables
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-cremona-mini
             import_name: sagelite_database_cremona_mini
             path: companion-packages/sagelite-database-cremona-mini
@@ -183,6 +188,19 @@ jobs:
           import sqlite3
 
           module = importlib.import_module("${{ matrix.import_name }}")
+          if "${{ matrix.name }}" == "sagelite-cunningham-tables":
+              data_path = module.sage_data_path()
+              tables_path = module.cunningham_tables_path()
+              sobj_path = module.cunningham_prime_factors_path()
+              print("data_path=", data_path)
+              print("tables_path=", tables_path)
+              print("sobj_path=", sobj_path)
+              assert sobj_path.endswith("cunningham_prime_factors.sobj"), sobj_path
+              assert os.path.exists(sobj_path)
+              assert os.path.getsize(sobj_path) > 0
+              assert any(ep.name == "cunningham_tables" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-gap-runtime":
               runtime = importlib.import_module("sagelite_gap_runtime.runtime")
               gap_root = runtime.gap_root()

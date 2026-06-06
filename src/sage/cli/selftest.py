@@ -220,6 +220,20 @@ def _check_database_graphs():
     return "graphs.db available"
 
 
+def _check_cunningham_tables():
+    try:
+        import sagelite_cunningham_tables  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.cunningham_tables import cunningham_prime_factors
+
+    factors = cunningham_prime_factors()
+    if len(factors) < 100:
+        raise RuntimeError("Cunningham tables did not provide enough factors")
+    return f"{len(factors)} Cunningham prime factors available"
+
+
 def _check_database_cremona_mini():
     try:
         import sagelite_database_cremona_mini  # noqa: F401
@@ -405,6 +419,7 @@ def main() -> int:
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
+        ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
