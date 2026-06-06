@@ -968,7 +968,9 @@ class GroebnerFan(SageObject):
             sage: len(g4.weight_vectors())
             23
         """
-        gfan_processes = Popen(['gfan', '_weightvector', '-m'],
+        from sage.features.gfan import GfanExecutable
+        gfan_processes = Popen([GfanExecutable().absolute_filename(),
+                                '_weightvector', '-m'],
                                stdin=PIPE, stdout=PIPE, stderr=PIPE)
         b_ans, _ = gfan_processes.communicate(input=self.gfan().encode("utf8"))
         s_ans = b_ans.decode()

@@ -290,6 +290,30 @@ def _bootstrap_sagelite_mwrank_runtime() -> None:
         os.environ.setdefault("MWRANK", os.fspath(command))
 
 
+def _bootstrap_sagelite_gfan_runtime() -> None:
+    """
+    Seed ``GFAN_BINS_PREFIX`` from an optional ``sagelite_gfan`` package.
+
+    Sage's Groebner fan interface calls gfan command-line executables.  The
+    companion package supplies relocatable executable wrappers for installed
+    wheels.
+    """
+    configured = getattr(sage.config, "GFAN_BINS_PREFIX", None)
+    needs_prefix = (
+        not os.environ.get("GFAN_BINS_PREFIX")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "gfan"))
+        )
+    )
+    if not needs_prefix:
+        return
+
+    prefix = _optional_runtime_value("sagelite_gfan.runtime", "bin_prefix")
+    if prefix and os.path.isfile(os.path.join(prefix, "gfan")):
+        os.environ.setdefault("GFAN_BINS_PREFIX", os.fspath(prefix))
+
+
 def _bootstrap_sagelite_singular_runtime() -> None:
     """
     Seed Singular data-root variables from an optional companion package.
@@ -605,6 +629,8 @@ _bootstrap_sagelite_ecm_runtime()
 SAGE_ECMBIN = var("SAGE_ECMBIN", "ecm")
 _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
+_bootstrap_sagelite_gfan_runtime()
+GFAN_BINS_PREFIX = var("GFAN_BINS_PREFIX", "")
 _bootstrap_sagelite_rubiks_runtime()
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
 _bootstrap_sagelite_palp_runtime()

@@ -12,6 +12,7 @@ Features for testing the presence of ``gfan``
 # *****************************************************************************
 
 from . import Executable
+from sage.env import GFAN_BINS_PREFIX
 
 
 class GfanExecutable(Executable):
@@ -30,7 +31,8 @@ class GfanExecutable(Executable):
             name = "gfan"
         else:
             name = f"gfan_{cmd}"
-        Executable.__init__(self, name, executable=name, spkg='gfan', type='standard')
+        Executable.__init__(self, name, executable=GFAN_BINS_PREFIX + name,
+                            spkg='gfan', type='standard')
 
 
 def all_features():

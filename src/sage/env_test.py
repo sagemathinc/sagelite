@@ -31,6 +31,7 @@ def clean_runtime_environment():
         "FOURTITWO_RAYS",
         "FOURTITWO_ZSOLVE",
         "GAP_ROOT_PATHS",
+        "GFAN_BINS_PREFIX",
         "KENZO_FAS",
         "MAXIMA",
         "MAXIMA_FAS",
@@ -476,6 +477,46 @@ def test_mwrank_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_mwrank_runtime()
 
     assert env.os.environ["MWRANK"] == str(existing_command)
+
+
+def test_gfan_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "gfan")
+
+    monkeypatch.delenv("GFAN_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "GFAN_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_gfan.runtime", "bin_prefix")
+        else None,
+    )
+
+    env._bootstrap_sagelite_gfan_runtime()
+
+    assert env.os.environ["GFAN_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_gfan_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "gfan")
+    existing = _runtime_bin_prefix(tmp_path, "existing", "gfan")
+
+    monkeypatch.setenv("GFAN_BINS_PREFIX", str(existing) + env.os.sep)
+    monkeypatch.setattr(env.sage.config, "GFAN_BINS_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep,
+    )
+
+    env._bootstrap_sagelite_gfan_runtime()
+
+    assert env.os.environ["GFAN_BINS_PREFIX"] == str(existing) + env.os.sep
 
 
 def test_nauty_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

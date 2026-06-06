@@ -69,6 +69,10 @@ def executable_path(program: str = "gfan") -> Path:
     return Path(__file__).resolve().parent / "data" / "bin" / program
 
 
+def bin_prefix() -> str:
+    return os.fspath(Path(__file__).resolve().parent / "data" / "bin") + os.sep
+
+
 def run_program(program: str) -> int:
     executable = executable_path(program)
     if not executable.is_file():
