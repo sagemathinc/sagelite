@@ -24,6 +24,7 @@ install = ['--skip-subprojects']
 setup = [
   '--default-library=static',
   '-Declib=enabled',
+  '-Dlibbraiding=enabled',
   '-Dlibhomfly=enabled',
   '-Drankwidth=enabled',
 ]
