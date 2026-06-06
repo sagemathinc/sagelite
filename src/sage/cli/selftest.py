@@ -99,11 +99,27 @@ def _check_singular_runtime():
     except ImportError:
         return "not installed"
 
+    from sage.all import GF, ProjectiveSpace
     from sage.libs.singular.function import lib as singular_lib
     from sage.libs.singular.function import singular_function
 
     singular_lib("freegb.lib")
-    return singular_function("freeAlgebra")
+    free_algebra = singular_function("freeAlgebra")
+
+    P = ProjectiveSpace(GF(2), 3, names="x,y,z,w")
+    x, y, z, w = P.coordinate_ring().gens()
+    curve = P.curve(
+        [
+            (x - y) * (x - z) * (x - w) * (y - z) * (y - w),
+            x * y * z * w * (x + y + z + w),
+        ]
+    )
+    try:
+        curve.projection()
+    except NotImplementedError:
+        pass
+
+    return free_algebra
 
 
 def _check_libbraiding():
