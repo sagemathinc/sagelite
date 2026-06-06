@@ -23,7 +23,7 @@ from typing import Any
 
 
 RUN_RE = re.compile(
-    r"^python3 -m sage\.doctest .* (?P<path>\S+?)(?:\s+#\s+(?P<summary>.+))?$"
+    r"^(?:python3 -m sage\.doctest|(?:\S+/)?sage -t) .* (?P<path>\S+?)(?:\s+#\s+(?P<summary>.+))?$"
 )
 
 FAIL_LINE_RE = re.compile(r"^\s*(?P<count>\d+)\s+doctests failed$")
