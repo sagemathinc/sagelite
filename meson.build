@@ -222,6 +222,17 @@ root_build = meson.current_build_dir()
 
 subdir('src')
 
+install_subdir(
+  'src/sage_setup',
+  install_dir: py.get_install_dir(),
+  exclude_directories: ['__pycache__'],
+)
+install_subdir(
+  'src/sage_docbuild',
+  install_dir: py.get_install_dir(),
+  exclude_directories: ['__pycache__'],
+)
+
 py.install_sources(
   'conftest.py',
   subdir: 'sage',
