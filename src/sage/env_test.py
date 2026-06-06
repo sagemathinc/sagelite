@@ -37,6 +37,7 @@ def clean_runtime_environment():
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
         "MWRANK",
+        "PALP_BINS_PREFIX",
         "RUBIKS_BINS_PREFIX",
         "SAGE_GAP_COMMAND",
         "SAGE_ECMBIN",
@@ -555,6 +556,46 @@ def test_rubiks_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_rubiks_runtime()
 
     assert env.os.environ["RUBIKS_BINS_PREFIX"] == str(existing) + env.os.sep
+
+
+def test_palp_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "poly.x")
+
+    monkeypatch.delenv("PALP_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "PALP_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_palp.runtime", "bin_prefix")
+        else None,
+    )
+
+    env._bootstrap_sagelite_palp_runtime()
+
+    assert env.os.environ["PALP_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_palp_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "poly.x")
+    existing = _runtime_bin_prefix(tmp_path, "existing", "poly.x")
+
+    monkeypatch.setenv("PALP_BINS_PREFIX", str(existing) + env.os.sep)
+    monkeypatch.setattr(env.sage.config, "PALP_BINS_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep,
+    )
+
+    env._bootstrap_sagelite_palp_runtime()
+
+    assert env.os.environ["PALP_BINS_PREFIX"] == str(existing) + env.os.sep
 
 
 def test_four_ti_2_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

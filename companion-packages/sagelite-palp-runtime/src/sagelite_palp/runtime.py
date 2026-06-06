@@ -12,6 +12,13 @@ PROGRAMS = [
 ]
 
 
+def bin_prefix() -> str:
+    """
+    Return the bundled PALP executable directory with a trailing separator.
+    """
+    return os.fspath(Path(__file__).resolve().parent / "data" / "bin") + os.sep
+
+
 def executable_path(program: str) -> Path:
     return Path(__file__).resolve().parent / "data" / "bin" / program
 

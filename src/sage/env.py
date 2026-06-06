@@ -379,6 +379,30 @@ def _bootstrap_sagelite_rubiks_runtime() -> None:
         os.environ.setdefault("RUBIKS_BINS_PREFIX", os.fspath(prefix))
 
 
+def _bootstrap_sagelite_palp_runtime() -> None:
+    """
+    Seed ``PALP_BINS_PREFIX`` from an optional ``sagelite_palp`` package.
+
+    Sage calls PALP's standalone executables for lattice-polytope features.
+    The companion package supplies relocatable executable copies for installed
+    wheels.
+    """
+    configured = getattr(sage.config, "PALP_BINS_PREFIX", None)
+    needs_prefix = (
+        not os.environ.get("PALP_BINS_PREFIX")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "poly.x"))
+        )
+    )
+    if not needs_prefix:
+        return
+
+    prefix = _optional_runtime_value("sagelite_palp.runtime", "bin_prefix")
+    if prefix and os.path.isfile(os.path.join(prefix, "poly.x")):
+        os.environ.setdefault("PALP_BINS_PREFIX", os.fspath(prefix))
+
+
 def _bootstrap_sagelite_four_ti_2_runtime() -> None:
     """
     Seed 4ti2 executable variables from an optional companion package.
@@ -583,6 +607,8 @@ _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
 _bootstrap_sagelite_rubiks_runtime()
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
+_bootstrap_sagelite_palp_runtime()
+PALP_BINS_PREFIX = var("PALP_BINS_PREFIX", "")
 _bootstrap_sagelite_four_ti_2_runtime()
 FOURTITWO_HILBERT = var("FOURTITWO_HILBERT")
 FOURTITWO_MARKOV = var("FOURTITWO_MARKOV")

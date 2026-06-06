@@ -11,6 +11,8 @@ Feature for testing the presence of ``palp``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+from sage.env import PALP_BINS_PREFIX
+
 from . import Executable
 from .join_feature import JoinFeature
 
@@ -35,11 +37,11 @@ class PalpExecutable(Executable):
         """
         if suff:
             Executable.__init__(self, f"palp_{palpprog}_{suff}d",
-                                executable=f"{palpprog}-{suff}d.x",
+                                executable=f"{PALP_BINS_PREFIX}{palpprog}-{suff}d.x",
                                 spkg='palp', type='standard')
         else:
             Executable.__init__(self, f"palp_{palpprog}",
-                                executable=f"{palpprog}.x",
+                                executable=f"{PALP_BINS_PREFIX}{palpprog}.x",
                                 spkg='palp', type='standard')
 
 

@@ -257,6 +257,20 @@ def _check_mwrank_runtime():
     return "mwrank executable available"
 
 
+def _check_palp_runtime():
+    try:
+        import sagelite_palp  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.palp import Palp
+
+    palp = Palp().is_present()
+    if not bool(palp):
+        raise RuntimeError(f"PALP executables are not available: {palp.reason}")
+    return "PALP executables available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -472,6 +486,7 @@ def main() -> int:
         ("4ti2 executable runtime", _check_four_ti_2_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
         ("mwrank executable runtime", _check_mwrank_runtime),
+        ("PALP executable runtime", _check_palp_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
