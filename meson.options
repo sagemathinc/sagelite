@@ -14,7 +14,7 @@ option(
 option(
   'build-docs',
   type: 'boolean',
-  description: 'Build the HTML / PDF documentation'
+  description: 'Build the HTML / PDF documentation',
 )
 
 #
@@ -24,61 +24,68 @@ option(
   'bliss',
   type: 'feature',
   value: 'auto',
-  description: 'Bliss interface to graph isomorphisms'
+  description: 'Bliss interface to graph isomorphisms',
 )
 
 option(
   'brial',
   type: 'feature',
   value: 'auto',
-  description: 'BRiAl interface to polynomials over boolean rings'
+  description: 'BRiAl interface to polynomials over boolean rings',
 )
 
 option(
   'coxeter3',
   type: 'feature',
   value: 'auto',
-  description: 'Coxeter 3.x interface to Coxeter groups'
+  description: 'Coxeter 3.x interface to Coxeter groups',
 )
 
 option(
   'eclib',
   type: 'feature',
   value: 'auto',
-  description: 'eclib interface to mwrank and elliptic curves over Q'
+  description: 'eclib interface to mwrank and elliptic curves over Q',
+)
+
+option(
+  'libbraiding',
+  type: 'feature',
+  value: 'auto',
+  description: 'libbraiding interface for braid group computations',
 )
 
 option(
   'mcqd',
   type: 'feature',
   value: 'auto',
-  description: 'MCQD interface to the MaxCliqueDyn algorithm'
+  description: 'MCQD interface to the MaxCliqueDyn algorithm',
 )
 
 option(
   'meataxe',
   type: 'feature',
   value: 'auto',
-  description: 'MeatAxe interface to matrix representations over finite fields'
+  description: 'MeatAxe interface to matrix representations over finite fields',
 )
 
 option(
   'rankwidth',
   type: 'feature',
   value: 'auto',
-  description: 'Interface to librw for rank-width decompositions'
+  description: 'Interface to librw for rank-width decompositions',
 )
 
 option(
   'sirocco',
   type: 'feature',
   value: 'auto',
-  description: 'Sirocco interface to certified root continuation'
+  description: 'Sirocco interface to certified root continuation',
 )
 
 option(
   'tdlib',
   type: 'feature',
   value: 'auto',
-  description: 'Interface to tdlib for tree decompositions'
+  description: 'Interface to tdlib for tree decompositions',
 )

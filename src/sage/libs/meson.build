@@ -76,7 +76,7 @@ endif
 braiding = dependency(
   'libbraiding',
   version: '>=1.3.1',
-  required: false,
+  required: get_option('libbraiding'),
   disabler: true,
 )
 if not braiding.found()
@@ -85,7 +85,7 @@ if not braiding.found()
   braiding = cpp.find_library(
     'braiding',
     has_headers: ['braiding.h', 'cbraid.h'],
-    required: false,
+    required: get_option('libbraiding'),
     disabler: true,
   )
 endif
