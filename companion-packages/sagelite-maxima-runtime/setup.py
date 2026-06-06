@@ -143,6 +143,48 @@ def _find_library(soname: str) -> Path:
     )
 
 
+def _find_library_with_prefix(prefix: str) -> Path:
+    candidates = []
+    for directory in _candidate_library_dirs():
+        candidates.extend(directory.glob(f"{prefix}*"))
+    for candidate in candidates:
+        if candidate.is_file() or candidate.is_symlink():
+            return candidate.resolve()
+    searched = "\n  ".join(os.fspath(path) for path in candidates)
+    raise RuntimeError(
+        f"could not find runtime library matching {prefix}*. "
+        f"Set SAGELITE_MAXIMA_LIBDIR.\nSearched:\n  {searched}"
+    )
+
+
+def _runtime_libraries(executable: Path) -> list[Path]:
+    output = subprocess.run(
+        ["ldd", os.fspath(executable)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    prefixes = ("libecl.so", "libgmp.so")
+    for line in output.splitlines():
+        if "=>" not in line:
+            continue
+        name, rest = line.split("=>", 1)
+        name = name.strip()
+        path = rest.strip().split(maxsplit=1)[0]
+        if name.startswith(prefixes) and path != "not":
+            libraries.append(Path(path))
+
+    if not any(path.name.startswith("libecl.so") for path in libraries):
+        libraries.append(_find_library_with_prefix("libecl.so"))
+    if not any(path.name.startswith("libgmp.so") for path in libraries):
+        libraries.append(_find_library_with_prefix("libgmp.so"))
+
+    by_name = {path.name: path for path in libraries}
+    return sorted(by_name.values())
+
+
+
 def _ignore_maxima_files(directory: str, names: list[str]) -> set[str]:
     ignored = {
         "__pycache__",
@@ -236,8 +278,6 @@ class build_py(_build_py):
         maxima_images_dir = _find_maxima_images_dir(maxima_prefix)
         maxima_fas = _find_maxima_fas()
         ecl_dir = _find_ecl_dir()
-        libecl = _find_library("libecl.so.24.5")
-        libgmp = _find_library("libgmp.so.10")
         target = Path(self.build_lib) / "sagelite_maxima" / "data"
         shutil.rmtree(target, ignore_errors=True)
 
@@ -264,8 +304,8 @@ class build_py(_build_py):
 
         runtime_target = target / "lib" / "runtime"
         runtime_target.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(libecl, runtime_target / "libecl.so.24.5")
-        shutil.copy2(libgmp, runtime_target / "libgmp.so.10")
+        for library in _runtime_libraries(maxima_images_dir / "binary-ecl" / "maxima"):
+            shutil.copy2(library, runtime_target / library.name)
 
         _write_maxima_command(
             target / "bin" / "maxima", maxima_prefix.name, ecl_dir.name

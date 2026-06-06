@@ -108,7 +108,7 @@ jobs:
           - name: sagelite-maxima-runtime
             import_name: sagelite_maxima
             path: companion-packages/sagelite-maxima-runtime
-            apt_packages: maxima-sage maxima-sage-share
+            apt_packages: maxima maxima-share
             publish: false
           - name: sagelite-mwrank-runtime
             import_name: sagelite_mwrank
@@ -166,11 +166,6 @@ jobs:
             done
           fi
           if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
-            export SAGELITE_MAXIMA_PREFIX=/usr/share/maxima-sage/5.45.1
-            export SAGELITE_MAXIMA_FAS=/usr/lib/ecl/maxima.fas
-            export SAGELITE_MAXIMA_IMAGESDIR=/usr/lib/maxima-sage/5.45.1
-            export SAGELITE_MAXIMA_ECLDIR=/usr/lib/x86_64-linux-gnu/ecl-24.5.10
-            export SAGELITE_MAXIMA_LIBDIR=/usr/lib/x86_64-linux-gnu
             export SAGELITE_MAXIMA_RUNTIME_PLAT_NAME=linux_x86_64
           fi
           if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
