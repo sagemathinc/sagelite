@@ -108,6 +108,42 @@ RUNTIME_PACKAGE_DATA = {
     },
 }
 
+REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
+    "sagelite-4ti2-runtime",
+    "sagelite-benzene-runtime",
+    "sagelite-buckygen-runtime",
+    "sagelite-cddlib-runtime",
+    "sagelite-ecm-runtime",
+    "sagelite-gap-runtime",
+    "sagelite-gfan-runtime",
+    "sagelite-glucose-runtime",
+    "sagelite-kissat-runtime",
+    "sagelite-maxima-runtime",
+    "sagelite-meataxe-runtime",
+    "sagelite-msolve-runtime",
+    "sagelite-mwrank-runtime",
+    "sagelite-nauty-runtime",
+    "sagelite-palp-runtime",
+    "sagelite-plantri-runtime",
+    "sagelite-rubiks-runtime",
+    "sagelite-singular-runtime",
+    "sagelite-sympow-runtime",
+    "sagelite-tachyon-runtime",
+    "sagelite-topcom-runtime",
+}
+
+REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
+    "sagelite-d3js-runtime",
+    "sagelite-gap3-runtime",
+    "sagelite-jmol-runtime",
+    "sagelite-kenzo-runtime",
+    "sagelite-latte-runtime",
+    "sagelite-lie-runtime",
+    "sagelite-lrslib-runtime",
+    "sagelite-mathjax-runtime",
+    "sagelite-threejs-runtime",
+}
+
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
@@ -121,6 +157,20 @@ def test_runtime_companion_wheels_declare_copied_package_data():
 
         assert setuptools["include-package-data"] is True
         assert setuptools["package-data"] == package_data
+
+
+def test_linux_repair_builds_expected_runtime_companion_wheels():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    for package in REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES:
+        assert f"companion-packages/{package}" in repair_text
+
+    covered = (
+        REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES
+        | REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES
+    )
+    assert set(RUNTIME_PACKAGE_DATA) == covered
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():

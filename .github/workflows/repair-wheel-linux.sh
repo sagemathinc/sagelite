@@ -300,6 +300,238 @@ build_cddlib_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_benzene_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local benzene_bindir="$prefix/bin"
+  if [ ! -x "$benzene_bindir/benzene" ]; then
+    echo "benzene executable not found under $benzene_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name benzene -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-benzene-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "benzene runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_BENZENE_BINDIR="$benzene_bindir" \
+  SAGELITE_BENZENE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_buckygen_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local buckygen_bindir="$prefix/bin"
+  if [ ! -x "$buckygen_bindir/buckygen" ]; then
+    echo "buckygen executable not found under $buckygen_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name buckygen -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-buckygen-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "buckygen runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_BUCKYGEN_BINDIR="$buckygen_bindir" \
+  SAGELITE_BUCKYGEN_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_glucose_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local glucose_bindir="$prefix/bin"
+  if [ ! -x "$glucose_bindir/glucose" ] ||
+     [ ! -x "$glucose_bindir/glucose-syrup" ]; then
+    echo "Glucose executables not found under $glucose_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name glucose -o -name glucose-syrup \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-glucose-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Glucose runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_GLUCOSE_BINDIR="$glucose_bindir" \
+  SAGELITE_GLUCOSE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_kissat_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local kissat_bindir="$prefix/bin"
+  if [ ! -x "$kissat_bindir/kissat" ]; then
+    echo "kissat executable not found under $kissat_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name kissat -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-kissat-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "kissat runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_KISSAT_BINDIR="$kissat_bindir" \
+  SAGELITE_KISSAT_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_msolve_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local msolve_bindir="$prefix/bin"
+  if [ ! -x "$msolve_bindir/msolve" ]; then
+    echo "msolve executable not found under $msolve_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name msolve -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-msolve-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "msolve runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_MSOLVE_BINDIR="$msolve_bindir" \
+  SAGELITE_MSOLVE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_plantri_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local plantri_bindir="$prefix/bin"
+  if [ ! -x "$plantri_bindir/plantri" ]; then
+    echo "plantri executable not found under $plantri_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name plantri -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-plantri-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "plantri runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_PLANTRI_BINDIR="$plantri_bindir" \
+  SAGELITE_PLANTRI_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_tachyon_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tachyon_bindir="$prefix/bin"
+  if [ ! -x "$tachyon_bindir/tachyon" ]; then
+    echo "tachyon executable not found under $tachyon_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name tachyon -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-tachyon-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "tachyon runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_TACHYON_BINDIR="$tachyon_bindir" \
+  SAGELITE_TACHYON_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_maxima_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -670,6 +902,13 @@ build_sympow_runtime_companion
 build_topcom_runtime_companion
 build_four_ti_2_runtime_companion
 build_cddlib_runtime_companion
+build_benzene_runtime_companion
+build_buckygen_runtime_companion
+build_glucose_runtime_companion
+build_kissat_runtime_companion
+build_msolve_runtime_companion
+build_plantri_runtime_companion
+build_tachyon_runtime_companion
 build_maxima_runtime_companion
 build_meataxe_runtime_companion
 build_nauty_runtime_companion
