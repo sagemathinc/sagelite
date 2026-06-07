@@ -23,6 +23,7 @@ install = ['--skip-subprojects']
 # Ensure that ``library`` targets are built as static, and nothing gets installed
 setup = [
   '--default-library=static',
+  '-Dbrial=enabled',
   '-Declib=enabled',
   '-Dlibbraiding=enabled',
   '-Dlibhomfly=enabled',

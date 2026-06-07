@@ -2,13 +2,16 @@ brial = dependency('brial', required: false, disabler: true)
 if not brial.found()
   # fallback for older versions without pkg-config
   brial = cc.find_library('brial', required: get_option('brial'), disabler: true)
+  # Cannot be found via pkg-config
+  brial_groebner = cc.find_library(
+    'brial_groebner',
+    required: get_option('brial'),
+    disabler: true,
+  )
+else
+  # brial.pc carries the brial_groebner link dependency on current builds.
+  brial_groebner = declare_dependency()
 endif
-# Cannot be found via pkg-config
-brial_groebner = cc.find_library(
-  'brial_groebner',
-  required: get_option('brial'),
-  disabler: true,
-)
 
 py.install_sources(
   'PyPolyBoRi.py',
@@ -61,4 +64,3 @@ foreach name, pyx : extension_data_cpp
     ],
   )
 endforeach
-
