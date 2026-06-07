@@ -91,6 +91,7 @@ file_paths = [
   'src/sage/modular/quasimodform/__init__.py',
   'src/sage/modular/modsym/__init__.py',
   'src/sage/modular/local_comp/__init__.py',
+  'src/sage/modular/drinfeld_modform/__init__.py',
   'src/sage/modular/quatalg/__init__.py',
   'src/sage/modular/ssmod/__init__.py',
   'src/sage/modular/abvar/__init__.py',
