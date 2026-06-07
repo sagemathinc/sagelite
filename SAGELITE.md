@@ -229,6 +229,7 @@ Examples include:
 - `sagelite-maxima-runtime`
 - `sagelite-meataxe-runtime`
 - `sagelite-mwrank-runtime`
+- `sagelite-msolve-runtime`
 - `sagelite-nauty-runtime`
 - `sagelite-palp-runtime`
 - `sagelite-plantri-runtime`

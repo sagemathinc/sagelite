@@ -169,6 +169,7 @@ full = [
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
+  'sagelite-msolve-runtime >=10.9,<10.10',
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
@@ -203,6 +204,7 @@ maxima = ['sagelite-maxima-runtime >=10.9,<10.10']
 meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
 mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
 mwrank = ['sagelite-mwrank-runtime >=10.9,<10.10']
+msolve = ['sagelite-msolve-runtime >=10.9,<10.10']
 nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
@@ -231,6 +233,7 @@ runtime = [
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
+  'sagelite-msolve-runtime >=10.9,<10.10',
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',

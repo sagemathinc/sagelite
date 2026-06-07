@@ -17,8 +17,10 @@ Feature for testing the presence of msolve
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
 import subprocess
 from . import Executable
+from . import FeatureNotPresentError
 from . import FeatureTestResult
 
 
@@ -43,6 +45,30 @@ class msolve(Executable):
         Executable.__init__(self, "msolve", executable='msolve',
                             url='https://msolve.lip6.fr/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the msolve executable path.
+
+        Normal Sage installations find msolve on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-msolve-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_msolve.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def is_functional(self):
         r"""
         Test if our installation of msolve is working.
@@ -53,7 +79,7 @@ class msolve(Executable):
             sage: msolve().is_functional()  # optional - msolve
             FeatureTestResult('msolve', True)
         """
-        msolve_out = subprocess.run(["msolve", "-h"], capture_output=True)
+        msolve_out = subprocess.run([self.absolute_filename(), "-h"], capture_output=True)
 
 #        if msolve_out.returncode != 0:
 #            return FeatureTestResult(self, False, reason="msolve -h returned "

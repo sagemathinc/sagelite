@@ -72,6 +72,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-mwrank-runtime": {
         "sagelite_mwrank": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-msolve-runtime": {
+        "sagelite_msolve": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-nauty-runtime": {
         "sagelite_nauty": ["data/bin/*"],
     },
@@ -358,6 +361,26 @@ def test_mathjax_runtime_is_exposed_by_sagelite_extras():
     assert extras["mathjax"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_msolve_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-msolve-runtime >=10.9,<10.10"
+
+    assert extras["msolve"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_msolve_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-msolve-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "msolve": "sagelite_msolve.runtime:msolve",
+    }
 
 
 def test_lie_runtime_declares_console_script():
