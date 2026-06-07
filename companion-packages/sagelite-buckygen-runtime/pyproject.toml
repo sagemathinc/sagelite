@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sagelite-buckygen-runtime"
+version = "10.9"
+description = "Optional buckygen executable companion package for sagelite"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "GPL-3.0-only"
+authors = [
+  { name = "The Sage Developers", email = "sage-support@googlegroups.com" },
+]
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+urls = { Homepage = "https://www.sagemath.org" }
+
+[project.scripts]
+buckygen = "sagelite_buckygen.runtime:buckygen"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_buckygen = [
+  "data/bin/*",
+]

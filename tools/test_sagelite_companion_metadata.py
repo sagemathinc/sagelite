@@ -11,6 +11,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-4ti2-runtime": {
         "sagelite_four_ti_2": ["data/bin/*"],
     },
+    "sagelite-buckygen-runtime": {
+        "sagelite_buckygen": ["data/bin/*"],
+    },
     "sagelite-cddlib-runtime": {
         "sagelite_cddlib": ["data/bin/*", "data/lib/*"],
     },
@@ -127,6 +130,26 @@ def test_d3js_runtime_registers_static_data_path():
     assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_d3js_runtime"] == [
         "data/d3js/**/*",
     ]
+
+
+def test_buckygen_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-buckygen-runtime >=10.9,<10.10"
+
+    assert extras["buckygen"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_buckygen_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-buckygen-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "buckygen": "sagelite_buckygen.runtime:buckygen",
+    }
 
 
 def test_sympow_runtime_is_exposed_by_sagelite_extras():

@@ -92,6 +92,7 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 R = ['rpy2 >=3.3']
+buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']
 cddlib = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
@@ -133,6 +134,7 @@ full = [
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
+  'sagelite-buckygen-runtime >=10.9,<10.10',
   'sagelite-cddlib-runtime >=10.9,<10.10',
   'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
@@ -198,6 +200,7 @@ polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
+  'sagelite-buckygen-runtime >=10.9,<10.10',
   'sagelite-cddlib-runtime >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',

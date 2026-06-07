@@ -115,6 +115,30 @@ class Buckygen(Executable):
                             executable='buckygen',
                             url='http://caagt.ugent.be/buckygen/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the buckygen executable path.
+
+        Normal Sage installations find buckygen on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-buckygen-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_buckygen.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def is_functional(self):
         r"""
         Check whether ``buckygen`` works on trivial input.
@@ -125,7 +149,7 @@ class Buckygen(Executable):
             sage: Buckygen().is_functional()  # optional - buckygen
             FeatureTestResult('buckygen', True)
         """
-        command = ["buckygen", "-d", "22d"]
+        command = [self.absolute_filename(), "-d", "22d"]
         try:
             lines = subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:

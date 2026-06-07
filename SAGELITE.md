@@ -214,6 +214,7 @@ Examples include:
 
 - `sagelite-gap-runtime`
 - `sagelite-gap3-runtime`
+- `sagelite-buckygen-runtime`
 - `sagelite-gfan-runtime`
 - `sagelite-4ti2-runtime`
 - `sagelite-d3js-runtime`
