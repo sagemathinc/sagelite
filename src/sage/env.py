@@ -499,6 +499,35 @@ def _bootstrap_sagelite_four_ti_2_runtime() -> None:
             os.environ.setdefault(variable, os.fspath(command))
 
 
+def _bootstrap_sagelite_lie_runtime() -> None:
+    """
+    Seed ``LIE_INFO_DIR`` from an optional ``sagelite_lie`` package.
+
+    Sage's LiE interface reads the upstream ``INFO.*`` help files directly.
+    The companion package supplies those files for installed wheels while the
+    ``lie`` command itself is exposed as a standard Python entry point.
+    """
+    configured = getattr(sage.config, "LIE_INFO_DIR", None) or join(SAGE_LOCAL, "lib", "LiE")
+    needs_info = (
+        not os.environ.get("LIE_INFO_DIR")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "INFO.0"))
+            and os.path.isfile(os.path.join(os.fspath(configured), "INFO.3"))
+        )
+    )
+    if not needs_info:
+        return
+
+    info_dir = _optional_runtime_value("sagelite_lie.runtime", "info_dir")
+    if (
+        info_dir
+        and os.path.isfile(os.path.join(info_dir, "INFO.0"))
+        and os.path.isfile(os.path.join(info_dir, "INFO.3"))
+    ):
+        os.environ.setdefault("LIE_INFO_DIR", os.fspath(info_dir))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -688,6 +717,7 @@ ECL_CONFIG = var(
 )
 NTL_INCDIR = var("NTL_INCDIR")
 NTL_LIBDIR = var("NTL_LIBDIR")
+_bootstrap_sagelite_lie_runtime()
 LIE_INFO_DIR = var("LIE_INFO_DIR", join(SAGE_LOCAL, "lib", "LiE"))
 _bootstrap_sagelite_singular_runtime()
 SINGULAR_BIN = var("SINGULAR_BIN") or "Singular"

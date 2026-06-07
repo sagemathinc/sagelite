@@ -149,6 +149,7 @@ full = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
+  'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
@@ -171,6 +172,7 @@ jmol = ['sagelite-jmol-runtime >=10.9,<10.10']
 kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel >=10.9,<10.10']
+lie = ['sagelite-lie-runtime >=10.9,<10.10']
 matroids = ['matroid-database ==0.3']
 maxima = ['sagelite-maxima-runtime >=10.9,<10.10']
 meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
@@ -190,6 +192,7 @@ runtime = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
+  'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',

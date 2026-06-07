@@ -58,3 +58,23 @@ def test_d3js_runtime_is_exposed_by_sagelite_extras():
     assert extras["d3js"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_lie_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-lie-runtime >=10.9,<10.10"
+
+    assert extras["lie"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_lie_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-lie-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "lie": "sagelite_lie.runtime:lie",
+    }
