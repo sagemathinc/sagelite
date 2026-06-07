@@ -16,8 +16,58 @@ if not hasattr(sage, "config") and CONFIG_PATH.exists():
     sage.config = module
 
 import sage.features
-from sage.features.graph_generators import Benzene, Plantri
-from sage.features.msolve import msolve
+import sage.env
+
+
+def _load_source_feature_module(name):
+    path = ROOT / "src" / "sage" / "features" / f"{name}.py"
+    fullname = f"sage.features.{name}"
+    if not path.exists():
+        return __import__(fullname, fromlist=["*"])
+    sys.modules.pop(fullname, None)
+    spec = importlib.util.spec_from_file_location(fullname, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[fullname] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+sage.env.GFAN_BINS_PREFIX = getattr(sage.env, "GFAN_BINS_PREFIX", "")
+sage.env.SAGE_NAUTY_BINS_PREFIX = getattr(sage.env, "SAGE_NAUTY_BINS_PREFIX", "")
+sage.env.SAGE_ECMBIN = getattr(sage.env, "SAGE_ECMBIN", "ecm")
+
+ecm_module = _load_source_feature_module("ecm")
+four_ti_2_module = _load_source_feature_module("four_ti_2")
+gfan_module = _load_source_feature_module("gfan")
+graph_generators_module = _load_source_feature_module("graph_generators")
+msolve_module = _load_source_feature_module("msolve")
+nauty_module = _load_source_feature_module("nauty")
+
+Ecm = ecm_module.Ecm
+FourTi2Executable = four_ti_2_module.FourTi2Executable
+GfanExecutable = gfan_module.GfanExecutable
+Benzene = graph_generators_module.Benzene
+Plantri = graph_generators_module.Plantri
+msolve = msolve_module.msolve
+NautyExecutable = nauty_module.NautyExecutable
+
+
+def _write_fake_runtime(tmp_path, package_name, program, path_function):
+    package = tmp_path / package_name
+    bindir = package / "data" / "bin"
+    executable = bindir / program
+    package.mkdir()
+    bindir.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "runtime.py").write_text(
+        "from pathlib import Path\n\n"
+        f"def {path_function}(*args):\n"
+        f"    program = args[0] if args else {program!r}\n"
+        "    return Path(__file__).resolve().parent / 'data' / 'bin' / program\n"
+    )
+    executable.write_text("#!/bin/sh\n")
+    executable.chmod(0o755)
+    return executable
 
 
 def test_benzene_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
@@ -94,5 +144,67 @@ def test_msolve_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_msolve.runtime", None)
 
     feature = msolve()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_four_ti_2_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_four_ti_2", "hilbert", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_four_ti_2", None)
+    sys.modules.pop("sagelite_four_ti_2.runtime", None)
+
+    feature = FourTi2Executable("hilbert")
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_gfan_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_gfan", "gfan_groebnercone", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_gfan", None)
+    sys.modules.pop("sagelite_gfan.runtime", None)
+
+    feature = GfanExecutable("groebnercone")
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_nauty_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_nauty", "geng", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_nauty", None)
+    sys.modules.pop("sagelite_nauty.runtime", None)
+
+    feature = NautyExecutable("geng")
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_ecm_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(tmp_path, "sagelite_ecm", "ecm", "executable_path")
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_ecm", None)
+    sys.modules.pop("sagelite_ecm.runtime", None)
+
+    feature = Ecm()
 
     assert feature.absolute_filename() == os.fspath(executable)

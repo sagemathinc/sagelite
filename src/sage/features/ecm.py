@@ -11,7 +11,9 @@ Feature for testing the presence of ``ecm`` or ``gmp-ecm``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 from sage.env import SAGE_ECMBIN
 
 
@@ -35,6 +37,30 @@ class Ecm(Executable):
         """
         Executable.__init__(self, name='ecm', executable=SAGE_ECMBIN,
                             spkg='ecm', type='standard')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ecm executable path.
+
+        Normal Sage installations find ecm on ``PATH``. Wheel installations can
+        also provide it through the optional ``sagelite-ecm-runtime`` companion
+        package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_ecm.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():

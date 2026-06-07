@@ -2,7 +2,9 @@ r"""
 Features for testing the presence of ``4ti2``
 """
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
@@ -19,10 +21,35 @@ class FourTi2Executable(Executable):
             True
         """
         from sage.env import SAGE_ENV
+        self._sagelite_program = name
         Executable.__init__(self,
                             name="4ti2-" + name,
                             executable=SAGE_ENV.get("FOURTITWO_" + name.upper(), None) or name,
                             spkg='4ti2')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the 4ti2 executable path.
+
+        Normal Sage installations find 4ti2 on ``PATH``. Wheel installations can
+        also provide it through the optional ``sagelite-4ti2-runtime`` companion
+        package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_four_ti_2.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._sagelite_program)
+        if os.path.isfile(executable) and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 class FourTi2(JoinFeature):

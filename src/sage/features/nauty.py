@@ -11,9 +11,11 @@ Features for testing the presence of nauty executables
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
+
 from sage.env import SAGE_NAUTY_BINS_PREFIX
 
-from . import Executable
+from . import Executable, FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
@@ -36,6 +38,7 @@ class NautyExecutable(Executable):
             sage: isinstance(NautyExecutable('geng'), NautyExecutable)
             True
         """
+        self._sagelite_program = name
         Executable.__init__(
             self,
             name=f"nauty_{name}",
@@ -43,6 +46,30 @@ class NautyExecutable(Executable):
             spkg="nauty",
             type="standard",
         )
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the nauty executable path.
+
+        Normal Sage installations find nauty on ``PATH``. Wheel installations can
+        also provide it through the optional ``sagelite-nauty-runtime`` companion
+        package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_nauty.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._sagelite_program)
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 class Nauty(JoinFeature):
