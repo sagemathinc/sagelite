@@ -18,7 +18,7 @@ def gap_root_paths() -> str:
     data = files(__package__).joinpath("data")
     roots = []
     for root in sorted(data.iterdir(), key=lambda path: path.name):
-        if root.is_dir():
+        if root.is_dir() and root.joinpath("lib", "init.g").is_file():
             roots.append(os.fspath(root))
     return ";".join(roots)
 
