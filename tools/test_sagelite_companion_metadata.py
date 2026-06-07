@@ -144,6 +144,32 @@ def test_d3js_runtime_registers_static_data_path():
     ]
 
 
+def test_cremona_ellcurve_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-cremona-ellcurve")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "cremona": "sagelite_database_cremona_ellcurve:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_cremona_ellcurve"
+    ] == [
+        "data/cremona/cremona.db",
+    ]
+
+
+def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-cremona-ellcurve >=10.9,<10.10"
+
+    assert extras["cremona-ellcurve"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

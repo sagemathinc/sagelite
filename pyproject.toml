@@ -95,6 +95,7 @@ R = ['rpy2 >=3.3']
 buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']
 cddlib = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
+cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
@@ -103,6 +104,7 @@ databases = [
   'database-knotinfo >=2026.3.1',
   'matroid-database ==0.3',
   'sagelite-cunningham-tables >=10.9,<10.10',
+  'sagelite-database-cremona-ellcurve >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
@@ -139,6 +141,7 @@ full = [
   'sagelite-cddlib-runtime >=10.9,<10.10',
   'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
+  'sagelite-database-cremona-ellcurve >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',

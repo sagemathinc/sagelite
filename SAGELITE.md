@@ -250,6 +250,7 @@ bloating the base wheel.
 Examples include:
 
 - `sagelite-cunningham-tables`
+- `sagelite-database-cremona-ellcurve`
 - `sagelite-database-cremona-mini`
 - `sagelite-database-ellcurves`
 - `sagelite-database-graphs`
