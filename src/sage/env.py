@@ -421,6 +421,30 @@ def _bootstrap_sagelite_meataxe_runtime() -> None:
         os.environ.setdefault("MTXLIB", os.fspath(table_dir))
 
 
+def _bootstrap_sagelite_mathjax_runtime() -> None:
+    """
+    Seed ``MATHJAX_DIR`` from an optional ``sagelite_mathjax_runtime`` package.
+
+    Sage's configured MathJax directory can point at a build prefix that does
+    not exist in an installed wheel.  The companion package supplies the
+    redistributable JavaScript runtime in a relocatable package-data tree.
+    """
+    configured = getattr(sage.config, "MATHJAX_DIR", None) or join(SAGE_SHARE, "mathjax")
+    needs_runtime = (
+        not os.environ.get("MATHJAX_DIR")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "tex-chtml.js"))
+        )
+    )
+    if not needs_runtime:
+        return
+
+    mathjax_dir = _optional_runtime_value("sagelite_mathjax_runtime", "mathjax_dir")
+    if mathjax_dir and os.path.isfile(os.path.join(mathjax_dir, "tex-chtml.js")):
+        os.environ.setdefault("MATHJAX_DIR", os.fspath(mathjax_dir))
+
+
 def _bootstrap_sagelite_nauty_runtime() -> None:
     """
     Seed ``SAGE_NAUTY_BINS_PREFIX`` from an optional ``sagelite_nauty`` package.
@@ -772,6 +796,7 @@ POLYTOPE_DATA_DIR = var("POLYTOPE_DATA_DIR")
 # installation directories for various packages
 _bootstrap_sagelite_jmol_runtime()
 JMOL_DIR = var("JMOL_DIR")
+_bootstrap_sagelite_mathjax_runtime()
 MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
 _bootstrap_sagelite_meataxe_runtime()
 MTXLIB = var("MTXLIB", join(SAGE_SHARE, "meataxe"))

@@ -153,6 +153,7 @@ full = [
   'sagelite-kenzo-runtime >=10.9,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lie-runtime >=10.9,<10.10',
+  'sagelite-mathjax-runtime >=10.9,<10.10',
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
@@ -179,6 +180,7 @@ kohel = ['sagelite-database-kohel >=10.9,<10.10']
 latte = ['sagelite-latte-runtime >=10.9,<10.10']
 lie = ['sagelite-lie-runtime >=10.9,<10.10']
 matroids = ['matroid-database ==0.3']
+mathjax = ['sagelite-mathjax-runtime >=10.9,<10.10']
 maxima = ['sagelite-maxima-runtime >=10.9,<10.10']
 meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
 mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
@@ -200,6 +202,7 @@ runtime = [
   'sagelite-kenzo-runtime >=10.9,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lie-runtime >=10.9,<10.10',
+  'sagelite-mathjax-runtime >=10.9,<10.10',
   'sagelite-maxima-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',

@@ -45,6 +45,9 @@ RUNTIME_PACKAGE_DATA = {
             "data/share/**/*",
         ],
     },
+    "sagelite-mathjax-runtime": {
+        "sagelite_mathjax_runtime": ["data/mathjax/**/*"],
+    },
     "sagelite-meataxe-runtime": {
         "sagelite_meataxe": ["data/meataxe/*"],
     },
@@ -161,6 +164,18 @@ def test_latte_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-latte-runtime >=10.9,<10.10"
 
     assert extras["latte"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_mathjax_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-mathjax-runtime >=10.9,<10.10"
+
+    assert extras["mathjax"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 

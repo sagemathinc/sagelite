@@ -40,6 +40,7 @@ def clean_runtime_environment():
         "MAXIMA_FAS",
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
+        "MATHJAX_DIR",
         "MWRANK",
         "PALP_BINS_PREFIX",
         "RUBIKS_BINS_PREFIX",
@@ -108,6 +109,14 @@ def _jmol_runtime(tmp_path: Path, name: str) -> Path:
     jmol_dir.mkdir(parents=True)
     (jmol_dir / "JmolData.jar").write_text("jmol data\n")
     return jmol_dir
+
+
+def _mathjax_runtime(tmp_path: Path, name: str) -> Path:
+    mathjax_dir = tmp_path / name / "share" / "mathjax" / "mathjax"
+    mathjax_dir.mkdir(parents=True)
+    (mathjax_dir / "tex-chtml.js").write_text("console.log('mathjax');\n")
+    (mathjax_dir / "loader.js").write_text("console.log('loader');\n")
+    return mathjax_dir
 
 
 def _threejs_runtime(tmp_path: Path, name: str) -> Path:
@@ -550,6 +559,68 @@ def test_jmol_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_jmol_runtime()
 
     assert env.os.environ["JMOL_DIR"] == str(existing_jmol_dir)
+
+
+def test_mathjax_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    mathjax_dir = _mathjax_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("MATHJAX_DIR", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "MATHJAX_DIR",
+        str(tmp_path / "stale-share" / "mathjax"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(mathjax_dir)
+        if (module_name, attr_name) == ("sagelite_mathjax_runtime", "mathjax_dir")
+        else None,
+    )
+
+    env._bootstrap_sagelite_mathjax_runtime()
+
+    assert env.os.environ["MATHJAX_DIR"] == str(mathjax_dir)
+
+
+def test_mathjax_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    companion = _mathjax_runtime(tmp_path, "companion")
+    existing = _mathjax_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("MATHJAX_DIR", str(existing))
+    monkeypatch.setattr(env.sage.config, "MATHJAX_DIR", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion)
+        if (module_name, attr_name) == ("sagelite_mathjax_runtime", "mathjax_dir")
+        else None,
+    )
+
+    env._bootstrap_sagelite_mathjax_runtime()
+
+    assert env.os.environ["MATHJAX_DIR"] == str(existing)
+
+
+def test_mathjax_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    mathjax_dir = tmp_path / "companion" / "share" / "mathjax" / "mathjax"
+    mathjax_dir.mkdir(parents=True)
+    (mathjax_dir / "loader.js").write_text("console.log('loader');\n")
+
+    monkeypatch.delenv("MATHJAX_DIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "MATHJAX_DIR", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(mathjax_dir)
+        if (module_name, attr_name) == ("sagelite_mathjax_runtime", "mathjax_dir")
+        else None,
+    )
+
+    env._bootstrap_sagelite_mathjax_runtime()
+
+    assert "MATHJAX_DIR" not in env.os.environ
 
 
 def test_threejs_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
