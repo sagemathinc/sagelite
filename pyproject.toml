@@ -109,6 +109,7 @@ databases = [
   'sagelite-database-mutation-class >=10.9,<10.10',
   'sagelite-database-odlyzko-zeta >=10.9,<10.10',
   'sagelite-database-polytopes >=10.9,<10.10',
+  'sagelite-database-polytopes-4d >=10.9,<10.10',
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
 ]
@@ -141,6 +142,7 @@ full = [
   'sagelite-database-mutation-class >=10.9,<10.10',
   'sagelite-database-odlyzko-zeta >=10.9,<10.10',
   'sagelite-database-polytopes >=10.9,<10.10',
+  'sagelite-database-polytopes-4d >=10.9,<10.10',
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
@@ -183,6 +185,7 @@ odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
+polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',

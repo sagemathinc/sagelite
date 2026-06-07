@@ -78,3 +78,28 @@ def test_lie_runtime_declares_console_script():
     assert pyproject["project"]["scripts"] == {
         "lie": "sagelite_lie.runtime:lie",
     }
+
+
+def test_polytopes_4d_database_registers_reflexive_polytope_data_path():
+    pyproject = _pyproject("sagelite-database-polytopes-4d")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "reflexive_polytopes_4d": "sagelite_database_polytopes_4d:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_polytopes_4d"
+    ] == [
+        "data/reflexive_polytopes/Hodge4d/**/*",
+    ]
+
+
+def test_polytopes_4d_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-polytopes-4d >=10.9,<10.10"
+
+    assert extras["polytopes-4d"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
