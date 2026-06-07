@@ -11,7 +11,10 @@ Features for testing the presence of topcom executables
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
+
 from . import Executable
+from . import FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
@@ -36,6 +39,40 @@ class TOPCOMExecutable(Executable):
         Executable.__init__(self, name=f"topcom_{name}",
                             executable=name,
                             spkg="topcom")
+        self._topcom_name = name
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the TOPCOM executable path.
+
+        Normal Sage installations find TOPCOM on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-topcom-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_topcom.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._topcom_name)
+        if executable.is_file() and os.access(executable, os.X_OK):
+            libdir = executable.parent.parent / "lib"
+            if libdir.is_dir():
+                old_path = os.environ.get("LD_LIBRARY_PATH")
+                libdir = os.fspath(libdir)
+                if old_path:
+                    if libdir not in old_path.split(os.pathsep):
+                        os.environ["LD_LIBRARY_PATH"] = f"{libdir}{os.pathsep}{old_path}"
+                else:
+                    os.environ["LD_LIBRARY_PATH"] = libdir
+            return os.fspath(executable)
+
+        raise original_error
 
 
 class TOPCOM(JoinFeature):
