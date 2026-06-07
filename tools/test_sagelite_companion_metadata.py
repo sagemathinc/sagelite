@@ -44,6 +44,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-lie-runtime": {
         "sagelite_lie": ["data/bin/*", "data/LiE/**/*"],
     },
+    "sagelite-lrslib-runtime": {
+        "sagelite_lrslib": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-maxima-runtime": {
         "sagelite_maxima": [
             "data/bin/*",
@@ -224,6 +227,18 @@ def test_latte_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_lrslib_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-lrslib-runtime >=10.9,<10.10"
+
+    assert extras["lrslib"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_mathjax_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -241,6 +256,15 @@ def test_lie_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "lie": "sagelite_lie.runtime:lie",
+    }
+
+
+def test_lrslib_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-lrslib-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "lrs": "sagelite_lrslib.runtime:lrs",
+        "lrsnash": "sagelite_lrslib.runtime:lrsnash",
     }
 
 
