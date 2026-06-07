@@ -20,6 +20,22 @@ from sage.env import sage_data_paths
 from sage.features import PythonModule, StaticFile
 
 
+def _search_path_with_registered_data(configured, name):
+    """
+    Return configured data directories plus registered companion-wheel paths.
+    """
+    if configured is None:
+        paths = []
+    elif isinstance(configured, (str, bytes)):
+        paths = [configured]
+    else:
+        paths = list(configured)
+
+    paths = [path for path in paths if path]
+    paths.extend(sage_data_paths(name))
+    return paths
+
+
 class DatabaseCremona(StaticFile):
     r"""
     A :class:`~sage.features.Feature` which describes the presence of :ref:`John Cremona's
@@ -51,9 +67,8 @@ class DatabaseCremona(StaticFile):
         """
         from sage.env import CREMONA_LARGE_DATA_DIR, CREMONA_MINI_DATA_DIR
 
-        CREMONA_DATA_DIRS = set([CREMONA_MINI_DATA_DIR, CREMONA_LARGE_DATA_DIR])
-        CREMONA_DATA_DIRS.discard(None)
-        search_path = CREMONA_DATA_DIRS or sage_data_paths("cremona")
+        CREMONA_DATA_DIRS = [CREMONA_MINI_DATA_DIR, CREMONA_LARGE_DATA_DIR]
+        search_path = _search_path_with_registered_data(CREMONA_DATA_DIRS, "cremona")
 
         spkg = "database_cremona_ellcurve"
         spkg_type = "optional"
@@ -95,7 +110,7 @@ class DatabaseEllcurves(StaticFile):
         """
         from sage.env import ELLCURVE_DATA_DIR
 
-        search_path = ELLCURVE_DATA_DIR or sage_data_paths("ellcurves")
+        search_path = _search_path_with_registered_data(ELLCURVE_DATA_DIR, "ellcurves")
 
         StaticFile.__init__(
             self,
@@ -130,7 +145,7 @@ class DatabaseGraphs(StaticFile):
         """
         from sage.env import GRAPHS_DATA_DIR
 
-        search_path = GRAPHS_DATA_DIR or sage_data_paths("graphs")
+        search_path = _search_path_with_registered_data(GRAPHS_DATA_DIR, "graphs")
 
         StaticFile.__init__(
             self,
@@ -283,7 +298,9 @@ class DatabaseReflexivePolytopes(StaticFile):
         """
         from sage.env import POLYTOPE_DATA_DIR
 
-        search_path = POLYTOPE_DATA_DIR or sage_data_paths("reflexive_polytopes")
+        search_path = _search_path_with_registered_data(
+            POLYTOPE_DATA_DIR, "reflexive_polytopes"
+        )
 
         dirname = "Full3d"
         if name == "polytopes_db_4d":
