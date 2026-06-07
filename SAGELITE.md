@@ -27,6 +27,63 @@ The strategy is not to reproduce Sage's traditional prefix as one monolithic
 artifact. Instead, `sagelite` provides the core in-process library runtime, and
 companion wheels provide optional executables, runtime files, and datasets.
 
+## North Star
+
+The north star for this project is:
+
+> upstream merging is a first-class invariant.
+
+This is not only a maintenance preference. It is a core product constraint.
+`sagelite` should remain close enough to upstream Sage that each new official
+Sage release can be merged, packaged, tested, and released without turning the
+merge itself into a separate research project.
+
+This constraint shapes the technical strategy:
+
+- keep the `sage` Python package and source tree as close to upstream Sage as
+  practical
+- prefer additive packaging metadata, companion packages, and runtime discovery
+  helpers over invasive source restructuring
+- keep wheel-specific behavior explicit and easy to audit
+- avoid changes that make ordinary upstream Sage development harder to merge
+- when a fix is generally useful, prefer a form that could plausibly be sent
+  upstream
+
+The wheel-first packaging work is valuable only if it can keep moving as Sage
+itself moves. A packaging strategy that works once but makes future Sage
+release merges expensive is not successful for `sagelite`.
+
+## Relationship To Passagemath
+
+`passagemath` is a pip-installable modularized fork of SageMath with a closely
+related goal: make Sage functionality available through ordinary Python
+packaging and binary wheels. It is important prior art for `sagelite`.
+
+Technically, `passagemath` demonstrates that a wheel-first Sage distribution is
+viable. It has already explored many areas that matter to `sagelite`, including
+modular package boundaries, PyPI-published metapackages, installed-wheel
+doctesting, known-failure tracking, GAP package splitting, native runtime
+packaging, macOS wheels, and platform-specific wheel repair.
+
+The main difference is product shape. `passagemath` deeply modularizes Sage
+into many `sagemath-*` and `passagemath-*` distributions. This gives it fine
+grained package boundaries and independently installable pieces, but it also
+creates a large structural delta from upstream Sage.
+
+`sagelite` should learn from `passagemath`, but it should not adopt deep
+modularization as an automatic default. The preferred `sagelite` shape is:
+
+- one core distribution that provides the `sage` import namespace
+- optional companion wheels for heavyweight runtimes and datasets
+- a future `sage` metapackage that installs the broad supported stack
+- minimal source-tree divergence from official Sage
+
+That difference matters because upstream mergeability is a first-class
+invariant for `sagelite`. Borrowing ideas, metadata patterns, CI techniques,
+wheel repair methods, package splits, and compatible code from `passagemath`
+can save substantial work. But changes should be evaluated against the cost
+they add to future merges from official Sage.
+
 ## Product Contract
 
 `sagelite` guarantees the following:
@@ -440,6 +497,10 @@ That is intentional:
 - some fixes are source-level, not only packaging-level
 - keeping changes in a fork makes upstream comparison and rebasing easier than
   a patch queue on top of a submodule checkout
+
+The fork should still behave like a close downstream of Sage, not like an
+independent replacement project. Packaging work should be organized so that the
+delta from upstream remains understandable, reviewable, and mergeable.
 
 If packaging and release infrastructure eventually dominates the work, a
 separate thin packaging repository may make sense later. For now, the source
