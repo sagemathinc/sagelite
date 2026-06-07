@@ -27,8 +27,17 @@ classifiers = [
 urls = { Homepage = "https://www.sagemath.org" }
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+sagelite_pari_data = [
+  "data/pari/galdata/**/*",
+  "data/pari/elldata/**/*",
+  "data/pari/seadata/**/*",
+  "data/pari/galpol/**/*",
+  "data/pari/nftables/**/*",
+]
