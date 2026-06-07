@@ -289,6 +289,20 @@ def _check_palp_runtime():
     return "PALP executables available"
 
 
+def _check_rubiks_runtime():
+    try:
+        import sagelite_rubiks  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.rubiks import Rubiks
+
+    rubiks = Rubiks().is_present()
+    if not bool(rubiks):
+        raise RuntimeError(f"Rubiks executables are not available: {rubiks.reason}")
+    return "Rubiks executables available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -506,6 +520,7 @@ def main() -> int:
         ("ECM executable runtime", _check_ecm_runtime),
         ("mwrank executable runtime", _check_mwrank_runtime),
         ("PALP executable runtime", _check_palp_runtime),
+        ("Rubiks executable runtime", _check_rubiks_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
