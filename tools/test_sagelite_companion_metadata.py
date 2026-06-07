@@ -11,6 +11,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-4ti2-runtime": {
         "sagelite_four_ti_2": ["data/bin/*"],
     },
+    "sagelite-benzene-runtime": {
+        "sagelite_benzene": ["data/bin/*"],
+    },
     "sagelite-buckygen-runtime": {
         "sagelite_buckygen": ["data/bin/*"],
     },
@@ -145,6 +148,26 @@ def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     assert extras["buckygen"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_benzene_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-benzene-runtime >=10.9,<10.10"
+
+    assert extras["benzene"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_benzene_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-benzene-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "benzene": "sagelite_benzene.runtime:benzene",
+    }
 
 
 def test_buckygen_runtime_declares_console_script():

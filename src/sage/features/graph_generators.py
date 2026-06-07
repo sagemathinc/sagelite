@@ -187,6 +187,30 @@ class Benzene(Executable):
                             executable='benzene',
                             url='http://www.grinvin.org/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the benzene executable path.
+
+        Normal Sage installations find benzene on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-benzene-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_benzene.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def is_functional(self):
         r"""
         Check whether ``benzene`` works on trivial input.
@@ -198,7 +222,7 @@ class Benzene(Executable):
             FeatureTestResult('benzene', True)
         """
         devnull = open(os.devnull, 'wb')
-        command = ["benzene", "2", "p"]
+        command = [self.absolute_filename(), "2", "p"]
         try:
             lines = subprocess.check_output(command, stderr=devnull)
         except subprocess.CalledProcessError as e:
