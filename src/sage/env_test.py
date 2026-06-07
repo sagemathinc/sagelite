@@ -32,6 +32,7 @@ def clean_runtime_environment():
         "FOURTITWO_ZSOLVE",
         "GAP_ROOT_PATHS",
         "GFAN_BINS_PREFIX",
+        "JMOL_DIR",
         "KENZO_FAS",
         "LIE_INFO_DIR",
         "MAXIMA",
@@ -98,6 +99,13 @@ def _lie_runtime(tmp_path: Path, name: str) -> Path:
     (info_dir / "INFO.0").write_text("@version()\nLiE 2.2.2\n")
     (info_dir / "INFO.3").write_text("@diagram()\n")
     return info_dir
+
+
+def _jmol_runtime(tmp_path: Path, name: str) -> Path:
+    jmol_dir = tmp_path / name / "share" / "jmol"
+    jmol_dir.mkdir(parents=True)
+    (jmol_dir / "JmolData.jar").write_text("jmol data\n")
+    return jmol_dir
 
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
@@ -491,6 +499,46 @@ def test_lie_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_lie_runtime()
 
     assert env.os.environ["LIE_INFO_DIR"] == str(existing_info_dir)
+
+
+def test_jmol_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    jmol_dir = _jmol_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("JMOL_DIR", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "JMOL_DIR",
+        str(tmp_path / "stale-share" / "jmol"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: jmol_dir
+        if (module_name, attr_name) == ("sagelite_jmol_runtime", "jmol_path")
+        else None,
+    )
+
+    env._bootstrap_sagelite_jmol_runtime()
+
+    assert env.os.environ["JMOL_DIR"] == str(jmol_dir)
+
+
+def test_jmol_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    jmol_dir = _jmol_runtime(tmp_path, "companion")
+    existing_jmol_dir = _jmol_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("JMOL_DIR", str(existing_jmol_dir))
+    monkeypatch.setattr(env.sage.config, "JMOL_DIR", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: jmol_dir,
+    )
+
+    env._bootstrap_sagelite_jmol_runtime()
+
+    assert env.os.environ["JMOL_DIR"] == str(existing_jmol_dir)
 
 
 def test_ecm_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

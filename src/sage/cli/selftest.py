@@ -335,6 +335,25 @@ def _check_d3js_runtime():
     return "D3.js static runtime available"
 
 
+def _check_jmol_runtime():
+    try:
+        import sagelite_jmol_runtime
+    except ImportError:
+        return "not installed"
+
+    from pathlib import Path
+
+    from sage.features.jmol import JmolDataJar
+
+    jar = Path(sagelite_jmol_runtime.jmol_data_jar_path())
+    if not jar.is_file():
+        raise RuntimeError(f"JmolData.jar is not available: {jar}")
+    jmol = JmolDataJar().is_present()
+    if not bool(jmol):
+        raise RuntimeError(f"JmolData.jar is not visible to Sage: {jmol.reason}")
+    return "JmolData.jar available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -555,6 +574,7 @@ def main() -> int:
         ("Rubiks executable runtime", _check_rubiks_runtime),
         ("Three.js static runtime", _check_threejs_runtime),
         ("D3.js static runtime", _check_d3js_runtime),
+        ("Jmol static runtime", _check_jmol_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),

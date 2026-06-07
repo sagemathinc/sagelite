@@ -528,6 +528,30 @@ def _bootstrap_sagelite_lie_runtime() -> None:
         os.environ.setdefault("LIE_INFO_DIR", os.fspath(info_dir))
 
 
+def _bootstrap_sagelite_jmol_runtime() -> None:
+    """
+    Seed ``JMOL_DIR`` from an optional ``sagelite_jmol_runtime`` package.
+
+    Installed wheels can carry a build-time ``JMOL_DIR`` that does not exist
+    after installation.  The companion package supplies ``JmolData.jar`` as
+    relocatable package data.
+    """
+    configured = getattr(sage.config, "JMOL_DIR", None)
+    needs_jmol = (
+        not os.environ.get("JMOL_DIR")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "JmolData.jar"))
+        )
+    )
+    if not needs_jmol:
+        return
+
+    jmol_dir = _optional_runtime_value("sagelite_jmol_runtime", "jmol_path")
+    if jmol_dir and os.path.isfile(os.path.join(jmol_dir, "JmolData.jar")):
+        os.environ.setdefault("JMOL_DIR", os.fspath(jmol_dir))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -673,6 +697,7 @@ GRAPHS_DATA_DIR = var("GRAPHS_DATA_DIR")
 POLYTOPE_DATA_DIR = var("POLYTOPE_DATA_DIR")
 
 # installation directories for various packages
+_bootstrap_sagelite_jmol_runtime()
 JMOL_DIR = var("JMOL_DIR")
 MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
 _bootstrap_sagelite_meataxe_runtime()
