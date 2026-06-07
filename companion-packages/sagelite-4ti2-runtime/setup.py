@@ -38,6 +38,24 @@ def _candidate_bindirs() -> list[Path]:
     return dirs
 
 
+def _candidate_libexecdirs() -> list[Path]:
+    dirs = []
+    for variable in ("SAGELITE_4TI2_LIBEXECDIR", "FOURTITWO_LIBEXECDIR"):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "libexec" / "4ti2" / "bin")
+    dirs.extend(
+        [
+            Path("/usr/libexec/x86_64-linux-gnu/4ti2/bin"),
+            Path("/usr/libexec/aarch64-linux-gnu/4ti2/bin"),
+            Path("/usr/libexec/4ti2/bin"),
+            Path("/usr/local/libexec/4ti2/bin"),
+        ]
+    )
+    return dirs
+
+
 def _find_bindir() -> Path:
     for bindir in _candidate_bindirs():
         if all(_program_path(bindir, program) for program in REQUIRED_PROGRAMS):
@@ -57,6 +75,13 @@ def _program_path(bindir: Path, program: str) -> Path | None:
     return None
 
 
+def _find_libexecdir() -> Path | None:
+    for libexecdir in _candidate_libexecdirs():
+        if (libexecdir / "4ti2gmp").is_file() or (libexecdir / "4ti2int64").is_file():
+            return libexecdir.resolve()
+    return None
+
+
 class build_py(_build_py):
     def run(self):
         super().run()
@@ -69,6 +94,14 @@ class build_py(_build_py):
             source = _program_path(bindir, program)
             if source is not None:
                 shutil.copy2(source, target / program)
+        for source in bindir.glob("4ti2-*"):
+            if source.is_file():
+                shutil.copy2(source, target / source.name)
+        libexecdir = _find_libexecdir()
+        if libexecdir is not None:
+            for source in libexecdir.glob("4ti2*"):
+                if source.is_file():
+                    shutil.copy2(source, target / source.name)
 
 
 cmdclass = {"build_py": build_py}
