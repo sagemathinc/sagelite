@@ -95,6 +95,7 @@ R = ['rpy2 >=3.3']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
+d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
 databases = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
@@ -131,6 +132,7 @@ full = [
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-cunningham-tables >=10.9,<10.10',
+  'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
@@ -181,6 +183,7 @@ pari-data = ['sagelite-pari-data >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
+  'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',

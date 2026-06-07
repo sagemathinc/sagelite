@@ -317,6 +317,24 @@ def _check_threejs_runtime():
     return "Three.js static runtime available"
 
 
+def _check_d3js_runtime():
+    try:
+        import sagelite_d3js_runtime
+    except ImportError:
+        return "not installed"
+
+    from pathlib import Path
+
+    from sage.env import sage_data_paths
+
+    d3js_file = Path(sagelite_d3js_runtime.d3_min_js_path())
+    if not d3js_file.is_file():
+        raise RuntimeError(f"D3.js runtime file is not available: {d3js_file}")
+    if d3js_file.parent not in {Path(path) for path in sage_data_paths("d3js")}:
+        raise RuntimeError("D3.js runtime is not registered in sage_data_paths")
+    return "D3.js static runtime available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -536,6 +554,7 @@ def main() -> int:
         ("PALP executable runtime", _check_palp_runtime),
         ("Rubiks executable runtime", _check_rubiks_runtime),
         ("Three.js static runtime", _check_threejs_runtime),
+        ("D3.js static runtime", _check_d3js_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),

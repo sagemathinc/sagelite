@@ -216,6 +216,7 @@ Examples include:
 - `sagelite-gap3-runtime`
 - `sagelite-gfan-runtime`
 - `sagelite-4ti2-runtime`
+- `sagelite-d3js-runtime`
 - `sagelite-ecm-runtime`
 - `sagelite-jmol-runtime`
 - `sagelite-maxima-runtime`
