@@ -46,14 +46,14 @@ def _find_bindir() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         bindir = _find_bindir()
         target = Path(self.build_lib) / "sagelite_palp" / "data" / "bin"
         shutil.rmtree(target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
         for program in PROGRAMS:
             shutil.copy2(bindir / program, target / program)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

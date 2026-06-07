@@ -85,8 +85,6 @@ def _extract_d3js_tarball(target: Path) -> bool:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         target = Path(self.build_lib) / "sagelite_d3js_runtime" / "data" / "d3js"
         shutil.rmtree(target, ignore_errors=True)
 
@@ -96,6 +94,8 @@ class build_py(_build_py):
 
         if not _looks_like_d3js_root(target):
             raise RuntimeError("incomplete D3.js runtime copied into the wheel")
+
+        super().run()
 
 
 setup(cmdclass={"build_py": build_py})

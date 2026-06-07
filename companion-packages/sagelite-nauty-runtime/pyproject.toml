@@ -82,7 +82,13 @@ vcolg = "sagelite_nauty.runtime:vcolg"
 watercluster2 = "sagelite_nauty.runtime:watercluster2"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_nauty = [
+  "data/bin/*",
+]

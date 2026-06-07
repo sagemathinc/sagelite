@@ -7,9 +7,90 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+RUNTIME_PACKAGE_DATA = {
+    "sagelite-4ti2-runtime": {
+        "sagelite_four_ti_2": ["data/bin/*"],
+    },
+    "sagelite-d3js-runtime": {
+        "sagelite_d3js_runtime": ["data/d3js/**/*"],
+    },
+    "sagelite-ecm-runtime": {
+        "sagelite_ecm": ["data/bin/*", "data/lib/*"],
+    },
+    "sagelite-gap-runtime": {
+        "sagelite_gap_runtime": ["data/bin/*", "data/gap*/**/*"],
+    },
+    "sagelite-gap3-runtime": {
+        "sagelite_gap3": ["data/gap3/**/*"],
+    },
+    "sagelite-gfan-runtime": {
+        "sagelite_gfan": ["data/bin/*", "data/lib/*"],
+    },
+    "sagelite-jmol-runtime": {
+        "sagelite_jmol_runtime": ["data/jmol/**/*"],
+    },
+    "sagelite-kenzo-runtime": {
+        "sagelite_kenzo": ["data/kenzo.fas"],
+    },
+    "sagelite-latte-runtime": {
+        "sagelite_latte": ["data/bin/*", "data/lib/*"],
+    },
+    "sagelite-lie-runtime": {
+        "sagelite_lie": ["data/bin/*", "data/LiE/**/*"],
+    },
+    "sagelite-maxima-runtime": {
+        "sagelite_maxima": [
+            "data/bin/*",
+            "data/lib/**/*",
+            "data/share/**/*",
+        ],
+    },
+    "sagelite-meataxe-runtime": {
+        "sagelite_meataxe": ["data/meataxe/*"],
+    },
+    "sagelite-mwrank-runtime": {
+        "sagelite_mwrank": ["data/bin/*", "data/lib/*"],
+    },
+    "sagelite-nauty-runtime": {
+        "sagelite_nauty": ["data/bin/*"],
+    },
+    "sagelite-palp-runtime": {
+        "sagelite_palp": ["data/bin/*"],
+    },
+    "sagelite-rubiks-runtime": {
+        "sagelite_rubiks": ["data/bin/*"],
+    },
+    "sagelite-singular-runtime": {
+        "sagelite_singular_runtime": ["data/singular/**/*"],
+    },
+    "sagelite-sympow-runtime": {
+        "sagelite_sympow": [
+            "data/bin/*",
+            "data/datafiles/**/*",
+            "data/lib/*",
+        ],
+    },
+    "sagelite-threejs-runtime": {
+        "sagelite_threejs_runtime": ["data/threejs-sage/**/*"],
+    },
+    "sagelite-topcom-runtime": {
+        "sagelite_topcom": ["data/bin/*", "data/lib/*"],
+    },
+}
+
+
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
         return tomllib.load(handle)
+
+
+def test_runtime_companion_wheels_declare_copied_package_data():
+    for package, package_data in RUNTIME_PACKAGE_DATA.items():
+        pyproject = _pyproject(package)
+        setuptools = pyproject["tool"]["setuptools"]
+
+        assert setuptools["include-package-data"] is True
+        assert setuptools["package-data"] == package_data
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():

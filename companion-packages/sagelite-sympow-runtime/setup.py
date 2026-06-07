@@ -90,8 +90,6 @@ def _runtime_libraries(executable: Path) -> list[Path]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         source = _find_executable()
         target = Path(self.build_lib) / "sagelite_sympow" / "data" / "bin"
         lib_target = Path(self.build_lib) / "sagelite_sympow" / "data" / "lib"
@@ -117,6 +115,8 @@ class build_py(_build_py):
         datafiles = _find_datafiles(source)
         if datafiles is not None:
             shutil.copytree(datafiles, data_target, ignore_dangling_symlinks=True)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

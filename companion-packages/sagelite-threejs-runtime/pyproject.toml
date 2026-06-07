@@ -30,7 +30,13 @@ urls = { Homepage = "https://www.sagemath.org" }
 threejs_sage = "sagelite_threejs_runtime:sage_data_path"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_threejs_runtime = [
+  "data/threejs-sage/**/*",
+]

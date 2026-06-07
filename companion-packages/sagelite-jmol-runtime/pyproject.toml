@@ -33,6 +33,7 @@ jmol = "sagelite_jmol_runtime.runtime:jmol"
 jmol = "sagelite_jmol_runtime:sage_data_path"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]

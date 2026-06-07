@@ -43,12 +43,16 @@ def _find_kenzo_fas() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         source = _find_kenzo_fas()
-        target = Path(self.build_lib) / "sagelite_kenzo" / "data" / "kenzo.fas"
+        data_dir = Path(self.get_package_dir("sagelite_kenzo")) / "data"
+        target = data_dir / "kenzo.fas"
+        shutil.rmtree(data_dir, ignore_errors=True)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
+        try:
+            super().run()
+        finally:
+            shutil.rmtree(data_dir, ignore_errors=True)
 
 
 cmdclass = {"build_py": build_py}

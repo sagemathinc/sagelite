@@ -52,8 +52,6 @@ def _find_threejs_root() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         source = _find_threejs_root()
         target = (
             Path(self.build_lib)
@@ -66,6 +64,8 @@ class build_py(_build_py):
 
         if not _looks_like_threejs_root(target):
             raise RuntimeError(f"incomplete threejs-sage runtime copied from {source}")
+
+        super().run()
 
 
 setup(cmdclass={"build_py": build_py})

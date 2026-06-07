@@ -65,8 +65,6 @@ def _find_singular_root() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         singular_root = _find_singular_root()
         target = Path(self.build_lib) / "sagelite_singular_runtime" / "data" / "singular"
         shutil.rmtree(target, ignore_errors=True)
@@ -78,6 +76,8 @@ class build_py(_build_py):
         for module_dir in _singular_module_dirs(singular_root):
             relative = module_dir.relative_to(singular_root)
             shutil.copytree(module_dir, target / relative, ignore_dangling_symlinks=True)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

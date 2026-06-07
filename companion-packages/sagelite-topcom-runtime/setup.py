@@ -120,8 +120,6 @@ def _runtime_libraries(executables: list[Path]) -> list[Path]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         bindir = _find_bindir()
         target = Path(self.build_lib) / "sagelite_topcom" / "data" / "bin"
         lib_target = Path(self.build_lib) / "sagelite_topcom" / "data" / "lib"
@@ -141,6 +139,8 @@ class build_py(_build_py):
 
         for library in _runtime_libraries(copied):
             shutil.copy2(library, lib_target / library.name)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

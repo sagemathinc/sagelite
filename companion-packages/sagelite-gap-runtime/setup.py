@@ -125,8 +125,6 @@ def _ignore_gap_files(directory: str, names: list[str]) -> set[str]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         gap_roots = _find_gap_roots()
         target = Path(self.build_lib) / "sagelite_gap_runtime" / "data"
         shutil.rmtree(target, ignore_errors=True)
@@ -144,6 +142,8 @@ class build_py(_build_py):
             bin_target = target / "bin"
             bin_target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(gap_executable, bin_target / "gap")
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

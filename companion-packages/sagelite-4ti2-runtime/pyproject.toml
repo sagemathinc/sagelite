@@ -38,7 +38,13 @@ rays = "sagelite_four_ti_2.runtime:rays"
 zsolve = "sagelite_four_ti_2.runtime:zsolve"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_four_ti_2 = [
+  "data/bin/*",
+]

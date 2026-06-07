@@ -103,8 +103,6 @@ def _find_bindir() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         bindir = _find_bindir()
         target = Path(self.build_lib) / "sagelite_nauty" / "data" / "bin"
         shutil.rmtree(target, ignore_errors=True)
@@ -113,6 +111,8 @@ class build_py(_build_py):
             source = _program_path(bindir, program)
             if source is not None:
                 shutil.copy2(source, target / program)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

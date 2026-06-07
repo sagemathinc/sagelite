@@ -30,6 +30,7 @@ urls = { Homepage = "https://www.sagemath.org" }
 d3js = "sagelite_d3js_runtime:sage_data_path"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]

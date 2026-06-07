@@ -125,8 +125,6 @@ def _runtime_libraries(executable: Path) -> list[Path]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         bindir = _find_bindir()
         source = _program_path(bindir, "gfan")
         if source is None:
@@ -155,6 +153,8 @@ class build_py(_build_py):
 
         for library in _runtime_libraries(source.resolve()):
             shutil.copy2(library, lib_target / library.name)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

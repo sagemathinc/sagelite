@@ -71,8 +71,6 @@ def _find_info_dir() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         command = _find_executable()
         info_dir = _find_info_dir()
         target = Path(self.build_lib) / "sagelite_lie" / "data"
@@ -83,6 +81,8 @@ class build_py(_build_py):
 
         shutil.copy2(command, bin_target / "lie")
         shutil.copytree(info_dir, info_target, ignore_dangling_symlinks=True)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

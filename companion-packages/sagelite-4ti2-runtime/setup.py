@@ -84,8 +84,6 @@ def _find_libexecdir() -> Path | None:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         bindir = _find_bindir()
         target = Path(self.build_lib) / "sagelite_four_ti_2" / "data" / "bin"
         shutil.rmtree(target, ignore_errors=True)
@@ -102,6 +100,8 @@ class build_py(_build_py):
             for source in libexecdir.glob("4ti2*"):
                 if source.is_file():
                     shutil.copy2(source, target / source.name)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

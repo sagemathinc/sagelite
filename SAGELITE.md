@@ -219,6 +219,7 @@ Examples include:
 - `sagelite-d3js-runtime`
 - `sagelite-ecm-runtime`
 - `sagelite-jmol-runtime`
+- `sagelite-kenzo-runtime`
 - `sagelite-latte-runtime`
 - `sagelite-lie-runtime`
 - `sagelite-maxima-runtime`
@@ -230,6 +231,7 @@ Examples include:
 - `sagelite-singular-runtime`
 - `sagelite-sympow-runtime`
 - `sagelite-threejs-runtime`
+- `sagelite-topcom-runtime`
 
 Most of these packages copy executable payloads into package data at build
 time. Some also copy shared-library dependencies and arrange wrappers so the

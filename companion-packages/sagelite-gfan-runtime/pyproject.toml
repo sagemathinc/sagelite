@@ -85,7 +85,14 @@ gfan_tropicalweildivisor = "sagelite_gfan.runtime:gfan_tropicalweildivisor"
 gfan_version = "sagelite_gfan.runtime:gfan_version"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_gfan = [
+  "data/bin/*",
+  "data/lib/*",
+]

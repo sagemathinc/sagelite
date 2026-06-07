@@ -67,8 +67,6 @@ def _runtime_libraries(executable: Path) -> list[Path]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         source = _find_executable()
         target = Path(self.build_lib) / "sagelite_ecm" / "data" / "bin"
         lib_target = Path(self.build_lib) / "sagelite_ecm" / "data" / "lib"
@@ -88,6 +86,8 @@ class build_py(_build_py):
         wrapper.chmod(0o755)
         for library in _runtime_libraries(source):
             shutil.copy2(library, lib_target / library.name)
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

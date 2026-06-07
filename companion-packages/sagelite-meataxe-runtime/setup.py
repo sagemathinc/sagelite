@@ -90,8 +90,6 @@ def _generate_tables(target: Path, zcv: Path) -> None:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         target = Path(self.build_lib) / "sagelite_meataxe" / "data" / "meataxe"
         shutil.rmtree(target, ignore_errors=True)
 
@@ -127,6 +125,8 @@ class build_py(_build_py):
                 + ", ".join(missing[:10])
                 + (" ..." if len(missing) > 10 else "")
             )
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

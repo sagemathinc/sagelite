@@ -53,8 +53,6 @@ def _find_jmol_root() -> Path:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         source = _find_jmol_root()
         target = Path(self.build_lib) / "sagelite_jmol_runtime" / "data" / "jmol"
         shutil.rmtree(target, ignore_errors=True)
@@ -62,6 +60,8 @@ class build_py(_build_py):
 
         if _jmol_data_root(target) is None:
             raise RuntimeError(f"incomplete Jmol runtime copied from {source}")
+
+        super().run()
 
 
 setup(cmdclass={"build_py": build_py})

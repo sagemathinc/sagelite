@@ -56,8 +56,6 @@ def _ignore_gap3_files(directory: str, names: list[str]) -> set[str]:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         gap3_root = _find_gap3_root()
         target = Path(self.build_lib) / "sagelite_gap3" / "data" / "gap3"
         shutil.rmtree(target, ignore_errors=True)
@@ -67,6 +65,8 @@ class build_py(_build_py):
             ignore=_ignore_gap3_files,
             ignore_dangling_symlinks=True,
         )
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

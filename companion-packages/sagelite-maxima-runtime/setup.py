@@ -274,8 +274,6 @@ def _copy_maxima_info_indexes(maxima_prefix: Path, target: Path) -> None:
 
 class build_py(_build_py):
     def run(self):
-        super().run()
-
         maxima_prefix = _find_maxima_prefix()
         maxima_images_dir = _find_maxima_images_dir(maxima_prefix)
         maxima_fas = _find_maxima_fas()
@@ -320,6 +318,8 @@ class build_py(_build_py):
             _write_maxima_command(
                 target / "bin" / "maxima", maxima_prefix.name, ecl_dir.name
             )
+
+        super().run()
 
 
 cmdclass = {"build_py": build_py}

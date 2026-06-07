@@ -30,7 +30,14 @@ urls = { Homepage = "https://www.sagemath.org" }
 lie = "sagelite_lie.runtime:lie"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_lie = [
+  "data/bin/*",
+  "data/LiE/**/*",
+]
