@@ -223,6 +223,7 @@ Examples include:
 - `sagelite-kenzo-runtime`
 - `sagelite-latte-runtime`
 - `sagelite-lie-runtime`
+- `sagelite-lrslib-runtime`
 - `sagelite-mathjax-runtime`
 - `sagelite-maxima-runtime`
 - `sagelite-meataxe-runtime`

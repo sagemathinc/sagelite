@@ -15,10 +15,27 @@ Feature for testing the presence of ``lrslib``
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
 import subprocess
 
-from . import Executable, FeatureTestResult
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 from .join_feature import JoinFeature
+
+
+def _sagelite_lrslib_executable(program: str, original_error: FeatureNotPresentError) -> str:
+    """
+    Return a lrslib executable from the optional sagelite companion package.
+    """
+    try:
+        from sagelite_lrslib.runtime import executable_path
+    except ImportError:
+        raise original_error
+
+    executable = executable_path(program)
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    raise original_error
 
 
 class Lrs(Executable):
@@ -42,6 +59,19 @@ class Lrs(Executable):
         """
         Executable.__init__(self, "lrs", executable='lrs', spkg='lrslib',
                             url='http://cgm.cs.mcgill.ca/~avis/C/lrs.html')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the lrs executable path.
+
+        Normal Sage installations find lrslib on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-lrslib-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_lrslib_executable("lrs", error)
 
     def is_functional(self):
         r"""
@@ -101,6 +131,19 @@ class LrsNash(Executable):
         """
         Executable.__init__(self, "lrsnash", executable='lrsnash', spkg='lrslib',
                             url='http://cgm.cs.mcgill.ca/~avis/C/lrs.html')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the lrsnash executable path.
+
+        Normal Sage installations find lrslib on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-lrslib-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_lrslib_executable("lrsnash", error)
 
     def is_functional(self):
         r"""
