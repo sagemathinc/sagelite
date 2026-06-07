@@ -133,6 +133,19 @@ def test_pari_data_wheel_declares_copied_runtime_data():
     ]
 
 
+def test_pari_data_wheel_is_exposed_by_sagelite_data_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-pari-data >=10.9,<10.10"
+
+    assert extras["pari-data"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_d3js_runtime_registers_static_data_path():
     pyproject = _pyproject("sagelite-d3js-runtime")
 
