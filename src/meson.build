@@ -83,6 +83,24 @@ except Exception:
     ],
     check: true,
   ).stdout().strip()
+  cypari2_cython_include = run_command(
+    py,
+    [
+      '-c',
+      '''
+from os.path import relpath
+from pathlib import Path
+import cypari2
+path = Path(cypari2.__file__).parent.parent
+try:
+  print(relpath(path))
+except Exception:
+  print(path)
+      '''.strip(),
+    ],
+    check: true,
+  ).stdout().strip()
+  add_project_arguments('-I' + cypari2_cython_include, language: 'cython')
   # Cannot be found via pkg-config
   # We need to link against libpari directly to avoid runtime issues, so use pari as dependency of cypari2
   pari = cc.find_library('pari', required: not is_windows, disabler: true)
