@@ -12,13 +12,57 @@ Features for testing the presence of ``rubiks``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+import os
+
 from sage.env import RUBIKS_BINS_PREFIX
 
 from . import Executable
+from . import FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
-class cu2(Executable):
+class RubiksExecutable(Executable):
+    r"""
+    A :class:`~sage.features.Feature` describing a Rubiks executable.
+    """
+    def __init__(self, name):
+        r"""
+        TESTS::
+
+            sage: from sage.features.rubiks import RubiksExecutable
+            sage: isinstance(RubiksExecutable("cubex"), RubiksExecutable)
+            True
+        """
+        Executable.__init__(self, name, executable=RUBIKS_BINS_PREFIX + name,
+                            spkg='rubiks')
+        self._rubiks_name = name
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the Rubiks executable path.
+
+        Normal Sage installations find Rubiks executables on ``PATH`` or under
+        ``RUBIKS_BINS_PREFIX``.  Wheel installations can also provide them
+        through the optional ``sagelite-rubiks-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_rubiks.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._rubiks_name)
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
+
+class cu2(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``cu2``.
 
@@ -36,11 +80,10 @@ class cu2(Executable):
             sage: isinstance(cu2(), cu2)
             True
         """
-        Executable.__init__(self, "cu2", executable=RUBIKS_BINS_PREFIX + "cu2",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "cu2")
 
 
-class size222(Executable):
+class size222(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``size222``.
 
@@ -58,11 +101,10 @@ class size222(Executable):
             sage: isinstance(size222(), size222)
             True
         """
-        Executable.__init__(self, "size222", executable=RUBIKS_BINS_PREFIX + "size222",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "size222")
 
 
-class optimal(Executable):
+class optimal(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``optimal``.
 
@@ -80,11 +122,10 @@ class optimal(Executable):
             sage: isinstance(optimal(), optimal)
             True
         """
-        Executable.__init__(self, "optimal", executable=RUBIKS_BINS_PREFIX + "optimal",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "optimal")
 
 
-class mcube(Executable):
+class mcube(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``mcube``.
 
@@ -102,11 +143,10 @@ class mcube(Executable):
             sage: isinstance(mcube(), mcube)
             True
         """
-        Executable.__init__(self, "mcube", executable=RUBIKS_BINS_PREFIX + "mcube",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "mcube")
 
 
-class dikcube(Executable):
+class dikcube(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``dikcube``.
 
@@ -124,11 +164,10 @@ class dikcube(Executable):
             sage: isinstance(dikcube(), dikcube)
             True
         """
-        Executable.__init__(self, "dikcube", executable=RUBIKS_BINS_PREFIX + "dikcube",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "dikcube")
 
 
-class cubex(Executable):
+class cubex(RubiksExecutable):
     r"""
     A :class:`~sage.features.Feature` describing the presence of ``cubex``.
 
@@ -146,8 +185,7 @@ class cubex(Executable):
             sage: isinstance(cubex(), cubex)
             True
         """
-        Executable.__init__(self, "cubex", executable=RUBIKS_BINS_PREFIX + "cubex",
-                            spkg='rubiks')
+        RubiksExecutable.__init__(self, "cubex")
 
 
 class Rubiks(JoinFeature):
