@@ -155,6 +155,7 @@ full = [
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
+  'sagelite-sympow-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
   'symengine >= 0.6.1', # Only used in tests
 ]
@@ -194,11 +195,13 @@ runtime = [
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
+  'sagelite-sympow-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
 ]
 rubiks = ['sagelite-rubiks-runtime >=10.9,<10.10']
 singular = ['sagelite-singular-runtime >=10.9,<10.10']
 stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
+sympow = ['sagelite-sympow-runtime >=10.9,<10.10']
 symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 threejs = ['sagelite-threejs-runtime >=10.9,<10.10']
 #giac = ['sagemath_giac'] # Not yet available on PyPI (https://github.com/sagemath/sagemath-giac/issues/3)

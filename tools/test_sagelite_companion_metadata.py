@@ -23,3 +23,15 @@ def test_pari_data_wheel_declares_copied_runtime_data():
         "data/pari/galpol/**/*",
         "data/pari/nftables/**/*",
     ]
+
+
+def test_sympow_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-sympow-runtime >=10.9,<10.10"
+
+    assert extras["sympow"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]

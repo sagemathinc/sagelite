@@ -155,6 +155,11 @@ jobs:
             path: companion-packages/sagelite-singular-runtime
             apt_packages: singular
             publish: false
+          - name: sagelite-sympow-runtime
+            import_name: sagelite_sympow
+            path: companion-packages/sagelite-sympow-runtime
+            apt_packages: sympow
+            publish: false
 
     steps:
       - uses: actions/checkout@v4
@@ -238,6 +243,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-singular-runtime" ]; then
             export SAGELITE_SINGULAR_ROOT=/usr
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-sympow-runtime" ]; then
+            export SAGELITE_SYMPOW_BINDIR=/usr/bin
           fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
@@ -469,6 +477,23 @@ jobs:
                   for path, _, filenames in os.walk(root_dir)
                   for filename in filenames
               )
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-sympow-runtime":
+              runtime = importlib.import_module("sagelite_sympow.runtime")
+              sympow = runtime.sympow_command()
+              print("sympow=", sympow)
+              assert os.path.exists(sympow)
+              import shutil
+              import subprocess
+              assert shutil.which("sympow")
+              result = subprocess.run(
+                  ["sympow", "-help"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "sympow" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-graphs":
