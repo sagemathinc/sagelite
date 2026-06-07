@@ -27,7 +27,13 @@ urls = { Homepage = "https://www.sagemath.org" }
 version = "10.9"
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_singular_runtime = [
+  "data/singular/**/*",
+]

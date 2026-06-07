@@ -80,6 +80,28 @@ def test_lie_runtime_declares_console_script():
     }
 
 
+def test_maxima_runtime_wheel_declares_copied_runtime_data():
+    pyproject = _pyproject("sagelite-maxima-runtime")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_maxima"] == [
+        "data/bin/*",
+        "data/lib/**/*",
+        "data/share/**/*",
+    ]
+
+
+def test_singular_runtime_wheel_declares_copied_runtime_data():
+    pyproject = _pyproject("sagelite-singular-runtime")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_singular_runtime"
+    ] == [
+        "data/singular/**/*",
+    ]
+
+
 def test_polytopes_4d_database_registers_reflexive_polytope_data_path():
     pyproject = _pyproject("sagelite-database-polytopes-4d")
 

@@ -27,7 +27,15 @@ classifiers = [
 urls = { Homepage = "https://www.sagemath.org" }
 
 [tool.setuptools]
+include-package-data = true
 zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_maxima = [
+  "data/bin/*",
+  "data/lib/**/*",
+  "data/share/**/*",
+]
