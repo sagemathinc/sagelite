@@ -19,6 +19,7 @@ import os
 import subprocess
 
 from . import Executable, FeatureTestResult
+from . import FeatureNotPresentError
 
 
 class Plantri(Executable):
@@ -43,6 +44,30 @@ class Plantri(Executable):
                             executable='plantri',
                             url='http://users.cecs.anu.edu.au/~bdm/plantri/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the plantri executable path.
+
+        Normal Sage installations find plantri on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-plantri-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_plantri.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def is_functional(self):
         r"""
         Check whether ``plantri`` works on trivial input.
@@ -53,7 +78,7 @@ class Plantri(Executable):
             sage: Plantri().is_functional()  # optional - plantri
             FeatureTestResult('plantri', True)
         """
-        command = ["plantri", "4"]
+        command = [self.absolute_filename(), "4"]
         try:
             lines = subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
