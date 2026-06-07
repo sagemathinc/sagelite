@@ -11,7 +11,10 @@ Feature for testing the presence of ``cddlib``
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
+
 from . import Executable
+from . import FeatureNotPresentError
 
 
 class CddExecutable(Executable):
@@ -38,6 +41,31 @@ class CddExecutable(Executable):
         """
         Executable.__init__(self, name=name, executable=name, spkg='cddlib',
                             url='https://github.com/cddlib/cddlib', type='standard')
+        self._cddlib_name = name
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the cddlib executable path.
+
+        Normal Sage installations find cddlib on ``PATH``.  Wheel installations
+        can also provide it through the optional ``sagelite-cddlib-runtime``
+        companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_cddlib.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._cddlib_name)
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():

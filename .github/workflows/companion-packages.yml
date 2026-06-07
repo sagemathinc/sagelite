@@ -105,6 +105,11 @@ jobs:
             path: companion-packages/sagelite-4ti2-runtime
             apt_packages: 4ti2
             publish: false
+          - name: sagelite-cddlib-runtime
+            import_name: sagelite_cddlib
+            path: companion-packages/sagelite-cddlib-runtime
+            apt_packages: libcdd-tools
+            publish: false
           - name: sagelite-ecm-runtime
             import_name: sagelite_ecm
             path: companion-packages/sagelite-ecm-runtime
@@ -213,6 +218,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-4ti2-runtime" ]; then
             export SAGELITE_4TI2_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-cddlib-runtime" ]; then
+            export SAGELITE_CDDLIB_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
@@ -343,6 +351,35 @@ jobs:
               assert shutil.which("hilbert")
               assert shutil.which("zsolve")
               subprocess.run(["hilbert", "-h"], check=True, capture_output=True, text=True)
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-cddlib-runtime":
+              runtime = importlib.import_module("sagelite_cddlib.runtime")
+              cddexec_gmp = runtime.executable_path("cddexec_gmp")
+              cddexec = runtime.executable_path("cddexec")
+              print("cddexec_gmp=", cddexec_gmp)
+              print("cddexec=", cddexec)
+              assert os.path.exists(cddexec_gmp)
+              assert os.path.exists(cddexec)
+              import shutil
+              import subprocess
+              assert shutil.which("cddexec_gmp")
+              result = subprocess.run(
+                  ["cddexec_gmp", "--repall"],
+                  input=(
+                      "H-representation\n"
+                      "begin\n"
+                      " 3 3 rational\n"
+                      " 1 1 0\n"
+                      " 1 0 1\n"
+                      " 1 -1 -1\n"
+                      "end\n"
+                  ),
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "V-representation" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-ecm-runtime":

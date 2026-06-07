@@ -11,6 +11,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-4ti2-runtime": {
         "sagelite_four_ti_2": ["data/bin/*"],
     },
+    "sagelite-cddlib-runtime": {
+        "sagelite_cddlib": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-d3js-runtime": {
         "sagelite_d3js_runtime": ["data/d3js/**/*"],
     },
@@ -145,6 +148,30 @@ def test_d3js_runtime_is_exposed_by_sagelite_extras():
     assert extras["d3js"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_cddlib_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-cddlib-runtime >=10.9,<10.10"
+
+    assert extras["cddlib"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_cddlib_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-cddlib-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "cddexec": "sagelite_cddlib.runtime:cddexec",
+        "cddexec_gmp": "sagelite_cddlib.runtime:cddexec_gmp",
+        "redcheck_gmp": "sagelite_cddlib.runtime:redcheck_gmp",
+        "scdd": "sagelite_cddlib.runtime:scdd",
+        "scdd_gmp": "sagelite_cddlib.runtime:scdd_gmp",
+    }
 
 
 def test_lie_runtime_is_exposed_by_sagelite_extras():

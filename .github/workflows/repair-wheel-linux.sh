@@ -263,6 +263,43 @@ build_four_ti_2_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_cddlib_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local cddlib_bindir="$prefix/bin"
+  if [ ! -x "$cddlib_bindir/cddexec" ] ||
+     [ ! -x "$cddlib_bindir/cddexec_gmp" ] ||
+     [ ! -x "$cddlib_bindir/redcheck_gmp" ] ||
+     [ ! -x "$cddlib_bindir/scdd" ] ||
+     [ ! -x "$cddlib_bindir/scdd_gmp" ]; then
+    echo "cddlib executables not found under $cddlib_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name cddexec -o -name cddexec_gmp -o -name redcheck_gmp -o -name scdd -o -name scdd_gmp \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-cddlib-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "cddlib runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_CDDLIB_BINDIR="$cddlib_bindir" \
+  SAGELITE_CDDLIB_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_maxima_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -632,6 +669,7 @@ build_mwrank_runtime_companion
 build_sympow_runtime_companion
 build_topcom_runtime_companion
 build_four_ti_2_runtime_companion
+build_cddlib_runtime_companion
 build_maxima_runtime_companion
 build_meataxe_runtime_companion
 build_nauty_runtime_companion
