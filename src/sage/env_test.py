@@ -44,6 +44,7 @@ def clean_runtime_environment():
         "SAGE_GAP_COMMAND",
         "SAGE_ECMBIN",
         "SAGE_NAUTY_BINS_PREFIX",
+        "SYMPOW",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
@@ -92,6 +93,14 @@ def _kenzo_runtime(tmp_path: Path, name: str) -> Path:
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
     command = tmp_path / name / "bin" / "mwrank"
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
+
+
+def _sympow_runtime(tmp_path: Path, name: str) -> Path:
+    command = tmp_path / name / "bin" / "sympow"
     command.parent.mkdir(parents=True)
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
@@ -513,6 +522,58 @@ def test_mwrank_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_mwrank_runtime()
 
     assert env.os.environ["MWRANK"] == str(existing_command)
+
+
+def test_sympow_runtime_uses_companion_when_command_is_missing(monkeypatch, tmp_path):
+    command = _sympow_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("SYMPOW", raising=False)
+    monkeypatch.setattr(env.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command
+        if (module_name, attr_name) == ("sagelite_sympow.runtime", "sympow_command")
+        else None,
+    )
+
+    env._bootstrap_sagelite_sympow_runtime()
+
+    assert env.os.environ["SYMPOW"] == str(command)
+
+
+def test_sympow_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    command = _sympow_runtime(tmp_path, "companion")
+    existing_command = _sympow_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("SYMPOW", str(existing_command))
+    monkeypatch.setattr(env.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_sympow_runtime()
+
+    assert env.os.environ["SYMPOW"] == str(existing_command)
+
+
+def test_sympow_runtime_keeps_system_command(monkeypatch, tmp_path):
+    command = _sympow_runtime(tmp_path, "companion")
+    system_command = _sympow_runtime(tmp_path, "system")
+
+    monkeypatch.delenv("SYMPOW", raising=False)
+    monkeypatch.setattr(env.shutil, "which", lambda name: str(system_command))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_sympow_runtime()
+
+    assert "SYMPOW" not in env.os.environ
 
 
 def test_gfan_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

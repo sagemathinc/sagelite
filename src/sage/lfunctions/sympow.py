@@ -47,11 +47,13 @@ ACKNOWLEDGEMENT (from sympow readme):
 ########################################################################
 
 import os
+import shlex
 
 from sage.structure.sage_object import SageObject
 from sage.misc.pager import pager
 from sage.misc.verbose import verbose
 from sage.rings.integer import Integer
+from sage.env import SYMPOW
 
 
 class Sympow(SageObject):
@@ -76,7 +78,7 @@ class Sympow(SageObject):
         """
         Used to call sympow with given args
         """
-        cmd = 'sympow %s' % args
+        cmd = '%s %s' % (shlex.quote(SYMPOW), args)
         with os.popen(cmd) as f:
             v = f.read().strip()
         verbose(v, level=2)

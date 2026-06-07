@@ -225,6 +225,7 @@ Examples include:
 - `sagelite-palp-runtime`
 - `sagelite-rubiks-runtime`
 - `sagelite-singular-runtime`
+- `sagelite-sympow-runtime`
 - `sagelite-threejs-runtime`
 
 Most of these packages copy executable payloads into package data at build

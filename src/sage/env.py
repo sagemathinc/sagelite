@@ -19,6 +19,7 @@ AUTHORS:
 
 import importlib.metadata as importlib_metadata
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -304,6 +305,22 @@ def _bootstrap_sagelite_mwrank_runtime() -> None:
     command = _optional_runtime_value("sagelite_mwrank.runtime", "mwrank_command")
     if command and os.path.isfile(command) and os.access(command, os.X_OK):
         os.environ.setdefault("MWRANK", os.fspath(command))
+
+
+def _bootstrap_sagelite_sympow_runtime() -> None:
+    """
+    Seed ``SYMPOW`` from an optional ``sagelite_sympow`` package.
+
+    Sage's symmetric-power L-function interface shells out to Watkins's
+    standalone ``sympow`` executable.  The companion package supplies a
+    relocatable command for installed ``sagelite`` wheels.
+    """
+    if os.environ.get("SYMPOW") or shutil.which("sympow"):
+        return
+
+    command = _optional_runtime_value("sagelite_sympow.runtime", "sympow_command")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("SYMPOW", os.fspath(command))
 
 
 def _bootstrap_sagelite_gfan_runtime() -> None:
@@ -645,6 +662,8 @@ _bootstrap_sagelite_ecm_runtime()
 SAGE_ECMBIN = var("SAGE_ECMBIN", "ecm")
 _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
+_bootstrap_sagelite_sympow_runtime()
+SYMPOW = var("SYMPOW", "sympow")
 _bootstrap_sagelite_gfan_runtime()
 GFAN_BINS_PREFIX = var("GFAN_BINS_PREFIX", "")
 _bootstrap_sagelite_rubiks_runtime()
