@@ -72,12 +72,38 @@ def test_lie_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_latte_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-latte-runtime >=10.9,<10.10"
+
+    assert extras["latte"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_lie_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-lie-runtime")
 
     assert pyproject["project"]["scripts"] == {
         "lie": "sagelite_lie.runtime:lie",
     }
+
+
+def test_latte_runtime_wheel_declares_copied_runtime_data():
+    pyproject = _pyproject("sagelite-latte-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "count": "sagelite_latte.runtime:count",
+        "integrate": "sagelite_latte.runtime:integrate",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_latte"] == [
+        "data/bin/*",
+        "data/lib/*",
+    ]
 
 
 def test_maxima_runtime_wheel_declares_copied_runtime_data():

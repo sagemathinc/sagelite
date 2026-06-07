@@ -347,6 +347,35 @@ def _bootstrap_sagelite_gfan_runtime() -> None:
         os.environ.setdefault("GFAN_BINS_PREFIX", os.fspath(prefix))
 
 
+def _bootstrap_sagelite_latte_runtime() -> None:
+    """
+    Seed ``LATTE_BINS_PREFIX`` from an optional ``sagelite_latte`` package.
+
+    Sage's LattE interface calls the standalone ``count`` and ``integrate``
+    executables.  The companion package supplies relocatable executable copies
+    for installed wheels.
+    """
+    configured = getattr(sage.config, "LATTE_BINS_PREFIX", None)
+    needs_prefix = (
+        not os.environ.get("LATTE_BINS_PREFIX")
+        and not (
+            configured
+            and os.path.isfile(os.path.join(os.fspath(configured), "count"))
+            and os.path.isfile(os.path.join(os.fspath(configured), "integrate"))
+        )
+    )
+    if not needs_prefix:
+        return
+
+    prefix = _optional_runtime_value("sagelite_latte.runtime", "bin_prefix")
+    if (
+        prefix
+        and os.path.isfile(os.path.join(prefix, "count"))
+        and os.path.isfile(os.path.join(prefix, "integrate"))
+    ):
+        os.environ.setdefault("LATTE_BINS_PREFIX", os.fspath(prefix))
+
+
 def _bootstrap_sagelite_singular_runtime() -> None:
     """
     Seed Singular data-root variables from an optional companion package.
@@ -720,6 +749,8 @@ _bootstrap_sagelite_sympow_runtime()
 SYMPOW = var("SYMPOW", "sympow")
 _bootstrap_sagelite_gfan_runtime()
 GFAN_BINS_PREFIX = var("GFAN_BINS_PREFIX", "")
+_bootstrap_sagelite_latte_runtime()
+LATTE_BINS_PREFIX = var("LATTE_BINS_PREFIX", "")
 _bootstrap_sagelite_rubiks_runtime()
 RUBIKS_BINS_PREFIX = var("RUBIKS_BINS_PREFIX", "")
 _bootstrap_sagelite_palp_runtime()

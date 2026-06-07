@@ -34,6 +34,7 @@ def clean_runtime_environment():
         "GFAN_BINS_PREFIX",
         "JMOL_DIR",
         "KENZO_FAS",
+        "LATTE_BINS_PREFIX",
         "LIE_INFO_DIR",
         "MAXIMA",
         "MAXIMA_FAS",
@@ -711,6 +712,55 @@ def test_gfan_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_gfan_runtime()
 
     assert env.os.environ["GFAN_BINS_PREFIX"] == str(existing) + env.os.sep
+
+
+def test_latte_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "count")
+    integrate = prefix / "integrate"
+    integrate.write_text("#!/bin/sh\n")
+    integrate.chmod(0o755)
+
+    monkeypatch.delenv("LATTE_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "LATTE_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_latte.runtime", "bin_prefix")
+        else None,
+    )
+
+    env._bootstrap_sagelite_latte_runtime()
+
+    assert env.os.environ["LATTE_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_latte_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "count")
+    integrate = prefix / "integrate"
+    integrate.write_text("#!/bin/sh\n")
+    integrate.chmod(0o755)
+    existing = _runtime_bin_prefix(tmp_path, "existing", "count")
+    existing_integrate = existing / "integrate"
+    existing_integrate.write_text("#!/bin/sh\n")
+    existing_integrate.chmod(0o755)
+
+    monkeypatch.setenv("LATTE_BINS_PREFIX", str(existing) + env.os.sep)
+    monkeypatch.setattr(env.sage.config, "LATTE_BINS_PREFIX", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep,
+    )
+
+    env._bootstrap_sagelite_latte_runtime()
+
+    assert env.os.environ["LATTE_BINS_PREFIX"] == str(existing) + env.os.sep
 
 
 def test_nauty_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

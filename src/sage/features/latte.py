@@ -17,6 +17,7 @@ Features for testing the presence of ``latte_int``
 
 from . import Executable
 from .join_feature import JoinFeature
+from sage.env import LATTE_BINS_PREFIX, join
 
 
 LATTE_URL = "https://www.math.ucdavis.edu/~latte/software.php"
@@ -34,7 +35,8 @@ class Latte_count(Executable):
             sage: isinstance(Latte_count(), Latte_count)
             True
         """
-        Executable.__init__(self, 'count', executable='count',
+        Executable.__init__(self, 'count',
+                            executable=join(LATTE_BINS_PREFIX, 'count') or 'count',
                             spkg='latte_int',
                             url=LATTE_URL)
 
@@ -51,7 +53,8 @@ class Latte_integrate(Executable):
             sage: isinstance(Latte_integrate(), Latte_integrate)
             True
         """
-        Executable.__init__(self, 'integrate', executable='integrate',
+        Executable.__init__(self, 'integrate',
+                            executable=join(LATTE_BINS_PREFIX, 'integrate') or 'integrate',
                             spkg='latte_int',
                             url=LATTE_URL)
 

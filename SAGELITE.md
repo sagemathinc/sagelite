@@ -219,6 +219,7 @@ Examples include:
 - `sagelite-d3js-runtime`
 - `sagelite-ecm-runtime`
 - `sagelite-jmol-runtime`
+- `sagelite-latte-runtime`
 - `sagelite-lie-runtime`
 - `sagelite-maxima-runtime`
 - `sagelite-meataxe-runtime`
