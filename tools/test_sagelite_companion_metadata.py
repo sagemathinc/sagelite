@@ -63,6 +63,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-palp-runtime": {
         "sagelite_palp": ["data/bin/*"],
     },
+    "sagelite-plantri-runtime": {
+        "sagelite_plantri": ["data/bin/*"],
+    },
     "sagelite-rubiks-runtime": {
         "sagelite_rubiks": ["data/bin/*"],
     },
@@ -320,4 +323,24 @@ def test_tachyon_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "tachyon": "sagelite_tachyon.runtime:tachyon",
+    }
+
+
+def test_plantri_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-plantri-runtime >=10.9,<10.10"
+
+    assert extras["plantri"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_plantri_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-plantri-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "plantri": "sagelite_plantri.runtime:plantri",
     }

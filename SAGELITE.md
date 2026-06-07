@@ -228,6 +228,7 @@ Examples include:
 - `sagelite-mwrank-runtime`
 - `sagelite-nauty-runtime`
 - `sagelite-palp-runtime`
+- `sagelite-plantri-runtime`
 - `sagelite-rubiks-runtime`
 - `sagelite-singular-runtime`
 - `sagelite-sympow-runtime`
