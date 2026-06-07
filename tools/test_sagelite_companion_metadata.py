@@ -73,6 +73,9 @@ RUNTIME_PACKAGE_DATA = {
             "data/lib/*",
         ],
     },
+    "sagelite-tachyon-runtime": {
+        "sagelite_tachyon": ["data/bin/*"],
+    },
     "sagelite-threejs-runtime": {
         "sagelite_threejs_runtime": ["data/threejs-sage/**/*"],
     },
@@ -271,3 +274,23 @@ def test_topcom_runtime_wheel_declares_copied_runtime_data():
     ]
     assert "points2placingtriang" in pyproject["project"]["scripts"]
     assert "points2allfinetriangs" in pyproject["project"]["scripts"]
+
+
+def test_tachyon_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-tachyon-runtime >=10.9,<10.10"
+
+    assert extras["tachyon"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_tachyon_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-tachyon-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "tachyon": "sagelite_tachyon.runtime:tachyon",
+    }
