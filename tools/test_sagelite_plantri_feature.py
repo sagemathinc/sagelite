@@ -33,6 +33,7 @@ def _load_source_feature_module(name):
 
 
 sage.env.GFAN_BINS_PREFIX = getattr(sage.env, "GFAN_BINS_PREFIX", "")
+sage.env.PALP_BINS_PREFIX = getattr(sage.env, "PALP_BINS_PREFIX", "")
 sage.env.SAGE_NAUTY_BINS_PREFIX = getattr(sage.env, "SAGE_NAUTY_BINS_PREFIX", "")
 sage.env.SAGE_ECMBIN = getattr(sage.env, "SAGE_ECMBIN", "ecm")
 
@@ -42,6 +43,7 @@ gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
 msolve_module = _load_source_feature_module("msolve")
 nauty_module = _load_source_feature_module("nauty")
+palp_module = _load_source_feature_module("palp")
 
 Ecm = ecm_module.Ecm
 FourTi2Executable = four_ti_2_module.FourTi2Executable
@@ -50,6 +52,7 @@ Benzene = graph_generators_module.Benzene
 Plantri = graph_generators_module.Plantri
 msolve = msolve_module.msolve
 NautyExecutable = nauty_module.NautyExecutable
+PalpExecutable = palp_module.PalpExecutable
 
 
 def _write_fake_runtime(tmp_path, package_name, program, path_function):
@@ -206,5 +209,21 @@ def test_ecm_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_ecm.runtime", None)
 
     feature = Ecm()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_palp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_palp", "poly-4d.x", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_palp", None)
+    sys.modules.pop("sagelite_palp.runtime", None)
+
+    feature = PalpExecutable("poly", 4)
 
     assert feature.absolute_filename() == os.fspath(executable)

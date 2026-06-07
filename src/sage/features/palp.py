@@ -11,9 +11,11 @@ Feature for testing the presence of ``palp``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+import os
+
 from sage.env import PALP_BINS_PREFIX
 
-from . import Executable
+from . import Executable, FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
@@ -36,13 +38,39 @@ class PalpExecutable(Executable):
             True
         """
         if suff:
+            self._sagelite_program = f"{palpprog}-{suff}d.x"
             Executable.__init__(self, f"palp_{palpprog}_{suff}d",
                                 executable=f"{PALP_BINS_PREFIX}{palpprog}-{suff}d.x",
                                 spkg='palp', type='standard')
         else:
+            self._sagelite_program = f"{palpprog}.x"
             Executable.__init__(self, f"palp_{palpprog}",
                                 executable=f"{PALP_BINS_PREFIX}{palpprog}.x",
                                 spkg='palp', type='standard')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the PALP executable path.
+
+        Normal Sage installations find PALP on ``PATH``. Wheel installations can
+        also provide it through the optional ``sagelite-palp-runtime`` companion
+        package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_palp.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path(self._sagelite_program)
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 class Palp(JoinFeature):
