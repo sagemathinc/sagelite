@@ -247,6 +247,7 @@ runtime = [
 ]
 rubiks = ['sagelite-rubiks-runtime >=10.9,<10.10']
 singular = ['sagelite-singular-runtime >=10.9,<10.10']
+stein-watkins = ['sagelite-database-stein-watkins >=10.9,<10.10']
 stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
 sympow = ['sagelite-sympow-runtime >=10.9,<10.10']
 symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']

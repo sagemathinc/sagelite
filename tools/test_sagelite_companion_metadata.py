@@ -511,6 +511,32 @@ def test_polytopes_4d_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_stein_watkins_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-stein-watkins")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "stein_watkins": "sagelite_database_stein_watkins:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_stein_watkins"
+    ] == [
+        "data/stein_watkins/**/*",
+    ]
+
+
+def test_stein_watkins_database_is_exposed_by_dedicated_sagelite_extra():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-stein-watkins >=10.9,<10.10"
+
+    assert extras["stein-watkins"] == [requirement]
+    assert requirement not in extras["databases"]
+    assert requirement not in extras["full"]
+
+
 def test_topcom_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
