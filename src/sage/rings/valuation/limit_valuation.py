@@ -656,6 +656,16 @@ class MacLaneLimitValuation(LimitValuation_generic, InfiniteDiscretePseudoValuat
             True
             sage: valuations.LimitValuation(V[2], F) >= valuations.LimitValuation(V[2], G)
             True
+
+        The defining polynomials can differ by finite factors even when the
+        limit valuations approximate the same infinite factor::
+
+            sage: F = x*(x - 2)
+            sage: G = x*(x - 3)
+            sage: u = valuations.LimitValuation(QQ.valuation(2).mac_lane_approximants(F)[1], F)
+            sage: v = valuations.LimitValuation(QQ.valuation(2).mac_lane_approximants(G)[1], G)
+            sage: u >= v and v >= u
+            True
         """
         if other.is_trivial():
             return other.is_discrete_valuation()
@@ -671,8 +681,12 @@ class MacLaneLimitValuation(LimitValuation_generic, InfiniteDiscretePseudoValuat
                 self._improve_approximation_for_call(other._G)
                 other._improve_approximation_for_call(self._G)
                 if self._G != other._G:
-                    assert self._G.gcd(other._G).is_one()
-                    return False
+                    from sage.rings.infinity import infinity
+                    common = self._G.gcd(other._G)
+                    if common.is_one() or self(common) is not infinity or other(common) is not infinity:
+                        return False
+                    self._G = common
+                    other._G = common
 
                 # If the valuations are comparable, they must approximate the
                 # same factor of G (see the documentation of LimitValuation:
