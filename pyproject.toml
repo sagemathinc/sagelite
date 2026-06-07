@@ -154,8 +154,10 @@ full = [
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
+  'sagelite-glucose-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
+  'sagelite-kissat-runtime >=10.9,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',
@@ -180,10 +182,12 @@ benzene = ['sagelite-benzene-runtime >=10.9,<10.10']
 gap = ['sagelite-gap-runtime >=10.9.post2,<10.10']
 gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
 gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
+glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
 jmol = ['sagelite-jmol-runtime >=10.9,<10.10']
 kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
+kissat = ['sagelite-kissat-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel >=10.9,<10.10']
 latte = ['sagelite-latte-runtime >=10.9,<10.10']
@@ -212,8 +216,10 @@ runtime = [
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
+  'sagelite-glucose-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
+  'sagelite-kissat-runtime >=10.9,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',

@@ -35,11 +35,17 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gfan-runtime": {
         "sagelite_gfan": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-glucose-runtime": {
+        "sagelite_glucose": ["data/bin/*"],
+    },
     "sagelite-jmol-runtime": {
         "sagelite_jmol_runtime": ["data/jmol/**/*"],
     },
     "sagelite-kenzo-runtime": {
         "sagelite_kenzo": ["data/kenzo.fas"],
+    },
+    "sagelite-kissat-runtime": {
+        "sagelite_kissat": ["data/bin/*"],
     },
     "sagelite-latte-runtime": {
         "sagelite_latte": ["data/bin/*", "data/lib/*"],
@@ -223,6 +229,47 @@ def test_cddlib_runtime_declares_console_scripts():
         "redcheck_gmp": "sagelite_cddlib.runtime:redcheck_gmp",
         "scdd": "sagelite_cddlib.runtime:scdd",
         "scdd_gmp": "sagelite_cddlib.runtime:scdd_gmp",
+    }
+
+
+def test_glucose_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-glucose-runtime >=10.9,<10.10"
+
+    assert extras["glucose"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_glucose_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-glucose-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "glucose": "sagelite_glucose.runtime:glucose",
+        "glucose-syrup": "sagelite_glucose.runtime:glucose_syrup",
+    }
+
+
+def test_kissat_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-kissat-runtime >=10.9,<10.10"
+
+    assert extras["kissat"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_kissat_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-kissat-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "kissat": "sagelite_kissat.runtime:kissat",
     }
 
 

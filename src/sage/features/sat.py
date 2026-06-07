@@ -2,7 +2,26 @@ r"""
 Feature for testing the presence of SAT solvers
 """
 
-from . import Executable, PythonModule
+import os
+
+from . import Executable, FeatureNotPresentError, PythonModule
+
+
+def _sagelite_sat_executable(
+        module_name: str, program: str, original_error: FeatureNotPresentError) -> str:
+    """
+    Return a SAT solver executable from an optional sagelite companion package.
+    """
+    try:
+        runtime = __import__(module_name, fromlist=["executable_path"])
+    except ImportError:
+        raise original_error
+
+    executable = runtime.executable_path(program)
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    raise original_error
 
 
 class Glucose(Executable):
@@ -27,6 +46,20 @@ class Glucose(Executable):
         Executable.__init__(self, name=executable, executable=executable,
                             spkg="glucose", type="optional")
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the Glucose executable path.
+
+        Normal Sage installations find Glucose on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-glucose-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_sat_executable(
+                "sagelite_glucose.runtime", self.executable, error)
+
 
 class Kissat(Executable):
     r"""
@@ -49,6 +82,20 @@ class Kissat(Executable):
         """
         Executable.__init__(self, name="kissat", executable="kissat",
                             spkg="kissat", type="optional")
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the Kissat executable path.
+
+        Normal Sage installations find Kissat on ``PATH``.  Wheel
+        installations can also provide it through the optional
+        ``sagelite-kissat-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_sat_executable(
+                "sagelite_kissat.runtime", self.executable, error)
 
 
 class Pycosat(PythonModule):
