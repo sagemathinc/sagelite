@@ -217,6 +217,7 @@ Examples include:
 - `sagelite-gfan-runtime`
 - `sagelite-4ti2-runtime`
 - `sagelite-ecm-runtime`
+- `sagelite-jmol-runtime`
 - `sagelite-maxima-runtime`
 - `sagelite-meataxe-runtime`
 - `sagelite-mwrank-runtime`
