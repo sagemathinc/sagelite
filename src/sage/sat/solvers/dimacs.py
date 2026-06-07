@@ -32,10 +32,32 @@ from pathlib import Path
 import sys
 import subprocess
 import shlex
+import shutil
 from time import sleep
 
 from sage.sat.solvers.satsolver import SatSolver
 from sage.misc.temporary_file import tmp_filename
+from sage.features import FeatureNotPresentError
+from sage.features.sat import Glucose as GlucoseFeature
+from sage.features.sat import Kissat as KissatFeature
+
+
+def _feature_command(feature, fallback, arguments):
+    """
+    Return a DIMACS command using ``feature`` when it is available.
+
+    This keeps source installations on the traditional command names while
+    allowing installed wheels to use optional sagelite runtime packages.
+    """
+    if shutil.which(fallback):
+        executable = fallback
+    else:
+        try:
+            executable = feature.absolute_filename()
+        except FeatureNotPresentError:
+            executable = fallback
+
+    return " ".join([shlex.quote(executable), *arguments])
 
 
 class DIMACS(SatSolver):
@@ -640,6 +662,13 @@ class Glucose(DIMACS):
     """
     command = "glucose -verb=0 -model {input}"
 
+    def __init__(self, command=None, filename=None, verbosity=0, **kwds):
+        if command is None:
+            command = _feature_command(
+                GlucoseFeature(), "glucose", ["-verb=0", "-model", "{input}"]
+            )
+        super().__init__(command=command, filename=filename, verbosity=verbosity, **kwds)
+
 
 class GlucoseSyrup(DIMACS):
     """
@@ -703,6 +732,15 @@ class GlucoseSyrup(DIMACS):
         v -1 -2 ... 100 0
     """
     command = "glucose-syrup -model -verb=0 {input}"
+
+    def __init__(self, command=None, filename=None, verbosity=0, **kwds):
+        if command is None:
+            command = _feature_command(
+                GlucoseFeature("glucose-syrup"),
+                "glucose-syrup",
+                ["-model", "-verb=0", "{input}"],
+            )
+        super().__init__(command=command, filename=filename, verbosity=verbosity, **kwds)
 
 
 class Kissat(DIMACS):
@@ -768,3 +806,8 @@ class Kissat(DIMACS):
     """
 
     command = "kissat -q {input}"
+
+    def __init__(self, command=None, filename=None, verbosity=0, **kwds):
+        if command is None:
+            command = _feature_command(KissatFeature(), "kissat", ["-q", "{input}"])
+        super().__init__(command=command, filename=filename, verbosity=verbosity, **kwds)
