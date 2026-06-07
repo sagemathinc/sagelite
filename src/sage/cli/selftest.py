@@ -303,6 +303,20 @@ def _check_rubiks_runtime():
     return "Rubiks executables available"
 
 
+def _check_threejs_runtime():
+    try:
+        import sagelite_threejs_runtime  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.threejs import Threejs
+
+    threejs = Threejs().is_present()
+    if not bool(threejs):
+        raise RuntimeError(f"Three.js runtime is not available: {threejs.reason}")
+    return "Three.js static runtime available"
+
+
 def _check_database_graphs():
     try:
         import sagelite_database_graphs  # noqa: F401
@@ -521,6 +535,7 @@ def main() -> int:
         ("mwrank executable runtime", _check_mwrank_runtime),
         ("PALP executable runtime", _check_palp_runtime),
         ("Rubiks executable runtime", _check_rubiks_runtime),
+        ("Three.js static runtime", _check_threejs_runtime),
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),

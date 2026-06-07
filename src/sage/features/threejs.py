@@ -25,7 +25,14 @@ class Threejs(StaticFile):
         """
         from sage.env import sage_data_paths, THREEJS_DIR
 
-        threejs_search_path = THREEJS_DIR or list(sage_data_paths('jupyter/nbextensions/threejs-sage')) + list(sage_data_paths('threejs-sage')) + list(sage_data_paths('threejs'))
+        threejs_search_path = []
+        if THREEJS_DIR:
+            threejs_search_path.append(THREEJS_DIR)
+        threejs_search_path += (
+            list(sage_data_paths('jupyter/nbextensions/threejs-sage'))
+            + list(sage_data_paths('threejs-sage'))
+            + list(sage_data_paths('threejs'))
+        )
 
         try:
             version = self.required_version()
