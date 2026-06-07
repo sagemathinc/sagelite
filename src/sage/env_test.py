@@ -48,6 +48,7 @@ def clean_runtime_environment():
         "SAGE_ECMBIN",
         "SAGE_NAUTY_BINS_PREFIX",
         "SYMPOW",
+        "THREEJS_DIR",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
@@ -107,6 +108,15 @@ def _jmol_runtime(tmp_path: Path, name: str) -> Path:
     jmol_dir.mkdir(parents=True)
     (jmol_dir / "JmolData.jar").write_text("jmol data\n")
     return jmol_dir
+
+
+def _threejs_runtime(tmp_path: Path, name: str) -> Path:
+    threejs_dir = tmp_path / name / "share" / "threejs-sage"
+    version_dir = threejs_dir / "r124"
+    version_dir.mkdir(parents=True)
+    (threejs_dir / "version").write_text("r124\n")
+    (version_dir / "three.min.js").write_text("console.log('three');\n")
+    return threejs_dir
 
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
@@ -540,6 +550,65 @@ def test_jmol_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_jmol_runtime()
 
     assert env.os.environ["JMOL_DIR"] == str(existing_jmol_dir)
+
+
+def test_threejs_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    threejs_dir = _threejs_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("THREEJS_DIR", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "THREEJS_DIR",
+        str(tmp_path / "stale-share" / "threejs-sage"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: threejs_dir
+        if (module_name, attr_name)
+        == ("sagelite_threejs_runtime", "threejs_sage_path")
+        else None,
+    )
+
+    env._bootstrap_sagelite_threejs_runtime()
+
+    assert env.os.environ["THREEJS_DIR"] == str(threejs_dir)
+
+
+def test_threejs_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    threejs_dir = _threejs_runtime(tmp_path, "companion")
+    existing_threejs_dir = _threejs_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("THREEJS_DIR", str(existing_threejs_dir))
+    monkeypatch.setattr(env.sage.config, "THREEJS_DIR", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: threejs_dir,
+    )
+
+    env._bootstrap_sagelite_threejs_runtime()
+
+    assert env.os.environ["THREEJS_DIR"] == str(existing_threejs_dir)
+
+
+def test_threejs_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    incomplete = tmp_path / "companion" / "share" / "threejs-sage"
+    incomplete.mkdir(parents=True)
+    (incomplete / "version").write_text("r124\n")
+
+    monkeypatch.delenv("THREEJS_DIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "THREEJS_DIR", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: incomplete,
+    )
+
+    env._bootstrap_sagelite_threejs_runtime()
+
+    assert "THREEJS_DIR" not in env.os.environ
 
 
 def test_ecm_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

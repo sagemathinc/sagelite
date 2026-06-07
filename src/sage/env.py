@@ -581,6 +581,50 @@ def _bootstrap_sagelite_jmol_runtime() -> None:
         os.environ.setdefault("JMOL_DIR", os.fspath(jmol_dir))
 
 
+def _bootstrap_sagelite_threejs_runtime() -> None:
+    """
+    Seed ``THREEJS_DIR`` from an optional ``sagelite_threejs_runtime`` package.
+
+    Installed wheels can carry a build-time ``THREEJS_DIR`` that does not
+    exist after installation.  The companion package supplies ``threejs-sage``
+    as relocatable package data.
+    """
+    configured = getattr(sage.config, "THREEJS_DIR", None)
+    needs_threejs = (
+        not os.environ.get("THREEJS_DIR")
+        and not _threejs_dir_is_usable(configured)
+    )
+    if not needs_threejs:
+        return
+
+    threejs_dir = _optional_runtime_value(
+        "sagelite_threejs_runtime", "threejs_sage_path"
+    )
+    if _threejs_dir_is_usable(threejs_dir):
+        os.environ.setdefault("THREEJS_DIR", os.fspath(threejs_dir))
+
+
+def _threejs_dir_is_usable(path: str | os.PathLike | None) -> bool:
+    """
+    Return whether ``path`` looks like a usable ``threejs-sage`` runtime.
+    """
+    if not path:
+        return False
+
+    root = os.fspath(path)
+    version_file = os.path.join(root, "version")
+    if not os.path.isfile(version_file):
+        return False
+
+    try:
+        with open(version_file, encoding="utf-8") as handle:
+            version = handle.read().strip()
+    except OSError:
+        return False
+
+    return bool(version) and os.path.isfile(os.path.join(root, version, "three.min.js"))
+
+
 def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[str]:
     """
     Set ``SAGE_ENV[key]`` and return the value.
@@ -731,6 +775,7 @@ JMOL_DIR = var("JMOL_DIR")
 MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
 _bootstrap_sagelite_meataxe_runtime()
 MTXLIB = var("MTXLIB", join(SAGE_SHARE, "meataxe"))
+_bootstrap_sagelite_threejs_runtime()
 THREEJS_DIR = var("THREEJS_DIR")
 PPLPY_DOCS = var("PPLPY_DOCS", join(SAGE_SHARE, "doc", "pplpy"))
 _bootstrap_sagelite_maxima_runtime()
