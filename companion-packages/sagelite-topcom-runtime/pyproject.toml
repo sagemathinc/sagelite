@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sagelite-topcom-runtime"
+version = "10.9"
+description = "Optional TOPCOM executable companion package for sagelite"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "GPL-2.0-or-later"
+authors = [
+  { name = "The Sage Developers", email = "sage-support@googlegroups.com" },
+]
+classifiers = [
+  "Development Status :: 6 - Mature",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+urls = { Homepage = "https://www.sagemath.org" }
+
+[project.scripts]
+B_A = "sagelite_topcom.runtime:B_A"
+B_A_center = "sagelite_topcom.runtime:B_A_center"
+B_D = "sagelite_topcom.runtime:B_D"
+checkregularity = "sagelite_topcom.runtime:checkregularity"
+chiro2allfinetriangs = "sagelite_topcom.runtime:chiro2allfinetriangs"
+chiro2alltriangs = "sagelite_topcom.runtime:chiro2alltriangs"
+chiro2circuits = "sagelite_topcom.runtime:chiro2circuits"
+chiro2cocircuits = "sagelite_topcom.runtime:chiro2cocircuits"
+chiro2dual = "sagelite_topcom.runtime:chiro2dual"
+chiro2finetriang = "sagelite_topcom.runtime:chiro2finetriang"
+chiro2finetriangs = "sagelite_topcom.runtime:chiro2finetriangs"
+chiro2mintriang = "sagelite_topcom.runtime:chiro2mintriang"
+chiro2nallfinetriangs = "sagelite_topcom.runtime:chiro2nallfinetriangs"
+chiro2nalltriangs = "sagelite_topcom.runtime:chiro2nalltriangs"
+chiro2nfinetriangs = "sagelite_topcom.runtime:chiro2nfinetriangs"
+chiro2ntriangs = "sagelite_topcom.runtime:chiro2ntriangs"
+chiro2placingtriang = "sagelite_topcom.runtime:chiro2placingtriang"
+chiro2triangs = "sagelite_topcom.runtime:chiro2triangs"
+cocircuits2facets = "sagelite_topcom.runtime:cocircuits2facets"
+cross = "sagelite_topcom.runtime:cross"
+cube = "sagelite_topcom.runtime:cube"
+cyclic = "sagelite_topcom.runtime:cyclic"
+hypersimplex = "sagelite_topcom.runtime:hypersimplex"
+lattice = "sagelite_topcom.runtime:lattice"
+points2allfinetriangs = "sagelite_topcom.runtime:points2allfinetriangs"
+points2alltriangs = "sagelite_topcom.runtime:points2alltriangs"
+points2chiro = "sagelite_topcom.runtime:points2chiro"
+points2facets = "sagelite_topcom.runtime:points2facets"
+points2finetriang = "sagelite_topcom.runtime:points2finetriang"
+points2finetriangs = "sagelite_topcom.runtime:points2finetriangs"
+points2flips = "sagelite_topcom.runtime:points2flips"
+points2nallfinetriangs = "sagelite_topcom.runtime:points2nallfinetriangs"
+points2nalltriangs = "sagelite_topcom.runtime:points2nalltriangs"
+points2nfinetriangs = "sagelite_topcom.runtime:points2nfinetriangs"
+points2nflips = "sagelite_topcom.runtime:points2nflips"
+points2ntriangs = "sagelite_topcom.runtime:points2ntriangs"
+points2placingtriang = "sagelite_topcom.runtime:points2placingtriang"
+points2triangs = "sagelite_topcom.runtime:points2triangs"
+points2volume = "sagelite_topcom.runtime:points2volume"
+santos_22_triang = "sagelite_topcom.runtime:santos_22_triang"
+santos_dim4_triang = "sagelite_topcom.runtime:santos_dim4_triang"
+santos_triang = "sagelite_topcom.runtime:santos_triang"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sagelite_topcom = [
+  "data/bin/*",
+  "data/lib/*",
+]

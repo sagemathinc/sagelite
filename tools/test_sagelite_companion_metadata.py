@@ -125,3 +125,27 @@ def test_polytopes_4d_database_is_exposed_by_sagelite_extras():
     assert extras["polytopes-4d"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
+
+
+def test_topcom_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-topcom-runtime >=10.9,<10.10"
+
+    assert extras["topcom"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_topcom_runtime_wheel_declares_copied_runtime_data():
+    pyproject = _pyproject("sagelite-topcom-runtime")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_topcom"] == [
+        "data/bin/*",
+        "data/lib/*",
+    ]
+    assert "points2placingtriang" in pyproject["project"]["scripts"]
+    assert "points2allfinetriangs" in pyproject["project"]["scripts"]

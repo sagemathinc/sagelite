@@ -160,6 +160,11 @@ jobs:
             path: companion-packages/sagelite-sympow-runtime
             apt_packages: sympow
             publish: false
+          - name: sagelite-topcom-runtime
+            import_name: sagelite_topcom
+            path: companion-packages/sagelite-topcom-runtime
+            apt_packages: topcom
+            publish: false
 
     steps:
       - uses: actions/checkout@v4
@@ -246,6 +251,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-sympow-runtime" ]; then
             export SAGELITE_SYMPOW_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-topcom-runtime" ]; then
+            export SAGELITE_TOPCOM_BINDIR=/usr/bin
           fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
@@ -494,6 +502,27 @@ jobs:
                   check=True,
               )
               assert "sympow" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-topcom-runtime":
+              runtime = importlib.import_module("sagelite_topcom.runtime")
+              placing = runtime.executable_path("points2placingtriang")
+              all_fine = runtime.executable_path("points2allfinetriangs")
+              print("points2placingtriang=", placing)
+              print("points2allfinetriangs=", all_fine)
+              assert os.path.exists(placing)
+              assert os.path.exists(all_fine)
+              import shutil
+              import subprocess
+              assert shutil.which("points2placingtriang")
+              result = subprocess.run(
+                  ["points2placingtriang"],
+                  input="[[0,0,0,1],[-2,0,0,1],[0,-2,0,1],[-2,-2,0,1],[0,0,-2,1]]X\nX\n",
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "{{0,1,2,4},{1,2,3,4}}" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-graphs":
