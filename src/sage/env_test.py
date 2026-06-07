@@ -49,6 +49,7 @@ def clean_runtime_environment():
         "SAGE_ECMBIN",
         "SAGE_NAUTY_BINS_PREFIX",
         "SYMPOW",
+        "TACHYON",
         "THREEJS_DIR",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
@@ -138,6 +139,14 @@ def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
 
 def _sympow_runtime(tmp_path: Path, name: str) -> Path:
     command = tmp_path / name / "bin" / "sympow"
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command
+
+
+def _tachyon_runtime(tmp_path: Path, name: str) -> Path:
+    command = tmp_path / name / "bin" / "tachyon"
     command.parent.mkdir(parents=True)
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
@@ -812,6 +821,58 @@ def test_sympow_runtime_keeps_system_command(monkeypatch, tmp_path):
     env._bootstrap_sagelite_sympow_runtime()
 
     assert "SYMPOW" not in env.os.environ
+
+
+def test_tachyon_runtime_uses_companion_when_command_is_missing(monkeypatch, tmp_path):
+    command = _tachyon_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("TACHYON", raising=False)
+    monkeypatch.setattr(env.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command
+        if (module_name, attr_name) == ("sagelite_tachyon.runtime", "executable_path")
+        else None,
+    )
+
+    env._bootstrap_sagelite_tachyon_runtime()
+
+    assert env.os.environ["TACHYON"] == str(command)
+
+
+def test_tachyon_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    command = _tachyon_runtime(tmp_path, "companion")
+    existing_command = _tachyon_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("TACHYON", str(existing_command))
+    monkeypatch.setattr(env.shutil, "which", lambda name: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_tachyon_runtime()
+
+    assert env.os.environ["TACHYON"] == str(existing_command)
+
+
+def test_tachyon_runtime_keeps_system_command(monkeypatch, tmp_path):
+    command = _tachyon_runtime(tmp_path, "companion")
+    system_command = _tachyon_runtime(tmp_path, "system")
+
+    monkeypatch.delenv("TACHYON", raising=False)
+    monkeypatch.setattr(env.shutil, "which", lambda name: str(system_command))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command,
+    )
+
+    env._bootstrap_sagelite_tachyon_runtime()
+
+    assert "TACHYON" not in env.os.environ
 
 
 def test_gfan_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

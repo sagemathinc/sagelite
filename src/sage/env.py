@@ -323,6 +323,22 @@ def _bootstrap_sagelite_sympow_runtime() -> None:
         os.environ.setdefault("SYMPOW", os.fspath(command))
 
 
+def _bootstrap_sagelite_tachyon_runtime() -> None:
+    """
+    Seed ``TACHYON`` from an optional ``sagelite_tachyon`` package.
+
+    Sage's Tachyon interface shells out to the standalone ray tracer.  The
+    companion package supplies a relocatable executable copy for installed
+    wheels.
+    """
+    if os.environ.get("TACHYON") or shutil.which("tachyon"):
+        return
+
+    command = _optional_runtime_value("sagelite_tachyon.runtime", "executable_path")
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("TACHYON", os.fspath(command))
+
+
 def _bootstrap_sagelite_gfan_runtime() -> None:
     """
     Seed ``GFAN_BINS_PREFIX`` from an optional ``sagelite_gfan`` package.
@@ -817,6 +833,8 @@ _bootstrap_sagelite_mwrank_runtime()
 MWRANK = var("MWRANK", "mwrank")
 _bootstrap_sagelite_sympow_runtime()
 SYMPOW = var("SYMPOW", "sympow")
+_bootstrap_sagelite_tachyon_runtime()
+TACHYON = var("TACHYON", "tachyon")
 _bootstrap_sagelite_gfan_runtime()
 GFAN_BINS_PREFIX = var("GFAN_BINS_PREFIX", "")
 _bootstrap_sagelite_latte_runtime()
