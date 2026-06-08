@@ -190,6 +190,11 @@ jobs:
             path: companion-packages/sagelite-plantri-runtime
             apt_packages: plantri
             publish: false
+          - name: sagelite-qepcad-runtime
+            import_name: sagelite_qepcad
+            path: companion-packages/sagelite-qepcad-runtime
+            apt_packages: qepcad
+            publish: false
           - name: sagelite-rubiks-runtime
             import_name: sagelite_rubiks
             path: companion-packages/sagelite-rubiks-runtime
@@ -321,6 +326,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-plantri-runtime" ]; then
             export SAGELITE_PLANTRI_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-qepcad-runtime" ]; then
+            export SAGELITE_QEPCAD_ROOT=/usr
           fi
           if [ "${{ matrix.name }}" = "sagelite-rubiks-runtime" ]; then
             export SAGELITE_RUBIKS_BINDIR=/usr/bin
@@ -736,6 +744,21 @@ jobs:
                   capture_output=True,
               )
               assert "plantri" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-qepcad-runtime":
+              runtime = importlib.import_module("sagelite_qepcad.runtime")
+              root = runtime.root_dir()
+              qepcad = runtime.executable_path()
+              help_path = runtime.help_path()
+              default_qepcadrc = runtime.default_qepcadrc_path()
+              print("qepcad_root=", root)
+              print("qepcad=", qepcad)
+              print("qepcad_help=", help_path)
+              print("default_qepcadrc=", default_qepcadrc)
+              assert qepcad.exists()
+              assert help_path.exists()
+              assert default_qepcadrc.exists()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-rubiks-runtime":

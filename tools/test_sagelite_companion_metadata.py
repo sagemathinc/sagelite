@@ -94,6 +94,13 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-plantri-runtime": {
         "sagelite_plantri": ["data/bin/*"],
     },
+    "sagelite-qepcad-runtime": {
+        "sagelite_qepcad": [
+            "data/root/bin/qepcad",
+            "data/root/etc/default.qepcadrc",
+            "data/root/share/qepcad/qepcad.help",
+        ],
+    },
     "sagelite-rubiks-runtime": {
         "sagelite_rubiks": ["data/bin/*"],
     },
@@ -140,6 +147,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-palp-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
+    "sagelite-qepcad-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
     "sagelite-sympow-runtime",
@@ -178,6 +186,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-pari-data",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
+    "sagelite-qepcad-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
     "sagelite-sympow-runtime",
