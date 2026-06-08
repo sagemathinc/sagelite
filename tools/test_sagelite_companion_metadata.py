@@ -30,6 +30,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-ecm-runtime": {
         "sagelite_ecm": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-frobby-runtime": {
+        "sagelite_frobby": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-gap-runtime": {
         "sagelite_gap_runtime": ["data/bin/*", "data/gap*/**/*"],
     },
@@ -122,6 +125,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
     "sagelite-ecm-runtime",
+    "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
     "sagelite-glucose-runtime",
@@ -158,6 +162,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
     "sagelite-ecm-runtime",
+    "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
     "sagelite-glucose-runtime",
@@ -181,6 +186,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime": "four-ti-2-runtime-dist",
     "sagelite-ecm-runtime": "ecm-runtime-dist",
+    "sagelite-frobby-runtime": "frobby-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
     "sagelite-maxima-runtime": "maxima-runtime-dist",
@@ -425,6 +431,26 @@ def test_buckygen_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "buckygen": "sagelite_buckygen.runtime:buckygen",
+    }
+
+
+def test_frobby_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-frobby-runtime >=10.9,<10.10"
+
+    assert extras["frobby"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_frobby_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-frobby-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "frobby": "sagelite_frobby.runtime:frobby",
     }
 
 

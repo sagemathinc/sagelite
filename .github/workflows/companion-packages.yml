@@ -125,6 +125,11 @@ jobs:
             path: companion-packages/sagelite-ecm-runtime
             apt_packages: gmp-ecm
             publish: false
+          - name: sagelite-frobby-runtime
+            import_name: sagelite_frobby
+            path: companion-packages/sagelite-frobby-runtime
+            apt_packages: frobby
+            publish: false
           - name: sagelite-glucose-runtime
             import_name: sagelite_glucose
             path: companion-packages/sagelite-glucose-runtime
@@ -262,6 +267,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-frobby-runtime" ]; then
+            export SAGELITE_FROBBY_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-glucose-runtime" ]; then
             export SAGELITE_GLUCOSE_BINDIR=/usr/bin
@@ -480,6 +488,23 @@ jobs:
                   check=True,
               )
               assert "Usage:" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-frobby-runtime":
+              runtime = importlib.import_module("sagelite_frobby.runtime")
+              frobby = runtime.executable_path()
+              print("frobby=", frobby)
+              assert frobby.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("frobby")
+              result = subprocess.run(
+                  ["frobby", "help"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "Frobby" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-glucose-runtime":
