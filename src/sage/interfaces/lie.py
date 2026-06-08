@@ -289,7 +289,7 @@ AUTHORS:
 import os
 from itertools import chain
 
-from sage.env import DOT_SAGE, LIE_INFO_DIR
+from sage.env import DOT_SAGE, LIE_INFO_DIR, SAGE_LIE_COMMAND
 from sage.interfaces.expect import (
     Expect,
     ExpectElement,
@@ -339,7 +339,7 @@ class LiE(ExtraTabCompletion, Expect):
                         prompt='> ',
 
                         # This is the command that starts up your program
-                        command="lie",
+                        command=SAGE_LIE_COMMAND,
 
                         server=server,
                         script_subdirectory=script_subdirectory,

@@ -588,6 +588,7 @@ def test_lie_runtime_sets_pexpect_command(monkeypatch, tmp_path):
     env._bootstrap_sagelite_lie_runtime()
 
     assert env.os.environ["SAGE_LIE_COMMAND"] == str(command)
+    assert env.var("SAGE_LIE_COMMAND", "lie") == str(command)
 
 
 def test_lie_runtime_keeps_existing_environment(monkeypatch, tmp_path):

@@ -899,6 +899,7 @@ ECL_CONFIG = var(
 NTL_INCDIR = var("NTL_INCDIR")
 NTL_LIBDIR = var("NTL_LIBDIR")
 _bootstrap_sagelite_lie_runtime()
+SAGE_LIE_COMMAND = var("SAGE_LIE_COMMAND", "lie")
 LIE_INFO_DIR = var("LIE_INFO_DIR", join(SAGE_LOCAL, "lib", "LiE"))
 _bootstrap_sagelite_singular_runtime()
 SINGULAR_BIN = var("SINGULAR_BIN") or "Singular"

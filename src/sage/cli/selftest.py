@@ -81,6 +81,24 @@ def _check_lrcalc():
     return lrcoef([2], [1], [1])
 
 
+def _check_lie_runtime():
+    try:
+        import sagelite_lie  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.env import SAGE_LIE_COMMAND
+    from sage.interfaces.lie import lie
+
+    if lie.command() != SAGE_LIE_COMMAND:
+        raise RuntimeError(
+            f"LiE interface is not using companion runtime: {lie.command()}"
+        )
+    if lie.eval("19+68") != "87":
+        raise RuntimeError("LiE companion runtime did not evaluate a basic command")
+    return "LiE executable and info directory available"
+
+
 def _check_pari_data():
     try:
         import sagelite_pari_data  # noqa: F401
@@ -558,6 +576,7 @@ def main() -> int:
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
+        ("LiE executable runtime", _check_lie_runtime),
         ("PARI data runtime", _check_pari_data),
         ("Singular library runtime", _check_singular_runtime),
         ("libbraiding library", _check_libbraiding),
