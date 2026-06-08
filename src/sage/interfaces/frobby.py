@@ -21,10 +21,31 @@ AUTHORS:
     which also has documentation and papers describing the algorithms used.
 """
 
+import os
 from subprocess import Popen, PIPE
 from sage.misc.misc_c import prod
 
 from sage.cpython.string import bytes_to_str, str_to_bytes
+
+
+def _frobby_executable():
+    r"""
+    Return the Frobby executable path.
+
+    Normal Sage installations find ``frobby`` on ``PATH``.  Installed
+    ``sagelite`` wheels can also provide it through the optional
+    ``sagelite-frobby-runtime`` companion package.
+    """
+    try:
+        from sagelite_frobby.runtime import executable_path
+    except ImportError:
+        return "frobby"
+
+    executable = executable_path()
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    return "frobby"
 
 
 class Frobby:
@@ -65,7 +86,7 @@ class Frobby:
 
         - Bjarke Hammersholt Roune (2008-04-27)
         """
-        command = ['frobby'] + action.split()
+        command = [_frobby_executable()] + action.split()
         for option in options:
             command += ('-' + option.strip()).split()
 

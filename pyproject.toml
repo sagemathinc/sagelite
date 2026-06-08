@@ -121,6 +121,7 @@ databases = [
 ]
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
+frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
 extra = [
   'igraph',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
@@ -157,6 +158,7 @@ full = [
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
+  'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
@@ -224,6 +226,7 @@ runtime = [
   'sagelite-csdp-runtime >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
+  'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
