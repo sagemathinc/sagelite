@@ -181,6 +181,7 @@ full = [
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
   'sagelite-sympow-runtime >=10.9,<10.10',
@@ -220,6 +221,7 @@ planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
+qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
@@ -249,6 +251,7 @@ runtime = [
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
   'sagelite-sympow-runtime >=10.9,<10.10',

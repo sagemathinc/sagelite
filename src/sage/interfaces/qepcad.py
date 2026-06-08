@@ -605,6 +605,7 @@ AUTHORS:
 # ****************************************************************************
 import os
 import re
+import shlex
 import sys
 
 import pexpect
@@ -618,6 +619,63 @@ from sage.misc.flatten import flatten
 from sage.misc.instancedoc import instancedoc
 from sage.misc.sage_eval import sage_eval
 from sage.repl.preparse import implicit_mul
+
+
+def _qepcad_runtime():
+    """
+    Return the optional sagelite QEPCAD runtime module, if usable.
+    """
+    try:
+        from sagelite_qepcad import runtime
+    except ImportError:
+        return None
+
+    try:
+        root = runtime.root_dir()
+        executable = runtime.executable_path()
+        help_file = runtime.help_path()
+    except Exception:
+        return None
+
+    if not (
+        os.path.isdir(root)
+        and os.path.isfile(executable)
+        and os.access(executable, os.X_OK)
+        and os.path.isfile(help_file)
+    ):
+        return None
+
+    return runtime
+
+
+def _qepcad_root():
+    """
+    Return the QEPCAD root directory.
+    """
+    runtime = _qepcad_runtime()
+    if runtime is not None:
+        return os.fspath(runtime.root_dir())
+    return SAGE_LOCAL
+
+
+def _qepcad_executable():
+    """
+    Return the QEPCAD executable.
+    """
+    runtime = _qepcad_runtime()
+    if runtime is not None:
+        return os.fspath(runtime.executable_path())
+    return 'qepcad'
+
+
+def _qepcad_help_path():
+    """
+    Return the QEPCAD help-file path used by Sage.
+    """
+    runtime = _qepcad_runtime()
+    if runtime is not None:
+        return os.fspath(runtime.help_path())
+    return os.path.join(SAGE_LOCAL, 'share/qepcad', 'qepcad.help')
 
 
 def _qepcad_atoms(formula):
@@ -663,7 +721,10 @@ def _qepcad_cmd(memcells=None):
         memcells_arg = f'+N{memcells}'
     else:
         memcells_arg = ''
-    return f"env qe={SAGE_LOCAL} qepcad {memcells_arg}"
+    return (
+        f"env qe={shlex.quote(_qepcad_root())} "
+        f"{shlex.quote(_qepcad_executable())} {memcells_arg}"
+    )
 
 
 _command_info_cache = None
@@ -689,7 +750,7 @@ def _update_command_info():
 
     cache = {}
 
-    with open(os.path.join(SAGE_LOCAL, 'share/qepcad', 'qepcad.help')) as help:
+    with open(_qepcad_help_path()) as help:
         assert help.readline().strip() == '@'
 
         while True:
