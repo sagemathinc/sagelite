@@ -120,6 +120,16 @@ jobs:
             path: companion-packages/sagelite-ecm-runtime
             apt_packages: gmp-ecm
             publish: false
+          - name: sagelite-glucose-runtime
+            import_name: sagelite_glucose
+            path: companion-packages/sagelite-glucose-runtime
+            apt_packages: glucose
+            publish: false
+          - name: sagelite-kissat-runtime
+            import_name: sagelite_kissat
+            path: companion-packages/sagelite-kissat-runtime
+            apt_packages: kissat
+            publish: false
           - name: sagelite-meataxe-runtime
             import_name: sagelite_meataxe
             path: companion-packages/sagelite-meataxe-runtime
@@ -150,6 +160,11 @@ jobs:
             path: companion-packages/sagelite-palp-runtime
             apt_packages: palp
             publish: false
+          - name: sagelite-plantri-runtime
+            import_name: sagelite_plantri
+            path: companion-packages/sagelite-plantri-runtime
+            apt_packages: plantri
+            publish: false
           - name: sagelite-rubiks-runtime
             import_name: sagelite_rubiks
             path: companion-packages/sagelite-rubiks-runtime
@@ -169,6 +184,11 @@ jobs:
             import_name: sagelite_sympow
             path: companion-packages/sagelite-sympow-runtime
             apt_packages: sympow
+            publish: false
+          - name: sagelite-tachyon-runtime
+            import_name: sagelite_tachyon
+            path: companion-packages/sagelite-tachyon-runtime
+            apt_packages: tachyon
             publish: false
           - name: sagelite-topcom-runtime
             import_name: sagelite_topcom
@@ -233,6 +253,12 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
           fi
+          if [ "${{ matrix.name }}" = "sagelite-glucose-runtime" ]; then
+            export SAGELITE_GLUCOSE_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-kissat-runtime" ]; then
+            export SAGELITE_KISSAT_BINDIR=/usr/bin
+          fi
           if [ "${{ matrix.name }}" = "sagelite-meataxe-runtime" ]; then
             export SAGELITE_MEATAXE_DIR="$RUNNER_TEMP/meataxe"
             mkdir -p "$SAGELITE_MEATAXE_DIR"
@@ -256,6 +282,9 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-palp-runtime" ]; then
             export SAGELITE_PALP_BINDIR=/usr/bin
           fi
+          if [ "${{ matrix.name }}" = "sagelite-plantri-runtime" ]; then
+            export SAGELITE_PLANTRI_BINDIR=/usr/bin
+          fi
           if [ "${{ matrix.name }}" = "sagelite-rubiks-runtime" ]; then
             export SAGELITE_RUBIKS_BINDIR=/usr/bin
           fi
@@ -267,6 +296,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-sympow-runtime" ]; then
             export SAGELITE_SYMPOW_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-tachyon-runtime" ]; then
+            export SAGELITE_TACHYON_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-topcom-runtime" ]; then
             export SAGELITE_TOPCOM_BINDIR=/usr/bin
@@ -431,6 +463,42 @@ jobs:
               assert "Usage:" in result.stdout
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-glucose-runtime":
+              runtime = importlib.import_module("sagelite_glucose.runtime")
+              glucose = runtime.executable_path("glucose")
+              syrup = runtime.executable_path("glucose-syrup")
+              print("glucose=", glucose)
+              print("glucose-syrup=", syrup)
+              assert glucose.exists()
+              assert syrup.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("glucose")
+              assert shutil.which("glucose-syrup")
+              result = subprocess.run(
+                  ["glucose", "-help"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "usage" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-kissat-runtime":
+              runtime = importlib.import_module("sagelite_kissat.runtime")
+              kissat = runtime.executable_path()
+              print("kissat=", kissat)
+              assert kissat.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("kissat")
+              result = subprocess.run(
+                  ["kissat", "--help"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "usage" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-mwrank-runtime":
               runtime = importlib.import_module("sagelite_mwrank.runtime")
               mwrank = runtime.mwrank_command()
@@ -522,6 +590,22 @@ jobs:
               subprocess.run(["nef.x", "-h"], check=True, capture_output=True, text=True)
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-plantri-runtime":
+              runtime = importlib.import_module("sagelite_plantri.runtime")
+              plantri = runtime.executable_path()
+              print("plantri=", plantri)
+              assert plantri.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("plantri")
+              result = subprocess.run(
+                  ["plantri", "-help"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "plantri" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-rubiks-runtime":
               runtime = importlib.import_module("sagelite_rubiks.runtime")
               cu2 = runtime.executable_path("cu2")
@@ -573,6 +657,22 @@ jobs:
                   check=True,
               )
               assert "sympow" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-tachyon-runtime":
+              runtime = importlib.import_module("sagelite_tachyon.runtime")
+              tachyon = runtime.executable_path()
+              print("tachyon=", tachyon)
+              assert tachyon.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("tachyon")
+              result = subprocess.run(
+                  ["tachyon", "-help"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "tachyon" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-topcom-runtime":
