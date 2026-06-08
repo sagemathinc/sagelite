@@ -43,6 +43,7 @@ four_ti_2_module = _load_source_feature_module("four_ti_2")
 gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
 latte_module = _load_source_feature_module("latte")
+flatter_module = _load_source_feature_module("flatter")
 msolve_module = _load_source_feature_module("msolve")
 nauty_module = _load_source_feature_module("nauty")
 palp_module = _load_source_feature_module("palp")
@@ -261,5 +262,21 @@ def test_latte_integrate_executable_discovers_sagelite_companion(monkeypatch, tm
     sys.modules.pop("sagelite_latte.runtime", None)
 
     feature = Latte_integrate()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_flatter_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_flatter", "flatter", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_flatter", None)
+    sys.modules.pop("sagelite_flatter.runtime", None)
+
+    feature = flatter_module.flatter()
 
     assert feature.absolute_filename() == os.fspath(executable)

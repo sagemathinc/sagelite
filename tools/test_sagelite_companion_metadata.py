@@ -30,6 +30,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-ecm-runtime": {
         "sagelite_ecm": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-flatter-runtime": {
+        "sagelite_flatter": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-frobby-runtime": {
         "sagelite_frobby": ["data/bin/*", "data/lib/*"],
     },
@@ -132,6 +135,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
     "sagelite-ecm-runtime",
+    "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
@@ -523,6 +527,26 @@ def test_frobby_runtime_is_exposed_by_sagelite_extras():
     assert extras["frobby"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_flatter_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-flatter-runtime >=10.9,<10.10"
+
+    assert extras["flatter"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_flatter_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-flatter-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "flatter": "sagelite_flatter.runtime:flatter",
+    }
 
 
 def test_frobby_runtime_declares_console_script():
