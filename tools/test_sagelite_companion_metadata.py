@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tomllib
+import sys
 from pathlib import Path
 
 
@@ -190,6 +191,18 @@ def test_pari_data_wheel_declares_copied_runtime_data():
     ]
 
 
+def test_pari_data_wheel_runtime_helper_points_at_bundled_data():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-pari-data" / "src")
+    )
+    try:
+        from sagelite_pari_data.runtime import pari_data_dir
+    finally:
+        sys.path.pop(0)
+
+    assert Path(pari_data_dir()).parts[-2:] == ("data", "pari")
+
+
 def test_pari_data_wheel_is_exposed_by_sagelite_data_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -214,6 +227,15 @@ def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
     assert "pkg:generic/pari-galpol" in host_requires
     assert "pkg:generic/pari-nftables" in host_requires
     assert "pkg:generic/pari-seadata" in host_requires
+
+
+def test_linux_repair_builds_pari_data_companion_wheel():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert "companion-packages/sagelite-pari-data" in repair_text
+    assert "build_pari_data_companion" in repair_text
+    assert "SAGELITE_PARI_DATA_DIR" in repair_text
 
 
 def test_d3js_runtime_registers_static_data_path():
