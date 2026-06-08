@@ -99,3 +99,16 @@ def test_cremona_feature_searches_companion_data_when_config_is_stale(
         str(companion),
     ]
     assert bool(feature.is_present())
+
+
+def test_cunningham_tables_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "cunningham_tables"
+    companion.mkdir(parents=True)
+    (companion / "cunningham_prime_factors.sobj").write_text("cunningham\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseCunninghamTables()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())

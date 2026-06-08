@@ -269,6 +269,36 @@ class DatabaseCubicHecke(PythonModule):
         PythonModule.__init__(self, "database_cubic_hecke", spkg="database_cubic_hecke")
 
 
+class DatabaseCunninghamTables(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of
+    :ref:`Cunningham tables <spkg_cunningham_tables>`.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseCunninghamTables
+        sage: DatabaseCunninghamTables().is_present()  # optional - cunningham_tables
+        FeatureTestResult('cunningham_tables', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseCunninghamTables
+            sage: isinstance(DatabaseCunninghamTables(), DatabaseCunninghamTables)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "cunningham_tables",
+            filename="cunningham_prime_factors.sobj",
+            search_path=sage_data_paths("cunningham_tables"),
+            spkg="cunningham_tables",
+            description="Cunningham tables",
+        )
+
+
 class DatabaseReflexivePolytopes(StaticFile):
     r"""
     A :class:`~sage.features.Feature` which describes the presence of the
@@ -320,6 +350,7 @@ def all_features():
         DatabaseKnotInfo(),
         DatabaseMatroids(),
         DatabaseCubicHecke(),
+        DatabaseCunninghamTables(),
         DatabaseReflexivePolytopes(),
         DatabaseReflexivePolytopes("polytopes_db_4d"),
     ]
