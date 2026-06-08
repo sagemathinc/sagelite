@@ -14,7 +14,10 @@ except ImportError:  # pragma: no cover - wheel is a build requirement
     _bdist_wheel = None
 
 
-PROGRAMS = ["count", "integrate"]
+PROGRAMS = {
+    "count": ("count", "latte-count"),
+    "integrate": ("integrate", "latte-integrate"),
+}
 RUNTIME_LIBRARY_PREFIXES = (
     "lib4ti2",
     "libcdd",
@@ -39,9 +42,10 @@ def _candidate_bindirs() -> list[Path]:
 
 
 def _program_path(bindir: Path, program: str) -> Path | None:
-    candidate = bindir / program
-    if candidate.is_file() and os.access(candidate, os.X_OK):
-        return candidate
+    for executable_name in PROGRAMS[program]:
+        candidate = bindir / executable_name
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return candidate
     return None
 
 
@@ -52,7 +56,8 @@ def _find_bindir() -> Path:
     searched = "\n  ".join(os.fspath(path) for path in _candidate_bindirs())
     raise RuntimeError(
         "could not find a LattE executable directory containing count and "
-        "integrate. Set SAGELITE_LATTE_BINDIR to the Sage-built bin "
+        "integrate, or the distro-prefixed latte-count and latte-integrate. "
+        "Set SAGELITE_LATTE_BINDIR to the Sage-built or system package bin "
         f"directory.\nSearched:\n  {searched}"
     )
 
