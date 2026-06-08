@@ -379,6 +379,19 @@ def test_d3js_runtime_registers_static_data_path():
     ]
 
 
+def test_mathjax_runtime_registers_static_data_path():
+    pyproject = _pyproject("sagelite-mathjax-runtime")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "mathjax": "sagelite_mathjax_runtime:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_mathjax_runtime"
+    ] == [
+        "data/mathjax/**/*",
+    ]
+
+
 def test_cremona_ellcurve_database_registers_data_path():
     pyproject = _pyproject("sagelite-database-cremona-ellcurve")
 
