@@ -499,6 +499,74 @@ build_msolve_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_latte_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local latte_bindir="$prefix/bin"
+  if [ ! -x "$latte_bindir/count" ] ||
+     [ ! -x "$latte_bindir/integrate" ]; then
+    echo "LattE executables not found under $latte_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name count -o -name integrate \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-latte-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "LattE runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_LATTE_BINDIR="$latte_bindir" \
+  SAGELITE_LATTE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+build_lrslib_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local lrslib_bindir="$prefix/bin"
+  if [ ! -x "$lrslib_bindir/lrs" ] ||
+     [ ! -x "$lrslib_bindir/lrsnash" ]; then
+    echo "lrslib executables not found under $lrslib_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name lrs -o -name lrsnash \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-lrslib-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "lrslib runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_LRSLIB_BINDIR="$lrslib_bindir" \
+  SAGELITE_LRSLIB_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_plantri_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -941,6 +1009,8 @@ build_buckygen_runtime_companion
 build_glucose_runtime_companion
 build_kissat_runtime_companion
 build_msolve_runtime_companion
+build_latte_runtime_companion
+build_lrslib_runtime_companion
 build_plantri_runtime_companion
 build_tachyon_runtime_companion
 build_maxima_runtime_companion

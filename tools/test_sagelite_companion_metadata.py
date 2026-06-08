@@ -122,6 +122,8 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gfan-runtime",
     "sagelite-glucose-runtime",
     "sagelite-kissat-runtime",
+    "sagelite-latte-runtime",
+    "sagelite-lrslib-runtime",
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
     "sagelite-msolve-runtime",
@@ -141,9 +143,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap3-runtime",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
-    "sagelite-latte-runtime",
     "sagelite-lie-runtime",
-    "sagelite-lrslib-runtime",
     "sagelite-mathjax-runtime",
     "sagelite-threejs-runtime",
 }
