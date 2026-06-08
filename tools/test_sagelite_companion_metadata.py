@@ -405,6 +405,40 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_kohel_database_wheel_declares_and_copies_polynomial_data():
+    pyproject = _pyproject("sagelite-database-kohel")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-database-kohel" / "setup.py"
+    ).read_text()
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "kohel": "sagelite_database_kohel:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_kohel"
+    ] == [
+        "data/kohel/**/*",
+    ]
+    assert "SAGELITE_KOHEL_DATA_DIR" in setup_py
+    assert "local\" / \"share\" / \"kohel" in setup_py
+    assert "PolMod" in setup_py
+    assert "PolHeeg" in setup_py
+    assert "BUNDLED_SOURCE" in setup_py
+
+
+def test_kohel_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-kohel >=10.9,<10.10"
+
+    assert extras["kohel"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_ellcurves_database_wheel_declares_and_copies_rank_data():
     pyproject = _pyproject("sagelite-database-ellcurves")
     setup_py = (
