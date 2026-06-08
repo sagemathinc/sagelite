@@ -15,12 +15,31 @@ Features for testing the presence of ``latte_int``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 from .join_feature import JoinFeature
 from sage.env import LATTE_BINS_PREFIX, join
 
 
 LATTE_URL = "https://www.math.ucdavis.edu/~latte/software.php"
+
+
+def _sagelite_latte_executable(
+        program: str, original_error: FeatureNotPresentError) -> str:
+    """
+    Return a LattE executable from the optional sagelite companion package.
+    """
+    try:
+        from sagelite_latte.runtime import executable_path
+    except ImportError:
+        raise original_error
+
+    executable = executable_path(program)
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    raise original_error
 
 
 class Latte_count(Executable):
@@ -40,6 +59,19 @@ class Latte_count(Executable):
                             spkg='latte_int',
                             url=LATTE_URL)
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the LattE ``count`` executable path.
+
+        Normal Sage installations find LattE through ``LATTE_BINS_PREFIX`` or
+        on ``PATH``.  Wheel installations can also provide it through the
+        optional ``sagelite-latte-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_latte_executable("count", error)
+
 
 class Latte_integrate(Executable):
     r"""
@@ -57,6 +89,19 @@ class Latte_integrate(Executable):
                             executable=join(LATTE_BINS_PREFIX, 'integrate') or 'integrate',
                             spkg='latte_int',
                             url=LATTE_URL)
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the LattE ``integrate`` executable path.
+
+        Normal Sage installations find LattE through ``LATTE_BINS_PREFIX`` or
+        on ``PATH``.  Wheel installations can also provide it through the
+        optional ``sagelite-latte-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _sagelite_latte_executable("integrate", error)
 
 
 class Latte(JoinFeature):
