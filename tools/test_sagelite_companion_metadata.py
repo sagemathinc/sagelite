@@ -203,6 +203,19 @@ def test_pari_data_wheel_is_exposed_by_sagelite_data_extras():
     assert requirement in extras["full"]
 
 
+def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    host_requires = pyproject["external"]["host-requires"]
+
+    assert "pkg:generic/pari-elldata" in host_requires
+    assert "pkg:generic/pari-galdata" in host_requires
+    assert "pkg:generic/pari-galpol" in host_requires
+    assert "pkg:generic/pari-nftables" in host_requires
+    assert "pkg:generic/pari-seadata" in host_requires
+
+
 def test_d3js_runtime_registers_static_data_path():
     pyproject = _pyproject("sagelite-d3js-runtime")
 
