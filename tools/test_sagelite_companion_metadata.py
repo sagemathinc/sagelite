@@ -752,8 +752,8 @@ def test_stein_watkins_database_is_exposed_by_dedicated_sagelite_extra():
     requirement = "sagelite-database-stein-watkins >=10.9,<10.10"
 
     assert extras["stein-watkins"] == [requirement]
-    assert requirement not in extras["databases"]
-    assert requirement not in extras["full"]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
 
 
 def test_topcom_runtime_is_exposed_by_sagelite_extras():
