@@ -168,6 +168,36 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
 
 
+def _pari_data_dir_is_usable(path: str | os.PathLike | None) -> bool:
+    """
+    Return whether ``path`` looks like a usable PARI optional-data directory.
+    """
+    if not path:
+        return False
+
+    root = os.fspath(path)
+    return os.path.isdir(root) and any(
+        os.path.isdir(os.path.join(root, name))
+        for name in ("galdata", "elldata", "seadata", "galpol", "nftables")
+    )
+
+
+def _bootstrap_sagelite_pari_data_runtime() -> None:
+    """
+    Seed ``GP_DATA_DIR`` from an optional ``sagelite_pari_data`` package.
+
+    PARI reads optional data such as Galois group tables through its data
+    directory.  Installed ``sagelite`` wheels can supply those files through a
+    companion wheel without making the data a hard dependency of sagelib.
+    """
+    if os.environ.get("GP_DATA_DIR"):
+        return
+
+    data_dir = _optional_runtime_value("sagelite_pari_data.runtime", "pari_data_dir")
+    if _pari_data_dir_is_usable(data_dir):
+        os.environ.setdefault("GP_DATA_DIR", os.fspath(data_dir))
+
+
 def _gap_root_path_contains_gap(root: str | None) -> bool:
     """
     Return whether ``root`` looks like a usable GAP root directory.
@@ -801,6 +831,8 @@ SAGE_PKG_CONFIG_PATH = var("SAGE_PKG_CONFIG_PATH")
 # colon-separated search path for databases
 # should not be used directly; instead use sage_data_paths
 SAGE_DATA_PATH = var("SAGE_DATA_PATH")
+_bootstrap_sagelite_pari_data_runtime()
+GP_DATA_DIR = var("GP_DATA_DIR")
 
 # database directories, the default is to search in SAGE_DATA_PATH
 CREMONA_LARGE_DATA_DIR = var("CREMONA_LARGE_DATA_DIR")

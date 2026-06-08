@@ -32,6 +32,7 @@ def clean_runtime_environment():
         "FOURTITWO_ZSOLVE",
         "GAP_ROOT_PATHS",
         "GFAN_BINS_PREFIX",
+        "GP_DATA_DIR",
         "JMOL_DIR",
         "KENZO_FAS",
         "LATTE_BINS_PREFIX",
@@ -95,6 +96,12 @@ def _kenzo_runtime(tmp_path: Path, name: str) -> Path:
     fas.parent.mkdir(parents=True)
     fas.write_text("kenzo fas\n")
     return fas
+
+
+def _pari_data_runtime(tmp_path: Path, name: str) -> Path:
+    data_dir = tmp_path / name / "share" / "pari"
+    (data_dir / "galdata").mkdir(parents=True)
+    return data_dir
 
 
 def _lie_runtime(tmp_path: Path, name: str) -> Path:
@@ -488,6 +495,55 @@ def test_kenzo_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_kenzo_runtime()
 
     assert env.os.environ["KENZO_FAS"] == str(existing_fas)
+
+
+def test_pari_data_runtime_uses_companion_when_environment_is_missing(monkeypatch, tmp_path):
+    data_dir = _pari_data_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("GP_DATA_DIR", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: data_dir
+        if (module_name, attr_name) == ("sagelite_pari_data.runtime", "pari_data_dir")
+        else None,
+    )
+
+    env._bootstrap_sagelite_pari_data_runtime()
+
+    assert env.os.environ["GP_DATA_DIR"] == str(data_dir)
+
+
+def test_pari_data_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    companion = _pari_data_runtime(tmp_path, "companion")
+    existing = _pari_data_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("GP_DATA_DIR", str(existing))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: companion,
+    )
+
+    env._bootstrap_sagelite_pari_data_runtime()
+
+    assert env.os.environ["GP_DATA_DIR"] == str(existing)
+
+
+def test_pari_data_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    data_dir = tmp_path / "companion" / "share" / "pari"
+    data_dir.mkdir(parents=True)
+
+    monkeypatch.delenv("GP_DATA_DIR", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: data_dir,
+    )
+
+    env._bootstrap_sagelite_pari_data_runtime()
+
+    assert "GP_DATA_DIR" not in env.os.environ
 
 
 def test_lie_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
