@@ -149,6 +149,26 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-threejs-runtime",
 }
 
+COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
+    "sagelite-4ti2-runtime",
+    "sagelite-cddlib-runtime",
+    "sagelite-csdp-runtime",
+    "sagelite-ecm-runtime",
+    "sagelite-gap-runtime",
+    "sagelite-gfan-runtime",
+    "sagelite-kenzo-runtime",
+    "sagelite-maxima-runtime",
+    "sagelite-meataxe-runtime",
+    "sagelite-mwrank-runtime",
+    "sagelite-nauty-runtime",
+    "sagelite-palp-runtime",
+    "sagelite-pari-data",
+    "sagelite-rubiks-runtime",
+    "sagelite-singular-runtime",
+    "sagelite-sympow-runtime",
+    "sagelite-topcom-runtime",
+}
+
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
@@ -176,6 +196,14 @@ def test_linux_repair_builds_expected_runtime_companion_wheels():
         | REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES
     )
     assert set(RUNTIME_PACKAGE_DATA) == covered
+
+
+def test_companion_workflow_builds_expected_runtime_companion_wheels():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for package in COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES:
+        assert f"path: companion-packages/{package}" in workflow_text
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():

@@ -110,6 +110,11 @@ jobs:
             path: companion-packages/sagelite-cddlib-runtime
             apt_packages: libcdd-tools
             publish: false
+          - name: sagelite-csdp-runtime
+            import_name: sagelite_csdp
+            path: companion-packages/sagelite-csdp-runtime
+            apt_packages: coinor-csdp
+            publish: false
           - name: sagelite-ecm-runtime
             import_name: sagelite_ecm
             path: companion-packages/sagelite-ecm-runtime
@@ -221,6 +226,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-cddlib-runtime" ]; then
             export SAGELITE_CDDLIB_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-csdp-runtime" ]; then
+            export SAGELITE_CSDP_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
@@ -380,6 +388,32 @@ jobs:
                   check=True,
               )
               assert "V-representation" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-csdp-runtime":
+              runtime = importlib.import_module("sagelite_csdp.runtime")
+              theta = runtime.executable_path()
+              print("theta=", theta)
+              assert os.path.exists(theta)
+              import shutil
+              import subprocess
+              assert shutil.which("theta")
+              graph = "theta-smoke.graph"
+              with open(graph, "w", encoding="utf-8") as handle:
+                  handle.write(
+                      "3\n"
+                      "3\n"
+                      "1 2\n"
+                      "2 3\n"
+                      "1 3\n"
+                  )
+              result = subprocess.run(
+                  ["theta", graph],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "The Lovasz Theta Number" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-ecm-runtime":

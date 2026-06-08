@@ -27,9 +27,10 @@ def _candidate_bindirs() -> list[Path]:
 
 def _find_executable() -> Path:
     for bindir in _candidate_bindirs():
-        candidate = bindir / "theta"
-        if candidate.is_file() and os.access(candidate, os.X_OK):
-            return candidate.resolve()
+        for executable in ("theta", "csdp-theta"):
+            candidate = bindir / executable
+            if candidate.is_file() and os.access(candidate, os.X_OK):
+                return candidate.resolve()
     searched = "\n  ".join(os.fspath(path) for path in _candidate_bindirs())
     raise RuntimeError(
         "could not find the CSDP theta executable. "
