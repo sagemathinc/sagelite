@@ -160,6 +160,11 @@ jobs:
             path: companion-packages/sagelite-mwrank-runtime
             apt_packages: eclib-tools
             publish: false
+          - name: sagelite-lrslib-runtime
+            import_name: sagelite_lrslib
+            path: companion-packages/sagelite-lrslib-runtime
+            apt_packages: lrslib
+            publish: false
           - name: sagelite-nauty-runtime
             import_name: sagelite_nauty
             path: companion-packages/sagelite-nauty-runtime
@@ -293,6 +298,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
             export SAGELITE_MWRANK_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-lrslib-runtime" ]; then
+            export SAGELITE_LRSLIB_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-nauty-runtime" ]; then
             export SAGELITE_NAUTY_BINDIR=/usr/bin
@@ -559,6 +567,35 @@ jobs:
                   check=True,
               )
               assert "Curve [0,0,0,0,1]" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-lrslib-runtime":
+              runtime = importlib.import_module("sagelite_lrslib.runtime")
+              lrs = runtime.lrs_command()
+              lrsnash = runtime.lrsnash_command()
+              print("lrs=", lrs)
+              print("lrsnash=", lrsnash)
+              assert os.path.exists(lrs)
+              assert os.path.exists(lrsnash)
+              import shutil
+              import subprocess
+              assert shutil.which("lrs")
+              assert shutil.which("lrsnash")
+              result = subprocess.run(
+                  ["lrs"],
+                  input="V-representation\nbegin\n 1 1 rational\n 1 \nend\nvolume",
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "Volume= 1" in result.stdout or "Volume=1" in result.stdout
+              subprocess.run(
+                  ["lrsnash"],
+                  input="1 1\n \n 0\n \n 0\n",
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-meataxe-runtime":

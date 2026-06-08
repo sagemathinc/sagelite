@@ -168,6 +168,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-glucose-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-kissat-runtime",
+    "sagelite-lrslib-runtime",
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
     "sagelite-mwrank-runtime",
