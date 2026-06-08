@@ -183,7 +183,7 @@ jobs:
           - name: sagelite-pari-data
             import_name: sagelite_pari_data
             path: companion-packages/sagelite-pari-data
-            apt_packages: pari-galdata pari-seadata
+            apt_packages: pari-elldata pari-galdata pari-galpol pari-seadata
             publish: false
           - name: sagelite-singular-runtime
             import_name: sagelite_singular_runtime
@@ -659,7 +659,9 @@ jobs:
               runtime = importlib.import_module("sagelite_pari_data.runtime")
               data_dir = runtime.pari_data_dir()
               print("pari_data_dir=", data_dir)
+              assert os.path.exists(os.path.join(data_dir, "elldata", "ell2.gz"))
               assert os.path.exists(os.path.join(data_dir, "galdata", "COS8_49_45"))
+              assert os.path.exists(os.path.join(data_dir, "galpol", "README"))
               assert os.path.exists(os.path.join(data_dir, "seadata"))
               raise SystemExit(0)
 

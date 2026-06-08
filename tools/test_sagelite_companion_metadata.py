@@ -341,6 +341,16 @@ def test_linux_repair_builds_pari_data_companion_wheel():
     assert "SAGELITE_PARI_DATA_DIR" in repair_text
 
 
+def test_companion_workflow_installs_available_pari_data_payloads():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    assert (
+        "apt_packages: pari-elldata pari-galdata pari-galpol pari-seadata"
+        in workflow_text
+    )
+
+
 def test_d3js_runtime_registers_static_data_path():
     pyproject = _pyproject("sagelite-d3js-runtime")
 
