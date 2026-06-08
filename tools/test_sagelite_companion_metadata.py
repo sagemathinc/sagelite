@@ -396,6 +396,26 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_ellcurves_database_wheel_declares_and_copies_rank_data():
+    pyproject = _pyproject("sagelite-database-ellcurves")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-database-ellcurves" / "setup.py"
+    ).read_text()
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "ellcurves": "sagelite_database_ellcurves:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_ellcurves"
+    ] == [
+        "data/ellcurves/rank*",
+    ]
+    assert "SAGELITE_ELLCURVES_DATA_DIR" in setup_py
+    assert "local\" / \"share\" / \"ellcurves" in setup_py
+    assert "PACKAGE_DATA_DIR" in setup_py
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
