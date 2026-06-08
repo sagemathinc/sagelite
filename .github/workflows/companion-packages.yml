@@ -160,6 +160,11 @@ jobs:
             path: companion-packages/sagelite-palp-runtime
             apt_packages: palp
             publish: false
+          - name: sagelite-planarity-runtime
+            import_name: sagelite_planarity
+            path: companion-packages/sagelite-planarity-runtime
+            apt_packages: planarity
+            publish: false
           - name: sagelite-plantri-runtime
             import_name: sagelite_plantri
             path: companion-packages/sagelite-plantri-runtime
@@ -281,6 +286,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-palp-runtime" ]; then
             export SAGELITE_PALP_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-planarity-runtime" ]; then
+            export SAGELITE_PLANARITY_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-plantri-runtime" ]; then
             export SAGELITE_PLANTRI_BINDIR=/usr/bin
@@ -588,6 +596,23 @@ jobs:
               assert shutil.which("nef.x")
               subprocess.run(["poly.x", "-h"], check=True, capture_output=True, text=True)
               subprocess.run(["nef.x", "-h"], check=True, capture_output=True, text=True)
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-planarity-runtime":
+              runtime = importlib.import_module("sagelite_planarity.runtime")
+              planarity = runtime.executable_path()
+              print("planarity=", planarity)
+              assert planarity.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("planarity")
+              result = subprocess.run(
+                  ["planarity", "-h"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "Edge Addition Planarity Suite" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-plantri-runtime":

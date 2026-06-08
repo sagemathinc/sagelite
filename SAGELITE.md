@@ -233,6 +233,7 @@ Examples include:
 - `sagelite-msolve-runtime`
 - `sagelite-nauty-runtime`
 - `sagelite-palp-runtime`
+- `sagelite-planarity-runtime`
 - `sagelite-plantri-runtime`
 - `sagelite-rubiks-runtime`
 - `sagelite-singular-runtime`

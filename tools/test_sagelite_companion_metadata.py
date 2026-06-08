@@ -85,6 +85,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-palp-runtime": {
         "sagelite_palp": ["data/bin/*"],
     },
+    "sagelite-planarity-runtime": {
+        "sagelite_planarity": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-plantri-runtime": {
         "sagelite_plantri": ["data/bin/*"],
     },
@@ -131,6 +134,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime",
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
+    "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
@@ -165,6 +169,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
     "sagelite-pari-data",
+    "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
@@ -453,6 +458,26 @@ def test_kissat_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "kissat": "sagelite_kissat.runtime:kissat",
+    }
+
+
+def test_planarity_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-planarity-runtime >=10.9,<10.10"
+
+    assert extras["planarity"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_planarity_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-planarity-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "planarity": "sagelite_planarity.runtime:planarity",
     }
 
 

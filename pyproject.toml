@@ -175,6 +175,7 @@ full = [
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
@@ -211,6 +212,7 @@ nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
+planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
@@ -240,6 +242,7 @@ runtime = [
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
