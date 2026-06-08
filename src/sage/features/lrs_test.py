@@ -1,8 +1,20 @@
+import importlib.util
 import os
 import sys
+from pathlib import Path
 
 import sage.features
-from sage.features.lrs import Lrs, LrsNash
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MODULE_PATH = ROOT / "src" / "sage" / "features" / "lrs.py"
+spec = importlib.util.spec_from_file_location("sage.features.lrs", MODULE_PATH)
+lrs_module = importlib.util.module_from_spec(spec)
+sys.modules["sage.features.lrs"] = lrs_module
+spec.loader.exec_module(lrs_module)
+
+Lrs = lrs_module.Lrs
+LrsNash = lrs_module.LrsNash
 
 
 def test_lrs_executable_discovers_sagelite_companion(monkeypatch, tmp_path):

@@ -1,8 +1,29 @@
+import importlib.util
 import os
 import sys
+from pathlib import Path
 
 import sage.features
-from sage.sat.solvers.dimacs import Glucose, GlucoseSyrup, Kissat
+
+
+ROOT = Path(__file__).resolve().parents[4]
+FEATURE_MODULE_PATH = ROOT / "src" / "sage" / "features" / "sat.py"
+feature_spec = importlib.util.spec_from_file_location(
+    "sage.features.sat", FEATURE_MODULE_PATH
+)
+feature_module = importlib.util.module_from_spec(feature_spec)
+sys.modules["sage.features.sat"] = feature_module
+feature_spec.loader.exec_module(feature_module)
+
+MODULE_PATH = ROOT / "src" / "sage" / "sat" / "solvers" / "dimacs.py"
+spec = importlib.util.spec_from_file_location("sage.sat.solvers.dimacs", MODULE_PATH)
+dimacs_module = importlib.util.module_from_spec(spec)
+sys.modules["sage.sat.solvers.dimacs"] = dimacs_module
+spec.loader.exec_module(dimacs_module)
+
+Glucose = dimacs_module.Glucose
+GlucoseSyrup = dimacs_module.GlucoseSyrup
+Kissat = dimacs_module.Kissat
 
 
 def _write_fake_sat_runtime(tmp_path, package_name, *programs):

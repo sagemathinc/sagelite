@@ -1,8 +1,20 @@
+import importlib.util
 import os
 import sys
+from pathlib import Path
 
 import sage.features
-from sage.features.sat import Glucose, Kissat
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MODULE_PATH = ROOT / "src" / "sage" / "features" / "sat.py"
+spec = importlib.util.spec_from_file_location("sage.features.sat", MODULE_PATH)
+sat_module = importlib.util.module_from_spec(spec)
+sys.modules["sage.features.sat"] = sat_module
+spec.loader.exec_module(sat_module)
+
+Glucose = sat_module.Glucose
+Kissat = sat_module.Kissat
 
 
 def test_glucose_executable_discovers_sagelite_companion(monkeypatch, tmp_path):

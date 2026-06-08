@@ -1,8 +1,19 @@
+import importlib.util
 import os
 import sys
+from pathlib import Path
 
 import sage.features
-from sage.features.topcom import TOPCOMExecutable
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MODULE_PATH = ROOT / "src" / "sage" / "features" / "topcom.py"
+spec = importlib.util.spec_from_file_location("sage.features.topcom", MODULE_PATH)
+topcom_module = importlib.util.module_from_spec(spec)
+sys.modules["sage.features.topcom"] = topcom_module
+spec.loader.exec_module(topcom_module)
+
+TOPCOMExecutable = topcom_module.TOPCOMExecutable
 
 
 def test_topcom_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
