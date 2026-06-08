@@ -178,6 +178,22 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-topcom-runtime",
 }
 
+RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
+    "sagelite-4ti2-runtime": "four-ti-2-runtime-dist",
+    "sagelite-ecm-runtime": "ecm-runtime-dist",
+    "sagelite-gap-runtime": "gap-runtime-dist",
+    "sagelite-gfan-runtime": "gfan-runtime-dist",
+    "sagelite-maxima-runtime": "maxima-runtime-dist",
+    "sagelite-meataxe-runtime": "meataxe-runtime-dist",
+    "sagelite-mwrank-runtime": "mwrank-runtime-dist",
+    "sagelite-nauty-runtime": "nauty-runtime-dist",
+    "sagelite-palp-runtime": "palp-runtime-dist",
+    "sagelite-rubiks-runtime": "rubiks-runtime-dist",
+    "sagelite-singular-runtime": "singular-runtime-dist",
+    "sagelite-sympow-runtime": "sympow-runtime-dist",
+    "sagelite-topcom-runtime": "topcom-runtime-dist",
+}
+
 COMPANION_WORKFLOW_DATA_PACKAGES = {
     "sagelite-cunningham-tables",
     "sagelite-database-cremona-ellcurve",
@@ -241,6 +257,20 @@ def test_companion_workflow_builds_expected_data_companion_wheels():
 
     for package in COMPANION_WORKFLOW_DATA_PACKAGES:
         assert f"path: companion-packages/{package}" in workflow_text
+
+
+def test_release_workflow_separates_expected_runtime_companion_wheels():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+
+    for package, dist_dir in RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES.items():
+        wheel_glob = package.replace("-", "_")
+
+        assert f'mkdir -p {dist_dir}' in workflow_text
+        assert f'-name "{wheel_glob}-*.whl"' in workflow_text
+        assert f'path: ./{dist_dir}/*.whl' in workflow_text
+        assert f'path: {dist_dir}' in workflow_text
+        assert f'packages-dir: {dist_dir}/' in workflow_text
 
 
 def test_companion_workflow_does_not_publish_huge_data_packages_by_default():
