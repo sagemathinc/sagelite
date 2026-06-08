@@ -600,11 +600,11 @@ def _bootstrap_sagelite_four_ti_2_runtime() -> None:
 
 def _bootstrap_sagelite_lie_runtime() -> None:
     """
-    Seed ``LIE_INFO_DIR`` from an optional ``sagelite_lie`` package.
+    Seed LiE runtime variables from an optional ``sagelite_lie`` package.
 
     Sage's LiE interface reads the upstream ``INFO.*`` help files directly.
     The companion package supplies those files for installed wheels while the
-    ``lie`` command itself is exposed as a standard Python entry point.
+    ``lie`` command itself is exposed as relocatable package data.
     """
     configured = getattr(sage.config, "LIE_INFO_DIR", None) or join(SAGE_LOCAL, "lib", "LiE")
     needs_info = (
@@ -615,16 +615,21 @@ def _bootstrap_sagelite_lie_runtime() -> None:
             and os.path.isfile(os.path.join(os.fspath(configured), "INFO.3"))
         )
     )
-    if not needs_info:
-        return
+    needs_command = not os.environ.get("SAGE_LIE_COMMAND") and not shutil.which("lie")
 
-    info_dir = _optional_runtime_value("sagelite_lie.runtime", "info_dir")
-    if (
-        info_dir
-        and os.path.isfile(os.path.join(info_dir, "INFO.0"))
-        and os.path.isfile(os.path.join(info_dir, "INFO.3"))
-    ):
-        os.environ.setdefault("LIE_INFO_DIR", os.fspath(info_dir))
+    if needs_info:
+        info_dir = _optional_runtime_value("sagelite_lie.runtime", "info_dir")
+        if (
+            info_dir
+            and os.path.isfile(os.path.join(info_dir, "INFO.0"))
+            and os.path.isfile(os.path.join(info_dir, "INFO.3"))
+        ):
+            os.environ.setdefault("LIE_INFO_DIR", os.fspath(info_dir))
+
+    if needs_command:
+        command = _optional_runtime_value("sagelite_lie.runtime", "lie_command")
+        if command and os.path.isfile(command) and os.access(command, os.X_OK):
+            os.environ.setdefault("SAGE_LIE_COMMAND", os.fspath(command))
 
 
 def _bootstrap_sagelite_jmol_runtime() -> None:

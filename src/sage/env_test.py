@@ -48,6 +48,7 @@ def clean_runtime_environment():
         "SAGE_GAP3_COMMAND",
         "SAGE_GAP_COMMAND",
         "SAGE_ECMBIN",
+        "SAGE_LIE_COMMAND",
         "SAGE_NAUTY_BINS_PREFIX",
         "SYMPOW",
         "TACHYON",
@@ -569,6 +570,26 @@ def test_lie_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     assert env.os.environ["LIE_INFO_DIR"] == str(info_dir)
 
 
+def test_lie_runtime_sets_pexpect_command(monkeypatch, tmp_path):
+    command = _runtime_executable(tmp_path, "companion", "lie")
+
+    monkeypatch.delenv("SAGE_LIE_COMMAND", raising=False)
+    monkeypatch.setattr(env.shutil, "which", lambda program: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: (
+            str(command)
+            if (module_name, attr_name) == ("sagelite_lie.runtime", "lie_command")
+            else None
+        ),
+    )
+
+    env._bootstrap_sagelite_lie_runtime()
+
+    assert env.os.environ["SAGE_LIE_COMMAND"] == str(command)
+
+
 def test_lie_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     info_dir = _lie_runtime(tmp_path, "companion")
     existing_info_dir = _lie_runtime(tmp_path, "existing")
@@ -584,6 +605,23 @@ def test_lie_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_lie_runtime()
 
     assert env.os.environ["LIE_INFO_DIR"] == str(existing_info_dir)
+
+
+def test_lie_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
+    existing = _runtime_executable(tmp_path, "existing", "lie")
+    companion = _runtime_executable(tmp_path, "companion", "lie")
+
+    monkeypatch.setenv("SAGE_LIE_COMMAND", str(existing))
+    monkeypatch.setattr(env.shutil, "which", lambda program: None)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    env._bootstrap_sagelite_lie_runtime()
+
+    assert env.os.environ["SAGE_LIE_COMMAND"] == str(existing)
 
 
 def test_jmol_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
