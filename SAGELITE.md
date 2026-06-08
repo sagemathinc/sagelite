@@ -262,6 +262,7 @@ Examples include:
 - `sagelite-database-odlyzko-zeta`
 - `sagelite-database-polytopes`
 - `sagelite-database-polytopes-4d`
+- `sagelite-database-stein-watkins`
 - `sagelite-database-stein-watkins-mini`
 - `sagelite-database-symbolic-data`
 - `sagelite-pari-data`
