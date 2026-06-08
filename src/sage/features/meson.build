@@ -43,6 +43,7 @@ py.install_sources(
   'normaliz.py',
   'palp.py',
   'pandoc.py',
+  'pari.py',
   'pdf2svg.py',
   'phitigra.py',
   'pkg_systems.py',
