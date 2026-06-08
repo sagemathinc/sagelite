@@ -169,6 +169,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime",
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
+    "sagelite-d3js-runtime",
     "sagelite-ecm-runtime",
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
