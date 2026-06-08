@@ -178,6 +178,26 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-topcom-runtime",
 }
 
+COMPANION_WORKFLOW_DATA_PACKAGES = {
+    "sagelite-cunningham-tables",
+    "sagelite-database-cremona-ellcurve",
+    "sagelite-database-cremona-mini",
+    "sagelite-database-ellcurves",
+    "sagelite-database-graphs",
+    "sagelite-database-jones-numfield",
+    "sagelite-database-kohel",
+    "sagelite-database-mutation-class",
+    "sagelite-database-odlyzko-zeta",
+    "sagelite-database-polytopes",
+    "sagelite-database-stein-watkins-mini",
+    "sagelite-database-symbolic-data",
+}
+
+HUGE_DATA_PACKAGES = {
+    "sagelite-database-polytopes-4d",
+    "sagelite-database-stein-watkins",
+}
+
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
@@ -213,6 +233,22 @@ def test_companion_workflow_builds_expected_runtime_companion_wheels():
 
     for package in COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES:
         assert f"path: companion-packages/{package}" in workflow_text
+
+
+def test_companion_workflow_builds_expected_data_companion_wheels():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for package in COMPANION_WORKFLOW_DATA_PACKAGES:
+        assert f"path: companion-packages/{package}" in workflow_text
+
+
+def test_companion_workflow_does_not_publish_huge_data_packages_by_default():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for package in HUGE_DATA_PACKAGES:
+        assert f"path: companion-packages/{package}\n" not in workflow_text
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():

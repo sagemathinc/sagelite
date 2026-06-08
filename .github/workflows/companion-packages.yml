@@ -45,6 +45,11 @@ jobs:
             path: companion-packages/sagelite-database-cremona-mini
             apt_packages: ""
             publish: true
+          - name: sagelite-database-cremona-ellcurve
+            import_name: sagelite_database_cremona_ellcurve
+            path: companion-packages/sagelite-database-cremona-ellcurve
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-ellcurves
             import_name: sagelite_database_ellcurves
             path: companion-packages/sagelite-database-ellcurves
@@ -310,6 +315,12 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-topcom-runtime" ]; then
             export SAGELITE_TOPCOM_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-database-cremona-ellcurve" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download database_cremona_ellcurve | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/cremona-ellcurve"
+            tar -xjf "$tarball" -C "$RUNNER_TEMP/cremona-ellcurve"
+            export SAGELITE_CREMONA_ELLCURVE_DB="$RUNNER_TEMP/cremona-ellcurve/src/cremona.db"
           fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
@@ -858,6 +869,19 @@ jobs:
               print("db_path=", db_path)
               assert db_path.endswith("cremona_mini.db"), db_path
               assert any(ep.name == "cremona_mini" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              con = sqlite3.connect(db_path)
+              cur = con.cursor()
+              assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
+              assert cur.execute("select count(*) from t_curve").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-cremona-ellcurve":
+              data_path = module.sage_data_path()
+              db_path = module.cremona_ellcurve_path()
+              print("data_path=", data_path)
+              print("db_path=", db_path)
+              assert db_path.endswith("cremona.db"), db_path
+              assert any(ep.name == "cremona" for ep in metadata.entry_points(group="sagemath.data_paths"))
               con = sqlite3.connect(db_path)
               cur = con.cursor()
               assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
