@@ -20,6 +20,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-cddlib-runtime": {
         "sagelite_cddlib": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-csdp-runtime": {
+        "sagelite_csdp": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-d3js-runtime": {
         "sagelite_d3js_runtime": ["data/d3js/**/*"],
     },
@@ -113,6 +116,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-benzene-runtime",
     "sagelite-buckygen-runtime",
     "sagelite-cddlib-runtime",
+    "sagelite-csdp-runtime",
     "sagelite-ecm-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
@@ -321,6 +325,26 @@ def test_cddlib_runtime_declares_console_scripts():
         "redcheck_gmp": "sagelite_cddlib.runtime:redcheck_gmp",
         "scdd": "sagelite_cddlib.runtime:scdd",
         "scdd_gmp": "sagelite_cddlib.runtime:scdd_gmp",
+    }
+
+
+def test_csdp_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-csdp-runtime >=10.9,<10.10"
+
+    assert extras["csdp"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_csdp_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-csdp-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "theta": "sagelite_csdp.runtime:theta",
     }
 
 

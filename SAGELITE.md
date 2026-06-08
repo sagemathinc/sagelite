@@ -216,6 +216,7 @@ Examples include:
 - `sagelite-gap3-runtime`
 - `sagelite-benzene-runtime`
 - `sagelite-buckygen-runtime`
+- `sagelite-csdp-runtime`
 - `sagelite-gfan-runtime`
 - `sagelite-4ti2-runtime`
 - `sagelite-d3js-runtime`

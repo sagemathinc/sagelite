@@ -18,7 +18,7 @@ import os
 import re
 import subprocess
 
-from . import Executable, FeatureTestResult
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 
 
 class CSDP(Executable):
@@ -43,6 +43,30 @@ class CSDP(Executable):
         Executable.__init__(self, name='csdp', spkg='csdp', executable='theta',
                                 url='https://github.com/dimpase/csdp')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the CSDP ``theta`` executable path.
+
+        Normal Sage installations find ``theta`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-csdp-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_csdp.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def is_functional(self):
         r"""
         Check whether ``theta`` works on a trivial example.
@@ -60,7 +84,7 @@ class CSDP(Executable):
         with open(tf_name, 'wb') as tf:
             tf.write(b"2\n1\n1 1")
         with open(os.devnull, 'wb') as devnull:
-            command = ['theta', tf_name]
+            command = [self.absolute_filename(), tf_name]
             try:
                 lines = subprocess.check_output(command, stderr=devnull)
             except subprocess.CalledProcessError as e:

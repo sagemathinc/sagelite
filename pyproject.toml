@@ -96,6 +96,7 @@ buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']
 cddlib = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
 cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
+csdp = ['sagelite-csdp-runtime >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
@@ -140,6 +141,7 @@ full = [
   'sagelite-benzene-runtime >=10.9,<10.10',
   'sagelite-buckygen-runtime >=10.9,<10.10',
   'sagelite-cddlib-runtime >=10.9,<10.10',
+  'sagelite-csdp-runtime >=10.9,<10.10',
   'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-database-cremona-ellcurve >=10.9,<10.10',
@@ -217,6 +219,7 @@ runtime = [
   'sagelite-benzene-runtime >=10.9,<10.10',
   'sagelite-buckygen-runtime >=10.9,<10.10',
   'sagelite-cddlib-runtime >=10.9,<10.10',
+  'sagelite-csdp-runtime >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
@@ -290,6 +293,7 @@ host-requires = [
   "pkg:generic/boost",
   "pkg:generic/cddlib",
   "pkg:generic/cliquer",
+  "pkg:generic/csdp",
   "pkg:generic/ecl",
   "pkg:generic/eclib",
   "pkg:generic/ecm",

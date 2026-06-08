@@ -300,6 +300,39 @@ build_cddlib_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_csdp_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local csdp_bindir="$prefix/bin"
+  if [ ! -x "$csdp_bindir/theta" ]; then
+    echo "CSDP theta executable not found under $csdp_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name theta -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-csdp-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "CSDP runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_CSDP_BINDIR="$csdp_bindir" \
+  SAGELITE_CSDP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_benzene_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -902,6 +935,7 @@ build_sympow_runtime_companion
 build_topcom_runtime_companion
 build_four_ti_2_runtime_companion
 build_cddlib_runtime_companion
+build_csdp_runtime_companion
 build_benzene_runtime_companion
 build_buckygen_runtime_companion
 build_glucose_runtime_companion
