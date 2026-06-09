@@ -984,6 +984,34 @@ def test_stein_watkins_database_is_exposed_by_dedicated_sagelite_extra():
     assert requirement in extras["full"]
 
 
+def test_stein_watkins_mini_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-stein-watkins-mini")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "stein_watkins": "sagelite_database_stein_watkins_mini:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_stein_watkins_mini"
+    ] == [
+        "data/stein_watkins/a.000.bz2",
+        "data/stein_watkins/a.001.bz2",
+        "data/stein_watkins/p.00.bz2",
+    ]
+
+
+def test_stein_watkins_mini_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-stein-watkins-mini >=10.9,<10.10"
+
+    assert extras["stein-watkins-mini"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_topcom_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
