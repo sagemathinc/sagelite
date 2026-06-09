@@ -42,6 +42,7 @@ def clean_runtime_environment():
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
         "MATHJAX_DIR",
+        "MTXLIB",
         "MWRANK",
         "PALP_BINS_PREFIX",
         "RUBIKS_BINS_PREFIX",
@@ -135,6 +136,16 @@ def _threejs_runtime(tmp_path: Path, name: str) -> Path:
     (threejs_dir / "version").write_text("r124\n")
     (version_dir / "three.min.js").write_text("console.log('three');\n")
     return threejs_dir
+
+
+def _meataxe_runtime(tmp_path: Path, name: str, *, complete: bool = True) -> Path:
+    table_dir = tmp_path / name / "share" / "meataxe"
+    table_dir.mkdir(parents=True)
+    (table_dir / "p009.zzz").write_text("meataxe table\n")
+    if complete:
+        for table in ("p002.zzz", "p025.zzz", "p125.zzz", "p251.zzz"):
+            (table_dir / table).write_text("meataxe table\n")
+    return table_dir
 
 
 def _mwrank_runtime(tmp_path: Path, name: str) -> Path:
@@ -545,6 +556,63 @@ def test_pari_data_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
     env._bootstrap_sagelite_pari_data_runtime()
 
     assert "GP_DATA_DIR" not in env.os.environ
+
+
+def test_meataxe_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    table_dir = _meataxe_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("MTXLIB", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "MTXLIB",
+        str(tmp_path / "stale-share" / "meataxe"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: table_dir
+        if (module_name, attr_name) == ("sagelite_meataxe.runtime", "meataxe_dir")
+        else None,
+    )
+
+    env._bootstrap_sagelite_meataxe_runtime()
+
+    assert env.os.environ["MTXLIB"] == str(table_dir)
+
+
+def test_meataxe_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    companion = _meataxe_runtime(tmp_path, "companion")
+    existing = _meataxe_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("MTXLIB", str(existing))
+    monkeypatch.setattr(env.sage.config, "MTXLIB", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: companion,
+    )
+
+    env._bootstrap_sagelite_meataxe_runtime()
+
+    assert env.os.environ["MTXLIB"] == str(existing)
+
+
+def test_meataxe_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    table_dir = tmp_path / "companion" / "share" / "meataxe"
+    table_dir.mkdir(parents=True)
+
+    monkeypatch.delenv("MTXLIB", raising=False)
+    monkeypatch.setattr(env.sage.config, "MTXLIB", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: table_dir,
+    )
+
+    env._bootstrap_sagelite_meataxe_runtime()
+
+    assert "MTXLIB" not in env.os.environ
 
 
 def test_lie_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
