@@ -478,6 +478,114 @@ def test_ellcurves_database_wheel_declares_and_copies_rank_data():
     assert "PACKAGE_DATA_DIR" in setup_py
 
 
+def test_graphs_database_wheel_declares_packaged_data():
+    pyproject = _pyproject("sagelite-database-graphs")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "graphs": "sagelite_database_graphs:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_graphs"
+    ] == [
+        "data/graphs/brouwer_srg_database.json",
+        "data/graphs/graphs.db",
+        "data/graphs/isgci_sage.xml",
+        "data/graphs/smallgraphs.txt",
+    ]
+
+
+def test_graphs_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-graphs >=10.9,<10.10"
+
+    assert extras["graphs"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
+def test_reflexive_polytopes_database_wheel_declares_packaged_data():
+    pyproject = _pyproject("sagelite-database-polytopes")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "reflexive_polytopes": "sagelite_database_polytopes:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_polytopes"
+    ] == [
+        "data/reflexive_polytopes/**/*",
+    ]
+
+
+def test_reflexive_polytopes_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-polytopes >=10.9,<10.10"
+
+    assert extras["polytopes"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
+def test_odlyzko_zeta_database_wheel_declares_packaged_data():
+    pyproject = _pyproject("sagelite-database-odlyzko-zeta")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "odlyzko": "sagelite_database_odlyzko_zeta:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_odlyzko_zeta"
+    ] == [
+        "data/odlyzko/zeros.sobj",
+    ]
+
+
+def test_odlyzko_zeta_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-odlyzko-zeta >=10.9,<10.10"
+
+    assert extras["odlyzko-zeta"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
+def test_symbolic_data_database_wheel_declares_packaged_data():
+    pyproject = _pyproject("sagelite-database-symbolic-data")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "symbolic_data": "sagelite_database_symbolic_data:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_symbolic_data"
+    ] == [
+        "data/symbolic_data/COPYING",
+        "data/symbolic_data/Data/**/*",
+    ]
+
+
+def test_symbolic_data_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-symbolic-data >=10.9,<10.10"
+
+    assert extras["symbolic-data"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
