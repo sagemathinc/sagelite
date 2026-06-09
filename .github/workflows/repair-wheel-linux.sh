@@ -61,6 +61,40 @@ build_gap_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_gap3_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local gap3_root="$prefix/gap3/latest/gap3"
+  if [ ! -x "$gap3_root/bin/gap.sh" ] ||
+     [ ! -f "$gap3_root/lib/init.g" ]; then
+    echo "GAP3 runtime not found under $gap3_root; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 6 \( -name gap.sh -o -name init.g \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-gap3-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "GAP3 runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_GAP3_ROOT="$gap3_root" \
+  SAGELITE_GAP3_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_gfan_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1167,6 +1201,7 @@ fi
 
 auditwheel repair -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
+build_gap3_runtime_companion
 build_gfan_runtime_companion
 build_ecm_runtime_companion
 build_frobby_runtime_companion
