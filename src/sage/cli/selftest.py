@@ -252,6 +252,22 @@ def _check_four_ti_2_runtime():
     return "4ti2 executables available"
 
 
+def _check_flatter_runtime():
+    try:
+        import sagelite_flatter  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.flatter import flatter
+
+    flatter_feature = flatter().is_present()
+    if not bool(flatter_feature):
+        raise RuntimeError(
+            f"flatter executable is not available: {flatter_feature.reason}"
+        )
+    return "flatter executable available"
+
+
 def _check_ecm_runtime():
     try:
         import sagelite_ecm  # noqa: F401
@@ -587,6 +603,7 @@ def main() -> int:
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("4ti2 executable runtime", _check_four_ti_2_runtime),
+        ("flatter executable runtime", _check_flatter_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
         ("mwrank executable runtime", _check_mwrank_runtime),
         ("PALP executable runtime", _check_palp_runtime),
