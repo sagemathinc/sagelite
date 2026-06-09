@@ -260,6 +260,8 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime": "four-ti-2-runtime-dist",
     "sagelite-benzene-runtime": "benzene-runtime-dist",
     "sagelite-buckygen-runtime": "buckygen-runtime-dist",
+    "sagelite-cddlib-runtime": "cddlib-runtime-dist",
+    "sagelite-csdp-runtime": "csdp-runtime-dist",
     "sagelite-ecm-runtime": "ecm-runtime-dist",
     "sagelite-frobby-runtime": "frobby-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",

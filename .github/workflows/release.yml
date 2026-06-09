@@ -203,6 +203,18 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-cddlib-runtime"
+          path: cddlib-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-csdp-runtime"
+          path: csdp-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-maxima-runtime"
           path: maxima-runtime-dist
           merge-multiple: true
@@ -300,6 +312,8 @@ jobs:
             four-ti-2-runtime-dist/*.whl
             benzene-runtime-dist/*.whl
             buckygen-runtime-dist/*.whl
+            cddlib-runtime-dist/*.whl
+            csdp-runtime-dist/*.whl
             maxima-runtime-dist/*.whl
             meataxe-runtime-dist/*.whl
             msolve-runtime-dist/*.whl
@@ -461,6 +475,8 @@ jobs:
           rm -rf four-ti-2-runtime-dist
           rm -rf benzene-runtime-dist
           rm -rf buckygen-runtime-dist
+          rm -rf cddlib-runtime-dist
+          rm -rf csdp-runtime-dist
           rm -rf maxima-runtime-dist
           rm -rf meataxe-runtime-dist
           rm -rf msolve-runtime-dist
@@ -588,6 +604,24 @@ jobs:
           test "$(find buckygen-runtime-dist -maxdepth 1 -type f -name "sagelite_buckygen_runtime-*.whl" | wc -l)" -eq 1
           ls -lh buckygen-runtime-dist
 
+      - name: Separate cddlib runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p cddlib-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_cddlib_runtime-*.whl" -exec mv -v {} cddlib-runtime-dist/ \;
+          test "$(find cddlib-runtime-dist -maxdepth 1 -type f -name "sagelite_cddlib_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh cddlib-runtime-dist
+
+      - name: Separate CSDP runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p csdp-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_csdp_runtime-*.whl" -exec mv -v {} csdp-runtime-dist/ \;
+          test "$(find csdp-runtime-dist -maxdepth 1 -type f -name "sagelite_csdp_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh csdp-runtime-dist
+
       - name: Separate Maxima runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -699,7 +733,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist maxima-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist topcom-runtime-dist; do
+          for companion_dist in gap-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -772,6 +806,20 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-buckygen-runtime
           path: ./buckygen-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-cddlib-runtime
+          path: ./cddlib-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-csdp-runtime
+          path: ./csdp-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1141,6 +1189,66 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: buckygen-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_cddlib_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-cddlib-runtime"
+          path: cddlib-runtime-dist
+          merge-multiple: true
+
+      - name: Verify cddlib runtime artifact set
+        run: |
+          set -euo pipefail
+          find cddlib-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find cddlib-runtime-dist -maxdepth 1 -type f -name "sagelite_cddlib_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find cddlib-runtime-dist -maxdepth 1 -type f -name "sagelite_cddlib_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find cddlib-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: cddlib-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_csdp_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-csdp-runtime"
+          path: csdp-runtime-dist
+          merge-multiple: true
+
+      - name: Verify CSDP runtime artifact set
+        run: |
+          set -euo pipefail
+          find csdp-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find csdp-runtime-dist -maxdepth 1 -type f -name "sagelite_csdp_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find csdp-runtime-dist -maxdepth 1 -type f -name "sagelite_csdp_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find csdp-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: csdp-runtime-dist/
           skip-existing: true
           verbose: true
 
