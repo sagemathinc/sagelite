@@ -125,6 +125,16 @@ jobs:
             path: companion-packages/sagelite-csdp-runtime
             apt_packages: coinor-csdp
             publish: false
+          - name: sagelite-benzene-runtime
+            import_name: sagelite_benzene
+            path: companion-packages/sagelite-benzene-runtime
+            apt_packages: ""
+            publish: false
+          - name: sagelite-buckygen-runtime
+            import_name: sagelite_buckygen
+            path: companion-packages/sagelite-buckygen-runtime
+            apt_packages: ""
+            publish: false
           - name: sagelite-ecm-runtime
             import_name: sagelite_ecm
             path: companion-packages/sagelite-ecm-runtime
@@ -289,6 +299,21 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-csdp-runtime" ]; then
             export SAGELITE_CSDP_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-benzene-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download benzene | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/benzene-src"
+            tar -xjf "$tarball" -C "$RUNNER_TEMP/benzene-src"
+            make -C "$RUNNER_TEMP/benzene-src/src" CFLAGS="-std=gnu89 -O4 -Wall -DNOLOG"
+            export SAGELITE_BENZENE_BINDIR="$RUNNER_TEMP/benzene-src/src"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-buckygen-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download buckygen | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/buckygen-src"
+            unzip -q "$tarball" -d "$RUNNER_TEMP/buckygen-src"
+            buckygen_src="$(find "$RUNNER_TEMP/buckygen-src" -maxdepth 2 -type f -name buckygen.c -printf '%h\n' | head -n 1)"
+            make -C "$buckygen_src" CFLAGS="-std=gnu89 -O3"
+            export SAGELITE_BUCKYGEN_BINDIR="$buckygen_src"
           fi
           if [ "${{ matrix.name }}" = "sagelite-ecm-runtime" ]; then
             export SAGELITE_ECM_BINDIR=/usr/bin
@@ -521,6 +546,38 @@ jobs:
                   check=True,
               )
               assert "The Lovasz Theta Number" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-benzene-runtime":
+              runtime = importlib.import_module("sagelite_benzene.runtime")
+              benzene = runtime.executable_path()
+              print("benzene=", benzene)
+              assert benzene.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("benzene")
+              result = subprocess.run(
+                  ["benzene", "-h"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "benzene" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-buckygen-runtime":
+              runtime = importlib.import_module("sagelite_buckygen.runtime")
+              buckygen = runtime.executable_path()
+              print("buckygen=", buckygen)
+              assert buckygen.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("buckygen")
+              result = subprocess.run(
+                  ["buckygen", "-h"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "buckygen" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-ecm-runtime":

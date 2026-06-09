@@ -171,6 +171,8 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
 
 COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime",
+    "sagelite-benzene-runtime",
+    "sagelite-buckygen-runtime",
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
     "sagelite-d3js-runtime",
