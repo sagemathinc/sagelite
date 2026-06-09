@@ -1192,7 +1192,16 @@ def sage_data_paths(name: str = '') -> set[str]:
 
     paths.update(_registered_sage_data_paths())
 
-    return {os.path.join(path, name) for path in paths if os.path.exists(path)}
+    if not name:
+        return {path for path in paths if os.path.exists(path)}
+
+    resolved = {os.path.join(path, name) for path in paths if os.path.exists(path)}
+    resolved.update(
+        path
+        for path in paths
+        if os.path.basename(os.path.normpath(path)) == name and os.path.exists(path)
+    )
+    return resolved
 
 
 def _registered_sage_data_paths() -> set[str]:

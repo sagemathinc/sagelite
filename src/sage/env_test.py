@@ -219,6 +219,35 @@ def test_sage_data_paths_discovers_registered_entry_points(monkeypatch, tmp_path
     assert str(root / "cremona") in env.sage_data_paths("cremona")
 
 
+def test_sage_data_paths_accepts_registered_named_directory(monkeypatch, tmp_path):
+    root = tmp_path / "companion-data"
+    direct = root / "cremona"
+    direct.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: direct)],
+    )
+    monkeypatch.setattr(env, "SAGE_DATA_PATH", None)
+
+    assert str(direct) in env.sage_data_paths("cremona")
+
+
+def test_sage_data_paths_keeps_registered_roots_without_name(monkeypatch, tmp_path):
+    root = tmp_path / "companion-data"
+    root.mkdir()
+
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: root)],
+    )
+    monkeypatch.setattr(env, "SAGE_DATA_PATH", None)
+
+    assert str(root) in env.sage_data_paths()
+
+
 def test_sage_data_paths_accepts_multiple_registered_directories(monkeypatch, tmp_path):
     first = tmp_path / "first"
     second = tmp_path / "second"
