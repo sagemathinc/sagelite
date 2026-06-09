@@ -779,6 +779,22 @@ def test_matroid_pypi_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_pycryptosat_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = (
+        "pycryptosat; python_version < '3.13' and "
+        "(sys_platform == 'darwin' or "
+        "(sys_platform == 'linux' and platform_machine == 'x86_64'))"
+    )
+
+    assert extras["pycryptosat"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["full"]
+
+
 def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

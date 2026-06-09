@@ -129,6 +129,7 @@ extra = [
   'khoca >=1.4',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
+  "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
@@ -140,6 +141,7 @@ full = [
   'khoca >=1.4',
   'matroid-database ==0.3',
   'pycosat >=0.6.3',
+  "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
@@ -227,6 +229,7 @@ plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
+pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
