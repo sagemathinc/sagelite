@@ -185,6 +185,11 @@ jobs:
             path: companion-packages/sagelite-mwrank-runtime
             apt_packages: eclib-tools
             publish: false
+          - name: sagelite-msolve-runtime
+            import_name: sagelite_msolve
+            path: companion-packages/sagelite-msolve-runtime
+            apt_packages: g++ make libflint-dev libgmp-dev libmpfr-dev
+            publish: false
           - name: sagelite-lrslib-runtime
             import_name: sagelite_lrslib
             path: companion-packages/sagelite-lrslib-runtime
@@ -357,6 +362,17 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
             export SAGELITE_MWRANK_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-msolve-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download msolve | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/msolve-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/msolve-src"
+            msolve_src="$(find "$RUNNER_TEMP/msolve-src" -maxdepth 2 -type f -name configure -printf '%h\n' | head -n 1)"
+            (cd "$msolve_src" && ./configure --prefix="$RUNNER_TEMP/msolve-prefix")
+            make -C "$msolve_src" --parallel 2
+            make -C "$msolve_src" install
+            export SAGELITE_MSOLVE_BINDIR="$RUNNER_TEMP/msolve-prefix/bin"
+            export LD_LIBRARY_PATH="$RUNNER_TEMP/msolve-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           fi
           if [ "${{ matrix.name }}" = "sagelite-lrslib-runtime" ]; then
             export SAGELITE_LRSLIB_BINDIR=/usr/bin
@@ -706,6 +722,22 @@ jobs:
                   check=True,
               )
               assert "Curve [0,0,0,0,1]" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-msolve-runtime":
+              runtime = importlib.import_module("sagelite_msolve.runtime")
+              msolve = runtime.executable_path()
+              print("msolve=", msolve)
+              assert os.path.exists(msolve)
+              import shutil
+              import subprocess
+              assert shutil.which("msolve")
+              result = subprocess.run(
+                  ["msolve", "-h"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "msolve" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-lrslib-runtime":

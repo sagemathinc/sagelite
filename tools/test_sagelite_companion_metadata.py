@@ -244,6 +244,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
     "sagelite-mwrank-runtime",
+    "sagelite-msolve-runtime",
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
     "sagelite-pari-data",
