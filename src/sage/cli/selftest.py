@@ -224,13 +224,20 @@ def _check_nauty_runtime():
 
     import subprocess
 
-    from sage.features.nauty import Nauty
+    from sage.features.nauty import NautyExecutable
 
-    nauty = Nauty().is_present()
-    if not bool(nauty):
-        raise RuntimeError(f"nauty executables are not available: {nauty.reason}")
-    subprocess.run(["geng", "-q", "3"], check=True, capture_output=True, text=True)
-    subprocess.run(["genposetg", "-q", "3"], check=True, capture_output=True, text=True)
+    commands = []
+    for program in ("geng", "genposetg"):
+        feature = NautyExecutable(program)
+        presence = feature.is_present()
+        if not bool(presence):
+            raise RuntimeError(
+                f"nauty executable {program!r} is not available: {presence.reason}"
+            )
+        commands.append(feature.absolute_filename())
+    geng, genposetg = commands
+    subprocess.run([geng, "-q", "3"], check=True, capture_output=True, text=True)
+    subprocess.run([genposetg, "-q", "3"], check=True, capture_output=True, text=True)
     return "geng and genposetg available"
 
 

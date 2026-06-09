@@ -1,5 +1,6 @@
 import importlib.util
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -61,6 +62,18 @@ Latte_integrate = latte_module.Latte_integrate
 msolve = msolve_module.msolve
 NautyExecutable = nauty_module.NautyExecutable
 PalpExecutable = palp_module.PalpExecutable
+
+
+def _load_source_module(relative_path, fullname):
+    path = ROOT / relative_path
+    if not path.exists():
+        return __import__(fullname, fromlist=["*"])
+    sys.modules.pop(fullname, None)
+    spec = importlib.util.spec_from_file_location(fullname, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[fullname] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def _write_fake_runtime(tmp_path, package_name, program, path_function):
@@ -205,6 +218,57 @@ def test_nauty_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     feature = NautyExecutable("geng")
 
     assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_sagelite_selftest_nauty_runtime_uses_companion_paths(monkeypatch, tmp_path):
+    geng = _write_fake_runtime(
+        tmp_path, "sagelite_nauty", "geng", "executable_path"
+    )
+    bindir = geng.parent
+    for program in (
+        "directg",
+        "gentourng",
+        "genbg",
+        "gentreeg",
+        "genktreeg",
+        "genposetg",
+    ):
+        executable = bindir / program
+        executable.write_text("#!/bin/sh\n")
+        executable.chmod(0o755)
+    genposetg = bindir / "genposetg"
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    sys.modules.pop("sagelite_nauty", None)
+    sys.modules.pop("sagelite_nauty.runtime", None)
+    sys.modules.pop("sage.features.nauty", None)
+    monkeypatch.delattr(sage.features, "nauty", raising=False)
+    sage.features._trivial_unique_representation_cache.clear()
+
+    from sagelite_nauty.runtime import executable_path
+
+    assert executable_path("geng") == geng
+    assert executable_path("genposetg") == genposetg
+
+    loaded_nauty = _load_source_feature_module("nauty")
+    assert loaded_nauty.NautyExecutable("geng").absolute_filename() == os.fspath(geng)
+    sage.features._trivial_unique_representation_cache.clear()
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    assert selftest._check_nauty_runtime() == "geng and genposetg available"
+    assert [call[0] for call in calls] == [
+        [os.fspath(geng), "-q", "3"],
+        [os.fspath(genposetg), "-q", "3"],
+    ]
 
 
 def test_ecm_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
