@@ -429,6 +429,32 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_cremona_mini_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-cremona-mini")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "cremona_mini": "sagelite_database_cremona_mini:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_cremona_mini"
+    ] == [
+        "data/cremona/cremona_mini.db",
+    ]
+
+
+def test_cremona_mini_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-cremona-mini >=10.9,<10.10"
+
+    assert extras["cremona"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_kohel_database_wheel_declares_and_copies_polynomial_data():
     pyproject = _pyproject("sagelite-database-kohel")
     setup_py = (
@@ -512,6 +538,32 @@ def test_graphs_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_jones_numfield_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-jones-numfield")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "jones": "sagelite_database_jones_numfield:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_jones_numfield"
+    ] == [
+        "data/jones/jones.sobj",
+    ]
+
+
+def test_jones_numfield_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-jones-numfield >=10.9,<10.10"
+
+    assert extras["jones-numfield"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
 def test_reflexive_polytopes_database_wheel_declares_packaged_data():
     pyproject = _pyproject("sagelite-database-polytopes")
 
@@ -534,6 +586,32 @@ def test_reflexive_polytopes_database_is_exposed_by_sagelite_extras():
     requirement = "sagelite-database-polytopes >=10.9,<10.10"
 
     assert extras["polytopes"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
+def test_mutation_class_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-mutation-class")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "cluster_algebra_quiver": "sagelite_database_mutation_class:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_mutation_class"
+    ] == [
+        "data/cluster_algebra_quiver/mutation_classes_*.dig6",
+    ]
+
+
+def test_mutation_class_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-mutation-class >=10.9,<10.10"
+
+    assert extras["mutation-class"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
 
@@ -612,6 +690,32 @@ def test_buckygen_runtime_is_exposed_by_sagelite_extras():
 
     assert extras["buckygen"] == [requirement]
     assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_cunningham_tables_registers_data_path():
+    pyproject = _pyproject("sagelite-cunningham-tables")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "cunningham_tables": "sagelite_cunningham_tables:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_cunningham_tables"
+    ] == [
+        "data/cunningham_tables/cunningham_prime_factors.sobj",
+    ]
+
+
+def test_cunningham_tables_are_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-cunningham-tables >=10.9,<10.10"
+
+    assert extras["cunningham-tables"] == [requirement]
+    assert requirement in extras["databases"]
     assert requirement in extras["full"]
 
 
