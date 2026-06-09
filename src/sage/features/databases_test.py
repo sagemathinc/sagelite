@@ -112,3 +112,55 @@ def test_cunningham_tables_feature_searches_companion_data(monkeypatch, tmp_path
 
     assert feature.search_path == [str(companion)]
     assert bool(feature.is_present())
+
+
+def test_kohel_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "kohel"
+    db_file = companion / "PolMod" / "Cls" / "pol.001.dbz"
+    db_file.parent.mkdir(parents=True)
+    db_file.write_bytes(b"kohel\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseKohel()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())
+
+
+def test_mutation_class_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "cluster_algebra_quiver"
+    companion.mkdir(parents=True)
+    (companion / "mutation_classes_2.dig6").write_bytes(b"mutation classes\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseMutationClass()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())
+
+
+def test_odlyzko_zeta_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "odlyzko"
+    companion.mkdir(parents=True)
+    (companion / "zeros.sobj").write_bytes(b"odlyzko\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseOdlyzkoZeta()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())
+
+
+def test_symbolic_data_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "symbolic_data"
+    (companion / "Data" / "XMLResources" / "INTPS").mkdir(parents=True)
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseSymbolicData()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())

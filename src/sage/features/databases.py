@@ -299,6 +299,96 @@ class DatabaseCunninghamTables(StaticFile):
         )
 
 
+class DatabaseKohel(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of
+    :ref:`David Kohel's modular-polynomial databases <spkg_database_kohel>`.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseKohel
+        sage: DatabaseKohel().is_present()  # optional - database_kohel
+        FeatureTestResult('database_kohel', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseKohel
+            sage: isinstance(DatabaseKohel(), DatabaseKohel)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "database_kohel",
+            filename="PolMod/Cls/pol.001.dbz",
+            search_path=sage_data_paths("kohel"),
+            spkg="database_kohel",
+            description="Kohel modular-polynomial databases",
+        )
+
+
+class DatabaseMutationClass(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of the
+    cluster-algebra quiver mutation-class database.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseMutationClass
+        sage: DatabaseMutationClass().is_present()  # optional - database_mutation_class
+        FeatureTestResult('database_mutation_class', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseMutationClass
+            sage: isinstance(DatabaseMutationClass(), DatabaseMutationClass)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "database_mutation_class",
+            filename="mutation_classes_2.dig6",
+            search_path=sage_data_paths("cluster_algebra_quiver"),
+            spkg="database_mutation_class",
+            description="Cluster algebra quiver mutation classes",
+        )
+
+
+class DatabaseOdlyzkoZeta(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of
+    :ref:`Odlyzko's zeta-zero database <spkg_database_odlyzko_zeta>`.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseOdlyzkoZeta
+        sage: DatabaseOdlyzkoZeta().is_present()  # optional - database_odlyzko_zeta
+        FeatureTestResult('database_odlyzko_zeta', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseOdlyzkoZeta
+            sage: isinstance(DatabaseOdlyzkoZeta(), DatabaseOdlyzkoZeta)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "database_odlyzko_zeta",
+            filename="zeros.sobj",
+            search_path=sage_data_paths("odlyzko"),
+            spkg="database_odlyzko_zeta",
+            description="Odlyzko zeta-zero database",
+        )
+
+
 class DatabaseReflexivePolytopes(StaticFile):
     r"""
     A :class:`~sage.features.Feature` which describes the presence of the
@@ -339,6 +429,36 @@ class DatabaseReflexivePolytopes(StaticFile):
         StaticFile.__init__(self, name, filename=dirname, search_path=search_path)
 
 
+class DatabaseSymbolicData(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of
+    :ref:`SymbolicData <spkg_database_symbolic_data>`.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseSymbolicData
+        sage: DatabaseSymbolicData().is_present()  # optional - database_symbolic_data
+        FeatureTestResult('database_symbolic_data', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseSymbolicData
+            sage: isinstance(DatabaseSymbolicData(), DatabaseSymbolicData)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "database_symbolic_data",
+            filename="Data/XMLResources/INTPS",
+            search_path=sage_data_paths("symbolic_data"),
+            spkg="database_symbolic_data",
+            description="SymbolicData benchmark database",
+        )
+
+
 def all_features():
     return [
         PythonModule("conway_polynomials", spkg="conway_polynomials", type="standard"),
@@ -351,6 +471,10 @@ def all_features():
         DatabaseMatroids(),
         DatabaseCubicHecke(),
         DatabaseCunninghamTables(),
+        DatabaseKohel(),
+        DatabaseMutationClass(),
+        DatabaseOdlyzkoZeta(),
         DatabaseReflexivePolytopes(),
         DatabaseReflexivePolytopes("polytopes_db_4d"),
+        DatabaseSymbolicData(),
     ]
