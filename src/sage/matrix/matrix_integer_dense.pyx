@@ -3260,7 +3260,8 @@ cdef class Matrix_integer_dense(Matrix_dense):
 
         if algorithm == 'flatter':
             import subprocess
-            cmd = ["flatter"]
+            from sage.features.flatter import flatter
+            cmd = [flatter().absolute_filename()]
             if fp is not None or early_red or use_givens or transformation or eta is not None or use_siegel:
                 raise TypeError("flatter does not support fp, early_red, use_givens, transformation, eta or use_siegel")
             if kwds:
