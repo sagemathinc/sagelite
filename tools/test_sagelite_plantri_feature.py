@@ -37,11 +37,13 @@ sage.env.LATTE_BINS_PREFIX = getattr(sage.env, "LATTE_BINS_PREFIX", "")
 sage.env.PALP_BINS_PREFIX = getattr(sage.env, "PALP_BINS_PREFIX", "")
 sage.env.SAGE_NAUTY_BINS_PREFIX = getattr(sage.env, "SAGE_NAUTY_BINS_PREFIX", "")
 sage.env.SAGE_ECMBIN = getattr(sage.env, "SAGE_ECMBIN", "ecm")
+sage.env.SAGE_GAP3_COMMAND = getattr(sage.env, "SAGE_GAP3_COMMAND", "gap3")
 
 ecm_module = _load_source_feature_module("ecm")
 four_ti_2_module = _load_source_feature_module("four_ti_2")
 gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
+gap3_module = _load_source_feature_module("gap3")
 latte_module = _load_source_feature_module("latte")
 flatter_module = _load_source_feature_module("flatter")
 msolve_module = _load_source_feature_module("msolve")
@@ -51,6 +53,7 @@ palp_module = _load_source_feature_module("palp")
 Ecm = ecm_module.Ecm
 FourTi2Executable = four_ti_2_module.FourTi2Executable
 GfanExecutable = gfan_module.GfanExecutable
+Gap3 = gap3_module.Gap3
 Benzene = graph_generators_module.Benzene
 Plantri = graph_generators_module.Plantri
 Latte_count = latte_module.Latte_count
@@ -278,5 +281,32 @@ def test_flatter_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_flatter.runtime", None)
 
     feature = flatter_module.flatter()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_gap3_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    package = tmp_path / "sagelite_gap3"
+    bindir = package / "data" / "gap3" / "bin"
+    executable = bindir / "gap.sh"
+    package.mkdir()
+    bindir.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "runtime.py").write_text(
+        "from pathlib import Path\n\n"
+        "def gap3_command():\n"
+        "    return Path(__file__).resolve().parent / 'data' / 'gap3' / 'bin' / 'gap.sh'\n"
+    )
+    executable.write_text("#!/bin/sh\n")
+    executable.chmod(0o755)
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(gap3_module, "SAGE_GAP3_COMMAND", "gap3")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_gap3", None)
+    sys.modules.pop("sagelite_gap3.runtime", None)
+
+    feature = Gap3()
 
     assert feature.absolute_filename() == os.fspath(executable)
