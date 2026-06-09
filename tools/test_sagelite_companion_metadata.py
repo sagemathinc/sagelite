@@ -175,6 +175,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-csdp-runtime",
     "sagelite-d3js-runtime",
     "sagelite-ecm-runtime",
+    "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
