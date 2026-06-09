@@ -126,6 +126,7 @@ flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
 extra = [
   'igraph',
+  'khoca >=1.4',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
@@ -136,6 +137,7 @@ full = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'igraph',
+  'khoca >=1.4',
   'matroid-database ==0.3',
   'pycosat >=0.6.3',
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
@@ -205,6 +207,7 @@ kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
 kissat = ['sagelite-kissat-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel >=10.9,<10.10']
+khoca = ['khoca >=1.4']
 latte = ['sagelite-latte-runtime >=10.9,<10.10']
 lie = ['sagelite-lie-runtime >=10.9,<10.10']
 lrslib = ['sagelite-lrslib-runtime >=10.9,<10.10']

@@ -589,6 +589,18 @@ def test_symbolic_data_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "khoca >=1.4"
+
+    assert extras["khoca"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["full"]
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
