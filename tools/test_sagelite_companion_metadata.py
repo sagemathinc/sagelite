@@ -128,6 +128,60 @@ RUNTIME_PACKAGE_DATA = {
     },
 }
 
+SOURCE_BUNDLED_DATA_PACKAGE_DATA = {
+    "sagelite-database-cremona-mini": {
+        "sagelite_database_cremona_mini": [
+            "data/cremona/cremona_mini.db",
+        ],
+    },
+    "sagelite-database-graphs": {
+        "sagelite_database_graphs": [
+            "data/graphs/brouwer_srg_database.json",
+            "data/graphs/graphs.db",
+            "data/graphs/isgci_sage.xml",
+            "data/graphs/smallgraphs.txt",
+        ],
+    },
+    "sagelite-database-jones-numfield": {
+        "sagelite_database_jones_numfield": [
+            "data/jones/jones.sobj",
+        ],
+    },
+    "sagelite-database-kohel": {
+        "sagelite_database_kohel": [
+            "data/kohel/**/*",
+        ],
+    },
+    "sagelite-database-mutation-class": {
+        "sagelite_database_mutation_class": [
+            "data/cluster_algebra_quiver/mutation_classes_*.dig6",
+        ],
+    },
+    "sagelite-database-odlyzko-zeta": {
+        "sagelite_database_odlyzko_zeta": [
+            "data/odlyzko/zeros.sobj",
+        ],
+    },
+    "sagelite-database-polytopes": {
+        "sagelite_database_polytopes": [
+            "data/reflexive_polytopes/**/*",
+        ],
+    },
+    "sagelite-database-stein-watkins-mini": {
+        "sagelite_database_stein_watkins_mini": [
+            "data/stein_watkins/a.000.bz2",
+            "data/stein_watkins/a.001.bz2",
+            "data/stein_watkins/p.00.bz2",
+        ],
+    },
+    "sagelite-database-symbolic-data": {
+        "sagelite_database_symbolic_data": [
+            "data/symbolic_data/COPYING",
+            "data/symbolic_data/Data/**/*",
+        ],
+    },
+}
+
 REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime",
     "sagelite-benzene-runtime",
@@ -257,6 +311,24 @@ def test_runtime_companion_wheels_declare_copied_package_data():
 
         assert setuptools["include-package-data"] is True
         assert setuptools["package-data"] == package_data
+
+
+def test_source_bundled_data_companion_wheels_ship_declared_payloads():
+    for package, package_data in SOURCE_BUNDLED_DATA_PACKAGE_DATA.items():
+        pyproject = _pyproject(package)
+        setuptools = pyproject["tool"]["setuptools"]
+
+        assert setuptools["include-package-data"] is True
+        assert setuptools["package-data"] == package_data
+
+        package_root = ROOT / "companion-packages" / package / "src"
+        for module, patterns in package_data.items():
+            module_root = package_root / module
+            for pattern in patterns:
+                assert any(path.is_file() for path in module_root.glob(pattern)), (
+                    f"{package} declares {module}:{pattern} but no payload files "
+                    "are present in the source tree"
+                )
 
 
 def test_linux_repair_builds_expected_runtime_companion_wheels():
