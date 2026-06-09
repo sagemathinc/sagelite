@@ -208,6 +208,8 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime": "frobby-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
+    "sagelite-glucose-runtime": "glucose-runtime-dist",
+    "sagelite-kissat-runtime": "kissat-runtime-dist",
     "sagelite-maxima-runtime": "maxima-runtime-dist",
     "sagelite-meataxe-runtime": "meataxe-runtime-dist",
     "sagelite-msolve-runtime": "msolve-runtime-dist",
