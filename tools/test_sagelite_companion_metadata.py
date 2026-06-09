@@ -202,12 +202,15 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 
 RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime": "four-ti-2-runtime-dist",
+    "sagelite-benzene-runtime": "benzene-runtime-dist",
+    "sagelite-buckygen-runtime": "buckygen-runtime-dist",
     "sagelite-ecm-runtime": "ecm-runtime-dist",
     "sagelite-frobby-runtime": "frobby-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
     "sagelite-maxima-runtime": "maxima-runtime-dist",
     "sagelite-meataxe-runtime": "meataxe-runtime-dist",
+    "sagelite-msolve-runtime": "msolve-runtime-dist",
     "sagelite-mwrank-runtime": "mwrank-runtime-dist",
     "sagelite-nauty-runtime": "nauty-runtime-dist",
     "sagelite-palp-runtime": "palp-runtime-dist",
