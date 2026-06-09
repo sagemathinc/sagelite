@@ -196,6 +196,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-glucose-runtime",
     "sagelite-kissat-runtime",
     "sagelite-latte-runtime",
+    "sagelite-lie-runtime",
     "sagelite-lrslib-runtime",
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
@@ -443,6 +444,16 @@ def test_linux_repair_builds_pari_data_companion_wheel():
     assert "companion-packages/sagelite-pari-data" in repair_text
     assert "build_pari_data_companion" in repair_text
     assert "SAGELITE_PARI_DATA_DIR" in repair_text
+
+
+def test_linux_repair_builds_lie_runtime_companion_wheel():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert "companion-packages/sagelite-lie-runtime" in repair_text
+    assert "build_lie_runtime_companion" in repair_text
+    assert "SAGELITE_LIE_BINDIR" in repair_text
+    assert "SAGELITE_LIE_INFO_DIR" in repair_text
 
 
 def test_companion_workflow_installs_available_pari_data_payloads():

@@ -633,6 +633,43 @@ build_lrslib_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_lie_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local lie_bindir="$prefix/bin"
+  local lie_info_dir="$prefix/lib/LiE"
+  if [ ! -x "$lie_bindir/lie" ] ||
+     [ ! -f "$lie_info_dir/INFO.0" ] ||
+     [ ! -f "$lie_info_dir/INFO.3" ]; then
+    echo "LiE runtime not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 \( -name lie -o -name INFO.0 -o -name INFO.3 \) -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-lie-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "LiE runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_LIE_BINDIR="$lie_bindir" \
+  SAGELITE_LIE_INFO_DIR="$lie_info_dir" \
+  SAGELITE_LIE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_plantri_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1147,6 +1184,7 @@ build_msolve_runtime_companion
 build_flatter_runtime_companion
 build_latte_runtime_companion
 build_lrslib_runtime_companion
+build_lie_runtime_companion
 build_planarity_runtime_companion
 build_plantri_runtime_companion
 build_qepcad_runtime_companion
