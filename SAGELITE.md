@@ -268,6 +268,14 @@ Examples include:
 - `sagelite-database-symbolic-data`
 - `sagelite-pari-data`
 
+When an optional Sage database is already maintained as a redistributable PyPI
+package, `sagelite` should depend on that package directly instead of
+re-wrapping it as a `sagelite-*` companion wheel. Current examples include:
+
+- `database-cubic-hecke`
+- `database-knotinfo`
+- `matroid-database`
+
 Data packages should expose their installed paths through small Python helper
 APIs and, where useful, `sagemath.data_paths` entry points.
 
