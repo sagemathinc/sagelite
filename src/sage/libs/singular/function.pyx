@@ -1796,10 +1796,9 @@ def lib(name):
     if failure:
         detail = " ({})".format(", ".join(error)) if error else ""
         raise NameError(
-            "Singular library {!r} not found{}. The sagelite wheel does not "
-            "currently bundle the optional Singular runtime; install Singular "
-            "separately or configure SINGULAR_DEFAULT_DIR/SINGULAR_ROOT_DIR "
-            "to point at a compatible Singular installation.".format(name, detail)
+            "Singular library {!r} not found{}. Install sagelite-singular-runtime "
+            "or configure SINGULAR_DEFAULT_DIR/SINGULAR_ROOT_DIR to point at a "
+            "compatible Singular installation.".format(name, detail)
         )
 
     _loaded_libs.add(name)

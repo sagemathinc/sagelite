@@ -51,6 +51,8 @@ def clean_runtime_environment():
         "SAGE_ECMBIN",
         "SAGE_LIE_COMMAND",
         "SAGE_NAUTY_BINS_PREFIX",
+        "SINGULAR_DEFAULT_DIR",
+        "SINGULAR_ROOT_DIR",
         "SYMPOW",
         "TACHYON",
         "THREEJS_DIR",
@@ -195,6 +197,14 @@ def _runtime_executable(tmp_path: Path, name: str, program: str) -> Path:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return command
+
+
+def _singular_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    root = tmp_path / name / "singular"
+    default_dir = root / "share" / "singular"
+    (default_dir / "LIB").mkdir(parents=True)
+    (default_dir / "LIB" / "standard.lib").write_text("// Singular library\n")
+    return root, default_dir
 
 
 class _EntryPoint:
@@ -1320,3 +1330,47 @@ def test_four_ti_2_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_four_ti_2_runtime()
 
     assert env.os.environ["FOURTITWO_HILBERT"] == str(existing)
+
+
+def test_singular_runtime_uses_companion_when_environment_is_missing(
+    monkeypatch, tmp_path
+):
+    root, default_dir = _singular_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("SINGULAR_ROOT_DIR", raising=False)
+    monkeypatch.delenv("SINGULAR_DEFAULT_DIR", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_singular_runtime.runtime", "singular_root_dir"): root,
+            ("sagelite_singular_runtime.runtime", "singular_default_dir"): default_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_singular_runtime()
+
+    assert env.os.environ["SINGULAR_ROOT_DIR"] == str(root)
+    assert env.os.environ["SINGULAR_DEFAULT_DIR"] == str(default_dir)
+
+
+def test_singular_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    root = tmp_path / "companion" / "singular"
+    default_dir = root / "share" / "singular"
+    default_dir.mkdir(parents=True)
+
+    monkeypatch.delenv("SINGULAR_ROOT_DIR", raising=False)
+    monkeypatch.delenv("SINGULAR_DEFAULT_DIR", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_singular_runtime.runtime", "singular_root_dir"): root,
+            ("sagelite_singular_runtime.runtime", "singular_default_dir"): default_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_singular_runtime()
+
+    assert "SINGULAR_ROOT_DIR" not in env.os.environ
+    assert "SINGULAR_DEFAULT_DIR" not in env.os.environ

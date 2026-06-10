@@ -404,8 +404,7 @@ class Singular(ExtraTabCompletion, Expect):
         except FeatureNotPresentError as err:
             raise RuntimeError(
                 "The Singular executable is not available in this Sage installation. "
-                "The sagelite wheel does not currently bundle the optional Singular "
-                "runtime; install Singular separately and ensure it is on PATH, or "
+                "Install Singular separately and ensure it is on PATH, or "
                 "set SINGULAR_EXECUTABLE to its executable path."
             ) from err
         Expect.__init__(self,

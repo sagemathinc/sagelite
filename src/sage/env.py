@@ -439,7 +439,7 @@ def _bootstrap_sagelite_singular_runtime() -> None:
 
     if root and os.path.isdir(os.path.join(root, "share", "singular", "LIB")):
         os.environ.setdefault("SINGULAR_ROOT_DIR", os.fspath(root))
-    if default_dir and os.path.isdir(os.path.join(default_dir, "share", "singular", "LIB")):
+    if default_dir and os.path.isdir(os.path.join(default_dir, "LIB")):
         os.environ.setdefault("SINGULAR_DEFAULT_DIR", os.fspath(default_dir))
 
 
