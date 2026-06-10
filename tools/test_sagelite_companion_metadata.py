@@ -48,6 +48,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gfan-runtime": {
         "sagelite_gfan": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-giac-runtime": {
+        "sagelite_giac": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-glucose-runtime": {
         "sagelite_glucose": ["data/bin/*"],
     },
@@ -213,6 +216,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
+    "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
     "sagelite-info-runtime",
     "sagelite-kissat-runtime",
@@ -261,6 +265,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
+    "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
     "sagelite-info-runtime",
     "sagelite-kenzo-runtime",
@@ -298,6 +303,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime": "frobby-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
+    "sagelite-giac-runtime": "giac-runtime-dist",
     "sagelite-glucose-runtime": "glucose-runtime-dist",
     "sagelite-info-runtime": "info-runtime-dist",
     "sagelite-kissat-runtime": "kissat-runtime-dist",

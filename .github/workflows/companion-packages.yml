@@ -130,6 +130,11 @@ jobs:
             path: companion-packages/sagelite-gfan-runtime
             apt_packages: gfan
             publish: false
+          - name: sagelite-giac-runtime
+            import_name: sagelite_giac
+            path: companion-packages/sagelite-giac-runtime
+            apt_packages: giac
+            publish: false
           - name: sagelite-4ti2-runtime
             import_name: sagelite_four_ti_2
             path: companion-packages/sagelite-4ti2-runtime
@@ -335,6 +340,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-gfan-runtime" ]; then
             export SAGELITE_GFAN_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-giac-runtime" ]; then
+            export SAGELITE_GIAC_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-4ti2-runtime" ]; then
             export SAGELITE_4TI2_BINDIR=/usr/bin
@@ -567,6 +575,22 @@ jobs:
                   capture_output=True,
                   check=True,
               )
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-giac-runtime":
+              runtime = importlib.import_module("sagelite_giac.runtime")
+              giac = runtime.giac_command()
+              print("giac=", giac)
+              assert os.path.exists(giac)
+              import shutil
+              import subprocess
+              assert shutil.which("giac")
+              result = subprocess.run(
+                  ["giac", "--version"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "giac" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-4ti2-runtime":
