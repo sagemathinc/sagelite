@@ -100,6 +100,11 @@ jobs:
             path: companion-packages/sagelite-d3js-runtime
             apt_packages: ""
             publish: true
+          - name: sagelite-jmol-runtime
+            import_name: sagelite_jmol_runtime
+            path: companion-packages/sagelite-jmol-runtime
+            apt_packages: jmol
+            publish: false
           - name: sagelite-dvipng-runtime
             import_name: sagelite_dvipng
             path: companion-packages/sagelite-dvipng-runtime
@@ -436,6 +441,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-d3js-runtime" ]; then
             export SAGELITE_D3JS_TARBALL="$(PYTHONPATH=build build/bin/sage-package download d3js | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-jmol-runtime" ]; then
+            export SAGELITE_JMOL_DIR=/usr/share/jmol
           fi
           if [ "${{ matrix.name }}" = "sagelite-database-cremona-ellcurve" ]; then
             tarball="$(PYTHONPATH=build build/bin/sage-package download database_cremona_ellcurve | tail -n 1)"
@@ -1013,6 +1021,19 @@ jobs:
               assert os.path.exists(d3_min_js)
               assert os.path.getsize(d3_min_js) > 0
               assert any(ep.name == "d3js" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-jmol-runtime":
+              data_path = module.sage_data_path()
+              jmol_path = module.jmol_path()
+              jmol_data_jar = module.jmol_data_jar_path()
+              print("data_path=", data_path)
+              print("jmol_path=", jmol_path)
+              print("jmol_data_jar=", jmol_data_jar)
+              assert jmol_data_jar.endswith("JmolData.jar"), jmol_data_jar
+              assert os.path.exists(jmol_data_jar)
+              assert os.path.getsize(jmol_data_jar) > 0
+              assert any(ep.name == "jmol" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-sympow-runtime":

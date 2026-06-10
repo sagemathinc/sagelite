@@ -1070,6 +1070,18 @@ def test_d3js_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_jmol_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-jmol-runtime >=10.9,<10.10"
+
+    assert extras["jmol"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_cddlib_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
