@@ -180,6 +180,7 @@ full = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
+  'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
   'sagelite-kissat-runtime >=10.9,<10.10',
@@ -215,6 +216,7 @@ gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
 gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
+info = ['sagelite-info-runtime >=10.9,<10.10']
 jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
 jmol = ['sagelite-jmol-runtime >=10.9,<10.10']
 kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
@@ -261,6 +263,7 @@ runtime = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
+  'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
   'sagelite-kissat-runtime >=10.9,<10.10',
@@ -347,6 +350,7 @@ host-requires = [
   "pkg:generic/gmp",
   "pkg:generic/gsl",
   "pkg:generic/iml",
+  "pkg:generic/info",
   "pkg:generic/lcalc",
   "pkg:generic/libbraiding",
   "pkg:generic/libgd",

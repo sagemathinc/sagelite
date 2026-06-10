@@ -2381,6 +2381,7 @@ def get_docstring(name, prefix=False, code=False):
         will not be available.
         sage: Info().unhide()
     """
+    import sage.env  # ensure optional runtime companion paths are bootstrapped
     from sage.features.info import Info
 
     if not Info().is_present():

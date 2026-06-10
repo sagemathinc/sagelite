@@ -443,6 +443,37 @@ def _bootstrap_sagelite_singular_runtime() -> None:
         os.environ.setdefault("SINGULAR_DEFAULT_DIR", os.fspath(default_dir))
 
 
+def _bootstrap_sagelite_info_runtime() -> None:
+    """
+    Seed GNU Info paths from an optional companion package.
+
+    Sage's Singular interface shells out to ``info`` to build generated
+    docstrings.  The companion package supplies both the executable and the
+    installed Info manuals for binary wheels.
+    """
+    info_dir = _optional_runtime_value("sagelite_info.runtime", "info_dir")
+    command = _optional_runtime_value("sagelite_info.runtime", "executable_path")
+
+    if info_dir and os.path.isfile(os.path.join(info_dir, "singular.info")):
+        current = os.environ.get("INFOPATH")
+        paths = current.split(os.pathsep) if current else []
+        if os.fspath(info_dir) not in paths:
+            os.environ["INFOPATH"] = (
+                os.fspath(info_dir)
+                if not current
+                else os.fspath(info_dir) + os.pathsep + current
+            )
+
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        bindir = os.path.dirname(os.fspath(command))
+        current = os.environ.get("PATH", "")
+        paths = current.split(os.pathsep) if current else []
+        if bindir not in paths:
+            os.environ["PATH"] = (
+                bindir if not current else bindir + os.pathsep + current
+            )
+
+
 def _bootstrap_sagelite_meataxe_runtime() -> None:
     """
     Seed ``MTXLIB`` from an optional ``sagelite_meataxe`` package.
@@ -902,6 +933,7 @@ _bootstrap_sagelite_lie_runtime()
 SAGE_LIE_COMMAND = var("SAGE_LIE_COMMAND", "lie")
 LIE_INFO_DIR = var("LIE_INFO_DIR", join(SAGE_LOCAL, "lib", "LiE"))
 _bootstrap_sagelite_singular_runtime()
+_bootstrap_sagelite_info_runtime()
 SINGULAR_BIN = var("SINGULAR_BIN") or "Singular"
 
 # OpenMP

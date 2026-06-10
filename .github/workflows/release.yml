@@ -173,6 +173,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-info-runtime"
+          path: info-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-kissat-runtime"
           path: kissat-runtime-dist
           merge-multiple: true
@@ -655,6 +661,15 @@ jobs:
           test "$(find glucose-runtime-dist -maxdepth 1 -type f -name "sagelite_glucose_runtime-*.whl" | wc -l)" -eq 1
           ls -lh glucose-runtime-dist
 
+      - name: Separate GNU Info runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p info-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_info_runtime-*.whl" -exec mv -v {} info-runtime-dist/ \;
+          test "$(find info-runtime-dist -maxdepth 1 -type f -name "sagelite_info_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh info-runtime-dist
+
       - name: Separate Kissat runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -975,6 +990,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-glucose-runtime
           path: ./glucose-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-info-runtime
+          path: ./info-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1327,6 +1349,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: glucose-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_info_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-info-runtime"
+          path: info-runtime-dist
+          merge-multiple: true
+
+      - name: Verify GNU Info runtime artifact set
+        run: |
+          set -euo pipefail
+          find info-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find info-runtime-dist -maxdepth 1 -type f -name "sagelite_info_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find info-runtime-dist -maxdepth 1 -type f -name "sagelite_info_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find info-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: info-runtime-dist/
           skip-existing: true
           verbose: true
 

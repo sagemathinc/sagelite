@@ -165,6 +165,11 @@ jobs:
             path: companion-packages/sagelite-glucose-runtime
             apt_packages: glucose
             publish: false
+          - name: sagelite-info-runtime
+            import_name: sagelite_info
+            path: companion-packages/sagelite-info-runtime
+            apt_packages: info singular
+            publish: false
           - name: sagelite-kissat-runtime
             import_name: sagelite_kissat
             path: companion-packages/sagelite-kissat-runtime
@@ -367,6 +372,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-glucose-runtime" ]; then
             export SAGELITE_GLUCOSE_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-info-runtime" ]; then
+            export SAGELITE_INFO_PREFIX=/usr
           fi
           if [ "${{ matrix.name }}" = "sagelite-kissat-runtime" ]; then
             export SAGELITE_KISSAT_BINDIR=/usr/bin
@@ -727,6 +735,29 @@ jobs:
                   capture_output=True,
               )
               assert "usage" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-info-runtime":
+              runtime = importlib.import_module("sagelite_info.runtime")
+              info = runtime.executable_path()
+              info_dir = runtime.info_dir()
+              print("info=", info)
+              print("info_dir=", info_dir)
+              assert info.exists()
+              assert (info_dir / "singular.info").exists()
+              import shutil
+              import subprocess
+              assert shutil.which("info")
+              env = dict(os.environ)
+              env["INFOPATH"] = str(info_dir)
+              result = subprocess.run(
+                  ["info", "--node=groebner", "singular"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+                  env=env,
+              )
+              assert "Up: Functions" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-kissat-runtime":

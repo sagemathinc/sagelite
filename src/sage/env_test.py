@@ -33,6 +33,7 @@ def clean_runtime_environment():
         "GAP_ROOT_PATHS",
         "GFAN_BINS_PREFIX",
         "GP_DATA_DIR",
+        "INFOPATH",
         "JMOL_DIR",
         "KENZO_FAS",
         "LATTE_BINS_PREFIX",
@@ -56,6 +57,7 @@ def clean_runtime_environment():
         "SYMPOW",
         "TACHYON",
         "THREEJS_DIR",
+        "PATH",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
     yield
@@ -205,6 +207,18 @@ def _singular_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
     (default_dir / "LIB").mkdir(parents=True)
     (default_dir / "LIB" / "standard.lib").write_text("// Singular library\n")
     return root, default_dir
+
+
+def _info_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    root = tmp_path / name
+    command = root / "bin" / "info"
+    info_dir = root / "share" / "info"
+    command.parent.mkdir(parents=True)
+    info_dir.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    (info_dir / "singular.info").write_text("Singular manual\n")
+    return command, info_dir
 
 
 class _EntryPoint:
@@ -1374,3 +1388,54 @@ def test_singular_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
 
     assert "SINGULAR_ROOT_DIR" not in env.os.environ
     assert "SINGULAR_DEFAULT_DIR" not in env.os.environ
+
+
+def test_info_runtime_prepends_companion_paths(monkeypatch, tmp_path):
+    command, info_dir = _info_runtime(tmp_path, "companion")
+    existing_bin = tmp_path / "existing" / "bin"
+    existing_info = tmp_path / "existing" / "info"
+    existing_bin.mkdir(parents=True)
+    existing_info.mkdir(parents=True)
+
+    monkeypatch.setenv("PATH", str(existing_bin))
+    monkeypatch.setenv("INFOPATH", str(existing_info))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_info.runtime", "executable_path"): command,
+            ("sagelite_info.runtime", "info_dir"): info_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_info_runtime()
+
+    assert env.os.environ["PATH"].split(env.os.pathsep) == [
+        str(command.parent),
+        str(existing_bin),
+    ]
+    assert env.os.environ["INFOPATH"].split(env.os.pathsep) == [
+        str(info_dir),
+        str(existing_info),
+    ]
+
+
+def test_info_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
+    command, info_dir = _info_runtime(tmp_path, "companion")
+    (info_dir / "singular.info").unlink()
+
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.delenv("INFOPATH", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_info.runtime", "executable_path"): command,
+            ("sagelite_info.runtime", "info_dir"): info_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_info_runtime()
+
+    assert env.os.environ["PATH"] == str(command.parent)
+    assert "INFOPATH" not in env.os.environ

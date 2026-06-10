@@ -51,6 +51,13 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-glucose-runtime": {
         "sagelite_glucose": ["data/bin/*"],
     },
+    "sagelite-info-runtime": {
+        "sagelite_info": [
+            "data/bin/*",
+            "data/lib/*",
+            "data/share/info/**/*",
+        ],
+    },
     "sagelite-jmol-runtime": {
         "sagelite_jmol_runtime": ["data/jmol/**/*"],
     },
@@ -207,6 +214,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
     "sagelite-glucose-runtime",
+    "sagelite-info-runtime",
     "sagelite-kissat-runtime",
     "sagelite-latte-runtime",
     "sagelite-lcalc-runtime",
@@ -254,6 +262,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
     "sagelite-glucose-runtime",
+    "sagelite-info-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-kissat-runtime",
     "sagelite-latte-runtime",
@@ -290,6 +299,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
     "sagelite-glucose-runtime": "glucose-runtime-dist",
+    "sagelite-info-runtime": "info-runtime-dist",
     "sagelite-kissat-runtime": "kissat-runtime-dist",
     "sagelite-latte-runtime": "latte-runtime-dist",
     "sagelite-lcalc-runtime": "lcalc-runtime-dist",
@@ -502,6 +512,50 @@ def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     assert extras["tides"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_info_runtime_wheel_declares_copied_runtime_files():
+    pyproject = _pyproject("sagelite-info-runtime")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_info"] == [
+        "data/bin/*",
+        "data/lib/*",
+        "data/share/info/**/*",
+    ]
+
+
+def test_info_runtime_wheel_helper_points_at_bundled_files():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-info-runtime" / "src")
+    )
+    try:
+        from sagelite_info.runtime import executable_path, info_dir
+    finally:
+        sys.path.pop(0)
+
+    assert Path(executable_path()).parts[-3:] == ("data", "bin", "info")
+    assert Path(info_dir()).parts[-3:] == ("data", "share", "info")
+
+
+def test_info_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-info-runtime >=10.9,<10.10"
+
+    assert extras["info"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_info_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-info-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "info": "sagelite_info.runtime:info",
+    }
 
 
 def test_linux_repair_builds_pari_data_companion_wheel():

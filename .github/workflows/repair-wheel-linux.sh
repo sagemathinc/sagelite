@@ -533,6 +533,42 @@ build_glucose_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_info_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local info_prefix="$prefix"
+  if [ ! -x "$info_prefix/bin/info" ] ||
+     [ ! -f "$info_prefix/share/info/singular.info" ]; then
+    echo "GNU Info runtime data not found under $info_prefix; searched prefix contents:" >&2
+    find "$prefix/bin" "$prefix/share/info" -maxdepth 2 \
+      \( -name info -o -name singular.info -o -name texinfo.info \) \
+      -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-info-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "GNU Info runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_INFO_PREFIX="$info_prefix" \
+  SAGELITE_INFO_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_kissat_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1347,6 +1383,7 @@ build_dvipng_runtime_companion
 build_benzene_runtime_companion
 build_buckygen_runtime_companion
 build_glucose_runtime_companion
+build_info_runtime_companion
 build_kissat_runtime_companion
 build_msolve_runtime_companion
 build_flatter_runtime_companion
