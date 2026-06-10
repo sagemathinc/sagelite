@@ -191,6 +191,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-flatter-runtime"
+          path: flatter-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-four-ti-2-runtime"
           path: four-ti-2-runtime-dist
           merge-multiple: true
@@ -239,6 +245,18 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-latte-runtime"
+          path: latte-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-lrslib-runtime"
+          path: lrslib-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-meataxe-runtime"
           path: meataxe-runtime-dist
           merge-multiple: true
@@ -275,6 +293,18 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-planarity-runtime"
+          path: planarity-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-plantri-runtime"
+          path: plantri-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-qepcad-runtime"
           path: qepcad-runtime-dist
           merge-multiple: true
@@ -301,6 +331,12 @@ jobs:
         with:
           pattern: "*-tachyon-runtime"
           path: tachyon-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-tides-runtime"
+          path: tides-runtime-dist
           merge-multiple: true
 
       - uses: actions/download-artifact@v6
@@ -340,6 +376,7 @@ jobs:
             kissat-runtime-dist/*.whl
             ecm-runtime-dist/*.whl
             frobby-runtime-dist/*.whl
+            flatter-runtime-dist/*.whl
             four-ti-2-runtime-dist/*.whl
             benzene-runtime-dist/*.whl
             buckygen-runtime-dist/*.whl
@@ -348,17 +385,22 @@ jobs:
             maxima-runtime-dist/*.whl
             lie-runtime-dist/*.whl
             lcalc-runtime-dist/*.whl
+            latte-runtime-dist/*.whl
+            lrslib-runtime-dist/*.whl
             meataxe-runtime-dist/*.whl
             msolve-runtime-dist/*.whl
             mwrank-runtime-dist/*.whl
             nauty-runtime-dist/*.whl
             rubiks-runtime-dist/*.whl
             palp-runtime-dist/*.whl
+            planarity-runtime-dist/*.whl
+            plantri-runtime-dist/*.whl
             qepcad-runtime-dist/*.whl
             sympow-runtime-dist/*.whl
             pari-data-dist/*.whl
             singular-runtime-dist/*.whl
             tachyon-runtime-dist/*.whl
+            tides-runtime-dist/*.whl
             topcom-runtime-dist/*.whl
             upstream/*
           token: ${{ github.token }}
@@ -508,6 +550,7 @@ jobs:
           rm -rf kissat-runtime-dist
           rm -rf ecm-runtime-dist
           rm -rf frobby-runtime-dist
+          rm -rf flatter-runtime-dist
           rm -rf four-ti-2-runtime-dist
           rm -rf benzene-runtime-dist
           rm -rf buckygen-runtime-dist
@@ -515,16 +558,23 @@ jobs:
           rm -rf csdp-runtime-dist
           rm -rf maxima-runtime-dist
           rm -rf lie-runtime-dist
+          rm -rf lcalc-runtime-dist
+          rm -rf latte-runtime-dist
+          rm -rf lrslib-runtime-dist
           rm -rf meataxe-runtime-dist
           rm -rf msolve-runtime-dist
           rm -rf mwrank-runtime-dist
           rm -rf nauty-runtime-dist
           rm -rf rubiks-runtime-dist
           rm -rf palp-runtime-dist
+          rm -rf planarity-runtime-dist
+          rm -rf plantri-runtime-dist
+          rm -rf qepcad-runtime-dist
           rm -rf sympow-runtime-dist
           rm -rf pari-data-dist
           rm -rf singular-runtime-dist
           rm -rf tachyon-runtime-dist
+          rm -rf tides-runtime-dist
           rm -rf topcom-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
@@ -624,6 +674,15 @@ jobs:
           test "$(find frobby-runtime-dist -maxdepth 1 -type f -name "sagelite_frobby_runtime-*.whl" | wc -l)" -eq 1
           ls -lh frobby-runtime-dist
 
+      - name: Separate flatter runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p flatter-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_flatter_runtime-*.whl" -exec mv -v {} flatter-runtime-dist/ \;
+          test "$(find flatter-runtime-dist -maxdepth 1 -type f -name "sagelite_flatter_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh flatter-runtime-dist
+
       - name: Separate 4ti2 runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -696,6 +755,24 @@ jobs:
           test "$(find lcalc-runtime-dist -maxdepth 1 -type f -name "sagelite_lcalc_runtime-*.whl" | wc -l)" -eq 1
           ls -lh lcalc-runtime-dist
 
+      - name: Separate LattE runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p latte-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_latte_runtime-*.whl" -exec mv -v {} latte-runtime-dist/ \;
+          test "$(find latte-runtime-dist -maxdepth 1 -type f -name "sagelite_latte_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh latte-runtime-dist
+
+      - name: Separate lrslib runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p lrslib-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_lrslib_runtime-*.whl" -exec mv -v {} lrslib-runtime-dist/ \;
+          test "$(find lrslib-runtime-dist -maxdepth 1 -type f -name "sagelite_lrslib_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh lrslib-runtime-dist
+
       - name: Separate MeatAxe runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -750,6 +827,24 @@ jobs:
           test "$(find palp-runtime-dist -maxdepth 1 -type f -name "sagelite_palp_runtime-*.whl" | wc -l)" -eq 1
           ls -lh palp-runtime-dist
 
+      - name: Separate planarity runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p planarity-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_planarity_runtime-*.whl" -exec mv -v {} planarity-runtime-dist/ \;
+          test "$(find planarity-runtime-dist -maxdepth 1 -type f -name "sagelite_planarity_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh planarity-runtime-dist
+
+      - name: Separate plantri runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p plantri-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_plantri_runtime-*.whl" -exec mv -v {} plantri-runtime-dist/ \;
+          test "$(find plantri-runtime-dist -maxdepth 1 -type f -name "sagelite_plantri_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh plantri-runtime-dist
+
       - name: Separate QEPCAD runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -795,6 +890,15 @@ jobs:
           test "$(find tachyon-runtime-dist -maxdepth 1 -type f -name "sagelite_tachyon_runtime-*.whl" | wc -l)" -eq 1
           ls -lh tachyon-runtime-dist
 
+      - name: Separate TIDES runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p tides-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_tides_runtime-*.whl" -exec mv -v {} tides-runtime-dist/ \;
+          test "$(find tides-runtime-dist -maxdepth 1 -type f -name "sagelite_tides_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh tides-runtime-dist
+
       - name: Separate TOPCOM runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -816,7 +920,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist qepcad-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist topcom-runtime-dist; do
+          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist flatter-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist latte-runtime-dist lrslib-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist planarity-runtime-dist plantri-runtime-dist qepcad-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist tides-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -880,6 +984,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: matrix.python == 'cp312'
         with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-flatter-runtime
+          path: ./flatter-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-four-ti-2-runtime
           path: ./four-ti-2-runtime-dist/*.whl
           if-no-files-found: error
@@ -936,6 +1047,20 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: matrix.python == 'cp312'
         with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-latte-runtime
+          path: ./latte-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-lrslib-runtime
+          path: ./lrslib-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-meataxe-runtime
           path: ./meataxe-runtime-dist/*.whl
           if-no-files-found: error
@@ -978,6 +1103,20 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: matrix.python == 'cp312'
         with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-planarity-runtime
+          path: ./planarity-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-plantri-runtime
+          path: ./plantri-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-qepcad-runtime
           path: ./qepcad-runtime-dist/*.whl
           if-no-files-found: error
@@ -1008,6 +1147,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-tachyon-runtime
           path: ./tachyon-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-tides-runtime
+          path: ./tides-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1247,6 +1393,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: frobby-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_flatter_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-flatter-runtime"
+          path: flatter-runtime-dist
+          merge-multiple: true
+
+      - name: Verify flatter runtime artifact set
+        run: |
+          set -euo pipefail
+          find flatter-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find flatter-runtime-dist -maxdepth 1 -type f -name "sagelite_flatter_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find flatter-runtime-dist -maxdepth 1 -type f -name "sagelite_flatter_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find flatter-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: flatter-runtime-dist/
           skip-existing: true
           verbose: true
 
@@ -1490,6 +1666,66 @@ jobs:
           skip-existing: true
           verbose: true
 
+  upload_latte_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-latte-runtime"
+          path: latte-runtime-dist
+          merge-multiple: true
+
+      - name: Verify LattE runtime artifact set
+        run: |
+          set -euo pipefail
+          find latte-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find latte-runtime-dist -maxdepth 1 -type f -name "sagelite_latte_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find latte-runtime-dist -maxdepth 1 -type f -name "sagelite_latte_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find latte-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: latte-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_lrslib_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-lrslib-runtime"
+          path: lrslib-runtime-dist
+          merge-multiple: true
+
+      - name: Verify lrslib runtime artifact set
+        run: |
+          set -euo pipefail
+          find lrslib-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find lrslib-runtime-dist -maxdepth 1 -type f -name "sagelite_lrslib_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find lrslib-runtime-dist -maxdepth 1 -type f -name "sagelite_lrslib_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find lrslib-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: lrslib-runtime-dist/
+          skip-existing: true
+          verbose: true
+
   upload_meataxe_runtime:
     needs: build_wheels
     runs-on: ubuntu-latest
@@ -1670,6 +1906,66 @@ jobs:
           skip-existing: true
           verbose: true
 
+  upload_planarity_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-planarity-runtime"
+          path: planarity-runtime-dist
+          merge-multiple: true
+
+      - name: Verify planarity runtime artifact set
+        run: |
+          set -euo pipefail
+          find planarity-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find planarity-runtime-dist -maxdepth 1 -type f -name "sagelite_planarity_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find planarity-runtime-dist -maxdepth 1 -type f -name "sagelite_planarity_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find planarity-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: planarity-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_plantri_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-plantri-runtime"
+          path: plantri-runtime-dist
+          merge-multiple: true
+
+      - name: Verify plantri runtime artifact set
+        run: |
+          set -euo pipefail
+          find plantri-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find plantri-runtime-dist -maxdepth 1 -type f -name "sagelite_plantri_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find plantri-runtime-dist -maxdepth 1 -type f -name "sagelite_plantri_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find plantri-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: plantri-runtime-dist/
+          skip-existing: true
+          verbose: true
+
   upload_qepcad_runtime:
     needs: build_wheels
     runs-on: ubuntu-latest
@@ -1815,6 +2111,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: tachyon-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_tides_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-tides-runtime"
+          path: tides-runtime-dist
+          merge-multiple: true
+
+      - name: Verify TIDES runtime artifact set
+        run: |
+          set -euo pipefail
+          find tides-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find tides-runtime-dist -maxdepth 1 -type f -name "sagelite_tides_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find tides-runtime-dist -maxdepth 1 -type f -name "sagelite_tides_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find tides-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: tides-runtime-dist/
           skip-existing: true
           verbose: true
 
