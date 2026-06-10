@@ -274,6 +274,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-singular-runtime",
     "sagelite-sympow-runtime",
     "sagelite-tachyon-runtime",
+    "sagelite-tides-runtime",
     "sagelite-topcom-runtime",
 }
 

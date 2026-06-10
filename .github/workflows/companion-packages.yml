@@ -265,6 +265,11 @@ jobs:
             path: companion-packages/sagelite-tachyon-runtime
             apt_packages: tachyon
             publish: false
+          - name: sagelite-tides-runtime
+            import_name: sagelite_tides
+            path: companion-packages/sagelite-tides-runtime
+            apt_packages: gcc make libgmp-dev libmpfr-dev
+            publish: false
           - name: sagelite-topcom-runtime
             import_name: sagelite_topcom
             path: companion-packages/sagelite-topcom-runtime
@@ -435,6 +440,17 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-tachyon-runtime" ]; then
             export SAGELITE_TACHYON_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-tides-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download tides | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/tides-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/tides-src"
+            tides_src="$(find "$RUNNER_TEMP/tides-src" -maxdepth 2 -type f -name configure -printf '%h\n' | head -n 1)"
+            patch -d "$tides_src" -p1 < build/pkgs/tides/patches/minc_tides.patch
+            (cd "$tides_src" && ./configure --prefix="$RUNNER_TEMP/tides-prefix")
+            make -C "$tides_src" -j2 AM_CFLAGS="" AM_FFLAGS=""
+            make -C "$tides_src" install AM_CPPFLAGS="-I /usr/include" AM_CFLAGS="" AM_FFLAGS=""
+            export SAGELITE_TIDES_PREFIX="$RUNNER_TEMP/tides-prefix"
           fi
           if [ "${{ matrix.name }}" = "sagelite-topcom-runtime" ]; then
             export SAGELITE_TOPCOM_BINDIR=/usr/bin
@@ -1067,6 +1083,19 @@ jobs:
                   capture_output=True,
               )
               assert "tachyon" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-tides-runtime":
+              runtime = importlib.import_module("sagelite_tides.runtime")
+              include_dir = runtime.include_dir()
+              library_path = runtime.library_path()
+              print("include_dir=", include_dir)
+              print("library_path=", library_path)
+              assert include_dir.exists()
+              assert library_path.exists()
+              assert (include_dir / "minc_tides.h").exists()
+              assert library_path.name == "libTIDES.a"
+              assert library_path.stat().st_size > 0
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-topcom-runtime":
