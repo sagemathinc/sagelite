@@ -122,27 +122,34 @@ databases = [
 ]
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
+dot2tex = ['dot2tex >=2.11.3']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
 extra = [
+  'dot2tex >=2.11.3',
   'igraph',
   'khoca >=1.4',
+  'phitigra >=0.2.3',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
+  'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
 ]
 full = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
+  'dot2tex >=2.11.3',
   'igraph',
   'khoca >=1.4',
   'matroid-database ==0.3',
+  'phitigra >=0.2.3',
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
+  'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
@@ -227,12 +234,14 @@ nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
+phitigra = ['phitigra >=0.2.3']
 planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
+regina = ['regina >=7.4.1']
 runtime = [
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
