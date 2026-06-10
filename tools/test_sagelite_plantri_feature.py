@@ -41,27 +41,47 @@ sage.env.SAGE_ECMBIN = getattr(sage.env, "SAGE_ECMBIN", "ecm")
 sage.env.SAGE_GAP3_COMMAND = getattr(sage.env, "SAGE_GAP3_COMMAND", "gap3")
 
 ecm_module = _load_source_feature_module("ecm")
+cddlib_module = _load_source_feature_module("cddlib")
+csdp_module = _load_source_feature_module("csdp")
 four_ti_2_module = _load_source_feature_module("four_ti_2")
+frobby_module = _load_source_feature_module("frobby")
 gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
 gap3_module = _load_source_feature_module("gap3")
 latte_module = _load_source_feature_module("latte")
 flatter_module = _load_source_feature_module("flatter")
+lrs_module = _load_source_feature_module("lrs")
 msolve_module = _load_source_feature_module("msolve")
 nauty_module = _load_source_feature_module("nauty")
 palp_module = _load_source_feature_module("palp")
+planarity_module = _load_source_feature_module("planarity")
+qepcad_module = _load_source_feature_module("qepcad")
+rubiks_module = _load_source_feature_module("rubiks")
+sat_module = _load_source_feature_module("sat")
+topcom_module = _load_source_feature_module("topcom")
 
 Ecm = ecm_module.Ecm
+CddExecutable = cddlib_module.CddExecutable
+CSDP = csdp_module.CSDP
 FourTi2Executable = four_ti_2_module.FourTi2Executable
+Frobby = frobby_module.Frobby
 GfanExecutable = gfan_module.GfanExecutable
 Gap3 = gap3_module.Gap3
 Benzene = graph_generators_module.Benzene
 Plantri = graph_generators_module.Plantri
 Latte_count = latte_module.Latte_count
 Latte_integrate = latte_module.Latte_integrate
+Lrs = lrs_module.Lrs
+LrsNash = lrs_module.LrsNash
 msolve = msolve_module.msolve
 NautyExecutable = nauty_module.NautyExecutable
 PalpExecutable = palp_module.PalpExecutable
+Planarity = planarity_module.Planarity
+Qepcad = qepcad_module.Qepcad
+RubiksExecutable = rubiks_module.RubiksExecutable
+Glucose = sat_module.Glucose
+Kissat = sat_module.Kissat
+TOPCOMExecutable = topcom_module.TOPCOMExecutable
 
 
 def _load_source_module(relative_path, fullname):
@@ -285,6 +305,86 @@ def test_ecm_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     assert feature.absolute_filename() == os.fspath(executable)
 
 
+def test_cddlib_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_cddlib", "cddexec_gmp", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_cddlib", None)
+    sys.modules.pop("sagelite_cddlib.runtime", None)
+
+    feature = CddExecutable()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_csdp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_csdp", "theta", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_csdp", None)
+    sys.modules.pop("sagelite_csdp.runtime", None)
+
+    feature = CSDP()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_frobby_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_frobby", "frobby", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_frobby", None)
+    sys.modules.pop("sagelite_frobby.runtime", None)
+
+    feature = Frobby()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_planarity_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_planarity", "planarity", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_planarity", None)
+    sys.modules.pop("sagelite_planarity.runtime", None)
+
+    feature = Planarity()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_qepcad_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_qepcad", "qepcad", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_qepcad", None)
+    sys.modules.pop("sagelite_qepcad.runtime", None)
+
+    feature = Qepcad()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
 def test_palp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     executable = _write_fake_runtime(
         tmp_path, "sagelite_palp", "poly-4d.x", "executable_path"
@@ -297,6 +397,104 @@ def test_palp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_palp.runtime", None)
 
     feature = PalpExecutable("poly", 4)
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_lrslib_lrs_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_lrslib", "lrs", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_lrslib", None)
+    sys.modules.pop("sagelite_lrslib.runtime", None)
+
+    feature = Lrs()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_lrslib_lrsnash_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_lrslib", "lrsnash", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_lrslib", None)
+    sys.modules.pop("sagelite_lrslib.runtime", None)
+
+    feature = LrsNash()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_rubiks_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_rubiks", "cubex", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    monkeypatch.setattr(rubiks_module, "RUBIKS_BINS_PREFIX", "")
+    sys.modules.pop("sagelite_rubiks", None)
+    sys.modules.pop("sagelite_rubiks.runtime", None)
+
+    feature = RubiksExecutable("cubex")
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_glucose_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_glucose", "glucose", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_glucose", None)
+    sys.modules.pop("sagelite_glucose.runtime", None)
+
+    feature = Glucose()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_kissat_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_kissat", "kissat", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_kissat", None)
+    sys.modules.pop("sagelite_kissat.runtime", None)
+
+    feature = Kissat()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_topcom_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_topcom", "points2allfinetriangs", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.delenv("LD_LIBRARY_PATH", raising=False)
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_topcom", None)
+    sys.modules.pop("sagelite_topcom.runtime", None)
+
+    feature = TOPCOMExecutable("points2allfinetriangs")
 
     assert feature.absolute_filename() == os.fspath(executable)
 
