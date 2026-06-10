@@ -198,6 +198,29 @@ def _bootstrap_sagelite_pari_data_runtime() -> None:
         os.environ.setdefault("GP_DATA_DIR", os.fspath(data_dir))
 
 
+def _optional_runtime_data_dir(
+    module_name: str,
+    attr_name: str,
+    marker: str,
+    *,
+    path_is_file: bool = False,
+) -> Optional[str]:
+    """
+    Return a usable data directory from a companion package.
+
+    ``attr_name`` may point either at the directory itself or, with
+    ``path_is_file=True``, at a marker file inside the desired directory.
+    """
+    path = _optional_runtime_value(module_name, attr_name)
+    if not path:
+        return None
+
+    directory = os.path.dirname(path) if path_is_file else path
+    if os.path.exists(os.path.join(directory, marker)):
+        return os.fspath(directory)
+    return None
+
+
 def _gap_root_path_contains_gap(root: str | None) -> bool:
     """
     Return whether ``root`` looks like a usable GAP root directory.
@@ -871,11 +894,45 @@ _bootstrap_sagelite_pari_data_runtime()
 GP_DATA_DIR = var("GP_DATA_DIR")
 
 # database directories, the default is to search in SAGE_DATA_PATH
-CREMONA_LARGE_DATA_DIR = var("CREMONA_LARGE_DATA_DIR")
-CREMONA_MINI_DATA_DIR = var("CREMONA_MINI_DATA_DIR")
-ELLCURVE_DATA_DIR = var("ELLCURVE_DATA_DIR")
-GRAPHS_DATA_DIR = var("GRAPHS_DATA_DIR")
-POLYTOPE_DATA_DIR = var("POLYTOPE_DATA_DIR")
+CREMONA_LARGE_DATA_DIR = var(
+    "CREMONA_LARGE_DATA_DIR",
+    _optional_runtime_data_dir(
+        "sagelite_database_cremona_ellcurve",
+        "cremona_ellcurve_path",
+        "cremona.db",
+        path_is_file=True,
+    ),
+)
+CREMONA_MINI_DATA_DIR = var(
+    "CREMONA_MINI_DATA_DIR",
+    _optional_runtime_data_dir(
+        "sagelite_database_cremona_mini",
+        "cremona_mini_path",
+        "cremona_mini.db",
+        path_is_file=True,
+    ),
+)
+ELLCURVE_DATA_DIR = var(
+    "ELLCURVE_DATA_DIR",
+    _optional_runtime_data_dir(
+        "sagelite_database_ellcurves", "ellcurves_data_path", "rank0"
+    ),
+)
+GRAPHS_DATA_DIR = var(
+    "GRAPHS_DATA_DIR",
+    _optional_runtime_data_dir(
+        "sagelite_database_graphs", "graphs_data_path", "graphs.db"
+    ),
+)
+POLYTOPE_DATA_DIR = var(
+    "POLYTOPE_DATA_DIR",
+    _optional_runtime_data_dir(
+        "sagelite_database_polytopes", "reflexive_polytopes_path", "Full3d"
+    ),
+    _optional_runtime_data_dir(
+        "sagelite_database_polytopes_4d", "reflexive_polytopes_path", "Hodge4d"
+    ),
+)
 
 # installation directories for various packages
 _bootstrap_sagelite_jmol_runtime()

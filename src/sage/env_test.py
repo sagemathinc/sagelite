@@ -303,6 +303,66 @@ def test_sage_data_paths_ignores_broken_entry_points(monkeypatch, tmp_path):
     assert env._registered_sage_data_paths() == {str(existing)}
 
 
+def test_optional_runtime_data_dir_accepts_companion_directory(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "graphs"
+    companion.mkdir(parents=True)
+    (companion / "graphs.db").write_text("graphs\n")
+
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    assert (
+        env._optional_runtime_data_dir(
+            "sagelite_database_graphs", "graphs_data_path", "graphs.db"
+        )
+        == str(companion)
+    )
+
+
+def test_optional_runtime_data_dir_accepts_companion_file_path(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "cremona"
+    companion.mkdir(parents=True)
+    database = companion / "cremona_mini.db"
+    database.write_text("cremona\n")
+
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(database),
+    )
+
+    assert (
+        env._optional_runtime_data_dir(
+            "sagelite_database_cremona_mini",
+            "cremona_mini_path",
+            "cremona_mini.db",
+            path_is_file=True,
+        )
+        == str(companion)
+    )
+
+
+def test_optional_runtime_data_dir_ignores_missing_marker(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "ellcurves"
+    companion.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    assert (
+        env._optional_runtime_data_dir(
+            "sagelite_database_ellcurves", "ellcurves_data_path", "rank0"
+        )
+        is None
+    )
+
+
 def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
     configured = _gap_root(tmp_path, "configured")
     companion = _gap_root(tmp_path, "companion")
