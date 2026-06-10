@@ -197,6 +197,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-buckygen-runtime",
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
+    "sagelite-dvipng-runtime",
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
@@ -227,7 +228,6 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 
 REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
-    "sagelite-dvipng-runtime",
     "sagelite-gap3-runtime",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",

@@ -400,6 +400,39 @@ build_csdp_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_dvipng_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local dvipng_bindir="$prefix/bin"
+  if [ ! -x "$dvipng_bindir/dvipng" ]; then
+    echo "dvipng executable not found under $dvipng_bindir; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name dvipng -print >&2 || true
+    exit 1
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-dvipng-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "dvipng runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_DVIPNG_BINDIR="$dvipng_bindir" \
+  SAGELITE_DVIPNG_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_benzene_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1277,6 +1310,7 @@ build_topcom_runtime_companion
 build_four_ti_2_runtime_companion
 build_cddlib_runtime_companion
 build_csdp_runtime_companion
+build_dvipng_runtime_companion
 build_benzene_runtime_companion
 build_buckygen_runtime_companion
 build_glucose_runtime_companion
