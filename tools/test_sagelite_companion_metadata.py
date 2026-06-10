@@ -1102,6 +1102,17 @@ def test_sympow_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_sympow_runtime_builds_datafiles_aware_wrapper():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-sympow-runtime" / "setup.py"
+    ).read_text()
+
+    assert "sympow-real" in setup_py
+    assert "LD_LIBRARY_PATH" in setup_py
+    assert "data_target" in setup_py
+    assert "cd \"$HERE/..\" || exit 127" in setup_py
+
+
 def test_d3js_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

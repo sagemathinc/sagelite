@@ -106,6 +106,7 @@ class build_py(_build_py):
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
             "export LD_LIBRARY_PATH\n"
+            'cd "$HERE/.." || exit 127\n'
             'exec "$HERE/sympow-real" "$@"\n'
         )
         wrapper.chmod(0o755)
