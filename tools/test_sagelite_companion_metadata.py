@@ -126,6 +126,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-threejs-runtime": {
         "sagelite_threejs_runtime": ["data/threejs-sage/**/*"],
     },
+    "sagelite-tides-runtime": {
+        "sagelite_tides": ["data/include/*", "data/lib/*"],
+    },
     "sagelite-topcom-runtime": {
         "sagelite_topcom": ["data/bin/*", "data/lib/*"],
     },
@@ -215,6 +218,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-singular-runtime",
     "sagelite-sympow-runtime",
     "sagelite-tachyon-runtime",
+    "sagelite-tides-runtime",
     "sagelite-topcom-runtime",
 }
 
@@ -446,6 +450,41 @@ def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
     assert "pkg:generic/pari-seadata" in host_requires
 
 
+def test_tides_runtime_wheel_declares_copied_runtime_files():
+    pyproject = _pyproject("sagelite-tides-runtime")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_tides"] == [
+        "data/include/*",
+        "data/lib/*",
+    ]
+
+
+def test_tides_runtime_wheel_helper_points_at_bundled_files():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-tides-runtime" / "src")
+    )
+    try:
+        from sagelite_tides.runtime import include_dir, library_path
+    finally:
+        sys.path.pop(0)
+
+    assert Path(include_dir()).parts[-2:] == ("data", "include")
+    assert Path(library_path()).parts[-3:] == ("data", "lib", "libTIDES.a")
+
+
+def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-tides-runtime >=10.9,<10.10"
+
+    assert extras["tides"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_linux_repair_builds_pari_data_companion_wheel():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()
@@ -463,6 +502,15 @@ def test_linux_repair_builds_lie_runtime_companion_wheel():
     assert "build_lie_runtime_companion" in repair_text
     assert "SAGELITE_LIE_BINDIR" in repair_text
     assert "SAGELITE_LIE_INFO_DIR" in repair_text
+
+
+def test_linux_repair_builds_tides_runtime_companion_wheel():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert "companion-packages/sagelite-tides-runtime" in repair_text
+    assert "build_tides_runtime_companion" in repair_text
+    assert "SAGELITE_TIDES_PREFIX" in repair_text
 
 
 def test_companion_workflow_installs_available_pari_data_payloads():

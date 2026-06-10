@@ -239,11 +239,14 @@ Examples include:
 - `sagelite-singular-runtime`
 - `sagelite-sympow-runtime`
 - `sagelite-threejs-runtime`
+- `sagelite-tides-runtime`
 - `sagelite-topcom-runtime`
 
 Most of these packages copy executable payloads into package data at build
 time. Some also copy shared-library dependencies and arrange wrappers so the
 runtime is relocatable inside a virtual environment.
+Some packages, such as `sagelite-tides-runtime`, provide headers, libraries, or
+static data used by Sage interfaces rather than a standalone command.
 
 ### Companion data wheels
 
