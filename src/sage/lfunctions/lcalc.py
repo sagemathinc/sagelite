@@ -28,6 +28,8 @@ AUTHORS:
 # ######################################################################
 
 import os
+import shlex
+import subprocess
 
 from sage.structure.sage_object import SageObject
 from sage.misc.lazy_import import lazy_import
@@ -66,11 +68,25 @@ class LCalc(SageObject):
     def _repr_(self):
         return "Rubinsteins L-function Calculator"
 
+    def _lcalc_command(self):
+        """
+        Return the ``lcalc`` command.
+
+        Normal Sage installations find ``lcalc`` on ``PATH``. Installed
+        ``sagelite`` wheels can also provide it through the optional
+        ``sagelite-lcalc-runtime`` companion package.
+        """
+        try:
+            from sagelite_lcalc.runtime import lcalc_command
+        except ImportError:
+            return "lcalc"
+
+        return os.fspath(lcalc_command())
+
     def __call__(self, args):
-        cmd = 'lcalc %s' % args
-        with os.popen(cmd) as f:
-            res = f.read().strip()
-        return res
+        command = [self._lcalc_command(), *shlex.split(args)]
+        completed = subprocess.run(command, stdout=subprocess.PIPE, text=True)
+        return completed.stdout.strip()
 
     def _compute_L(self, L):
         if isinstance(L, str):

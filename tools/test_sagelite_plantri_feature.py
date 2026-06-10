@@ -2,6 +2,7 @@ import importlib.util
 import os
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import sage
@@ -23,6 +24,18 @@ import sage.env
 def _load_source_feature_module(name):
     path = ROOT / "src" / "sage" / "features" / f"{name}.py"
     fullname = f"sage.features.{name}"
+    if not path.exists():
+        return __import__(fullname, fromlist=["*"])
+    sys.modules.pop(fullname, None)
+    spec = importlib.util.spec_from_file_location(fullname, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[fullname] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_source_module(relative_path, fullname):
+    path = ROOT / relative_path
     if not path.exists():
         return __import__(fullname, fromlist=["*"])
     sys.modules.pop(fullname, None)
@@ -84,18 +97,6 @@ Kissat = sat_module.Kissat
 TOPCOMExecutable = topcom_module.TOPCOMExecutable
 
 
-def _load_source_module(relative_path, fullname):
-    path = ROOT / relative_path
-    if not path.exists():
-        return __import__(fullname, fromlist=["*"])
-    sys.modules.pop(fullname, None)
-    spec = importlib.util.spec_from_file_location(fullname, path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[fullname] = module
-    spec.loader.exec_module(module)
-    return module
-
-
 def _write_fake_runtime(tmp_path, package_name, program, path_function):
     package = tmp_path / package_name
     bindir = package / "data" / "bin"
@@ -112,6 +113,25 @@ def _write_fake_runtime(tmp_path, package_name, program, path_function):
     executable.write_text("#!/bin/sh\n")
     executable.chmod(0o755)
     return executable
+
+
+def _load_lcalc_module(monkeypatch):
+    modules = {
+        "sage.structure": types.ModuleType("sage.structure"),
+        "sage.structure.sage_object": types.ModuleType("sage.structure.sage_object"),
+        "sage.misc.lazy_import": types.ModuleType("sage.misc.lazy_import"),
+        "sage.misc.pager": types.ModuleType("sage.misc.pager"),
+        "sage.rings.integer_ring": types.ModuleType("sage.rings.integer_ring"),
+        "sage.rings.rational_field": types.ModuleType("sage.rings.rational_field"),
+    }
+    modules["sage.structure.sage_object"].SageObject = object
+    modules["sage.misc.lazy_import"].lazy_import = lambda *args, **kwargs: None
+    modules["sage.misc.pager"].pager = lambda: (lambda text: None)
+    modules["sage.rings.integer_ring"].ZZ = int
+    modules["sage.rings.rational_field"].QQ = object()
+    for name, module in modules.items():
+        monkeypatch.setitem(sys.modules, name, module)
+    return _load_source_module("src/sage/lfunctions/lcalc.py", "sage.lfunctions.lcalc")
 
 
 def test_benzene_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
@@ -545,6 +565,31 @@ def test_flatter_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     feature = flatter_module.flatter()
 
     assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_lcalc_interface_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_lcalc", "lcalc", "lcalc_command"
+    )
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, "14.1347251\n", "")
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    sys.modules.pop("sagelite_lcalc", None)
+    sys.modules.pop("sagelite_lcalc.runtime", None)
+
+    assert _load_lcalc_module(monkeypatch).LCalc()("-z 1") == "14.1347251"
+    assert calls == [
+        (
+            [os.fspath(executable), "-z", "1"],
+            {"stdout": subprocess.PIPE, "text": True},
+        )
+    ]
 
 
 def test_gap3_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
