@@ -1,6 +1,16 @@
+import importlib.util
 import os
 import stat
 import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MODULE_PATH = ROOT / "src" / "sage" / "interfaces" / "qepcad.py"
+spec = importlib.util.spec_from_file_location("sage.interfaces.qepcad", MODULE_PATH)
+qepcad_module = importlib.util.module_from_spec(spec)
+sys.modules["sage.interfaces.qepcad"] = qepcad_module
+spec.loader.exec_module(qepcad_module)
 
 
 def _write_fake_qepcad_runtime(tmp_path):
@@ -36,10 +46,8 @@ def test_qepcad_cmd_discovers_sagelite_companion(monkeypatch, tmp_path):
     root = _write_fake_qepcad_runtime(tmp_path)
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
 
-    import sage.interfaces.qepcad as qepcad
-
     try:
-        command = qepcad._qepcad_cmd(memcells=123)
+        command = qepcad_module._qepcad_cmd(memcells=123)
         assert command == f"env qe={root} {root / 'bin' / 'qepcad'} +N123"
     finally:
         sys.modules.pop("sagelite_qepcad", None)
@@ -50,17 +58,15 @@ def test_qepcad_help_discovers_sagelite_companion(monkeypatch, tmp_path):
     root = _write_fake_qepcad_runtime(tmp_path)
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
 
-    import sage.interfaces.qepcad as qepcad
-
     try:
-        qepcad._command_info_cache = None
-        qepcad._update_command_info()
+        qepcad_module._command_info_cache = None
+        qepcad_module._update_command_info()
 
-        assert qepcad._qepcad_help_path() == os.fspath(
+        assert qepcad_module._qepcad_help_path() == os.fspath(
             root / "share" / "qepcad" / "qepcad.help"
         )
-        assert qepcad._command_info_cache["finish"][3] == "Finish QEPCAD.\n"
+        assert qepcad_module._command_info_cache["finish"][3] == "Finish QEPCAD.\n"
     finally:
-        qepcad._command_info_cache = None
+        qepcad_module._command_info_cache = None
         sys.modules.pop("sagelite_qepcad", None)
         sys.modules.pop("sagelite_qepcad.runtime", None)
