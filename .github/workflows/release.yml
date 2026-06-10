@@ -293,6 +293,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-tachyon-runtime"
+          path: tachyon-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-topcom-runtime"
           path: topcom-runtime-dist
           merge-multiple: true
@@ -345,6 +351,7 @@ jobs:
             sympow-runtime-dist/*.whl
             pari-data-dist/*.whl
             singular-runtime-dist/*.whl
+            tachyon-runtime-dist/*.whl
             topcom-runtime-dist/*.whl
             upstream/*
           token: ${{ github.token }}
@@ -510,6 +517,7 @@ jobs:
           rm -rf sympow-runtime-dist
           rm -rf pari-data-dist
           rm -rf singular-runtime-dist
+          rm -rf tachyon-runtime-dist
           rm -rf topcom-runtime-dist
           bash .github/workflows/cibw-build-wheel-linux.sh "${{ steps.python.outputs.python-path }}" wheelhouse unpacked/*
 
@@ -762,6 +770,15 @@ jobs:
           test "$(find singular-runtime-dist -maxdepth 1 -type f -name "sagelite_singular_runtime-*.whl" | wc -l)" -eq 1
           ls -lh singular-runtime-dist
 
+      - name: Separate Tachyon runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p tachyon-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_tachyon_runtime-*.whl" -exec mv -v {} tachyon-runtime-dist/ \;
+          test "$(find tachyon-runtime-dist -maxdepth 1 -type f -name "sagelite_tachyon_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh tachyon-runtime-dist
+
       - name: Separate TOPCOM runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -783,7 +800,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist topcom-runtime-dist; do
+          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -961,6 +978,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-singular-runtime
           path: ./singular-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-tachyon-runtime
+          path: ./tachyon-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1708,6 +1732,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: singular-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_tachyon_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-tachyon-runtime"
+          path: tachyon-runtime-dist
+          merge-multiple: true
+
+      - name: Verify Tachyon runtime artifact set
+        run: |
+          set -euo pipefail
+          find tachyon-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find tachyon-runtime-dist -maxdepth 1 -type f -name "sagelite_tachyon_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find tachyon-runtime-dist -maxdepth 1 -type f -name "sagelite_tachyon_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find tachyon-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: tachyon-runtime-dist/
           skip-existing: true
           verbose: true
 

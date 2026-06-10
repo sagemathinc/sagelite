@@ -285,6 +285,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-rubiks-runtime": "rubiks-runtime-dist",
     "sagelite-singular-runtime": "singular-runtime-dist",
     "sagelite-sympow-runtime": "sympow-runtime-dist",
+    "sagelite-tachyon-runtime": "tachyon-runtime-dist",
     "sagelite-topcom-runtime": "topcom-runtime-dist",
 }
 
