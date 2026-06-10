@@ -100,6 +100,11 @@ jobs:
             path: companion-packages/sagelite-d3js-runtime
             apt_packages: ""
             publish: true
+          - name: sagelite-dvipng-runtime
+            import_name: sagelite_dvipng
+            path: companion-packages/sagelite-dvipng-runtime
+            apt_packages: dvipng
+            publish: false
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
@@ -309,6 +314,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-csdp-runtime" ]; then
             export SAGELITE_CSDP_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-dvipng-runtime" ]; then
+            export SAGELITE_DVIPNG_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-benzene-runtime" ]; then
             tarball="$(PYTHONPATH=build build/bin/sage-package download benzene | tail -n 1)"
@@ -570,6 +578,23 @@ jobs:
                   check=True,
               )
               assert "The Lovasz Theta Number" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-dvipng-runtime":
+              runtime = importlib.import_module("sagelite_dvipng.runtime")
+              dvipng = runtime.executable_path()
+              print("dvipng=", dvipng)
+              assert dvipng.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("dvipng")
+              result = subprocess.run(
+                  ["dvipng", "--version"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "dvipng" in result.stdout.lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-benzene-runtime":

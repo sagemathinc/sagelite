@@ -27,6 +27,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-d3js-runtime": {
         "sagelite_d3js_runtime": ["data/d3js/**/*"],
     },
+    "sagelite-dvipng-runtime": {
+        "sagelite_dvipng": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-ecm-runtime": {
         "sagelite_ecm": ["data/bin/*", "data/lib/*"],
     },
@@ -224,6 +227,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 
 REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
+    "sagelite-dvipng-runtime",
     "sagelite-gap3-runtime",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
@@ -239,6 +243,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-cddlib-runtime",
     "sagelite-csdp-runtime",
     "sagelite-d3js-runtime",
+    "sagelite-dvipng-runtime",
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
@@ -1141,6 +1146,26 @@ def test_kissat_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "kissat": "sagelite_kissat.runtime:kissat",
+    }
+
+
+def test_dvipng_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-dvipng-runtime >=10.9,<10.10"
+
+    assert extras["dvipng"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_dvipng_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-dvipng-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "dvipng": "sagelite_dvipng.runtime:dvipng",
     }
 
 
