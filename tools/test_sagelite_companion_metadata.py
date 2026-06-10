@@ -60,6 +60,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-latte-runtime": {
         "sagelite_latte": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-lcalc-runtime": {
+        "sagelite_lcalc": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-lie-runtime": {
         "sagelite_lie": ["data/bin/*", "data/LiE/**/*"],
     },
@@ -196,6 +199,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-glucose-runtime",
     "sagelite-kissat-runtime",
     "sagelite-latte-runtime",
+    "sagelite-lcalc-runtime",
     "sagelite-lie-runtime",
     "sagelite-lrslib-runtime",
     "sagelite-maxima-runtime",
@@ -240,6 +244,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-kenzo-runtime",
     "sagelite-kissat-runtime",
     "sagelite-latte-runtime",
+    "sagelite-lcalc-runtime",
     "sagelite-lrslib-runtime",
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
@@ -1081,6 +1086,18 @@ def test_latte_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_lcalc_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-lcalc-runtime >=10.9,<10.10"
+
+    assert extras["lcalc"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_lrslib_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1139,6 +1156,14 @@ def test_lrslib_runtime_declares_console_scripts():
     assert pyproject["project"]["scripts"] == {
         "lrs": "sagelite_lrslib.runtime:lrs",
         "lrsnash": "sagelite_lrslib.runtime:lrsnash",
+    }
+
+
+def test_lcalc_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-lcalc-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "lcalc": "sagelite_lcalc.runtime:lcalc",
     }
 
 
