@@ -121,7 +121,7 @@ RUNTIME_PACKAGE_DATA = {
         ],
     },
     "sagelite-tachyon-runtime": {
-        "sagelite_tachyon": ["data/bin/*"],
+        "sagelite_tachyon": ["data/bin/*", "data/lib/*"],
     },
     "sagelite-threejs-runtime": {
         "sagelite_threejs_runtime": ["data/threejs-sage/**/*"],
@@ -1326,6 +1326,17 @@ def test_tachyon_runtime_declares_console_script():
     assert pyproject["project"]["scripts"] == {
         "tachyon": "sagelite_tachyon.runtime:tachyon",
     }
+
+
+def test_tachyon_runtime_builds_relocatable_wrapper():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-tachyon-runtime" / "setup.py"
+    ).read_text()
+
+    assert "tachyon-real" in setup_py
+    assert "LD_LIBRARY_PATH" in setup_py
+    assert "lib_target" in setup_py
+    assert "_runtime_libraries(source)" in setup_py
 
 
 def test_plantri_runtime_is_exposed_by_sagelite_extras():

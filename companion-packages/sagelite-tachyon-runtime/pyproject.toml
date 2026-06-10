@@ -39,4 +39,5 @@ where = ["src"]
 [tool.setuptools.package-data]
 sagelite_tachyon = [
   "data/bin/*",
+  "data/lib/*",
 ]
