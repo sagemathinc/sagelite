@@ -820,6 +820,15 @@ def test_symbolic_data_database_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_conway_polynomials_pypi_database_is_core_sagelite_dependency():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    requirement = "conway-polynomials >=0.8"
+
+    assert requirement in pyproject["project"]["dependencies"]
+
+
 def test_cubic_hecke_pypi_database_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

@@ -275,6 +275,7 @@ When an optional Sage database is already maintained as a redistributable PyPI
 package, `sagelite` should depend on that package directly instead of
 re-wrapping it as a `sagelite-*` companion wheel. Current examples include:
 
+- `conway-polynomials`
 - `database-cubic-hecke`
 - `database-knotinfo`
 - `matroid-database`
