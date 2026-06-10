@@ -2,7 +2,9 @@ r"""
 Feature for testing the presence of ``giac``
 """
 
-from . import Executable, FeatureTestResult
+import os
+
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 
 
 class Giac(Executable):
@@ -25,6 +27,30 @@ class Giac(Executable):
         """
         Executable.__init__(self, 'giac', executable='giac',
                             spkg='giac', type='optional')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the GIAC executable path.
+
+        Normal Sage installations find ``giac`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-giac-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_giac.runtime import giac_command
+        except ImportError:
+            raise original_error
+
+        executable = giac_command()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():

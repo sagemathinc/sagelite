@@ -236,6 +236,7 @@ Test that conversion of symbolic functions with latex names works (:issue:`31047
 #############################################################################
 
 import os
+import shlex
 
 import pexpect
 
@@ -253,6 +254,26 @@ from sage.misc.pager import pager
 from sage.structure.richcmp import rich_to_bool
 
 COMMANDS_CACHE = '%s/giac_commandlist_cache.sobj' % DOT_SAGE
+
+
+def _giac_command() -> str:
+    """
+    Return the GIAC executable command.
+
+    Normal Sage installations find ``giac`` on ``PATH``. Wheel installations
+    can also provide it through the optional ``sagelite-giac-runtime``
+    companion package.
+    """
+    try:
+        from sagelite_giac.runtime import giac_command
+    except ImportError:
+        return "giac"
+
+    executable = giac_command()
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    return "giac"
 
 
 class Giac(Expect):
@@ -337,7 +358,7 @@ class Giac(Expect):
         Expect.__init__(self,
                         name='giac',
                         prompt='[0-9]*>> ',
-                        command="giac --sage",
+                        command=f"{shlex.quote(_giac_command())} --sage",
                         env={"LANG": "C"},
                         init_code=['maple_mode(0);I:=i;'],  # coercion could be broken in maple_mode
                         script_subdirectory=script_subdirectory,

@@ -218,6 +218,7 @@ Examples include:
 - `sagelite-buckygen-runtime`
 - `sagelite-csdp-runtime`
 - `sagelite-gfan-runtime`
+- `sagelite-giac-runtime`
 - `sagelite-4ti2-runtime`
 - `sagelite-d3js-runtime`
 - `sagelite-ecm-runtime`
