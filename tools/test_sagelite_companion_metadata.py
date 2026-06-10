@@ -282,6 +282,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime": "mwrank-runtime-dist",
     "sagelite-nauty-runtime": "nauty-runtime-dist",
     "sagelite-palp-runtime": "palp-runtime-dist",
+    "sagelite-qepcad-runtime": "qepcad-runtime-dist",
     "sagelite-rubiks-runtime": "rubiks-runtime-dist",
     "sagelite-singular-runtime": "singular-runtime-dist",
     "sagelite-sympow-runtime": "sympow-runtime-dist",
