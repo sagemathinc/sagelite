@@ -1404,12 +1404,35 @@ def test_latte_runtime_wheel_declares_copied_runtime_data():
 def test_maxima_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-maxima-runtime")
 
+    assert pyproject["project"]["version"] == "10.9.post1"
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_maxima"] == [
         "data/bin/*",
         "data/lib/**/*",
         "data/share/**/*",
     ]
+
+
+def test_maxima_runtime_patches_copied_ecl_images():
+    setup_py = ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
+    setup_text = setup_py.read_text()
+
+    assert 'original.startswith("libecl")' in setup_text
+    assert "_patch_ecl_fas(fas_target)" in setup_text
+    assert 'for ecl_fas in ecl_target.glob("*.fas")' in setup_text
+    assert "_patch_ecl_fas(ecl_fas)" in setup_text
+
+
+def test_maxima_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-maxima-runtime >=10.9.post1,<10.10"
+
+    assert extras["maxima"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():

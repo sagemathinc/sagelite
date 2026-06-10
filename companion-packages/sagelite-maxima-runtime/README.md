@@ -18,7 +18,8 @@ should also set `SAGELITE_MAXIMA_IMAGESDIR`, `SAGELITE_MAXIMA_ECLDIR`, and
 `SAGELITE_MAXIMA_LIBDIR` from the same Sage prefix. When building a companion
 for a repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ECL_SONAME` to the
 auditwheel-renamed ECL SONAME from that wheel so library mode uses the already
-loaded ECL runtime instead of loading a second copy:
+loaded ECL runtime instead of loading a second copy. The build patches both
+`maxima.fas` and copied ECL support images such as `cmp.fas`:
 
 ```bash
 SAGELITE_MAXIMA_PREFIX=/path/to/share/maxima/5.47.0 \
