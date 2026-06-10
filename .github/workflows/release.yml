@@ -233,6 +233,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-lcalc-runtime"
+          path: lcalc-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-meataxe-runtime"
           path: meataxe-runtime-dist
           merge-multiple: true
@@ -329,6 +335,7 @@ jobs:
             csdp-runtime-dist/*.whl
             maxima-runtime-dist/*.whl
             lie-runtime-dist/*.whl
+            lcalc-runtime-dist/*.whl
             meataxe-runtime-dist/*.whl
             msolve-runtime-dist/*.whl
             mwrank-runtime-dist/*.whl
@@ -665,6 +672,15 @@ jobs:
           test "$(find lie-runtime-dist -maxdepth 1 -type f -name "sagelite_lie_runtime-*.whl" | wc -l)" -eq 1
           ls -lh lie-runtime-dist
 
+      - name: Separate lcalc runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p lcalc-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_lcalc_runtime-*.whl" -exec mv -v {} lcalc-runtime-dist/ \;
+          test "$(find lcalc-runtime-dist -maxdepth 1 -type f -name "sagelite_lcalc_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh lcalc-runtime-dist
+
       - name: Separate MeatAxe runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -767,7 +783,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist topcom-runtime-dist; do
+          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -875,6 +891,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-lie-runtime
           path: ./lie-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-lcalc-runtime
+          path: ./lcalc-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1387,6 +1410,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: lie-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_lcalc_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-lcalc-runtime"
+          path: lcalc-runtime-dist
+          merge-multiple: true
+
+      - name: Verify lcalc runtime artifact set
+        run: |
+          set -euo pipefail
+          find lcalc-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find lcalc-runtime-dist -maxdepth 1 -type f -name "sagelite_lcalc_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find lcalc-runtime-dist -maxdepth 1 -type f -name "sagelite_lcalc_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find lcalc-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: lcalc-runtime-dist/
           skip-existing: true
           verbose: true
 
