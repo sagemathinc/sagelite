@@ -78,6 +78,22 @@ def test_reflexive_polytopes_feature_searches_companion_data_when_config_is_stal
     assert bool(feature.is_present())
 
 
+def test_reflexive_polytopes_4d_feature_searches_companion_data_when_config_is_stale(
+    monkeypatch, tmp_path
+):
+    stale = tmp_path / "stale-polytopes"
+    companion = tmp_path / "companion" / "reflexive_polytopes"
+    (companion / "Hodge4d").mkdir(parents=True)
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+    monkeypatch.setattr(sage.env, "POLYTOPE_DATA_DIR", str(stale))
+
+    feature = databases.DatabaseReflexivePolytopes("polytopes_db_4d")
+
+    assert feature.search_path == [str(stale), str(companion)]
+    assert bool(feature.is_present())
+
+
 def test_cremona_feature_searches_companion_data_when_config_is_stale(
     monkeypatch, tmp_path
 ):

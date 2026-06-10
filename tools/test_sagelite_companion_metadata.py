@@ -1427,8 +1427,9 @@ def test_polytopes_4d_database_registers_reflexive_polytope_data_path():
     pyproject = _pyproject("sagelite-database-polytopes-4d")
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
-        "reflexive_polytopes_4d": "sagelite_database_polytopes_4d:sage_data_path",
+        "reflexive_polytopes": "sagelite_database_polytopes_4d:sage_data_path",
     }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"][
         "sagelite_database_polytopes_4d"
     ] == [
