@@ -293,6 +293,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-pdf2svg-runtime"
+          path: pdf2svg-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-planarity-runtime"
           path: planarity-runtime-dist
           merge-multiple: true
@@ -393,6 +399,7 @@ jobs:
             nauty-runtime-dist/*.whl
             rubiks-runtime-dist/*.whl
             palp-runtime-dist/*.whl
+            pdf2svg-runtime-dist/*.whl
             planarity-runtime-dist/*.whl
             plantri-runtime-dist/*.whl
             qepcad-runtime-dist/*.whl
@@ -567,6 +574,7 @@ jobs:
           rm -rf nauty-runtime-dist
           rm -rf rubiks-runtime-dist
           rm -rf palp-runtime-dist
+          rm -rf pdf2svg-runtime-dist
           rm -rf planarity-runtime-dist
           rm -rf plantri-runtime-dist
           rm -rf qepcad-runtime-dist
@@ -836,6 +844,15 @@ jobs:
           test "$(find planarity-runtime-dist -maxdepth 1 -type f -name "sagelite_planarity_runtime-*.whl" | wc -l)" -eq 1
           ls -lh planarity-runtime-dist
 
+      - name: Separate pdf2svg runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p pdf2svg-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_pdf2svg_runtime-*.whl" -exec mv -v {} pdf2svg-runtime-dist/ \;
+          test "$(find pdf2svg-runtime-dist -maxdepth 1 -type f -name "sagelite_pdf2svg_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh pdf2svg-runtime-dist
+
       - name: Separate plantri runtime companion wheel
         if: matrix.python == 'cp312'
         run: |
@@ -920,7 +937,7 @@ jobs:
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
           test-venv/bin/python -m pip install wheelhouse/*.whl
-          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist flatter-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist latte-runtime-dist lrslib-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist planarity-runtime-dist plantri-runtime-dist qepcad-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist tides-runtime-dist topcom-runtime-dist; do
+          for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist glucose-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist flatter-runtime-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist latte-runtime-dist lrslib-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist pdf2svg-runtime-dist planarity-runtime-dist plantri-runtime-dist qepcad-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist tides-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
               test-venv/bin/python -m pip install "$companion_dist"/*.whl
             fi
@@ -1098,6 +1115,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-palp-runtime
           path: ./palp-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-pdf2svg-runtime
+          path: ./pdf2svg-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1933,6 +1957,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: planarity-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_pdf2svg_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-pdf2svg-runtime"
+          path: pdf2svg-runtime-dist
+          merge-multiple: true
+
+      - name: Verify pdf2svg runtime artifact set
+        run: |
+          set -euo pipefail
+          find pdf2svg-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find pdf2svg-runtime-dist -maxdepth 1 -type f -name "sagelite_pdf2svg_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find pdf2svg-runtime-dist -maxdepth 1 -type f -name "sagelite_pdf2svg_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find pdf2svg-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: pdf2svg-runtime-dist/
           skip-existing: true
           verbose: true
 

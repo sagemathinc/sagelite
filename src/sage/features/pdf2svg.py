@@ -11,7 +11,9 @@ Feature for testing the presence of ``pdf2svg``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 
 
 class pdf2svg(Executable):
@@ -35,6 +37,30 @@ class pdf2svg(Executable):
         Executable.__init__(self, "pdf2svg", executable='pdf2svg',
                             spkg='pdf2svg',
                             url='http://www.cityinthesky.co.uk/opensource/pdf2svg/')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the pdf2svg executable path.
+
+        Normal Sage installations find ``pdf2svg`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-pdf2svg-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_pdf2svg.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():

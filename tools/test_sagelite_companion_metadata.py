@@ -97,6 +97,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-palp-runtime": {
         "sagelite_palp": ["data/bin/*"],
     },
+    "sagelite-pdf2svg-runtime": {
+        "sagelite_pdf2svg": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-planarity-runtime": {
         "sagelite_planarity": ["data/bin/*", "data/lib/*"],
     },
@@ -215,6 +218,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime",
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
+    "sagelite-pdf2svg-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
     "sagelite-qepcad-runtime",
@@ -262,6 +266,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
     "sagelite-pari-data",
+    "sagelite-pdf2svg-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
     "sagelite-qepcad-runtime",
@@ -295,6 +300,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime": "mwrank-runtime-dist",
     "sagelite-nauty-runtime": "nauty-runtime-dist",
     "sagelite-palp-runtime": "palp-runtime-dist",
+    "sagelite-pdf2svg-runtime": "pdf2svg-runtime-dist",
     "sagelite-planarity-runtime": "planarity-runtime-dist",
     "sagelite-plantri-runtime": "plantri-runtime-dist",
     "sagelite-qepcad-runtime": "qepcad-runtime-dist",
@@ -1179,6 +1185,26 @@ def test_planarity_runtime_is_exposed_by_sagelite_extras():
     assert extras["planarity"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+
+
+def test_pdf2svg_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-pdf2svg-runtime >=10.9,<10.10"
+
+    assert extras["pdf2svg"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_pdf2svg_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-pdf2svg-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "pdf2svg": "sagelite_pdf2svg.runtime:pdf2svg",
+    }
 
 
 def test_planarity_runtime_declares_console_script():

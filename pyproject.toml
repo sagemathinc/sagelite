@@ -195,6 +195,7 @@ full = [
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9,<10.10',
@@ -236,6 +237,7 @@ nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
+pdf2svg = ['sagelite-pdf2svg-runtime >=10.9,<10.10']
 phitigra = ['phitigra >=0.2.3']
 planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
@@ -274,6 +276,7 @@ runtime = [
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
+  'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9,<10.10',
