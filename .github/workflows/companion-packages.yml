@@ -85,6 +85,16 @@ jobs:
             path: companion-packages/sagelite-database-polytopes
             apt_packages: ""
             publish: true
+          - name: sagelite-database-polytopes-4d
+            import_name: sagelite_database_polytopes_4d
+            path: companion-packages/sagelite-database-polytopes-4d
+            apt_packages: ""
+            publish: true
+          - name: sagelite-database-stein-watkins
+            import_name: sagelite_database_stein_watkins
+            path: companion-packages/sagelite-database-stein-watkins
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-stein-watkins-mini
             import_name: sagelite_database_stein_watkins_mini
             path: companion-packages/sagelite-database-stein-watkins-mini
@@ -474,6 +484,15 @@ jobs:
             mkdir -p "$RUNNER_TEMP/cremona-ellcurve"
             tar -xjf "$tarball" -C "$RUNNER_TEMP/cremona-ellcurve"
             export SAGELITE_CREMONA_ELLCURVE_DB="$RUNNER_TEMP/cremona-ellcurve/src/cremona.db"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-database-polytopes-4d" ]; then
+            export SAGELITE_POLYTOPES_4D_SPKG="$(PYTHONPATH=build build/bin/sage-package download polytopes_db_4d | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-database-stein-watkins" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download database_stein_watkins | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/stein-watkins"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/stein-watkins"
+            export SAGELITE_STEIN_WATKINS_DIR="$RUNNER_TEMP/stein-watkins/src/swdb"
           fi
           python -m build "${{ matrix.path }}" --outdir dist
           ls -lh dist
@@ -1224,6 +1243,18 @@ jobs:
               assert any(ep.name == "reflexive_polytopes" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-database-polytopes-4d":
+              data_path = module.sage_data_path()
+              polytopes_path = module.reflexive_polytopes_path()
+              hodge4d_path = module.hodge4d_path()
+              print("data_path=", data_path)
+              print("polytopes_path=", polytopes_path)
+              print("hodge4d_path=", hodge4d_path)
+              assert os.path.isdir(hodge4d_path)
+              assert any(os.scandir(hodge4d_path))
+              assert any(ep.name == "reflexive_polytopes" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-database-mutation-class":
               data_path = module.sage_data_path()
               quiver_path = module.cluster_algebra_quiver_data_path()
@@ -1275,6 +1306,21 @@ jobs:
               print("all0_path=", all0_path)
               assert os.path.exists(all0_path)
               assert os.path.exists(all1_path)
+              assert os.path.exists(prime0_path)
+              assert os.path.getsize(all0_path) > 0
+              assert any(ep.name == "stein_watkins" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-stein-watkins":
+              data_path = module.sage_data_path()
+              stein_watkins_path = module.stein_watkins_data_path()
+              all0_path = module.all_data_path(0)
+              prime0_path = module.prime_data_path(0)
+              print("data_path=", data_path)
+              print("stein_watkins_path=", stein_watkins_path)
+              print("all0_path=", all0_path)
+              print("prime0_path=", prime0_path)
+              assert os.path.exists(all0_path)
               assert os.path.exists(prime0_path)
               assert os.path.getsize(all0_path) > 0
               assert any(ep.name == "stein_watkins" for ep in metadata.entry_points(group="sagemath.data_paths"))
