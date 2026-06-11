@@ -854,6 +854,7 @@ def test_sloane_database_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-database-sloane >=10.9,<10.10"
 
+    assert extras["sloane"] == [requirement]
     assert extras["sloane-database"] == [requirement]
     assert extras["database-sloane"] == [requirement]
     assert requirement in extras["databases"]

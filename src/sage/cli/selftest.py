@@ -473,6 +473,22 @@ def _check_database_jones_numfield():
     return f"{len(fields)} quadratic fields unramified outside 2"
 
 
+def _check_database_sloane():
+    try:
+        import sagelite_database_sloane  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.sloane import SloaneEncyclopedia
+    from sage.features.sloane_database import SloaneOEIS
+
+    database = SloaneOEIS().is_present()
+    if not bool(database):
+        raise RuntimeError(f"Sloane/OEIS database is not available: {database.reason}")
+
+    return SloaneEncyclopedia.sequence_name(1)
+
+
 def _check_database_kohel():
     try:
         import sagelite_database_kohel  # noqa: F401
@@ -623,6 +639,7 @@ def main() -> int:
         ("Cremona mini database runtime", _check_database_cremona_mini),
         ("ellcurves database runtime", _check_database_ellcurves),
         ("Jones number field database runtime", _check_database_jones_numfield),
+        ("Sloane/OEIS database runtime", _check_database_sloane),
         ("Kohel polynomial database runtime", _check_database_kohel),
         ("reflexive polytopes database runtime", _check_database_polytopes),
         ("mutation class database runtime", _check_database_mutation_class),
