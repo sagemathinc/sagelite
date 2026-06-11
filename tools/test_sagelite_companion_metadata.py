@@ -650,6 +650,48 @@ def test_mathjax_runtime_registers_static_data_path():
     ]
 
 
+def test_jmol_runtime_registers_static_data_path_and_script():
+    pyproject = _pyproject("sagelite-jmol-runtime")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "jmol": "sagelite_jmol_runtime:sage_data_path",
+    }
+    assert pyproject["project"]["scripts"] == {
+        "jmol": "sagelite_jmol_runtime.runtime:jmol",
+    }
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_jmol_runtime"
+    ] == [
+        "data/jmol/**/*",
+    ]
+
+
+def test_jmol_runtime_helpers_point_at_bundled_files():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-jmol-runtime" / "src")
+    )
+    try:
+        import sagelite_jmol_runtime
+        from sagelite_jmol_runtime import runtime
+    finally:
+        sys.path.pop(0)
+
+    assert Path(sagelite_jmol_runtime.sage_data_path()).parts[-1:] == ("data",)
+    assert Path(sagelite_jmol_runtime.jmol_path()).parts[-2:] == ("data", "jmol")
+    assert Path(sagelite_jmol_runtime.jmol_data_jar_path()).parts[-3:] == (
+        "data",
+        "jmol",
+        "JmolData.jar",
+    )
+    assert Path(runtime.jmol_dir()).parts[-2:] == ("data", "jmol")
+    assert Path(runtime.jmol_jar_path()).parts[-3:] == ("data", "jmol", "Jmol.jar")
+    assert Path(runtime.jmol_data_jar_path()).parts[-3:] == (
+        "data",
+        "jmol",
+        "JmolData.jar",
+    )
+
+
 def test_cremona_ellcurve_database_registers_data_path():
     pyproject = _pyproject("sagelite-database-cremona-ellcurve")
 

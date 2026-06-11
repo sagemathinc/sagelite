@@ -30,22 +30,24 @@ def _candidate_jmol_roots() -> list[Path]:
     return roots
 
 
-def _jmol_data_root(root: Path) -> Path | None:
-    if (root / "JmolData.jar").is_file():
+def _jmol_runtime_root(root: Path) -> Path | None:
+    if (root / "JmolData.jar").is_file() and (root / "Jmol.jar").is_file():
         return root
-    if (root / "src" / "JmolData.jar").is_file():
+    if (root / "src" / "JmolData.jar").is_file() and (
+        root / "src" / "Jmol.jar"
+    ).is_file():
         return root / "src"
     return None
 
 
 def _find_jmol_root() -> Path:
     for root in _candidate_jmol_roots():
-        data_root = _jmol_data_root(root)
-        if data_root is not None:
-            return data_root.resolve()
+        runtime_root = _jmol_runtime_root(root)
+        if runtime_root is not None:
+            return runtime_root.resolve()
     searched = "\n  ".join(os.fspath(root) for root in _candidate_jmol_roots())
     raise RuntimeError(
-        "could not find a Jmol runtime root containing JmolData.jar. "
+        "could not find a Jmol runtime root containing Jmol.jar and JmolData.jar. "
         "Set SAGELITE_JMOL_DIR.\n"
         f"Searched:\n  {searched}"
     )
@@ -58,7 +60,7 @@ class build_py(_build_py):
         shutil.rmtree(target, ignore_errors=True)
         shutil.copytree(source, target, ignore_dangling_symlinks=True)
 
-        if _jmol_data_root(target) is None:
+        if _jmol_runtime_root(target) is None:
             raise RuntimeError(f"incomplete Jmol runtime copied from {source}")
 
         super().run()
