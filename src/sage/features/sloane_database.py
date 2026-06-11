@@ -48,10 +48,10 @@ class SloaneOEIS(Feature):
             False
         """
         try:
-            from sage.databases.sloane import SloaneEncyclopedia
+            from sage.databases.sloane import SloaneEncyclopediaClass
         except ImportError:
             return False
-        return SloaneEncyclopedia.is_installed()
+        return SloaneEncyclopediaClass().is_installed()
 
 
 def all_features():
