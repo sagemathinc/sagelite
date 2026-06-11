@@ -215,7 +215,9 @@ Examples include:
 - `sagelite-gap-runtime`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
+- `sagelite-gap-package-polycyclic`
 - `sagelite-gap-package-smallgrp`
+- `sagelite-gap-package-transgrp`
 - `sagelite-gap3-runtime`
 - `sagelite-benzene-runtime`
 - `sagelite-buckygen-runtime`

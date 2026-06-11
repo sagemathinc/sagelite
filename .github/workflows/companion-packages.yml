@@ -150,6 +150,11 @@ jobs:
             path: companion-packages/sagelite-gap-package-smallgrp
             apt_packages: gap gap-smallgrp
             publish: false
+          - name: sagelite-gap-package-transgrp
+            import_name: sagelite_gap_package_transgrp
+            path: companion-packages/sagelite-gap-package-transgrp
+            apt_packages: gap gap-transgrp
+            publish: false
           - name: sagelite-gfan-runtime
             import_name: sagelite_gfan
             path: companion-packages/sagelite-gfan-runtime
@@ -384,6 +389,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-smallgrp" ]; then
             export SAGELITE_GAP_SMALLGRP_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-transgrp" ]; then
+            export SAGELITE_GAP_TRANSGRP_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gfan-runtime" ]; then
             export SAGELITE_GFAN_BINDIR=/usr/bin
@@ -673,6 +681,21 @@ jobs:
                   if name.lower().startswith("smallgrp")
               )
               assert any(ep.name == "smallgrp" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-transgrp":
+              runtime = importlib.import_module("sagelite_gap_package_transgrp.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("transgrp")
+              )
+              assert any(ep.name == "transgrp" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gfan-runtime":

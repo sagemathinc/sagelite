@@ -61,6 +61,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-smallgrp": {
         "sagelite_gap_package_smallgrp": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-transgrp": {
+        "sagelite_gap_package_transgrp": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap3-runtime": {
         "sagelite_gap3": ["data/gap3/**/*"],
     },
@@ -277,6 +280,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
     "sagelite-gap-package-smallgrp",
+    "sagelite-gap-package-transgrp",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-lie-runtime",
@@ -302,6 +306,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
     "sagelite-gap-package-smallgrp",
+    "sagelite-gap-package-transgrp",
     "sagelite-gfan-runtime",
     "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
@@ -1250,6 +1255,34 @@ def test_gap_smallgrp_package_is_exposed_by_sagelite_extras():
     assert smallgrp in extras["full"]
 
 
+def test_gap_transgrp_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-transgrp")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "transgrp": "sagelite_gap_package_transgrp.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_transgrp"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_transgrp_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    transgrp = "sagelite-gap-package-transgrp >=10.9,<10.10"
+
+    assert extras["gap-transgrp"] == [gap_runtime, transgrp]
+    assert extras["gap_package_transgrp"] == [gap_runtime, transgrp]
+    assert transgrp in extras["runtime"]
+    assert transgrp in extras["full"]
+
+
 def test_gap_packages_extra_matches_available_gap_package_companions():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1261,6 +1294,7 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
         "sagelite-gap-package-guava >=10.9,<10.10",
         "sagelite-gap-package-polycyclic >=10.9,<10.10",
         "sagelite-gap-package-smallgrp >=10.9,<10.10",
+        "sagelite-gap-package-transgrp >=10.9,<10.10",
     ]
 
     assert extras["gap_packages"] == [gap_runtime, *available_gap_packages]
