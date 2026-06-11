@@ -440,10 +440,15 @@ COMPANION_WORKFLOW_DATA_PACKAGES = {
 }
 
 BASE_SAGELITE_DATA_DEPENDENCIES = {
+    "sagelite-cunningham-tables >=10.9,<10.10",
+    "sagelite-d3js-runtime >=10.9,<10.10",
     "sagelite-database-cremona-mini >=10.9,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
     "sagelite-database-graphs >=10.9,<10.10",
+    "sagelite-database-jones-numfield >=10.9,<10.10",
+    "sagelite-database-mutation-class >=10.9,<10.10",
     "sagelite-database-polytopes >=10.9,<10.10",
+    "sagelite-database-sloane >=10.9,<10.10",
 }
 
 
@@ -516,6 +521,20 @@ def test_base_sagelite_installs_standard_data_companion_wheels():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert BASE_SAGELITE_DATA_DEPENDENCIES <= dependencies
+
+
+def test_base_sagelite_data_companion_wheels_are_publishable():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for requirement in BASE_SAGELITE_DATA_DEPENDENCIES:
+        package = requirement.split()[0]
+        start = workflow_text.index(f"- name: {package}")
+        end = workflow_text.find("\n          - name:", start + 1)
+        block = workflow_text[start : end if end != -1 else len(workflow_text)]
+
+        assert f"path: companion-packages/{package}" in block
+        assert "publish: true" in block
 
 
 def test_release_workflow_separates_expected_runtime_companion_wheels():
