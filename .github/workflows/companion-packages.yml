@@ -115,6 +115,16 @@ jobs:
             path: companion-packages/sagelite-d3js-runtime
             apt_packages: ""
             publish: true
+          - name: sagelite-mathjax-runtime
+            import_name: sagelite_mathjax_runtime
+            path: companion-packages/sagelite-mathjax-runtime
+            apt_packages: ""
+            publish: true
+          - name: sagelite-threejs-runtime
+            import_name: sagelite_threejs_runtime
+            path: companion-packages/sagelite-threejs-runtime
+            apt_packages: ""
+            publish: true
           - name: sagelite-jmol-runtime
             import_name: sagelite_jmol_runtime
             path: companion-packages/sagelite-jmol-runtime
@@ -645,6 +655,20 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-d3js-runtime" ]; then
             export SAGELITE_D3JS_TARBALL="$(PYTHONPATH=build build/bin/sage-package download d3js | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-mathjax-runtime" ]; then
+            export SAGELITE_MATHJAX_TARBALL="$(PYTHONPATH=build build/bin/sage-package download mathjax | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-threejs-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download threejs | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/threejs-src" "$RUNNER_TEMP/threejs-sage"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/threejs-src"
+            threejs_src="$(find "$RUNNER_TEMP/threejs-src" -maxdepth 2 -type f -name version -printf '%h\n' | head -n 1)"
+            threejs_version="$(cat "$threejs_src/version")"
+            mkdir -p "$RUNNER_TEMP/threejs-sage/$threejs_version"
+            cp "$threejs_src/version" "$RUNNER_TEMP/threejs-sage/version"
+            cp "$threejs_src/build/three.min.js" "$RUNNER_TEMP/threejs-sage/$threejs_version/three.min.js"
+            export SAGELITE_THREEJS_DIR="$RUNNER_TEMP/threejs-sage"
           fi
           if [ "${{ matrix.name }}" = "sagelite-jmol-runtime" ]; then
             export SAGELITE_JMOL_DIR=/usr/share/jmol
@@ -1842,6 +1866,29 @@ jobs:
               cur = con.cursor()
               assert cur.execute("select count(*) from t_class").fetchone()[0] > 0
               assert cur.execute("select count(*) from t_curve").fetchone()[0] > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-mathjax-runtime":
+              assert any(ep.name == "mathjax" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              mathjax_dir = module.mathjax_dir()
+              tex_chtml = module.tex_chtml_js_path()
+              print("mathjax_dir=", mathjax_dir)
+              print("tex_chtml=", tex_chtml)
+              assert mathjax_dir.endswith(os.path.join("data", "mathjax")), mathjax_dir
+              assert tex_chtml.endswith(os.path.join("data", "mathjax", "tex-chtml.js")), tex_chtml
+              assert os.path.exists(tex_chtml)
+              assert os.path.exists(os.path.join(mathjax_dir, "loader.js"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-threejs-runtime":
+              assert any(ep.name == "threejs_sage" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              threejs_dir = module.threejs_sage_path()
+              threejs_min = module.threejs_min_js_path()
+              print("threejs_dir=", threejs_dir)
+              print("threejs_min=", threejs_min)
+              assert threejs_dir.endswith(os.path.join("data", "threejs-sage")), threejs_dir
+              assert threejs_min.endswith("three.min.js"), threejs_min
+              assert os.path.exists(threejs_min)
               raise SystemExit(0)
 
           raise AssertionError("unhandled companion package")

@@ -384,6 +384,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-latte-runtime",
     "sagelite-lcalc-runtime",
     "sagelite-lrslib-runtime",
+    "sagelite-mathjax-runtime",
     "sagelite-maxima-runtime",
     "sagelite-meataxe-runtime",
     "sagelite-mwrank-runtime",
@@ -400,6 +401,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-singular-runtime",
     "sagelite-sympow-runtime",
     "sagelite-tachyon-runtime",
+    "sagelite-threejs-runtime",
     "sagelite-tides-runtime",
     "sagelite-topcom-runtime",
 }
@@ -470,6 +472,12 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-database-polytopes >=10.9,<10.10",
     "sagelite-database-sloane >=10.9,<10.10",
     "sagelite-database-symbolic-data >=10.9,<10.10",
+}
+
+PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
+    "sagelite-d3js-runtime",
+    "sagelite-mathjax-runtime",
+    "sagelite-threejs-runtime",
 }
 
 
@@ -633,6 +641,19 @@ def test_base_sagelite_data_companion_wheels_are_publishable():
 
     for requirement in BASE_SAGELITE_DATA_DEPENDENCIES:
         package = requirement.split()[0]
+        start = workflow_text.index(f"- name: {package}")
+        end = workflow_text.find("\n          - name:", start + 1)
+        block = workflow_text[start : end if end != -1 else len(workflow_text)]
+
+        assert f"path: companion-packages/{package}" in block
+        assert "publish: true" in block
+
+
+def test_static_runtime_companion_wheels_are_publishable():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for package in PUBLISHABLE_STATIC_RUNTIME_PACKAGES:
         start = workflow_text.index(f"- name: {package}")
         end = workflow_text.find("\n          - name:", start + 1)
         block = workflow_text[start : end if end != -1 else len(workflow_text)]
@@ -885,6 +906,19 @@ def test_mathjax_runtime_registers_static_data_path():
         "sagelite_mathjax_runtime"
     ] == [
         "data/mathjax/**/*",
+    ]
+
+
+def test_threejs_runtime_registers_static_data_path():
+    pyproject = _pyproject("sagelite-threejs-runtime")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "threejs_sage": "sagelite_threejs_runtime:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_threejs_runtime"
+    ] == [
+        "data/threejs-sage/**/*",
     ]
 
 
@@ -2127,6 +2161,18 @@ def test_mathjax_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-mathjax-runtime >=10.9,<10.10"
 
     assert extras["mathjax"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_threejs_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-threejs-runtime >=10.9,<10.10"
+
+    assert extras["threejs"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
