@@ -215,6 +215,7 @@ Examples include:
 - `sagelite-gap-runtime`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
+- `sagelite-gap-package-smallgrp`
 - `sagelite-gap3-runtime`
 - `sagelite-benzene-runtime`
 - `sagelite-buckygen-runtime`
@@ -309,7 +310,7 @@ A typical GAP root contains a modest core plus large optional package data.
 Large payloads such as `TransGrp`, `TomLib`, `CtblLib`, `PrimGrp`, and
 `AtlasRep` are natural candidates for separate wheels.
 
-A future split could look like:
+The split can grow incrementally with packages such as:
 
 - `sagelite-gap-runtime` for the GAP core
 - `sagelite-gap-package-gapdoc`
