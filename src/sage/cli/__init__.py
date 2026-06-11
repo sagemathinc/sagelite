@@ -2,18 +2,36 @@
 
 import argparse
 import logging
+import os
+import subprocess
 import sys
 
-from sage.cli.eval_cmd import EvalCmd
-from sage.cli.interactive_shell_cmd import InteractiveShellCmd
-from sage.cli.notebook_cmd import JupyterNotebookCmd
 from sage.cli.options import CliOptions
-from sage.cli.version_cmd import VersionCmd
-from sage.cli.run_file_cmd import RunFileCmd
+
+
+def _ecl_command() -> str:
+    try:
+        from sagelite_ecl.runtime import ecl_command
+    except ImportError:
+        return "ecl"
+
+    command = os.fspath(ecl_command())
+    if os.path.isfile(command) and os.access(command, os.X_OK):
+        return command
+    return "ecl"
 
 
 def main() -> int:
     input_args = sys.argv[1:]
+    if input_args and input_args[0] in ("-ecl", "--ecl", "-lisp", "--lisp"):
+        return subprocess.call([_ecl_command(), *input_args[1:]])
+
+    from sage.cli.eval_cmd import EvalCmd
+    from sage.cli.interactive_shell_cmd import InteractiveShellCmd
+    from sage.cli.notebook_cmd import JupyterNotebookCmd
+    from sage.cli.run_file_cmd import RunFileCmd
+    from sage.cli.version_cmd import VersionCmd
+
     parser = argparse.ArgumentParser(
         prog="sage",
         description="If no command is given, starts the interactive interpreter where you can enter statements and expressions, immediately execute them and see their results.",

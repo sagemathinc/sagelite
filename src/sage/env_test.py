@@ -21,6 +21,7 @@ from sage import env
 def clean_runtime_environment():
     keys = [
         "ECLDIR",
+        "ECL_CONFIG",
         "FOURTITWO_CIRCUITS",
         "FOURTITWO_GRAVER",
         "FOURTITWO_GROEBNER",
@@ -110,6 +111,17 @@ def _kenzo_runtime(tmp_path: Path, name: str) -> Path:
     fas.parent.mkdir(parents=True)
     fas.write_text("kenzo fas\n")
     return fas
+
+
+def _ecl_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    root = tmp_path / name
+    command = root / "bin" / "ecl-config"
+    ecldir = root / "lib" / "ecl-24.5.10"
+    command.parent.mkdir(parents=True)
+    ecldir.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return command, ecldir
 
 
 def _pari_data_runtime(tmp_path: Path, name: str) -> Path:
@@ -1057,6 +1069,54 @@ def test_ecm_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_ecm_runtime()
 
     assert env.os.environ["SAGE_ECMBIN"] == str(existing_command)
+
+
+def test_ecl_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
+    command, ecldir = _ecl_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("ECL_CONFIG", raising=False)
+    monkeypatch.delenv("ECLDIR", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "ECL_CONFIG",
+        str(tmp_path / "stale-bin" / "ecl-config"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_ecl.runtime", "ecl_config_command"): str(command),
+            ("sagelite_ecl.runtime", "ecl_dir"): str(ecldir),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_ecl_runtime()
+
+    assert env.os.environ["ECL_CONFIG"] == str(command)
+    assert env.os.environ["ECLDIR"] == str(ecldir)
+
+
+def test_ecl_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    command, ecldir = _ecl_runtime(tmp_path, "companion")
+    existing_command, existing_ecldir = _ecl_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("ECL_CONFIG", str(existing_command))
+    monkeypatch.setenv("ECLDIR", str(existing_ecldir))
+    monkeypatch.setattr(env.sage.config, "ECL_CONFIG", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_ecl.runtime", "ecl_config_command"): str(command),
+            ("sagelite_ecl.runtime", "ecl_dir"): str(ecldir),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_ecl_runtime()
+
+    assert env.os.environ["ECL_CONFIG"] == str(existing_command)
+    assert env.os.environ["ECLDIR"] == str(existing_ecldir)
 
 
 def test_mwrank_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

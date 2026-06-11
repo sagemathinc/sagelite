@@ -156,6 +156,7 @@ databases = [
   'sagelite-pari-data >=10.9,<10.10',
 ]
 dvipng = ['sagelite-dvipng-runtime >=10.9,<10.10']
+ecl = ['sagelite-ecl-runtime >=10.9,<10.10']
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
@@ -214,6 +215,7 @@ full = [
   'sagelite-database-stein-watkins >=10.9,<10.10',
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
+  'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-flatter-runtime >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
@@ -415,6 +417,7 @@ runtime = [
   'sagelite-csdp-runtime >=10.9,<10.10',
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-dvipng-runtime >=10.9,<10.10',
+  'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-flatter-runtime >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',

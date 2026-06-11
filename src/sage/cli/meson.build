@@ -1,6 +1,7 @@
 py.install_sources(
   '__init__.py',
   '__main__.py',
+  'ecl_cmd_test.py',
   'eval_cmd.py',
   'eval_cmd_test.py',
   'interactive_shell_cmd.py',

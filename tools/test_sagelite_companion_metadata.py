@@ -30,6 +30,14 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-dvipng-runtime": {
         "sagelite_dvipng": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-ecl-runtime": {
+        "sagelite_ecl": [
+            "data/bin/*",
+            "data/include/ecl/**/*",
+            "data/lib/*",
+            "data/lib/ecl*/**/*",
+        ],
+    },
     "sagelite-ecm-runtime": {
         "sagelite_ecm": ["data/bin/*", "data/lib/*"],
     },
@@ -297,6 +305,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 
 REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
+    "sagelite-ecl-runtime",
     "sagelite-gap3-runtime",
     "sagelite-fricas-runtime",
     "sagelite-gap-package-atlasrep",
@@ -325,6 +334,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-csdp-runtime",
     "sagelite-d3js-runtime",
     "sagelite-dvipng-runtime",
+    "sagelite-ecl-runtime",
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
@@ -664,6 +674,27 @@ def test_info_runtime_declares_console_script():
 
     assert pyproject["project"]["scripts"] == {
         "info": "sagelite_info.runtime:info",
+    }
+
+
+def test_ecl_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-ecl-runtime >=10.9,<10.10"
+
+    assert extras["ecl"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_ecl_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-ecl-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "ecl": "sagelite_ecl.runtime:ecl",
+        "ecl-config": "sagelite_ecl.runtime:ecl_config",
     }
 
 

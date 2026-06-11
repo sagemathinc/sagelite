@@ -236,6 +236,7 @@ Examples include:
 - `sagelite-giac-runtime`
 - `sagelite-4ti2-runtime`
 - `sagelite-d3js-runtime`
+- `sagelite-ecl-runtime`
 - `sagelite-ecm-runtime`
 - `sagelite-fricas-runtime`
 - `sagelite-jmol-runtime`

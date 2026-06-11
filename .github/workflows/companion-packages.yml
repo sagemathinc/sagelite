@@ -125,6 +125,11 @@ jobs:
             path: companion-packages/sagelite-dvipng-runtime
             apt_packages: dvipng
             publish: false
+          - name: sagelite-ecl-runtime
+            import_name: sagelite_ecl
+            path: companion-packages/sagelite-ecl-runtime
+            apt_packages: ecl
+            publish: false
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
@@ -447,6 +452,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-dvipng-runtime" ]; then
             export SAGELITE_DVIPNG_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-ecl-runtime" ]; then
+            export SAGELITE_ECL_PREFIX=/usr
           fi
           if [ "${{ matrix.name }}" = "sagelite-benzene-runtime" ]; then
             tarball="$(PYTHONPATH=build build/bin/sage-package download benzene | tail -n 1)"
@@ -928,6 +936,32 @@ jobs:
                   check=True,
               )
               assert "dvipng" in result.stdout.lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-ecl-runtime":
+              runtime = importlib.import_module("sagelite_ecl.runtime")
+              ecl = runtime.ecl_command()
+              ecl_config = runtime.ecl_config_command()
+              print("ecl=", ecl)
+              print("ecl-config=", ecl_config)
+              assert os.path.exists(ecl)
+              assert os.path.exists(ecl_config)
+              import subprocess
+              result = subprocess.run(
+                  [os.fspath(ecl_config), "--cflags", "--libs"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "-I" in result.stdout
+              assert "-lecl" in result.stdout
+              result = subprocess.run(
+                  [os.fspath(ecl), "--version"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "ECL" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-benzene-runtime":

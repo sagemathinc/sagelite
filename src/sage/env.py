@@ -168,6 +168,45 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
 
 
+def _bootstrap_sagelite_ecl_runtime() -> None:
+    """
+    Seed ECL runtime variables from an optional ``sagelite_ecl`` package.
+
+    Installed ``sagelite`` wheels can contain build-prefix ``ECL_CONFIG``
+    values.  A companion package can provide relocatable ECL headers,
+    libraries, support files, and ``ecl-config`` without making ECL a hard
+    dependency of sagelib.
+    """
+    configured_command = getattr(sage.config, "ECL_CONFIG", None)
+    needs_command = (
+        not os.environ.get("ECL_CONFIG")
+        and not (
+            configured_command
+            and os.path.isfile(os.fspath(configured_command))
+            and os.access(os.fspath(configured_command), os.X_OK)
+        )
+    )
+    needs_ecldir = not os.environ.get("ECLDIR")
+    if not (needs_command or needs_ecldir):
+        return
+
+    command = ecldir = None
+    if needs_command:
+        command = _optional_runtime_value("sagelite_ecl.runtime", "ecl_config_command")
+    if needs_ecldir:
+        ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
+
+    if (
+        needs_command
+        and command
+        and os.path.isfile(command)
+        and os.access(command, os.X_OK)
+    ):
+        os.environ.setdefault("ECL_CONFIG", os.fspath(command))
+    if needs_ecldir and ecldir and os.path.isdir(ecldir):
+        os.environ.setdefault("ECLDIR", os.fspath(ecldir))
+
+
 def _pari_data_dir_is_usable(path: str | os.PathLike | None) -> bool:
     """
     Return whether ``path`` looks like a usable PARI optional-data directory.
@@ -1058,6 +1097,7 @@ FOURTITWO_RAYS = var("FOURTITWO_RAYS")
 FOURTITWO_PPI = var("FOURTITWO_PPI")
 FOURTITWO_CIRCUITS = var("FOURTITWO_CIRCUITS")
 FOURTITWO_GROEBNER = var("FOURTITWO_GROEBNER")
+_bootstrap_sagelite_ecl_runtime()
 ECL_CONFIG = var("ECL_CONFIG", "ecl-config")
 ECL_CONFIG = var(
     "ECL_CONFIG",
