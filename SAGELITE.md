@@ -222,6 +222,7 @@ Examples include:
 - `sagelite-gap-package-atlasrep`
 - `sagelite-gap-package-ctbllib`
 - `sagelite-gap-package-design`
+- `sagelite-gap-package-gapdoc`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
 - `sagelite-gap-package-hap`

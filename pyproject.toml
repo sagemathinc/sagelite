@@ -245,6 +245,7 @@ full = [
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-hap >=10.9,<10.10',
@@ -318,6 +319,14 @@ gap_package_design = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
 ]
+gap-gapdoc = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
+]
+gap_package_gapdoc = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
+]
 gap-grape = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
@@ -347,6 +356,7 @@ gap_packages = [
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-hap >=10.9,<10.10',
@@ -370,6 +380,10 @@ ctbllib = [
 design = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
+]
+gapdoc = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
 ]
 grape = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
@@ -564,6 +578,7 @@ runtime = [
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
+  'sagelite-gap-package-gapdoc >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-hap >=10.9,<10.10',
