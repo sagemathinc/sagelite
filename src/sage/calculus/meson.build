@@ -17,6 +17,7 @@ py.install_sources(
   'riemann.pyx',
   'test_sympy.py',
   'tests.py',
+  'tides.py',
   'todo.txt',
   'var.pyx',
   'wester.py',
