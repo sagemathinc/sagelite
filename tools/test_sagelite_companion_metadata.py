@@ -1389,6 +1389,9 @@ def test_graphviz_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-graphviz-runtime >=10.9,<10.10"
 
     assert extras["graphviz"] == [requirement]
+    assert extras["dot"] == [requirement]
+    assert extras["neato"] == [requirement]
+    assert extras["twopi"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -1938,6 +1941,8 @@ def test_cddlib_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-cddlib-runtime >=10.9,<10.10"
 
     assert extras["cddlib"] == [requirement]
+    assert extras["cddexec"] == [requirement]
+    assert extras["cddexec_gmp"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -1982,6 +1987,7 @@ def test_glucose_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-glucose-runtime >=10.9,<10.10"
 
     assert extras["glucose"] == [requirement]
+    assert extras["glucose-syrup"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -2150,6 +2156,8 @@ def test_lrslib_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-lrslib-runtime >=10.9,<10.10"
 
     assert extras["lrslib"] == [requirement]
+    assert extras["lrs"] == [requirement]
+    assert extras["lrsnash"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
