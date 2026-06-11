@@ -287,6 +287,14 @@ re-wrapping it as a `sagelite-*` companion wheel. Current examples include:
 Data packages should expose their installed paths through small Python helper
 APIs and, where useful, `sagemath.data_paths` entry points.
 
+The `sagelite` extra names should include aliases for upstream Sage optional
+feature tags when those tags differ from the companion distribution name. For
+example, both `sagelite[pari-data]` and `sagelite[pari-seadata]` should install
+the PARI data companion wheel, and both `sagelite[symbolic-data]` and
+`sagelite[database-symbolic-data]` should install the SymbolicData companion
+wheel. This lets installed-wheel doctest environments request dependencies
+using the same feature names that Sage doctests already use.
+
 Companion packages should have their own smoke tests. A smoke test should prove
 that the package imports, exposes the expected data or executable path, and can
 perform one representative runtime action when feasible.
