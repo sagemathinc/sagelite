@@ -526,6 +526,7 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-pari-data" ]; then
             export SAGELITE_PARI_DATA_DIR=/usr/share/pari
+            export SAGELITE_PARI_NFTABLES_TARBALL="$(PYTHONPATH=build build/bin/sage-package download pari_nftables | tail -n 1)"
           fi
           if [ "${{ matrix.name }}" = "sagelite-singular-runtime" ]; then
             export SAGELITE_SINGULAR_ROOT=/usr
@@ -1291,6 +1292,7 @@ jobs:
               assert os.path.exists(os.path.join(data_dir, "galdata", "COS8_49_45"))
               assert os.path.exists(os.path.join(data_dir, "galpol", "README"))
               assert os.path.exists(os.path.join(data_dir, "seadata"))
+              assert any(os.scandir(os.path.join(data_dir, "nftables")))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-singular-runtime":

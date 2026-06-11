@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import shutil
+import tarfile
+from pathlib import PurePosixPath
 from pathlib import Path
 
 from setuptools import setup
@@ -43,6 +45,58 @@ def _find_pari_data_root() -> Path:
     )
 
 
+def _candidate_nftables_tarballs() -> list[Path]:
+    tarballs = []
+    for key in ("SAGELITE_PARI_NFTABLES_TARBALL", "SAGELITE_PARI_NFTABLES_SPKG"):
+        value = os.environ.get(key)
+        if value:
+            tarballs.append(Path(value))
+    return tarballs
+
+
+def _safe_tar_relative_path(name: str) -> Path | None:
+    parts = PurePosixPath(name).parts
+    if not parts or parts[0] == "/" or ".." in parts:
+        return None
+
+    if "src" in parts:
+        parts = parts[parts.index("src") + 1 :]
+    elif len(parts) > 1:
+        parts = parts[1:]
+
+    if not parts:
+        return None
+    return Path(*parts)
+
+
+def _extract_nftables_tarball(target: Path) -> bool:
+    for tarball in _candidate_nftables_tarballs():
+        if not tarball.is_file():
+            continue
+
+        copied = 0
+        with tarfile.open(tarball) as archive:
+            for member in archive.getmembers():
+                if not member.isfile():
+                    continue
+                relative = _safe_tar_relative_path(member.name)
+                if relative is None:
+                    continue
+
+                destination = target / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                source = archive.extractfile(member)
+                if source is None:
+                    continue
+                with destination.open("wb") as output:
+                    shutil.copyfileobj(source, output)
+                copied += 1
+
+        if copied:
+            return True
+    return False
+
+
 class build_py(_build_py):
     def run(self):
         super().run()
@@ -59,8 +113,16 @@ class build_py(_build_py):
                 shutil.copytree(source, target / name, ignore_dangling_symlinks=True)
                 copied.append(name)
 
-        if not copied:
-            raise RuntimeError(f"no PARI data directories copied from {pari_root}")
+        if "nftables" not in copied and _extract_nftables_tarball(target / "nftables"):
+            copied.append("nftables")
+
+        missing = sorted(set(PARI_DATA_DIRS) - set(copied))
+        if missing:
+            raise RuntimeError(
+                "incomplete PARI data payload copied into the wheel; missing "
+                f"{', '.join(missing)} from {pari_root}. Set SAGELITE_PARI_DATA_DIR "
+                "and SAGELITE_PARI_NFTABLES_TARBALL to complete the payload."
+            )
 
 
 setup(cmdclass={"build_py": build_py})

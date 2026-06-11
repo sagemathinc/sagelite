@@ -548,6 +548,26 @@ def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
     assert "pkg:generic/pari-seadata" in host_requires
 
 
+def test_pari_data_workflows_build_complete_payload():
+    companion_workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    companion_text = companion_workflow.read_text()
+    release_workflow = ROOT / ".github" / "workflows" / "release.yml"
+    release_text = release_workflow.read_text()
+
+    assert "SAGELITE_PARI_NFTABLES_TARBALL" in companion_text
+    assert "download pari_nftables" in companion_text
+    assert 'os.path.join(data_dir, "nftables")' in companion_text
+
+    for spkg in (
+        "pari_elldata",
+        "pari_galdata",
+        "pari_galpol",
+        "pari_nftables",
+        "pari_seadata",
+    ):
+        assert spkg in release_text
+
+
 def test_tides_runtime_wheel_declares_copied_runtime_files():
     pyproject = _pyproject("sagelite-tides-runtime")
 
