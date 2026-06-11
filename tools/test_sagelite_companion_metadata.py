@@ -48,6 +48,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-guava": {
         "sagelite_gap_package_guava": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-polycyclic": {
+        "sagelite_gap_package_polycyclic": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap3-runtime": {
         "sagelite_gap3": ["data/gap3/**/*"],
     },
@@ -253,6 +256,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap3-runtime",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
+    "sagelite-gap-package-polycyclic",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-lie-runtime",
@@ -274,6 +278,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-runtime",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
+    "sagelite-gap-package-polycyclic",
     "sagelite-gfan-runtime",
     "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
@@ -1064,6 +1069,33 @@ def test_gap_guava_package_is_exposed_by_sagelite_extras():
     assert extras["gap-guava"] == [gap_runtime, guava]
     assert guava in extras["runtime"]
     assert guava in extras["full"]
+
+
+def test_gap_polycyclic_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-polycyclic")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "polycyclic": "sagelite_gap_package_polycyclic.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_polycyclic"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_polycyclic_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    polycyclic = "sagelite-gap-package-polycyclic >=10.9,<10.10"
+
+    assert extras["gap-polycyclic"] == [gap_runtime, polycyclic]
+    assert polycyclic in extras["runtime"]
+    assert polycyclic in extras["full"]
 
 
 def test_cunningham_tables_registers_data_path():
