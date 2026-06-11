@@ -178,6 +178,7 @@ full = [
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
@@ -217,6 +218,10 @@ gap = ['sagelite-gap-runtime >=10.9.post2,<10.10']
 gap-grape = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
+]
+gap-guava = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
 ]
 gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
 gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
@@ -268,6 +273,7 @@ runtime = [
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',

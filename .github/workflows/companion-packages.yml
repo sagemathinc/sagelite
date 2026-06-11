@@ -130,6 +130,11 @@ jobs:
             path: companion-packages/sagelite-gap-package-grape
             apt_packages: gap gap-grape
             publish: false
+          - name: sagelite-gap-package-guava
+            import_name: sagelite_gap_package_guava
+            path: companion-packages/sagelite-gap-package-guava
+            apt_packages: gap gap-guava gap-guava-bin gap-sonata
+            publish: false
           - name: sagelite-gfan-runtime
             import_name: sagelite_gfan
             path: companion-packages/sagelite-gfan-runtime
@@ -345,6 +350,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-grape" ]; then
             export SAGELITE_GAP_GRAPE_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-guava" ]; then
+            export SAGELITE_GAP_GUAVA_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gfan-runtime" ]; then
             export SAGELITE_GFAN_BINDIR=/usr/bin
@@ -570,6 +578,26 @@ jobs:
                   if name.lower().startswith("grape")
               )
               assert any(ep.name == "grape" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-guava":
+              runtime = importlib.import_module("sagelite_gap_package_guava.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("guava")
+              )
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("sonata")
+              )
+              assert any(ep.name == "guava" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gfan-runtime":

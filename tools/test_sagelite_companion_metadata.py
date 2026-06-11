@@ -45,6 +45,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-grape": {
         "sagelite_gap_package_grape": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-guava": {
+        "sagelite_gap_package_guava": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap3-runtime": {
         "sagelite_gap3": ["data/gap3/**/*"],
     },
@@ -249,6 +252,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-gap3-runtime",
     "sagelite-gap-package-grape",
+    "sagelite-gap-package-guava",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-lie-runtime",
@@ -269,6 +273,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gap-package-grape",
+    "sagelite-gap-package-guava",
     "sagelite-gfan-runtime",
     "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
@@ -1032,6 +1037,33 @@ def test_gap_grape_package_is_exposed_by_sagelite_extras():
     assert extras["gap-grape"] == [gap_runtime, grape]
     assert grape in extras["runtime"]
     assert grape in extras["full"]
+
+
+def test_gap_guava_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-guava")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "guava": "sagelite_gap_package_guava.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_guava"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_guava_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    guava = "sagelite-gap-package-guava >=10.9,<10.10"
+
+    assert extras["gap-guava"] == [gap_runtime, guava]
+    assert guava in extras["runtime"]
+    assert guava in extras["full"]
 
 
 def test_cunningham_tables_registers_data_path():
