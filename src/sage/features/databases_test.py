@@ -1,8 +1,19 @@
+import importlib.util
+import sys
+from pathlib import Path
+
 import pytest
 import sage.env
 
 from sage.features import _trivial_unique_representation_cache
-from sage.features import databases
+
+
+ROOT = Path(__file__).resolve().parents[3]
+MODULE_PATH = ROOT / "src" / "sage" / "features" / "databases.py"
+spec = importlib.util.spec_from_file_location("sage.features.databases", MODULE_PATH)
+databases = importlib.util.module_from_spec(spec)
+sys.modules["sage.features.databases"] = databases
+spec.loader.exec_module(databases)
 
 
 @pytest.fixture(autouse=True)
