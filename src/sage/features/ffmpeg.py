@@ -10,8 +10,9 @@ Feature for testing the presence of ``ffmpeg``
 # (at your option) any later version.
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
+import os
 
-from . import Executable, FeatureTestResult
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 
 
 class FFmpeg(Executable):
@@ -35,6 +36,45 @@ class FFmpeg(Executable):
         Executable.__init__(self, 'ffmpeg', executable='ffmpeg',
                             spkg='ffmpeg',
                             url='https://www.ffmpeg.org/')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the path to ``ffmpeg``.
+
+        This first searches the system ``PATH`` and then accepts the
+        executable bundled by the PyPI package ``imageio-ffmpeg``.
+
+        TESTS::
+
+            sage: from sage.features.ffmpeg import FFmpeg
+            sage: isinstance(FFmpeg().absolute_filename(), str)  # optional - ffmpeg
+            True
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError:
+            pass
+
+        try:
+            from imageio_ffmpeg import get_ffmpeg_exe
+        except ImportError:
+            get_ffmpeg_exe = None
+
+        if get_ffmpeg_exe is not None:
+            try:
+                path = get_ffmpeg_exe()
+            except Exception:
+                path = None
+            if path and os.path.isfile(path) and os.access(path, os.X_OK):
+                return os.fspath(path)
+
+        raise FeatureNotPresentError(
+            self,
+            reason=(
+                "Executable 'ffmpeg' not found on PATH, and imageio-ffmpeg "
+                "did not provide a bundled ffmpeg executable."
+            ),
+        )
 
     def is_functional(self):
         r"""
@@ -67,7 +107,6 @@ class FFmpeg(Executable):
             f.write(content)
 
         # Set up filenames
-        import os
         base, filename_png = os.path.split(base_filename_png)
         filename, _png = os.path.splitext(filename_png)
 
@@ -75,19 +114,24 @@ class FFmpeg(Executable):
         # The `-nostdin` is needed to avoid the command to hang, see
         # https://stackoverflow.com/questions/16523746/ffmpeg-hangs-when-run-in-background
         commands = []
+        ffmpeg = self.absolute_filename()
         for ext in ['.avi', '.flv', '.gif', '.mkv', '.mov',
                     '.mp4', '.ogg', '.ogv', '.webm', '.wmv']:
 
-            cmd = ['ffmpeg', '-nostdin', '-y', '-f', 'image2', '-r', '5',
-                   '-i', filename_png, '-pix_fmt', 'rgb24', '-loop', '0',
-                   filename + ext]
+            cmd = [
+                ffmpeg, '-nostdin', '-y', '-f', 'image2', '-r', '5',
+                '-i', filename_png, '-pix_fmt', 'rgb24', '-loop', '0',
+                filename + ext
+            ]
             commands.append(cmd)
 
         for ext in ['.avi', '.flv', '.gif', '.mkv', '.mov', '.mpg',
                     '.mp4', '.ogg', '.ogv', '.webm', '.wmv']:
 
-            cmd = ['ffmpeg', '-nostdin', '-y', '-f', 'image2', '-i',
-                   filename_png, filename + ext]
+            cmd = [
+                ffmpeg, '-nostdin', '-y', '-f', 'image2', '-i',
+                filename_png, filename + ext
+            ]
             commands.append(cmd)
 
         # Running the commands and reporting any issue encountered

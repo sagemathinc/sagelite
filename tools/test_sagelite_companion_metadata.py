@@ -1039,6 +1039,18 @@ def test_regina_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_imageio_ffmpeg_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "imageio-ffmpeg >=0.6.0"
+
+    assert extras["ffmpeg"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

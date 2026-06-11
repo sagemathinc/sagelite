@@ -139,6 +139,7 @@ ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
+ffmpeg = ['imageio-ffmpeg >=0.6.0']
 extra = [
   'dot2tex >=2.11.3',
   'igraph',
@@ -156,6 +157,7 @@ full = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'dot2tex >=2.11.3',
+  'imageio-ffmpeg >=0.6.0',
   'igraph',
   'khoca >=1.4',
   'matroid-database ==0.3',
@@ -306,6 +308,7 @@ qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 regina = ['regina >=7.4.1']
 runtime = [
+  'imageio-ffmpeg >=0.6.0',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
   'sagelite-buckygen-runtime >=10.9,<10.10',
