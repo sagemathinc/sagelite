@@ -165,6 +165,11 @@ SOURCE_BUNDLED_DATA_PACKAGE_DATA = {
             "data/cremona/cremona_mini.db",
         ],
     },
+    "sagelite-database-ellcurves": {
+        "sagelite_database_ellcurves": [
+            "data/ellcurves/rank*",
+        ],
+    },
     "sagelite-database-graphs": {
         "sagelite_database_graphs": [
             "data/graphs/brouwer_srg_database.json",
