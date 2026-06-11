@@ -566,6 +566,40 @@ build_glucose_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_graphviz_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local graphviz_bindir="$prefix/bin"
+  if [ ! -x "$graphviz_bindir/dot" ] ||
+     [ ! -x "$graphviz_bindir/neato" ] ||
+     [ ! -x "$graphviz_bindir/twopi" ]; then
+    echo "Skipping Graphviz runtime companion; Graphviz executables not found under $graphviz_bindir" >&2
+    return 0
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-graphviz-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Graphviz runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_GRAPHVIZ_BINDIR="$graphviz_bindir" \
+  SAGELITE_GRAPHVIZ_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_info_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1418,6 +1452,7 @@ build_dvipng_runtime_companion
 build_benzene_runtime_companion
 build_buckygen_runtime_companion
 build_glucose_runtime_companion
+build_graphviz_runtime_companion
 build_info_runtime_companion
 build_kissat_runtime_companion
 build_msolve_runtime_companion
