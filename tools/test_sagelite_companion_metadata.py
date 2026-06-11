@@ -1267,6 +1267,26 @@ def test_conway_polynomials_pypi_database_is_core_sagelite_dependency():
     requirement = "conway-polynomials >=0.8"
 
     assert requirement in pyproject["project"]["dependencies"]
+    assert pyproject["project"]["optional-dependencies"]["conway-polynomials"] == [
+        requirement
+    ]
+    assert pyproject["project"]["optional-dependencies"]["conway_polynomials"] == [
+        requirement
+    ]
+
+
+def test_elliptic_curves_standard_database_extra_installs_split_wheels():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirements = [
+        "sagelite-database-cremona-mini >=10.9,<10.10",
+        "sagelite-database-ellcurves >=10.9,<10.10",
+    ]
+
+    assert extras["elliptic-curves"] == requirements
+    assert extras["elliptic_curves"] == requirements
 
 
 def test_cubic_hecke_pypi_database_is_exposed_by_sagelite_extras():

@@ -109,6 +109,8 @@ cddexec = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cddexec_gmp = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
 cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
+conway-polynomials = ['conway-polynomials >=0.8']
+conway_polynomials = ['conway-polynomials >=0.8']
 csdp = ['sagelite-csdp-runtime >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
@@ -169,6 +171,14 @@ dvipng = ['sagelite-dvipng-runtime >=10.9,<10.10']
 ecl = ['sagelite-ecl-runtime >=10.9,<10.10']
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
+elliptic-curves = [
+  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-ellcurves >=10.9,<10.10',
+]
+elliptic_curves = [
+  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-ellcurves >=10.9,<10.10',
+]
 dot = ['sagelite-graphviz-runtime >=10.9,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
