@@ -34,6 +34,7 @@ py.install_sources(
   'khoca.py',
   'latex.py',
   'latte.py',
+  'lcalc.py',
   'lrs.py',
   'mcqd.py',
   'meataxe.py',
