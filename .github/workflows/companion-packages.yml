@@ -160,6 +160,16 @@ jobs:
             path: companion-packages/sagelite-gap-package-guava
             apt_packages: gap gap-guava gap-guava-bin gap-sonata
             publish: false
+          - name: sagelite-gap-package-hap
+            import_name: sagelite_gap_package_hap
+            path: companion-packages/sagelite-gap-package-hap
+            apt_packages: ""
+            publish: false
+          - name: sagelite-gap-package-polenta
+            import_name: sagelite_gap_package_polenta
+            path: companion-packages/sagelite-gap-package-polenta
+            apt_packages: ""
+            publish: false
           - name: sagelite-gap-package-polycyclic
             import_name: sagelite_gap_package_polycyclic
             path: companion-packages/sagelite-gap-package-polycyclic
@@ -169,6 +179,16 @@ jobs:
             import_name: sagelite_gap_package_primgrp
             path: companion-packages/sagelite-gap-package-primgrp
             apt_packages: gap gap-primgrp
+            publish: false
+          - name: sagelite-gap-package-qpa
+            import_name: sagelite_gap_package_qpa
+            path: companion-packages/sagelite-gap-package-qpa
+            apt_packages: ""
+            publish: false
+          - name: sagelite-gap-package-quagroup
+            import_name: sagelite_gap_package_quagroup
+            path: companion-packages/sagelite-gap-package-quagroup
+            apt_packages: ""
             publish: false
           - name: sagelite-gap-package-smallgrp
             import_name: sagelite_gap_package_smallgrp
@@ -428,11 +448,35 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-gap-package-guava" ]; then
             export SAGELITE_GAP_GUAVA_ROOT=/usr/share/gap
           fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-hap" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download gap_packages | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/gap-packages-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
+            export SAGELITE_GAP_HAP_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-polenta" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download gap_packages | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/gap-packages-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
+            export SAGELITE_GAP_POLENTA_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
+          fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-polycyclic" ]; then
             export SAGELITE_GAP_POLYCYCLIC_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-primgrp" ]; then
             export SAGELITE_GAP_PRIMGRP_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-qpa" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download gap_packages | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/gap-packages-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
+            export SAGELITE_GAP_QPA_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-quagroup" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download gap_packages | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/gap-packages-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
+            export SAGELITE_GAP_QUAGROUP_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-smallgrp" ]; then
             export SAGELITE_GAP_SMALLGRP_ROOT=/usr/share/gap
@@ -739,6 +783,37 @@ jobs:
               assert any(ep.name == "guava" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-gap-package-hap":
+              runtime = importlib.import_module("sagelite_gap_package_hap.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              for prefix in ("hap", "hapcryst"):
+                  assert any(
+                      os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                      for name in os.listdir(os.path.join(roots[0], "pkg"))
+                      if name.lower().startswith(prefix)
+                  )
+              assert any(ep.name == "hap" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-polenta":
+              runtime = importlib.import_module("sagelite_gap_package_polenta.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("polenta")
+              )
+              assert any(ep.name == "polenta" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-gap-package-polycyclic":
               runtime = importlib.import_module("sagelite_gap_package_polycyclic.runtime")
               gap_root_paths = runtime.gap_root_paths()
@@ -768,6 +843,36 @@ jobs:
                   if name.lower().startswith("primgrp")
               )
               assert any(ep.name == "primgrp" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-qpa":
+              runtime = importlib.import_module("sagelite_gap_package_qpa.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("qpa")
+              )
+              assert any(ep.name == "qpa" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-quagroup":
+              runtime = importlib.import_module("sagelite_gap_package_quagroup.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("quagroup")
+              )
+              assert any(ep.name == "quagroup" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gap-package-smallgrp":

@@ -72,11 +72,23 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-guava": {
         "sagelite_gap_package_guava": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-hap": {
+        "sagelite_gap_package_hap": ["data/gaproot/pkg/**/*"],
+    },
+    "sagelite-gap-package-polenta": {
+        "sagelite_gap_package_polenta": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-polycyclic": {
         "sagelite_gap_package_polycyclic": ["data/gaproot/pkg/**/*"],
     },
     "sagelite-gap-package-primgrp": {
         "sagelite_gap_package_primgrp": ["data/gaproot/pkg/**/*"],
+    },
+    "sagelite-gap-package-qpa": {
+        "sagelite_gap_package_qpa": ["data/gaproot/pkg/**/*"],
+    },
+    "sagelite-gap-package-quagroup": {
+        "sagelite_gap_package_quagroup": ["data/gaproot/pkg/**/*"],
     },
     "sagelite-gap-package-smallgrp": {
         "sagelite_gap_package_smallgrp": ["data/gaproot/pkg/**/*"],
@@ -316,8 +328,12 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap-package-design",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
+    "sagelite-gap-package-hap",
+    "sagelite-gap-package-polenta",
     "sagelite-gap-package-polycyclic",
     "sagelite-gap-package-primgrp",
+    "sagelite-gap-package-qpa",
+    "sagelite-gap-package-quagroup",
     "sagelite-gap-package-smallgrp",
     "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
@@ -349,8 +365,12 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-package-design",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
+    "sagelite-gap-package-hap",
+    "sagelite-gap-package-polenta",
     "sagelite-gap-package-polycyclic",
     "sagelite-gap-package-primgrp",
+    "sagelite-gap-package-qpa",
+    "sagelite-gap-package-quagroup",
     "sagelite-gap-package-smallgrp",
     "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
@@ -1607,8 +1627,12 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
         "sagelite-gap-package-design >=10.9,<10.10",
         "sagelite-gap-package-grape >=10.9,<10.10",
         "sagelite-gap-package-guava >=10.9,<10.10",
+        "sagelite-gap-package-hap >=10.9,<10.10",
+        "sagelite-gap-package-polenta >=10.9,<10.10",
         "sagelite-gap-package-polycyclic >=10.9,<10.10",
         "sagelite-gap-package-primgrp >=10.9,<10.10",
+        "sagelite-gap-package-qpa >=10.9,<10.10",
+        "sagelite-gap-package-quagroup >=10.9,<10.10",
         "sagelite-gap-package-smallgrp >=10.9,<10.10",
         "sagelite-gap-package-tomlib >=10.9,<10.10",
         "sagelite-gap-package-transgrp >=10.9,<10.10",
