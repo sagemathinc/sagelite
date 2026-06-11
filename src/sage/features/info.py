@@ -2,7 +2,9 @@ r"""
 Feature for testing the presence of ``info``, from GNU Info
 """
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 
 
 class Info(Executable):
@@ -25,6 +27,30 @@ class Info(Executable):
         """
         Executable.__init__(self, 'info', executable='info',
                             spkg='info', type='standard')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ``info`` executable path.
+
+        Normal Sage installations find ``info`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-info-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_info.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():
