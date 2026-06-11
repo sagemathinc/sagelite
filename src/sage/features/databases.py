@@ -514,6 +514,36 @@ class DatabaseSteinWatkinsMini(JoinFeature):
         )
 
 
+class DatabaseSteinWatkins(StaticFile):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of the
+    full Stein-Watkins elliptic-curve database.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseSteinWatkins
+        sage: DatabaseSteinWatkins().is_present()  # optional - database_stein_watkins
+        FeatureTestResult('database_stein_watkins', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseSteinWatkins
+            sage: isinstance(DatabaseSteinWatkins(), DatabaseSteinWatkins)
+            True
+        """
+        StaticFile.__init__(
+            self,
+            "database_stein_watkins",
+            filename="a.002.bz2",
+            search_path=tuple(sage_data_paths("stein_watkins")),
+            spkg="database_stein_watkins",
+            description="Stein-Watkins full elliptic-curve database",
+        )
+
+
 def all_features():
     return [
         PythonModule("conway_polynomials", spkg="conway_polynomials", type="standard"),
@@ -533,4 +563,5 @@ def all_features():
         DatabaseReflexivePolytopes("polytopes_db_4d"),
         DatabaseSymbolicData(),
         DatabaseSteinWatkinsMini(),
+        DatabaseSteinWatkins(),
     ]

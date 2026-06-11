@@ -198,3 +198,16 @@ def test_stein_watkins_mini_feature_searches_companion_data(monkeypatch, tmp_pat
         [str(companion)],
     ]
     assert bool(feature.is_present())
+
+
+def test_stein_watkins_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "stein_watkins"
+    companion.mkdir(parents=True)
+    (companion / "a.002.bz2").write_bytes(b"stein-watkins\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseSteinWatkins()
+
+    assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())

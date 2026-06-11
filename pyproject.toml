@@ -111,6 +111,8 @@ database-kohel = ['sagelite-database-kohel >=10.9,<10.10']
 database-mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
 database-odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 database-sloane = ['sagelite-database-sloane >=10.9,<10.10']
+database-stein-watkins = ['sagelite-database-stein-watkins >=10.9,<10.10']
+database-stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
 database-symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 databases = [
   'database-cubic-hecke ==2022.4.4',

@@ -580,6 +580,18 @@ def _check_database_stein_watkins_mini():
     )
 
 
+def _check_database_stein_watkins():
+    try:
+        import sagelite_database_stein_watkins  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.databases.stein_watkins import SteinWatkinsAllData
+
+    first_all = next(SteinWatkinsAllData(2))
+    return f"first conductor in a.002: {first_all.conductor}"
+
+
 def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
@@ -646,6 +658,7 @@ def main() -> int:
         ("SymbolicData database runtime", _check_database_symbolic_data),
         ("Odlyzko zeta database runtime", _check_database_odlyzko_zeta),
         ("Stein-Watkins mini database runtime", _check_database_stein_watkins_mini),
+        ("Stein-Watkins full database runtime", _check_database_stein_watkins),
     ]
 
     ok = True
