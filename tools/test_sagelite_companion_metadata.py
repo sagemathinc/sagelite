@@ -132,6 +132,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-plantri-runtime": {
         "sagelite_plantri": ["data/bin/*"],
     },
+    "sagelite-poppler-runtime": {
+        "sagelite_poppler": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-qepcad-runtime": {
         "sagelite_qepcad": [
             "data/root/bin/qepcad",
@@ -274,6 +277,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-kenzo-runtime",
     "sagelite-lie-runtime",
     "sagelite-mathjax-runtime",
+    "sagelite-poppler-runtime",
     "sagelite-threejs-runtime",
 }
 
@@ -312,6 +316,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-pdf2svg-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
+    "sagelite-poppler-runtime",
     "sagelite-qepcad-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
@@ -1484,11 +1489,31 @@ def test_pdf2svg_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_poppler_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-poppler-runtime >=10.9,<10.10"
+
+    assert extras["poppler"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_pdf2svg_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-pdf2svg-runtime")
 
     assert pyproject["project"]["scripts"] == {
         "pdf2svg": "sagelite_pdf2svg.runtime:pdf2svg",
+    }
+
+
+def test_poppler_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-poppler-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "pdftocairo": "sagelite_poppler.runtime:pdftocairo",
     }
 
 

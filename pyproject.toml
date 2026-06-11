@@ -225,6 +225,7 @@ full = [
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-poppler-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
@@ -306,6 +307,7 @@ pdf2svg = ['sagelite-pdf2svg-runtime >=10.9,<10.10']
 phitigra = ['phitigra >=0.2.3']
 planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
+poppler = ['sagelite-poppler-runtime >=10.9,<10.10']
 polytopes = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 polytopes-db = ['sagelite-database-polytopes >=10.9,<10.10']
@@ -354,6 +356,7 @@ runtime = [
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-poppler-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9,<10.10',
@@ -488,6 +491,7 @@ extra = [
   "pkg:generic/latte-integrale",
   "pkg:generic/lrslib",
   "pkg:generic/plantri",
+  "pkg:generic/poppler",
   "pkg:generic/qepcad",
   "pkg:generic/tides",
 ]

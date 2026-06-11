@@ -270,6 +270,11 @@ jobs:
             path: companion-packages/sagelite-pdf2svg-runtime
             apt_packages: pdf2svg
             publish: false
+          - name: sagelite-poppler-runtime
+            import_name: sagelite_poppler
+            path: companion-packages/sagelite-poppler-runtime
+            apt_packages: poppler-utils
+            publish: false
           - name: sagelite-planarity-runtime
             import_name: sagelite_planarity
             path: companion-packages/sagelite-planarity-runtime
@@ -479,6 +484,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-pdf2svg-runtime" ]; then
             export SAGELITE_PDF2SVG_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-poppler-runtime" ]; then
+            export SAGELITE_POPPLER_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-planarity-runtime" ]; then
             export SAGELITE_PLANARITY_BINDIR=/usr/bin

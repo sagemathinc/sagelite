@@ -70,6 +70,7 @@ nauty_module = _load_source_feature_module("nauty")
 palp_module = _load_source_feature_module("palp")
 planarity_module = _load_source_feature_module("planarity")
 pdf2svg_module = _load_source_feature_module("pdf2svg")
+poppler_module = _load_source_feature_module("poppler")
 qepcad_module = _load_source_feature_module("qepcad")
 rubiks_module = _load_source_feature_module("rubiks")
 sat_module = _load_source_feature_module("sat")
@@ -94,6 +95,7 @@ NautyExecutable = nauty_module.NautyExecutable
 PalpExecutable = palp_module.PalpExecutable
 Planarity = planarity_module.Planarity
 pdf2svg = pdf2svg_module.pdf2svg
+pdftocairo = poppler_module.pdftocairo
 Qepcad = qepcad_module.Qepcad
 RubiksExecutable = rubiks_module.RubiksExecutable
 Glucose = sat_module.Glucose
@@ -421,6 +423,22 @@ def test_pdf2svg_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_pdf2svg.runtime", None)
 
     feature = pdf2svg()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_poppler_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_poppler", "pdftocairo", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_poppler", None)
+    sys.modules.pop("sagelite_poppler.runtime", None)
+
+    feature = pdftocairo()
 
     assert feature.absolute_filename() == os.fspath(executable)
 

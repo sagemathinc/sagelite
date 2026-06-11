@@ -240,6 +240,7 @@ Examples include:
 - `sagelite-pdf2svg-runtime`
 - `sagelite-planarity-runtime`
 - `sagelite-plantri-runtime`
+- `sagelite-poppler-runtime`
 - `sagelite-rubiks-runtime`
 - `sagelite-singular-runtime`
 - `sagelite-sympow-runtime`

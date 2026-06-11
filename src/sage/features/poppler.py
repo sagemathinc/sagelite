@@ -29,7 +29,9 @@ Currently we only check for the presence of ``pdftocairo``.
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from . import Executable
+import os
+
+from . import Executable, FeatureNotPresentError
 
 
 class pdftocairo(Executable):
@@ -53,6 +55,30 @@ class pdftocairo(Executable):
         """
         Executable.__init__(self, "pdftocairo", executable='pdftocairo',
                             url='https://poppler.freedesktop.org/')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ``pdftocairo`` executable path.
+
+        Normal Sage installations find ``pdftocairo`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-poppler-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_poppler.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
 
 
 def all_features():
