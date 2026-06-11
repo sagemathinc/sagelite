@@ -145,6 +145,11 @@ jobs:
             path: companion-packages/sagelite-gap-package-ctbllib
             apt_packages: gap gap-character-tables
             publish: false
+          - name: sagelite-gap-package-design
+            import_name: sagelite_gap_package_design
+            path: companion-packages/sagelite-gap-package-design
+            apt_packages: gap gap-design
+            publish: false
           - name: sagelite-gap-package-grape
             import_name: sagelite_gap_package_grape
             path: companion-packages/sagelite-gap-package-grape
@@ -413,6 +418,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-ctbllib" ]; then
             export SAGELITE_GAP_CTBLLIB_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-design" ]; then
+            export SAGELITE_GAP_DESIGN_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-grape" ]; then
             export SAGELITE_GAP_GRAPE_ROOT=/usr/share/gap

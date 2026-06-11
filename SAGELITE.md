@@ -221,6 +221,7 @@ Examples include:
 - `sagelite-gap-runtime`
 - `sagelite-gap-package-atlasrep`
 - `sagelite-gap-package-ctbllib`
+- `sagelite-gap-package-design`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
 - `sagelite-gap-package-polycyclic`
@@ -327,6 +328,7 @@ The split can grow incrementally with packages such as:
 
 - `sagelite-gap-runtime` for the GAP core
 - `sagelite-gap-package-gapdoc`
+- `sagelite-gap-package-design`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
 - `sagelite-gap-package-smallgrp`
