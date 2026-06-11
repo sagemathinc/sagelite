@@ -404,6 +404,13 @@ COMPANION_WORKFLOW_DATA_PACKAGES = {
     "sagelite-database-symbolic-data",
 }
 
+BASE_SAGELITE_DATA_DEPENDENCIES = {
+    "sagelite-database-cremona-mini >=10.9,<10.10",
+    "sagelite-database-ellcurves >=10.9,<10.10",
+    "sagelite-database-graphs >=10.9,<10.10",
+    "sagelite-database-polytopes >=10.9,<10.10",
+}
+
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
@@ -465,6 +472,15 @@ def test_companion_workflow_builds_expected_data_companion_wheels():
 
     for package in COMPANION_WORKFLOW_DATA_PACKAGES:
         assert f"path: companion-packages/{package}" in workflow_text
+
+
+def test_base_sagelite_installs_standard_data_companion_wheels():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+
+    assert BASE_SAGELITE_DATA_DEPENDENCIES <= dependencies
 
 
 def test_release_workflow_separates_expected_runtime_companion_wheels():
