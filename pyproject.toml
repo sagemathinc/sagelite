@@ -231,8 +231,12 @@ full = [
   'sagelite-gap-package-design >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
   'sagelite-gap-package-smallgrp >=10.9,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
@@ -314,6 +318,14 @@ gap_package_guava = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
 ]
+gap-hap = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+]
+gap_package_hap = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+]
 gap_packages = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
@@ -321,11 +333,23 @@ gap_packages = [
   'sagelite-gap-package-design >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
   'sagelite-gap-package-smallgrp >=10.9,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
+]
+gap-polenta = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
+]
+gap_package_polenta = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
 ]
 gap-polycyclic = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
@@ -342,6 +366,22 @@ gap-primgrp = [
 gap_package_primgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
+]
+gap-qpa = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+]
+gap_package_qpa = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+]
+gap-quagroup = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
+]
+gap_package_quagroup = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
 ]
 gap-smallgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
@@ -443,8 +483,12 @@ runtime = [
   'sagelite-gap-package-design >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
   'sagelite-gap-package-smallgrp >=10.9,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',

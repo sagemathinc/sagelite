@@ -224,8 +224,12 @@ Examples include:
 - `sagelite-gap-package-design`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
+- `sagelite-gap-package-hap`
+- `sagelite-gap-package-polenta`
 - `sagelite-gap-package-polycyclic`
 - `sagelite-gap-package-primgrp`
+- `sagelite-gap-package-qpa`
+- `sagelite-gap-package-quagroup`
 - `sagelite-gap-package-smallgrp`
 - `sagelite-gap-package-tomlib`
 - `sagelite-gap-package-transgrp`
@@ -331,9 +335,13 @@ The split can grow incrementally with packages such as:
 - `sagelite-gap-package-design`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
+- `sagelite-gap-package-hap`
+- `sagelite-gap-package-polenta`
 - `sagelite-gap-package-smallgrp`
 - `sagelite-gap-package-transgrp`
 - `sagelite-gap-package-primgrp`
+- `sagelite-gap-package-qpa`
+- `sagelite-gap-package-quagroup`
 - `sagelite-gap-package-ctbllib`
 - `sagelite-gap-package-tomlib`
 - `sagelite-gap-package-atlasrep`
