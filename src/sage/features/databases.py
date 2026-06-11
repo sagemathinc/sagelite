@@ -18,6 +18,7 @@ Features for testing the presence of various databases
 
 from sage.env import sage_data_paths
 from sage.features import PythonModule, StaticFile
+from sage.features.join_feature import JoinFeature
 
 
 def _search_path_with_registered_data(configured, name):
@@ -33,7 +34,7 @@ def _search_path_with_registered_data(configured, name):
 
     paths = [path for path in paths if path]
     paths.extend(sage_data_paths(name))
-    return paths
+    return tuple(paths)
 
 
 class DatabaseCremona(StaticFile):
@@ -182,7 +183,7 @@ class DatabaseJones(StaticFile):
             self,
             "database_jones_numfield",
             filename="jones.sobj",
-            search_path=sage_data_paths("jones"),
+            search_path=tuple(sage_data_paths("jones")),
             spkg="database_jones_numfield",
             description="John Jones's tables of number fields",
         )
@@ -293,7 +294,7 @@ class DatabaseCunninghamTables(StaticFile):
             self,
             "cunningham_tables",
             filename="cunningham_prime_factors.sobj",
-            search_path=sage_data_paths("cunningham_tables"),
+            search_path=tuple(sage_data_paths("cunningham_tables")),
             spkg="cunningham_tables",
             description="Cunningham tables",
         )
@@ -323,7 +324,7 @@ class DatabaseKohel(StaticFile):
             self,
             "database_kohel",
             filename="PolMod/Cls/pol.001.dbz",
-            search_path=sage_data_paths("kohel"),
+            search_path=tuple(sage_data_paths("kohel")),
             spkg="database_kohel",
             description="Kohel modular-polynomial databases",
         )
@@ -353,7 +354,7 @@ class DatabaseMutationClass(StaticFile):
             self,
             "database_mutation_class",
             filename="mutation_classes_2.dig6",
-            search_path=sage_data_paths("cluster_algebra_quiver"),
+            search_path=tuple(sage_data_paths("cluster_algebra_quiver")),
             spkg="database_mutation_class",
             description="Cluster algebra quiver mutation classes",
         )
@@ -383,7 +384,7 @@ class DatabaseOdlyzkoZeta(StaticFile):
             self,
             "database_odlyzko_zeta",
             filename="zeros.sobj",
-            search_path=sage_data_paths("odlyzko"),
+            search_path=tuple(sage_data_paths("odlyzko")),
             spkg="database_odlyzko_zeta",
             description="Odlyzko zeta-zero database",
         )
@@ -453,9 +454,63 @@ class DatabaseSymbolicData(StaticFile):
             self,
             "database_symbolic_data",
             filename="Data/XMLResources/INTPS",
-            search_path=sage_data_paths("symbolic_data"),
+            search_path=tuple(sage_data_paths("symbolic_data")),
             spkg="database_symbolic_data",
             description="SymbolicData benchmark database",
+        )
+
+
+class DatabaseSteinWatkinsMini(JoinFeature):
+    r"""
+    A :class:`~sage.features.Feature` which describes the presence of the
+    small Stein-Watkins elliptic-curve database.
+
+    EXAMPLES::
+
+        sage: from sage.features.databases import DatabaseSteinWatkinsMini
+        sage: DatabaseSteinWatkinsMini().is_present()  # optional - database_stein_watkins_mini
+        FeatureTestResult('database_stein_watkins_mini', True)
+    """
+
+    def __init__(self):
+        r"""
+        TESTS::
+
+            sage: from sage.features.databases import DatabaseSteinWatkinsMini
+            sage: isinstance(DatabaseSteinWatkinsMini(), DatabaseSteinWatkinsMini)
+            True
+        """
+        search_path = tuple(sage_data_paths("stein_watkins"))
+        files = [
+            StaticFile(
+                "database_stein_watkins_mini_all_000",
+                filename="a.000.bz2",
+                search_path=search_path,
+                spkg="database_stein_watkins_mini",
+                description="Stein-Watkins mini all-conductor table a.000",
+            ),
+            StaticFile(
+                "database_stein_watkins_mini_all_001",
+                filename="a.001.bz2",
+                search_path=search_path,
+                spkg="database_stein_watkins_mini",
+                description="Stein-Watkins mini all-conductor table a.001",
+            ),
+            StaticFile(
+                "database_stein_watkins_mini_prime_00",
+                filename="p.00.bz2",
+                search_path=search_path,
+                spkg="database_stein_watkins_mini",
+                description="Stein-Watkins mini prime-conductor table p.00",
+            ),
+        ]
+        JoinFeature.__init__(
+            self,
+            "database_stein_watkins_mini",
+            files,
+            spkg="database_stein_watkins_mini",
+            description="Stein-Watkins mini elliptic-curve database",
+            type="optional",
         )
 
 
@@ -477,4 +532,5 @@ def all_features():
         DatabaseReflexivePolytopes(),
         DatabaseReflexivePolytopes("polytopes_db_4d"),
         DatabaseSymbolicData(),
+        DatabaseSteinWatkinsMini(),
     ]

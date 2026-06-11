@@ -25,7 +25,7 @@ def test_search_path_with_registered_data_keeps_configured_path(monkeypatch, tmp
 
     assert databases._search_path_with_registered_data(
         str(configured), "ellcurves"
-    ) == [str(configured), str(companion)]
+    ) == (str(configured), str(companion))
 
 
 def test_ellcurves_feature_searches_companion_data_when_config_is_stale(
@@ -179,4 +179,22 @@ def test_symbolic_data_feature_searches_companion_data(monkeypatch, tmp_path):
     feature = databases.DatabaseSymbolicData()
 
     assert feature.search_path == [str(companion)]
+    assert bool(feature.is_present())
+
+
+def test_stein_watkins_mini_feature_searches_companion_data(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "stein_watkins"
+    companion.mkdir(parents=True)
+    for filename in ("a.000.bz2", "a.001.bz2", "p.00.bz2"):
+        (companion / filename).write_bytes(b"stein-watkins\n")
+
+    monkeypatch.setattr(databases, "sage_data_paths", lambda name: {str(companion)})
+
+    feature = databases.DatabaseSteinWatkinsMini()
+
+    assert [file.search_path for file in feature.joined_features()] == [
+        [str(companion)],
+        [str(companion)],
+        [str(companion)],
+    ]
     assert bool(feature.is_present())

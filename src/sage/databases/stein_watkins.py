@@ -1,4 +1,4 @@
-# sage.doctest: needs database_stein_watkins
+# sage.doctest: needs database_stein_watkins_mini
 r"""
 The Stein-Watkins table of elliptic curves
 
