@@ -13,7 +13,7 @@ Feature for testing the presence of ``ecm`` or ``gmp-ecm``
 
 import os
 
-from . import Executable, FeatureNotPresentError
+from . import Executable
 from sage.env import SAGE_ECMBIN
 
 
@@ -47,20 +47,15 @@ class Ecm(Executable):
         package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_ecm.runtime import executable_path
         except ImportError:
-            raise original_error
+            pass
+        else:
+            executable = executable_path()
+            if executable.is_file() and os.access(executable, os.X_OK):
+                return os.fspath(executable)
 
-        executable = executable_path()
-        if executable.is_file() and os.access(executable, os.X_OK):
-            return os.fspath(executable)
-
-        raise original_error
+        return super().absolute_filename()
 
 
 def all_features():

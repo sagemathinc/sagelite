@@ -15,7 +15,7 @@ import os
 
 from sage.env import SAGE_NAUTY_BINS_PREFIX
 
-from . import Executable, FeatureNotPresentError
+from . import Executable
 from .join_feature import JoinFeature
 
 
@@ -56,20 +56,15 @@ class NautyExecutable(Executable):
         package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_nauty.runtime import executable_path
         except ImportError:
-            raise original_error
+            pass
+        else:
+            executable = executable_path(self._sagelite_program)
+            if executable.is_file() and os.access(executable, os.X_OK):
+                return os.fspath(executable)
 
-        executable = executable_path(self._sagelite_program)
-        if executable.is_file() and os.access(executable, os.X_OK):
-            return os.fspath(executable)
-
-        raise original_error
+        return super().absolute_filename()
 
 
 class Nauty(JoinFeature):
