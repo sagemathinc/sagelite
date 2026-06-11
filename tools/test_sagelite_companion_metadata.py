@@ -1156,6 +1156,42 @@ def test_pypandoc_binary_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+
+    aliases = {
+        "cunningham_tables": "cunningham-tables",
+        "database_cremona_ellcurve": "database-cremona-ellcurve",
+        "database_cubic_hecke": "database-cubic-hecke",
+        "database_graphs": "database-graphs",
+        "database_jones_numfield": "database-jones-numfield",
+        "database_knotinfo": "database-knotinfo",
+        "database_kohel": "database-kohel",
+        "database_mutation_class": "database-mutation-class",
+        "database_odlyzko_zeta": "database-odlyzko-zeta",
+        "database_sloane": "database-sloane",
+        "database_stein_watkins": "database-stein-watkins",
+        "database_stein_watkins_mini": "database-stein-watkins-mini",
+        "database_symbolic_data": "database-symbolic-data",
+        "latte_int": "latte",
+        "matroid_database": "matroid-database",
+        "polytopes_db": "polytopes-db",
+        "polytopes_db_4d": "polytopes-db-4d",
+        "python_igraph": "igraph",
+        "rpy2": "R",
+        "sloane_database": "sloane-database",
+    }
+    for alias, canonical in aliases.items():
+        assert extras[alias] == extras[canonical]
+
+    for alias in ("pycosat", "pynormaliz", "sage_numerical_backends_coin"):
+        assert extras[alias][0] in extras["extra"]
+        assert extras[alias][0] in extras["full"]
+
+
 def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
