@@ -219,6 +219,7 @@ by Sage interfaces or doctests.
 Examples include:
 
 - `sagelite-gap-runtime`
+- `sagelite-gap-package-atlasrep`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
 - `sagelite-gap-package-polycyclic`

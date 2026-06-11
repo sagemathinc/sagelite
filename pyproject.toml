@@ -219,6 +219,7 @@ full = [
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
@@ -262,6 +263,14 @@ full = [
 4ti2 = ['sagelite-4ti2-runtime >=10.9,<10.10']
 benzene = ['sagelite-benzene-runtime >=10.9,<10.10']
 gap = ['sagelite-gap-runtime >=10.9.post2,<10.10']
+gap-atlasrep = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
+]
+gap_package_atlasrep = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
+]
 gap-grape = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
@@ -280,6 +289,7 @@ gap_package_guava = [
 ]
 gap_packages = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
@@ -380,6 +390,7 @@ runtime = [
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',

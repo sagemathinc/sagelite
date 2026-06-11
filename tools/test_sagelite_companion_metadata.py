@@ -49,6 +49,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-runtime": {
         "sagelite_gap_runtime": ["data/bin/*", "data/gap*/**/*"],
     },
+    "sagelite-gap-package-atlasrep": {
+        "sagelite_gap_package_atlasrep": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-grape": {
         "sagelite_gap_package_grape": ["data/gaproot/pkg/**/*"],
     },
@@ -287,6 +290,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-gap3-runtime",
     "sagelite-fricas-runtime",
+    "sagelite-gap-package-atlasrep",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
@@ -314,6 +318,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-frobby-runtime",
     "sagelite-fricas-runtime",
     "sagelite-gap-runtime",
+    "sagelite-gap-package-atlasrep",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
@@ -1268,6 +1273,34 @@ def test_gap_grape_package_is_exposed_by_sagelite_extras():
     assert grape in extras["full"]
 
 
+def test_gap_atlasrep_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-atlasrep")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "atlasrep": "sagelite_gap_package_atlasrep.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_atlasrep"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_atlasrep_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    atlasrep = "sagelite-gap-package-atlasrep >=10.9,<10.10"
+
+    assert extras["gap-atlasrep"] == [gap_runtime, atlasrep]
+    assert extras["gap_package_atlasrep"] == [gap_runtime, atlasrep]
+    assert atlasrep in extras["runtime"]
+    assert atlasrep in extras["full"]
+
+
 def test_gap_guava_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-guava")
 
@@ -1387,6 +1420,7 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
     extras = pyproject["project"]["optional-dependencies"]
     gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
     available_gap_packages = [
+        "sagelite-gap-package-atlasrep >=10.9,<10.10",
         "sagelite-gap-package-grape >=10.9,<10.10",
         "sagelite-gap-package-guava >=10.9,<10.10",
         "sagelite-gap-package-polycyclic >=10.9,<10.10",

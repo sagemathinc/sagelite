@@ -130,6 +130,11 @@ jobs:
             path: companion-packages/sagelite-gap-runtime
             apt_packages: gap gap-gapdoc gap-smallgrp gap-transgrp gap-primgrp gap-character-tables gap-table-of-marks
             publish: false
+          - name: sagelite-gap-package-atlasrep
+            import_name: sagelite_gap_package_atlasrep
+            path: companion-packages/sagelite-gap-package-atlasrep
+            apt_packages: gap gap-atlasrep
+            publish: false
           - name: sagelite-gap-package-grape
             import_name: sagelite_gap_package_grape
             path: companion-packages/sagelite-gap-package-grape
@@ -382,6 +387,9 @@ jobs:
         run: |
           if [ "${{ matrix.name }}" = "sagelite-gap-runtime" ]; then
             export SAGELITE_GAP_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-atlasrep" ]; then
+            export SAGELITE_GAP_ATLASREP_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-grape" ]; then
             export SAGELITE_GAP_GRAPE_ROOT=/usr/share/gap
@@ -639,6 +647,21 @@ jobs:
                   if name.lower().startswith("grape")
               )
               assert any(ep.name == "grape" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-atlasrep":
+              runtime = importlib.import_module("sagelite_gap_package_atlasrep.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("atlasrep")
+              )
+              assert any(ep.name == "atlasrep" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gap-package-guava":
