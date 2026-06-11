@@ -220,10 +220,13 @@ Examples include:
 
 - `sagelite-gap-runtime`
 - `sagelite-gap-package-atlasrep`
+- `sagelite-gap-package-ctbllib`
 - `sagelite-gap-package-grape`
 - `sagelite-gap-package-guava`
 - `sagelite-gap-package-polycyclic`
+- `sagelite-gap-package-primgrp`
 - `sagelite-gap-package-smallgrp`
+- `sagelite-gap-package-tomlib`
 - `sagelite-gap-package-transgrp`
 - `sagelite-gap3-runtime`
 - `sagelite-benzene-runtime`

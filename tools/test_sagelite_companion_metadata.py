@@ -52,6 +52,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-atlasrep": {
         "sagelite_gap_package_atlasrep": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-ctbllib": {
+        "sagelite_gap_package_ctbllib": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-grape": {
         "sagelite_gap_package_grape": ["data/gaproot/pkg/**/*"],
     },
@@ -61,8 +64,14 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-polycyclic": {
         "sagelite_gap_package_polycyclic": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-primgrp": {
+        "sagelite_gap_package_primgrp": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-smallgrp": {
         "sagelite_gap_package_smallgrp": ["data/gaproot/pkg/**/*"],
+    },
+    "sagelite-gap-package-tomlib": {
+        "sagelite_gap_package_tomlib": ["data/gaproot/pkg/**/*"],
     },
     "sagelite-gap-package-transgrp": {
         "sagelite_gap_package_transgrp": ["data/gaproot/pkg/**/*"],
@@ -291,10 +300,13 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap3-runtime",
     "sagelite-fricas-runtime",
     "sagelite-gap-package-atlasrep",
+    "sagelite-gap-package-ctbllib",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
+    "sagelite-gap-package-primgrp",
     "sagelite-gap-package-smallgrp",
+    "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
@@ -319,10 +331,13 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-fricas-runtime",
     "sagelite-gap-runtime",
     "sagelite-gap-package-atlasrep",
+    "sagelite-gap-package-ctbllib",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
+    "sagelite-gap-package-primgrp",
     "sagelite-gap-package-smallgrp",
+    "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
     "sagelite-gfan-runtime",
     "sagelite-giac-runtime",
@@ -1301,6 +1316,34 @@ def test_gap_atlasrep_package_is_exposed_by_sagelite_extras():
     assert atlasrep in extras["full"]
 
 
+def test_gap_ctbllib_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-ctbllib")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "ctbllib": "sagelite_gap_package_ctbllib.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_ctbllib"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_ctbllib_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    ctbllib = "sagelite-gap-package-ctbllib >=10.9,<10.10"
+
+    assert extras["gap-ctbllib"] == [gap_runtime, ctbllib]
+    assert extras["gap_package_ctbllib"] == [gap_runtime, ctbllib]
+    assert ctbllib in extras["runtime"]
+    assert ctbllib in extras["full"]
+
+
 def test_gap_guava_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-guava")
 
@@ -1357,6 +1400,34 @@ def test_gap_polycyclic_package_is_exposed_by_sagelite_extras():
     assert polycyclic in extras["full"]
 
 
+def test_gap_primgrp_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-primgrp")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "primgrp": "sagelite_gap_package_primgrp.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_primgrp"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_primgrp_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    primgrp = "sagelite-gap-package-primgrp >=10.9,<10.10"
+
+    assert extras["gap-primgrp"] == [gap_runtime, primgrp]
+    assert extras["gap_package_primgrp"] == [gap_runtime, primgrp]
+    assert primgrp in extras["runtime"]
+    assert primgrp in extras["full"]
+
+
 def test_gap_smallgrp_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-smallgrp")
 
@@ -1383,6 +1454,34 @@ def test_gap_smallgrp_package_is_exposed_by_sagelite_extras():
     assert extras["gap_package_smallgrp"] == [gap_runtime, smallgrp]
     assert smallgrp in extras["runtime"]
     assert smallgrp in extras["full"]
+
+
+def test_gap_tomlib_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-tomlib")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "tomlib": "sagelite_gap_package_tomlib.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_tomlib"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_tomlib_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    tomlib = "sagelite-gap-package-tomlib >=10.9,<10.10"
+
+    assert extras["gap-tomlib"] == [gap_runtime, tomlib]
+    assert extras["gap_package_tomlib"] == [gap_runtime, tomlib]
+    assert tomlib in extras["runtime"]
+    assert tomlib in extras["full"]
 
 
 def test_gap_transgrp_package_registers_gap_root_path():
@@ -1421,10 +1520,13 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
     gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
     available_gap_packages = [
         "sagelite-gap-package-atlasrep >=10.9,<10.10",
+        "sagelite-gap-package-ctbllib >=10.9,<10.10",
         "sagelite-gap-package-grape >=10.9,<10.10",
         "sagelite-gap-package-guava >=10.9,<10.10",
         "sagelite-gap-package-polycyclic >=10.9,<10.10",
+        "sagelite-gap-package-primgrp >=10.9,<10.10",
         "sagelite-gap-package-smallgrp >=10.9,<10.10",
+        "sagelite-gap-package-tomlib >=10.9,<10.10",
         "sagelite-gap-package-transgrp >=10.9,<10.10",
     ]
 

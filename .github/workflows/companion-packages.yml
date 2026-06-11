@@ -135,6 +135,11 @@ jobs:
             path: companion-packages/sagelite-gap-package-atlasrep
             apt_packages: gap gap-atlasrep
             publish: false
+          - name: sagelite-gap-package-ctbllib
+            import_name: sagelite_gap_package_ctbllib
+            path: companion-packages/sagelite-gap-package-ctbllib
+            apt_packages: gap gap-character-tables
+            publish: false
           - name: sagelite-gap-package-grape
             import_name: sagelite_gap_package_grape
             path: companion-packages/sagelite-gap-package-grape
@@ -150,10 +155,20 @@ jobs:
             path: companion-packages/sagelite-gap-package-polycyclic
             apt_packages: gap gap-alnuth gap-autpgrp gap-polycyclic
             publish: false
+          - name: sagelite-gap-package-primgrp
+            import_name: sagelite_gap_package_primgrp
+            path: companion-packages/sagelite-gap-package-primgrp
+            apt_packages: gap gap-primgrp
+            publish: false
           - name: sagelite-gap-package-smallgrp
             import_name: sagelite_gap_package_smallgrp
             path: companion-packages/sagelite-gap-package-smallgrp
             apt_packages: gap gap-smallgrp
+            publish: false
+          - name: sagelite-gap-package-tomlib
+            import_name: sagelite_gap_package_tomlib
+            path: companion-packages/sagelite-gap-package-tomlib
+            apt_packages: gap gap-table-of-marks
             publish: false
           - name: sagelite-gap-package-transgrp
             import_name: sagelite_gap_package_transgrp
@@ -391,6 +406,9 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-gap-package-atlasrep" ]; then
             export SAGELITE_GAP_ATLASREP_ROOT=/usr/share/gap
           fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-ctbllib" ]; then
+            export SAGELITE_GAP_CTBLLIB_ROOT=/usr/share/gap
+          fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-grape" ]; then
             export SAGELITE_GAP_GRAPE_ROOT=/usr/share/gap
           fi
@@ -400,8 +418,14 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-gap-package-polycyclic" ]; then
             export SAGELITE_GAP_POLYCYCLIC_ROOT=/usr/share/gap
           fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-primgrp" ]; then
+            export SAGELITE_GAP_PRIMGRP_ROOT=/usr/share/gap
+          fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-smallgrp" ]; then
             export SAGELITE_GAP_SMALLGRP_ROOT=/usr/share/gap
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-tomlib" ]; then
+            export SAGELITE_GAP_TOMLIB_ROOT=/usr/share/gap
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-transgrp" ]; then
             export SAGELITE_GAP_TRANSGRP_ROOT=/usr/share/gap
@@ -664,6 +688,21 @@ jobs:
               assert any(ep.name == "atlasrep" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-gap-package-ctbllib":
+              runtime = importlib.import_module("sagelite_gap_package_ctbllib.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("ctbllib")
+              )
+              assert any(ep.name == "ctbllib" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-gap-package-guava":
               runtime = importlib.import_module("sagelite_gap_package_guava.runtime")
               gap_root_paths = runtime.gap_root_paths()
@@ -700,6 +739,21 @@ jobs:
               assert any(ep.name == "polycyclic" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
+          if "${{ matrix.name }}" == "sagelite-gap-package-primgrp":
+              runtime = importlib.import_module("sagelite_gap_package_primgrp.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("primgrp")
+              )
+              assert any(ep.name == "primgrp" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
           if "${{ matrix.name }}" == "sagelite-gap-package-smallgrp":
               runtime = importlib.import_module("sagelite_gap_package_smallgrp.runtime")
               gap_root_paths = runtime.gap_root_paths()
@@ -713,6 +767,21 @@ jobs:
                   if name.lower().startswith("smallgrp")
               )
               assert any(ep.name == "smallgrp" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-tomlib":
+              runtime = importlib.import_module("sagelite_gap_package_tomlib.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("tomlib")
+              )
+              assert any(ep.name == "tomlib" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gap-package-transgrp":
