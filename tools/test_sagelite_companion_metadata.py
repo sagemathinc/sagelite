@@ -76,6 +76,13 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-glucose-runtime": {
         "sagelite_glucose": ["data/bin/*"],
     },
+    "sagelite-graphviz-runtime": {
+        "sagelite_graphviz": [
+            "data/bin/*",
+            "data/lib/*",
+            "data/lib/graphviz/*",
+        ],
+    },
     "sagelite-info-runtime": {
         "sagelite_info": [
             "data/bin/*",
@@ -287,6 +294,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap-package-transgrp",
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
+    "sagelite-graphviz-runtime",
     "sagelite-lie-runtime",
     "sagelite-mathjax-runtime",
     "sagelite-poppler-runtime",
@@ -314,6 +322,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gfan-runtime",
     "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
+    "sagelite-graphviz-runtime",
     "sagelite-info-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-kissat-runtime",
@@ -1123,6 +1132,18 @@ def test_imageio_ffmpeg_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_graphviz_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-graphviz-runtime >=10.9,<10.10"
+
+    assert extras["graphviz"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_pypandoc_binary_pypi_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1537,6 +1558,16 @@ def test_glucose_runtime_declares_console_scripts():
     assert pyproject["project"]["scripts"] == {
         "glucose": "sagelite_glucose.runtime:glucose",
         "glucose-syrup": "sagelite_glucose.runtime:glucose_syrup",
+    }
+
+
+def test_graphviz_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-graphviz-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "dot": "sagelite_graphviz.runtime:dot",
+        "neato": "sagelite_graphviz.runtime:neato",
+        "twopi": "sagelite_graphviz.runtime:twopi",
     }
 
 

@@ -13,8 +13,27 @@ Features for testing the presence of ``graphviz``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+import os
+
 from . import Executable
+from . import FeatureNotPresentError
 from .join_feature import JoinFeature
+
+
+def _companion_executable(program, original_error):
+    """
+    Return a Graphviz executable supplied by the optional companion wheel.
+    """
+    try:
+        from sagelite_graphviz.runtime import executable_path
+    except ImportError:
+        raise original_error
+
+    executable = executable_path(program)
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    raise original_error
 
 
 class dot(Executable):
@@ -39,6 +58,19 @@ class dot(Executable):
                             spkg='graphviz',
                             url='https://www.graphviz.org/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ``dot`` executable path.
+
+        Normal Sage installations find ``dot`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-graphviz-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _companion_executable("dot", error)
+
 
 class neato(Executable):
     r"""
@@ -62,6 +94,19 @@ class neato(Executable):
                             spkg='graphviz',
                             url='https://www.graphviz.org/')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ``neato`` executable path.
+
+        Normal Sage installations find ``neato`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-graphviz-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _companion_executable("neato", error)
+
 
 class twopi(Executable):
     r"""
@@ -84,6 +129,19 @@ class twopi(Executable):
         Executable.__init__(self, 'twopi', executable='twopi',
                             spkg='graphviz',
                             url='https://www.graphviz.org/')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ``twopi`` executable path.
+
+        Normal Sage installations find ``twopi`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-graphviz-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _companion_executable("twopi", error)
 
 
 class Graphviz(JoinFeature):

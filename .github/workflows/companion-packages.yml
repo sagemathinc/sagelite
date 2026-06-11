@@ -215,6 +215,11 @@ jobs:
             path: companion-packages/sagelite-glucose-runtime
             apt_packages: glucose
             publish: false
+          - name: sagelite-graphviz-runtime
+            import_name: sagelite_graphviz
+            path: companion-packages/sagelite-graphviz-runtime
+            apt_packages: graphviz
+            publish: false
           - name: sagelite-info-runtime
             import_name: sagelite_info
             path: companion-packages/sagelite-info-runtime
@@ -448,6 +453,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-glucose-runtime" ]; then
             export SAGELITE_GLUCOSE_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-graphviz-runtime" ]; then
+            export SAGELITE_GRAPHVIZ_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-info-runtime" ]; then
             export SAGELITE_INFO_PREFIX=/usr
@@ -943,6 +951,41 @@ jobs:
                   capture_output=True,
               )
               assert "usage" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-graphviz-runtime":
+              runtime = importlib.import_module("sagelite_graphviz.runtime")
+              dot = runtime.executable_path("dot")
+              neato = runtime.executable_path("neato")
+              twopi = runtime.executable_path("twopi")
+              plugins = runtime.plugin_dir()
+              print("dot=", dot)
+              print("neato=", neato)
+              print("twopi=", twopi)
+              print("plugin_dir=", plugins)
+              assert dot.exists()
+              assert neato.exists()
+              assert twopi.exists()
+              assert any(path.name.startswith("config") for path in plugins.iterdir())
+              import shutil
+              import subprocess
+              assert shutil.which("dot")
+              for program in ("dot", "neato", "twopi"):
+                  result = subprocess.run(
+                      [program, "-V"],
+                      text=True,
+                      capture_output=True,
+                      check=True,
+                  )
+                  assert "graphviz version" in (result.stdout + result.stderr)
+              result = subprocess.run(
+                  ["dot", "-Tdot"],
+                  input="graph { a -- b }",
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "a -- b" in result.stdout
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-info-runtime":

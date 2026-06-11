@@ -210,6 +210,7 @@ full = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
+  'sagelite-graphviz-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
@@ -295,6 +296,7 @@ gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
 gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
 giac = ['sagelite-giac-runtime >=10.9,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
+graphviz = ['sagelite-graphviz-runtime >=10.9,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 info = ['sagelite-info-runtime >=10.9,<10.10']
 jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
@@ -361,6 +363,7 @@ runtime = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
+  'sagelite-graphviz-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
