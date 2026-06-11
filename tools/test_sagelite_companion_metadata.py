@@ -469,6 +469,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-database-mutation-class >=10.9,<10.10",
     "sagelite-database-polytopes >=10.9,<10.10",
     "sagelite-database-sloane >=10.9,<10.10",
+    "sagelite-database-symbolic-data >=10.9,<10.10",
 }
 
 

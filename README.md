@@ -80,8 +80,9 @@ core wheel contract.
 
 Small redistributable datasets that are standard in source Sage are installed
 as companion-wheel dependencies of `sagelite`, including Cremona mini,
-elliptic-curve, graph, and 2D/3D reflexive-polytope data. Larger or specialized
-datasets remain available through extras such as `sagelite[databases]`.
+elliptic-curve, graph, SymbolicData, and 2D/3D reflexive-polytope data. Larger
+or specialized datasets remain available through extras such as
+`sagelite[databases]`.
 
 Some optional runtimes are provided as companion packages. For example,
 `sagelite-gap-runtime` supplies GAP's runtime files for in-process `libgap`;
