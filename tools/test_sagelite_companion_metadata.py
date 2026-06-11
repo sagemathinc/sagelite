@@ -39,6 +39,13 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-frobby-runtime": {
         "sagelite_frobby": ["data/bin/*", "data/lib/*"],
     },
+    "sagelite-fricas-runtime": {
+        "sagelite_fricas": [
+            "data/bin/*",
+            "data/lib/fricas/**/*",
+            "data/share/fricas/**/*",
+        ],
+    },
     "sagelite-gap-runtime": {
         "sagelite_gap_runtime": ["data/bin/*", "data/gap*/**/*"],
     },
@@ -259,6 +266,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
 REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-gap3-runtime",
+    "sagelite-fricas-runtime",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-polycyclic",
@@ -280,6 +288,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
     "sagelite-frobby-runtime",
+    "sagelite-fricas-runtime",
     "sagelite-gap-runtime",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
@@ -1254,6 +1263,36 @@ def test_frobby_runtime_declares_console_script():
     assert pyproject["project"]["scripts"] == {
         "frobby": "sagelite_frobby.runtime:frobby",
     }
+
+
+def test_fricas_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-fricas-runtime >=10.9,<10.10"
+
+    assert extras["fricas"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_fricas_runtime_declares_console_script():
+    pyproject = _pyproject("sagelite-fricas-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "fricas": "sagelite_fricas.runtime:fricas",
+    }
+
+
+def test_fricas_runtime_rewrites_prefix_for_relocation():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-fricas-runtime" / "setup.py"
+    ).read_text()
+
+    assert "FRICAS_PREFIX" in setup_py
+    assert "exec_prefix=" in setup_py
+    assert "fricas-real" in setup_py
 
 
 def test_sympow_runtime_is_exposed_by_sagelite_extras():

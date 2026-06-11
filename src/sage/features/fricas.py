@@ -11,8 +11,9 @@ Features for testing the presence of ``fricas``
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
 import subprocess
-from . import Executable, FeatureTestResult
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 from packaging.version import Version
 
 
@@ -40,6 +41,30 @@ class FriCAS(Executable):
                             executable='fricas',
                             url='https://fricas.github.io')
 
+    def absolute_filename(self) -> str:
+        r"""
+        Return the FriCAS executable path.
+
+        Normal Sage installations find ``fricas`` on ``PATH``. Wheel
+        installations can also provide it through the optional
+        ``sagelite-fricas-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            original_error = error
+
+        try:
+            from sagelite_fricas.runtime import executable_path
+        except ImportError:
+            raise original_error
+
+        executable = executable_path()
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+
+        raise original_error
+
     def get_version(self):
         r"""
         Retrieve the installed FriCAS version
@@ -50,7 +75,7 @@ class FriCAS(Executable):
             '1.3...'
         """
         try:
-            output = subprocess.check_output(['fricas', '--version'], stderr=subprocess.STDOUT)
+            output = subprocess.check_output([self.absolute_filename(), '--version'], stderr=subprocess.STDOUT)
             version_line = output.decode('utf-8').strip()
             version = version_line.split()[1]
             return version
@@ -67,9 +92,9 @@ class FriCAS(Executable):
             sage: FriCAS().is_functional()  # optional - fricas
             FeatureTestResult('fricas', True)
         """
-        command = ['fricas -nosman -- -eval ")quit"']
+        command = [self.absolute_filename(), '-nosman', '--', '-eval', ')quit']
         try:
-            lines = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+            lines = subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             return FeatureTestResult(self, False,
                                      reason="Call `{command}` failed with exit code {e.returncode}".format(command=" ".join(command), e=e))

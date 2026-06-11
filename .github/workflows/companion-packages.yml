@@ -190,6 +190,11 @@ jobs:
             path: companion-packages/sagelite-frobby-runtime
             apt_packages: frobby
             publish: false
+          - name: sagelite-fricas-runtime
+            import_name: sagelite_fricas
+            path: companion-packages/sagelite-fricas-runtime
+            apt_packages: fricas
+            publish: false
           - name: sagelite-flatter-runtime
             import_name: sagelite_flatter
             path: companion-packages/sagelite-flatter-runtime
@@ -405,6 +410,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-frobby-runtime" ]; then
             export SAGELITE_FROBBY_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-fricas-runtime" ]; then
+            export SAGELITE_FRICAS_PREFIX=/usr
           fi
           if [ "${{ matrix.name }}" = "sagelite-flatter-runtime" ]; then
             git clone https://github.com/keeganryan/flatter.git "$RUNNER_TEMP/flatter-src"
@@ -829,6 +837,22 @@ jobs:
                   check=True,
               )
               assert "Frobby" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-fricas-runtime":
+              runtime = importlib.import_module("sagelite_fricas.runtime")
+              fricas = runtime.executable_path()
+              print("fricas=", fricas)
+              assert fricas.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("fricas")
+              result = subprocess.run(
+                  ["fricas", "--version"],
+                  text=True,
+                  capture_output=True,
+              )
+              assert "fricas" in (result.stdout + result.stderr).lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-flatter-runtime":

@@ -58,6 +58,7 @@ cddlib_module = _load_source_feature_module("cddlib")
 csdp_module = _load_source_feature_module("csdp")
 four_ti_2_module = _load_source_feature_module("four_ti_2")
 frobby_module = _load_source_feature_module("frobby")
+fricas_module = _load_source_feature_module("fricas")
 gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
 gap3_module = _load_source_feature_module("gap3")
@@ -79,6 +80,7 @@ CddExecutable = cddlib_module.CddExecutable
 CSDP = csdp_module.CSDP
 FourTi2Executable = four_ti_2_module.FourTi2Executable
 Frobby = frobby_module.Frobby
+FriCAS = fricas_module.FriCAS
 GfanExecutable = gfan_module.GfanExecutable
 Gap3 = gap3_module.Gap3
 Benzene = graph_generators_module.Benzene
@@ -371,6 +373,22 @@ def test_frobby_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_frobby.runtime", None)
 
     feature = Frobby()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_fricas_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_fricas", "fricas", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_fricas", None)
+    sys.modules.pop("sagelite_fricas.runtime", None)
+
+    feature = FriCAS()
 
     assert feature.absolute_filename() == os.fspath(executable)
 

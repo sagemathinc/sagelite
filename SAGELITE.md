@@ -224,6 +224,7 @@ Examples include:
 - `sagelite-4ti2-runtime`
 - `sagelite-d3js-runtime`
 - `sagelite-ecm-runtime`
+- `sagelite-fricas-runtime`
 - `sagelite-jmol-runtime`
 - `sagelite-kenzo-runtime`
 - `sagelite-latte-runtime`
