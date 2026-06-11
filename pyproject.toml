@@ -344,11 +344,39 @@ gap_packages = [
   'sagelite-gap-package-tomlib >=10.9,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
 ]
+atlasrep = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-atlasrep >=10.9,<10.10',
+]
+ctbllib = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-ctbllib >=10.9,<10.10',
+]
+design = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-design >=10.9,<10.10',
+]
+grape = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-grape >=10.9,<10.10',
+]
+guava = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
+]
+hap = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-hap >=10.9,<10.10',
+]
 gap-polenta = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-polenta >=10.9,<10.10',
 ]
 gap_package_polenta = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-polenta >=10.9,<10.10',
+]
+polenta = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-polenta >=10.9,<10.10',
 ]
@@ -360,11 +388,19 @@ gap_package_polycyclic = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
 ]
+polycyclic = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-polycyclic >=10.9,<10.10',
+]
 gap-primgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
 ]
 gap_package_primgrp = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-primgrp >=10.9,<10.10',
+]
+primgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
 ]
@@ -376,11 +412,19 @@ gap_package_qpa = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-qpa >=10.9,<10.10',
 ]
+qpa = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-qpa >=10.9,<10.10',
+]
 gap-quagroup = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-quagroup >=10.9,<10.10',
 ]
 gap_package_quagroup = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-quagroup >=10.9,<10.10',
+]
+quagroup = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-quagroup >=10.9,<10.10',
 ]
@@ -392,6 +436,10 @@ gap_package_smallgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-smallgrp >=10.9,<10.10',
 ]
+smallgrp = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-smallgrp >=10.9,<10.10',
+]
 gap-tomlib = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
@@ -400,11 +448,19 @@ gap_package_tomlib = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
 ]
+tomlib = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-tomlib >=10.9,<10.10',
+]
 gap-transgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
 ]
 gap_package_transgrp = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-transgrp >=10.9,<10.10',
+]
+transgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
 ]
@@ -428,6 +484,7 @@ latte = ['sagelite-latte-runtime >=10.9,<10.10']
 latte_int = ['sagelite-latte-runtime >=10.9,<10.10']
 lcalc = ['sagelite-lcalc-runtime >=10.9,<10.10']
 lie = ['sagelite-lie-runtime >=10.9,<10.10']
+lrs = ['sagelite-lrslib-runtime >=10.9,<10.10']
 lrslib = ['sagelite-lrslib-runtime >=10.9,<10.10']
 matroid-database = ['matroid-database ==0.3']
 matroid_database = ['matroid-database ==0.3']

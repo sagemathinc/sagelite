@@ -473,6 +473,66 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
 }
 
 
+GAP_PACKAGE_EXTRA_REQUIREMENTS = {
+    "atlasrep": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-atlasrep >=10.9,<10.10",
+    ],
+    "ctbllib": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-ctbllib >=10.9,<10.10",
+    ],
+    "design": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-design >=10.9,<10.10",
+    ],
+    "grape": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-grape >=10.9,<10.10",
+    ],
+    "guava": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-guava >=10.9,<10.10",
+    ],
+    "hap": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-hap >=10.9,<10.10",
+    ],
+    "polenta": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-polenta >=10.9,<10.10",
+    ],
+    "polycyclic": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-polycyclic >=10.9,<10.10",
+    ],
+    "primgrp": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-primgrp >=10.9,<10.10",
+    ],
+    "qpa": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-qpa >=10.9,<10.10",
+    ],
+    "quagroup": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-quagroup >=10.9,<10.10",
+    ],
+    "smallgrp": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-smallgrp >=10.9,<10.10",
+    ],
+    "tomlib": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-tomlib >=10.9,<10.10",
+    ],
+    "transgrp": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-transgrp >=10.9,<10.10",
+    ],
+}
+
+
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
         return tomllib.load(handle)
@@ -542,6 +602,29 @@ def test_base_sagelite_installs_standard_data_companion_wheels():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert BASE_SAGELITE_DATA_DEPENDENCIES <= dependencies
+
+
+def test_gap_package_wheels_are_exposed_by_upstream_package_name_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+
+    for package, requirements in GAP_PACKAGE_EXTRA_REQUIREMENTS.items():
+        assert extras[package] == requirements
+        assert extras[f"gap-{package}"] == requirements
+        assert extras[f"gap_package_{package}"] == requirements
+
+
+def test_lrslib_runtime_is_exposed_by_lrs_extra():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-lrslib-runtime >=10.9,<10.10"
+
+    assert extras["lrs"] == [requirement]
+    assert extras["lrslib"] == [requirement]
 
 
 def test_base_sagelite_data_companion_wheels_are_publishable():
