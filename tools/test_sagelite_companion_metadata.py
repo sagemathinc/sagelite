@@ -2077,6 +2077,7 @@ def test_poppler_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-poppler-runtime >=10.9,<10.10"
 
     assert extras["poppler"] == [requirement]
+    assert extras["pdftocairo"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
