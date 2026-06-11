@@ -228,6 +228,86 @@ def _gap_root_path_contains_gap(root: str | None) -> bool:
     return bool(root) and os.path.exists(os.path.join(root, "lib", "init.g"))
 
 
+def _gap_root_path_contains_gap_packages(root: str | None) -> bool:
+    """
+    Return whether ``root`` looks like a usable GAP package root directory.
+    """
+    if not root:
+        return False
+
+    pkg = os.path.join(root, "pkg")
+    if not os.path.isdir(pkg):
+        return False
+
+    try:
+        package_names = os.listdir(pkg)
+    except OSError:
+        return False
+
+    return any(
+        os.path.exists(os.path.join(pkg, package_name, "PackageInfo.g"))
+        for package_name in package_names
+    )
+
+
+def _registered_gap_root_paths() -> list[str]:
+    """
+    Return GAP roots contributed by companion-package entry points.
+
+    Optional GAP package wheels can register an entry point in the
+    ``sagemath.gap_root_paths`` group.  Each entry point may return a single
+    root, a semicolon-separated root string, or an iterable of roots.
+    """
+    try:
+        entry_points = importlib_metadata.entry_points(
+            group="sagemath.gap_root_paths"
+        )
+    except TypeError:
+        all_entry_points = importlib_metadata.entry_points()
+        if hasattr(all_entry_points, "select"):
+            entry_points = all_entry_points.select(group="sagemath.gap_root_paths")
+        else:
+            entry_points = all_entry_points.get("sagemath.gap_root_paths", ())
+
+    roots = []
+    for entry_point in entry_points:
+        try:
+            value = entry_point.load()
+            value = value() if callable(value) else value
+        except Exception:
+            continue
+
+        if isinstance(value, (str, bytes, PathLike)):
+            values = str(value).split(";")
+        else:
+            try:
+                values = list(value)
+            except TypeError:
+                continue
+
+        for root in values:
+            root = os.fspath(root).strip()
+            if root:
+                roots.append(root)
+
+    return roots
+
+
+def _append_gap_root(core_roots: list[str], package_roots: list[str], root: str) -> None:
+    """
+    Add ``root`` to the right GAP root bucket if it looks usable.
+    """
+    root = root.strip()
+    if not root:
+        return
+
+    if _gap_root_path_contains_gap(root):
+        if root not in core_roots:
+            core_roots.append(root)
+    elif _gap_root_path_contains_gap_packages(root) and root not in package_roots:
+        package_roots.append(root)
+
+
 def _gap_root_paths() -> str:
     """
     Return GAP root paths, preferring an explicitly configured or companion
@@ -235,35 +315,35 @@ def _gap_root_paths() -> str:
 
     Binary ``sagelite`` wheels bundle ``libgap`` but not the optional GAP
     runtime tree.  The tree can be supplied by setting ``GAP_ROOT_PATHS`` or
-    by installing the ``sagelite-gap-runtime`` companion package.
+    by installing the ``sagelite-gap-runtime`` companion package.  Optional
+    GAP package companion wheels can append package-only roots through the
+    ``sagemath.gap_root_paths`` entry point group.
     """
-    roots = []
+    core_roots = []
+    package_roots = []
 
     configured = os.environ.get("GAP_ROOT_PATHS") or ""
     for root in configured.split(";"):
-        root = root.strip()
-        if _gap_root_path_contains_gap(root) and root not in roots:
-            roots.append(root)
+        _append_gap_root(core_roots, package_roots, root)
 
     companion = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_root_paths")
     if companion:
         for root in companion.split(";"):
-            root = root.strip()
-            if _gap_root_path_contains_gap(root) and root not in roots:
-                roots.append(root)
+            _append_gap_root(core_roots, package_roots, root)
+
+    for root in _registered_gap_root_paths():
+        _append_gap_root(core_roots, package_roots, root)
 
     bundled = join(SAGE_EXTCODE, "gap_root")
-    if _gap_root_path_contains_gap(bundled) and bundled not in roots:
-        roots.append(bundled)
+    if bundled:
+        _append_gap_root(core_roots, package_roots, bundled)
 
     configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
     for root in configured.split(";"):
-        root = root.strip()
-        if _gap_root_path_contains_gap(root) and root not in roots:
-            roots.append(root)
+        _append_gap_root(core_roots, package_roots, root)
 
-    if roots:
-        return ";".join(roots)
+    if core_roots:
+        return ";".join(core_roots + package_roots)
 
     return ""
 

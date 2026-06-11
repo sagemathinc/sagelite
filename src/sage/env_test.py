@@ -75,6 +75,14 @@ def _gap_root(tmp_path: Path, name: str) -> Path:
     return root
 
 
+def _gap_package_root(tmp_path: Path, name: str, package: str = "grape") -> Path:
+    root = tmp_path / name
+    package_root = root / "pkg" / package
+    package_root.mkdir(parents=True)
+    (package_root / "PackageInfo.g").write_text("PackageInfo := rec();\n")
+    return root
+
+
 def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
     root = tmp_path / name
     prefix = root
@@ -377,6 +385,45 @@ def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
     )
 
     assert env._gap_root_paths().split(";") == [str(configured), str(companion)]
+
+
+def test_gap_root_paths_appends_registered_package_roots(monkeypatch, tmp_path):
+    core = _gap_root(tmp_path, "core")
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(core)
+        if (module_name, attr_name) == ("sagelite_gap_runtime.runtime", "gap_root_paths")
+        else None,
+    )
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: package)],
+    )
+
+    assert env._gap_root_paths().split(";") == [str(core), str(package)]
+
+
+def test_gap_root_paths_ignores_package_roots_without_core(monkeypatch, tmp_path):
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda module_name, attr_name: None)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: package)],
+    )
+
+    assert env._gap_root_paths() == ""
 
 
 def test_gap_root_paths_uses_companion_runtime(monkeypatch, tmp_path):
