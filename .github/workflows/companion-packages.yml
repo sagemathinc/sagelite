@@ -205,6 +205,11 @@ jobs:
             path: companion-packages/sagelite-gap-package-quagroup
             apt_packages: ""
             publish: false
+          - name: sagelite-gap-package-repsn
+            import_name: sagelite_gap_package_repsn
+            path: companion-packages/sagelite-gap-package-repsn
+            apt_packages: ""
+            publish: false
           - name: sagelite-gap-package-smallgrp
             import_name: sagelite_gap_package_smallgrp
             path: companion-packages/sagelite-gap-package-smallgrp
@@ -495,6 +500,12 @@ jobs:
             mkdir -p "$RUNNER_TEMP/gap-packages-src"
             tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
             export SAGELITE_GAP_QUAGROUP_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-gap-package-repsn" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download gap_packages | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/gap-packages-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/gap-packages-src"
+            export SAGELITE_GAP_REPSN_ROOT="$(find "$RUNNER_TEMP/gap-packages-src" -maxdepth 2 -type d -name pkg -printf '%h\n' | head -n 1)"
           fi
           if [ "${{ matrix.name }}" = "sagelite-gap-package-smallgrp" ]; then
             export SAGELITE_GAP_SMALLGRP_ROOT=/usr/share/gap
@@ -920,6 +931,21 @@ jobs:
                   if name.lower().startswith("quagroup")
               )
               assert any(ep.name == "quagroup" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-gap-package-repsn":
+              runtime = importlib.import_module("sagelite_gap_package_repsn.runtime")
+              gap_root_paths = runtime.gap_root_paths()
+              print("gap_root_paths=", gap_root_paths)
+              roots = gap_root_paths.split(";")
+              assert roots
+              assert os.path.exists(os.path.join(roots[0], "pkg"))
+              assert any(
+                  os.path.exists(os.path.join(roots[0], "pkg", name, "PackageInfo.g"))
+                  for name in os.listdir(os.path.join(roots[0], "pkg"))
+                  if name.lower().startswith("repsn")
+              )
+              assert any(ep.name == "repsn" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-gap-package-smallgrp":

@@ -231,6 +231,7 @@ Examples include:
 - `sagelite-gap-package-primgrp`
 - `sagelite-gap-package-qpa`
 - `sagelite-gap-package-quagroup`
+- `sagelite-gap-package-repsn`
 - `sagelite-gap-package-smallgrp`
 - `sagelite-gap-package-tomlib`
 - `sagelite-gap-package-transgrp`
@@ -343,6 +344,7 @@ The split can grow incrementally with packages such as:
 - `sagelite-gap-package-primgrp`
 - `sagelite-gap-package-qpa`
 - `sagelite-gap-package-quagroup`
+- `sagelite-gap-package-repsn`
 - `sagelite-gap-package-ctbllib`
 - `sagelite-gap-package-tomlib`
 - `sagelite-gap-package-atlasrep`

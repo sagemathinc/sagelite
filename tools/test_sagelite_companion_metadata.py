@@ -90,6 +90,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-quagroup": {
         "sagelite_gap_package_quagroup": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-repsn": {
+        "sagelite_gap_package_repsn": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-smallgrp": {
         "sagelite_gap_package_smallgrp": ["data/gaproot/pkg/**/*"],
     },
@@ -334,6 +337,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap-package-primgrp",
     "sagelite-gap-package-qpa",
     "sagelite-gap-package-quagroup",
+    "sagelite-gap-package-repsn",
     "sagelite-gap-package-smallgrp",
     "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
@@ -371,6 +375,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-package-primgrp",
     "sagelite-gap-package-qpa",
     "sagelite-gap-package-quagroup",
+    "sagelite-gap-package-repsn",
     "sagelite-gap-package-smallgrp",
     "sagelite-gap-package-tomlib",
     "sagelite-gap-package-transgrp",
@@ -525,6 +530,10 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     "quagroup": [
         "sagelite-gap-runtime >=10.9.post2,<10.10",
         "sagelite-gap-package-quagroup >=10.9,<10.10",
+    ],
+    "repsn": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-repsn >=10.9,<10.10",
     ],
     "smallgrp": [
         "sagelite-gap-runtime >=10.9.post2,<10.10",
@@ -1672,6 +1681,34 @@ def test_gap_primgrp_package_is_exposed_by_sagelite_extras():
     assert primgrp in extras["full"]
 
 
+def test_gap_repsn_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-repsn")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "repsn": "sagelite_gap_package_repsn.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_repsn"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_repsn_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    repsn = "sagelite-gap-package-repsn >=10.9,<10.10"
+
+    assert extras["gap-repsn"] == [gap_runtime, repsn]
+    assert extras["gap_package_repsn"] == [gap_runtime, repsn]
+    assert repsn in extras["runtime"]
+    assert repsn in extras["full"]
+
+
 def test_gap_smallgrp_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-smallgrp")
 
@@ -1766,6 +1803,7 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
         "sagelite-gap-package-atlasrep >=10.9,<10.10",
         "sagelite-gap-package-ctbllib >=10.9,<10.10",
         "sagelite-gap-package-design >=10.9,<10.10",
+        "sagelite-gap-package-gapdoc >=10.9,<10.10",
         "sagelite-gap-package-grape >=10.9,<10.10",
         "sagelite-gap-package-guava >=10.9,<10.10",
         "sagelite-gap-package-hap >=10.9,<10.10",
@@ -1774,6 +1812,7 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
         "sagelite-gap-package-primgrp >=10.9,<10.10",
         "sagelite-gap-package-qpa >=10.9,<10.10",
         "sagelite-gap-package-quagroup >=10.9,<10.10",
+        "sagelite-gap-package-repsn >=10.9,<10.10",
         "sagelite-gap-package-smallgrp >=10.9,<10.10",
         "sagelite-gap-package-tomlib >=10.9,<10.10",
         "sagelite-gap-package-transgrp >=10.9,<10.10",
