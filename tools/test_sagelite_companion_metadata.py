@@ -875,6 +875,7 @@ def test_reflexive_polytopes_database_is_exposed_by_sagelite_extras():
     requirement = "sagelite-database-polytopes >=10.9,<10.10"
 
     assert extras["polytopes"] == [requirement]
+    assert extras["database-polytopes"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
 
@@ -1753,6 +1754,7 @@ def test_polytopes_4d_database_is_exposed_by_sagelite_extras():
     requirement = "sagelite-database-polytopes-4d >=10.9,<10.10"
 
     assert extras["polytopes-4d"] == [requirement]
+    assert extras["database-polytopes-4d"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
 
