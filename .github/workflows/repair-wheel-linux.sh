@@ -972,6 +972,38 @@ build_pdf2svg_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_poppler_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local poppler_bindir="$prefix/bin"
+  if [ ! -x "$poppler_bindir/pdftocairo" ]; then
+    echo "Skipping Poppler runtime companion; pdftocairo not found under $poppler_bindir" >&2
+    return 0
+  fi
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-poppler-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "Poppler runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_POPPLER_BINDIR="$poppler_bindir" \
+  SAGELITE_POPPLER_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_qepcad_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1464,6 +1496,7 @@ build_lie_runtime_companion
 build_planarity_runtime_companion
 build_pdf2svg_runtime_companion
 build_plantri_runtime_companion
+build_poppler_runtime_companion
 build_qepcad_runtime_companion
 build_tachyon_runtime_companion
 build_tides_runtime_companion
