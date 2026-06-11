@@ -1800,6 +1800,15 @@ def test_singular_runtime_wheel_declares_copied_runtime_data():
     ]
 
 
+def test_singular_runtime_copies_factory_gftables():
+    setup_py = ROOT / "companion-packages" / "sagelite-singular-runtime" / "setup.py"
+    setup_text = setup_py.read_text()
+
+    assert '"share" / "factory"' in setup_text
+    assert '"gftables"' in setup_text
+    assert 'target / "share" / "factory"' in setup_text
+
+
 def test_polytopes_4d_database_registers_reflexive_polytope_data_path():
     pyproject = _pyproject("sagelite-database-polytopes-4d")
 

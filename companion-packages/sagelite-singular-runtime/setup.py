@@ -39,6 +39,13 @@ def _looks_like_singular_root(root: Path) -> bool:
     return (root / "share" / "singular" / "LIB" / "standard.lib").is_file()
 
 
+def _factory_data_dir(root: Path) -> Path | None:
+    source = root / "share" / "factory"
+    if (source / "gftables").is_dir():
+        return source
+    return None
+
+
 def _singular_module_dirs(root: Path) -> list[Path]:
     module_dirs: list[Path] = []
     for base in (root / "lib", root / "libexec"):
@@ -72,6 +79,14 @@ class build_py(_build_py):
 
         source = singular_root / "share" / "singular"
         shutil.copytree(source, target / "share" / "singular", ignore_dangling_symlinks=True)
+
+        factory_source = _factory_data_dir(singular_root)
+        if factory_source is not None:
+            shutil.copytree(
+                factory_source,
+                target / "share" / "factory",
+                ignore_dangling_symlinks=True,
+            )
 
         for module_dir in _singular_module_dirs(singular_root):
             relative = module_dir.relative_to(singular_root)
