@@ -152,7 +152,11 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_rubiks": ["data/bin/*"],
     },
     "sagelite-singular-runtime": {
-        "sagelite_singular_runtime": ["data/singular/**/*"],
+        "sagelite_singular_runtime": [
+            "data/bin/*",
+            "data/lib/*",
+            "data/singular/**/*",
+        ],
     },
     "sagelite-sympow-runtime": {
         "sagelite_sympow": [
@@ -1796,6 +1800,8 @@ def test_singular_runtime_wheel_declares_copied_runtime_data():
     assert pyproject["tool"]["setuptools"]["package-data"][
         "sagelite_singular_runtime"
     ] == [
+        "data/bin/*",
+        "data/lib/*",
         "data/singular/**/*",
     ]
 

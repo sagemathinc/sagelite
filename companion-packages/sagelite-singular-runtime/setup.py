@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from setuptools import setup
@@ -35,6 +36,17 @@ def _candidate_singular_roots() -> list[Path]:
     return roots
 
 
+def _candidate_bindirs() -> list[Path]:
+    dirs = []
+    for key in ("SAGELITE_SINGULAR_BINDIR", "SINGULAR_BINDIR"):
+        value = os.environ.get(key)
+        if value:
+            dirs.append(Path(value))
+    for root in _candidate_singular_roots():
+        dirs.append(root / "bin")
+    return dirs
+
+
 def _looks_like_singular_root(root: Path) -> bool:
     return (root / "share" / "singular" / "LIB" / "standard.lib").is_file()
 
@@ -58,6 +70,18 @@ def _singular_module_dirs(root: Path) -> list[Path]:
     return module_dirs
 
 
+def _find_singular_executable() -> Path:
+    for bindir in _candidate_bindirs():
+        candidate = bindir / "Singular"
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return candidate.resolve()
+    searched = "\n  ".join(os.fspath(path) for path in _candidate_bindirs())
+    raise RuntimeError(
+        "could not find a Singular executable. Set SAGELITE_SINGULAR_BINDIR "
+        f"to the Sage-built bin directory.\nSearched:\n  {searched}"
+    )
+
+
 def _find_singular_root() -> Path:
     for root in _candidate_singular_roots():
         if _looks_like_singular_root(root):
@@ -70,12 +94,74 @@ def _find_singular_root() -> Path:
     )
 
 
+def _runtime_libraries(executable: Path) -> list[Path]:
+    output = subprocess.run(
+        ["ldd", os.fspath(executable)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    for line in output.splitlines():
+        if "=>" not in line:
+            continue
+        name, rest = line.split("=>", 1)
+        name = name.strip()
+        path = rest.strip().split(maxsplit=1)[0]
+        if (
+            name.startswith(
+                (
+                    "libSingular",
+                    "libpolys",
+                    "libfactory",
+                    "libsingular_resources",
+                    "libomalloc",
+                    "libflint",
+                    "libntl",
+                    "libgmp",
+                    "libmpfr",
+                    "libgf2x",
+                )
+            )
+            and path != "not"
+        ):
+            libraries.append(Path(path))
+    return libraries
+
+
 class build_py(_build_py):
     def run(self):
         singular_root = _find_singular_root()
+        singular_executable = _find_singular_executable()
         target = Path(self.build_lib) / "sagelite_singular_runtime" / "data" / "singular"
+        bin_target = Path(self.build_lib) / "sagelite_singular_runtime" / "data" / "bin"
+        lib_target = Path(self.build_lib) / "sagelite_singular_runtime" / "data" / "lib"
         shutil.rmtree(target, ignore_errors=True)
+        shutil.rmtree(bin_target, ignore_errors=True)
+        shutil.rmtree(lib_target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
+        bin_target.mkdir(parents=True, exist_ok=True)
+        lib_target.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(singular_executable, bin_target / "Singular-real")
+        wrapper = bin_target / "Singular"
+        wrapper.write_text(
+            "#!/bin/sh\n"
+            'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
+            'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+            'SINGULAR_ROOT_DIR="${SINGULAR_ROOT_DIR:-$HERE/../singular}"\n'
+            'SINGULAR_DEFAULT_DIR="${SINGULAR_DEFAULT_DIR:-$HERE/../singular/share/singular}"\n'
+            "export LD_LIBRARY_PATH\n"
+            "export SINGULAR_ROOT_DIR SINGULAR_DEFAULT_DIR\n"
+            'exec "$HERE/Singular-real" "$@"\n'
+        )
+        wrapper.chmod(0o755)
+
+        libraries: dict[str, Path] = {}
+        for library in _runtime_libraries(singular_executable):
+            libraries.setdefault(library.name, library)
+        for library in libraries.values():
+            shutil.copy2(library, lib_target / library.name)
 
         source = singular_root / "share" / "singular"
         shutil.copytree(source, target / "share" / "singular", ignore_dangling_symlinks=True)

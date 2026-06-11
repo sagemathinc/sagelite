@@ -11,7 +11,9 @@ Features for testing the presence of ``singular`` and the SageMath interfaces to
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
-from . import Executable, PythonModule
+import os
+
+from . import Executable, FeatureNotPresentError, PythonModule
 from .join_feature import JoinFeature
 from .sagemath import sage__libs__singular
 from sage.env import SINGULAR_BIN
@@ -41,6 +43,26 @@ class Singular(Executable):
         """
         Executable.__init__(self, "singular", SINGULAR_BIN,
                             spkg='singular', type='standard')
+
+    def absolute_filename(self) -> str:
+        """
+        Return the Singular executable path.
+        """
+        missing_error = None
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            missing_error = error
+
+        try:
+            from sagelite_singular_runtime.runtime import executable_path
+        except Exception as exc:
+            raise missing_error from exc
+
+        executable = executable_path()
+        if os.path.isfile(executable) and os.access(executable, os.X_OK):
+            return os.fspath(executable)
+        raise missing_error
 
 
 def all_features():

@@ -74,6 +74,7 @@ poppler_module = _load_source_feature_module("poppler")
 qepcad_module = _load_source_feature_module("qepcad")
 rubiks_module = _load_source_feature_module("rubiks")
 sat_module = _load_source_feature_module("sat")
+singular_module = _load_source_feature_module("singular")
 topcom_module = _load_source_feature_module("topcom")
 
 Ecm = ecm_module.Ecm
@@ -100,6 +101,7 @@ Qepcad = qepcad_module.Qepcad
 RubiksExecutable = rubiks_module.RubiksExecutable
 Glucose = sat_module.Glucose
 Kissat = sat_module.Kissat
+Singular = singular_module.Singular
 TOPCOMExecutable = topcom_module.TOPCOMExecutable
 
 
@@ -552,6 +554,32 @@ def test_kissat_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_kissat.runtime", None)
 
     feature = Kissat()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_singular_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    package = tmp_path / "sagelite_singular_runtime"
+    bindir = package / "data" / "bin"
+    executable = bindir / "Singular"
+    package.mkdir()
+    bindir.mkdir(parents=True)
+    (package / "__init__.py").write_text("")
+    (package / "runtime.py").write_text(
+        "from pathlib import Path\n\n"
+        "def executable_path():\n"
+        "    return Path(__file__).resolve().parent / 'data' / 'bin' / 'Singular'\n"
+    )
+    executable.write_text("#!/bin/sh\n")
+    executable.chmod(0o755)
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_singular_runtime", None)
+    sys.modules.pop("sagelite_singular_runtime.runtime", None)
+
+    feature = Singular()
 
     assert feature.absolute_filename() == os.fspath(executable)
 

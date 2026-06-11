@@ -35,5 +35,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 sagelite_singular_runtime = [
+  "data/bin/*",
+  "data/lib/*",
   "data/singular/**/*",
 ]

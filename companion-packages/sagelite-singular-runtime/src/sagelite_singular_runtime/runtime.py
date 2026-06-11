@@ -18,4 +18,11 @@ def singular_default_dir() -> str:
     )
 
 
-__all__ = ["singular_default_dir", "singular_root_dir"]
+def executable_path() -> str:
+    """
+    Return the bundled Singular executable path.
+    """
+    return os.fspath(files(__package__).joinpath("data", "bin", "Singular"))
+
+
+__all__ = ["executable_path", "singular_default_dir", "singular_root_dir"]
