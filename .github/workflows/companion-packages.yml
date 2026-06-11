@@ -90,6 +90,11 @@ jobs:
             path: companion-packages/sagelite-database-polytopes-4d
             apt_packages: ""
             publish: true
+          - name: sagelite-database-sloane
+            import_name: sagelite_database_sloane
+            path: companion-packages/sagelite-database-sloane
+            apt_packages: ""
+            publish: true
           - name: sagelite-database-stein-watkins
             import_name: sagelite_database_stein_watkins
             path: companion-packages/sagelite-database-stein-watkins
@@ -519,6 +524,13 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-database-polytopes-4d" ]; then
             export SAGELITE_POLYTOPES_4D_SPKG="$(PYTHONPATH=build build/bin/sage-package download polytopes_db_4d | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-database-sloane" ]; then
+            mkdir -p "$RUNNER_TEMP/sloane"
+            curl -L --retry 3 --output "$RUNNER_TEMP/sloane/stripped.gz" https://oeis.org/stripped.gz
+            curl -L --retry 3 --output "$RUNNER_TEMP/sloane/names.gz" https://oeis.org/names.gz
+            export SAGELITE_SLOANE_STRIPPED_GZ="$RUNNER_TEMP/sloane/stripped.gz"
+            export SAGELITE_SLOANE_NAMES_GZ="$RUNNER_TEMP/sloane/names.gz"
           fi
           if [ "${{ matrix.name }}" = "sagelite-database-stein-watkins" ]; then
             tarball="$(PYTHONPATH=build build/bin/sage-package download database_stein_watkins | tail -n 1)"
@@ -1352,6 +1364,24 @@ jobs:
               assert os.path.isdir(hodge4d_path)
               assert any(os.scandir(hodge4d_path))
               assert any(ep.name == "reflexive_polytopes" for ep in metadata.entry_points(group="sagemath.data_paths"))
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-database-sloane":
+              data_path = module.sage_data_path()
+              sloane_path = module.sloane_data_path()
+              oeis_path = module.sloane_oeis_path()
+              names_path = module.sloane_names_path()
+              print("data_path=", data_path)
+              print("sloane_path=", sloane_path)
+              print("oeis_path=", oeis_path)
+              print("names_path=", names_path)
+              assert oeis_path.endswith("sloane-oeis.bz2"), oeis_path
+              assert names_path.endswith("sloane-names.bz2"), names_path
+              assert os.path.exists(oeis_path)
+              assert os.path.exists(names_path)
+              assert os.path.getsize(oeis_path) > 0
+              assert os.path.getsize(names_path) > 0
+              assert any(ep.name == "sloane" for ep in metadata.entry_points(group="sagemath.data_paths"))
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-database-mutation-class":

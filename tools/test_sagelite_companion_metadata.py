@@ -361,6 +361,7 @@ COMPANION_WORKFLOW_DATA_PACKAGES = {
     "sagelite-database-odlyzko-zeta",
     "sagelite-database-polytopes",
     "sagelite-database-polytopes-4d",
+    "sagelite-database-sloane",
     "sagelite-database-stein-watkins",
     "sagelite-database-stein-watkins-mini",
     "sagelite-database-symbolic-data",
@@ -818,6 +819,34 @@ def test_reflexive_polytopes_database_is_exposed_by_sagelite_extras():
     requirement = "sagelite-database-polytopes >=10.9,<10.10"
 
     assert extras["polytopes"] == [requirement]
+    assert requirement in extras["databases"]
+    assert requirement in extras["full"]
+
+
+def test_sloane_database_registers_data_path():
+    pyproject = _pyproject("sagelite-database-sloane")
+
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "sloane": "sagelite_database_sloane:sage_data_path",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_database_sloane"
+    ] == [
+        "data/sloane/sloane-oeis.bz2",
+        "data/sloane/sloane-names.bz2",
+    ]
+
+
+def test_sloane_database_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-database-sloane >=10.9,<10.10"
+
+    assert extras["sloane-database"] == [requirement]
+    assert extras["database-sloane"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
 
