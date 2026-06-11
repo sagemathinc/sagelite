@@ -1074,6 +1074,7 @@ def test_gap_grape_package_is_exposed_by_sagelite_extras():
     grape = "sagelite-gap-package-grape >=10.9,<10.10"
 
     assert extras["gap-grape"] == [gap_runtime, grape]
+    assert extras["gap_package_grape"] == [gap_runtime, grape]
     assert grape in extras["runtime"]
     assert grape in extras["full"]
 
@@ -1101,6 +1102,7 @@ def test_gap_guava_package_is_exposed_by_sagelite_extras():
     guava = "sagelite-gap-package-guava >=10.9,<10.10"
 
     assert extras["gap-guava"] == [gap_runtime, guava]
+    assert extras["gap_package_guava"] == [gap_runtime, guava]
     assert guava in extras["runtime"]
     assert guava in extras["full"]
 
@@ -1128,8 +1130,24 @@ def test_gap_polycyclic_package_is_exposed_by_sagelite_extras():
     polycyclic = "sagelite-gap-package-polycyclic >=10.9,<10.10"
 
     assert extras["gap-polycyclic"] == [gap_runtime, polycyclic]
+    assert extras["gap_package_polycyclic"] == [gap_runtime, polycyclic]
     assert polycyclic in extras["runtime"]
     assert polycyclic in extras["full"]
+
+
+def test_gap_packages_extra_matches_available_gap_package_companions():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    available_gap_packages = [
+        "sagelite-gap-package-grape >=10.9,<10.10",
+        "sagelite-gap-package-guava >=10.9,<10.10",
+        "sagelite-gap-package-polycyclic >=10.9,<10.10",
+    ]
+
+    assert extras["gap_packages"] == [gap_runtime, *available_gap_packages]
 
 
 def test_cunningham_tables_registers_data_path():

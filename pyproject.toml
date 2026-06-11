@@ -234,11 +234,29 @@ gap-grape = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-grape >=10.9,<10.10',
 ]
+gap_package_grape = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-grape >=10.9,<10.10',
+]
 gap-guava = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-guava >=10.9,<10.10',
 ]
+gap_package_guava = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
+]
+gap_packages = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-grape >=10.9,<10.10',
+  'sagelite-gap-package-guava >=10.9,<10.10',
+  'sagelite-gap-package-polycyclic >=10.9,<10.10',
+]
 gap-polycyclic = [
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap-package-polycyclic >=10.9,<10.10',
+]
+gap_package_polycyclic = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-polycyclic >=10.9,<10.10',
 ]
