@@ -139,12 +139,12 @@ jobs:
             import_name: sagelite_ecl
             path: companion-packages/sagelite-ecl-runtime
             apt_packages: ecl
-            publish: false
+            publish: true
           - name: sagelite-gap-runtime
             import_name: sagelite_gap_runtime
             path: companion-packages/sagelite-gap-runtime
             apt_packages: gap gap-gapdoc gap-smallgrp gap-transgrp gap-primgrp gap-character-tables gap-table-of-marks
-            publish: false
+            publish: true
           - name: sagelite-gap-package-atlasrep
             import_name: sagelite_gap_package_atlasrep
             path: companion-packages/sagelite-gap-package-atlasrep
@@ -229,7 +229,7 @@ jobs:
             import_name: sagelite_gfan
             path: companion-packages/sagelite-gfan-runtime
             apt_packages: gfan
-            publish: false
+            publish: true
           - name: sagelite-giac-runtime
             import_name: sagelite_giac
             path: companion-packages/sagelite-giac-runtime
@@ -264,7 +264,7 @@ jobs:
             import_name: sagelite_ecm
             path: companion-packages/sagelite-ecm-runtime
             apt_packages: gmp-ecm
-            publish: false
+            publish: true
           - name: sagelite-frobby-runtime
             import_name: sagelite_frobby
             path: companion-packages/sagelite-frobby-runtime
@@ -299,7 +299,7 @@ jobs:
             import_name: sagelite_info
             path: companion-packages/sagelite-info-runtime
             apt_packages: info singular
-            publish: false
+            publish: true
           - name: sagelite-kissat-runtime
             import_name: sagelite_kissat
             path: companion-packages/sagelite-kissat-runtime
@@ -314,7 +314,7 @@ jobs:
             import_name: sagelite_lcalc
             path: companion-packages/sagelite-lcalc-runtime
             apt_packages: lcalc
-            publish: false
+            publish: true
           - name: sagelite-meataxe-runtime
             import_name: sagelite_meataxe
             path: companion-packages/sagelite-meataxe-runtime
@@ -329,7 +329,7 @@ jobs:
             import_name: sagelite_maxima
             path: companion-packages/sagelite-maxima-runtime
             apt_packages: maxima-sage maxima-sage-share
-            publish: false
+            publish: true
           - name: sagelite-mwrank-runtime
             import_name: sagelite_mwrank
             path: companion-packages/sagelite-mwrank-runtime
@@ -349,12 +349,12 @@ jobs:
             import_name: sagelite_nauty
             path: companion-packages/sagelite-nauty-runtime
             apt_packages: nauty
-            publish: false
+            publish: true
           - name: sagelite-palp-runtime
             import_name: sagelite_palp
             path: companion-packages/sagelite-palp-runtime
             apt_packages: palp
-            publish: false
+            publish: true
           - name: sagelite-pdf2svg-runtime
             import_name: sagelite_pdf2svg
             path: companion-packages/sagelite-pdf2svg-runtime
@@ -369,7 +369,7 @@ jobs:
             import_name: sagelite_planarity
             path: companion-packages/sagelite-planarity-runtime
             apt_packages: planarity
-            publish: false
+            publish: true
           - name: sagelite-plantri-runtime
             import_name: sagelite_plantri
             path: companion-packages/sagelite-plantri-runtime
@@ -394,17 +394,17 @@ jobs:
             import_name: sagelite_singular_runtime
             path: companion-packages/sagelite-singular-runtime
             apt_packages: singular
-            publish: false
+            publish: true
           - name: sagelite-sympow-runtime
             import_name: sagelite_sympow
             path: companion-packages/sagelite-sympow-runtime
             apt_packages: sympow
-            publish: false
+            publish: true
           - name: sagelite-tachyon-runtime
             import_name: sagelite_tachyon
             path: companion-packages/sagelite-tachyon-runtime
             apt_packages: tachyon
-            publish: false
+            publish: true
           - name: sagelite-tides-runtime
             import_name: sagelite_tides
             path: companion-packages/sagelite-tides-runtime

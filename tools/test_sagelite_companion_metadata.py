@@ -496,6 +496,22 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-pari-data >=10.9,<10.10",
 }
 
+BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
+    "sagelite-ecl-runtime >=10.9,<10.10",
+    "sagelite-ecm-runtime >=10.9,<10.10",
+    "sagelite-gap-runtime >=10.9.post2,<10.10",
+    "sagelite-gfan-runtime >=10.9,<10.10",
+    "sagelite-info-runtime >=10.9,<10.10",
+    "sagelite-lcalc-runtime >=10.9,<10.10",
+    "sagelite-maxima-runtime >=10.9.post1,<10.10",
+    "sagelite-nauty-runtime >=10.9,<10.10",
+    "sagelite-palp-runtime >=10.9,<10.10",
+    "sagelite-planarity-runtime >=10.9,<10.10",
+    "sagelite-singular-runtime >=10.9.post1,<10.10",
+    "sagelite-sympow-runtime >=10.9,<10.10",
+    "sagelite-tachyon-runtime >=10.9,<10.10",
+}
+
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-mathjax-runtime",
@@ -642,6 +658,15 @@ def test_base_sagelite_installs_standard_data_companion_wheels():
     assert BASE_SAGELITE_DATA_DEPENDENCIES <= dependencies
 
 
+def test_base_sagelite_installs_standard_runtime_companion_wheels():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+
+    assert BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES <= dependencies
+
+
 def test_gap_package_wheels_are_exposed_by_upstream_package_name_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -670,6 +695,20 @@ def test_base_sagelite_data_companion_wheels_are_publishable():
     workflow_text = workflow.read_text()
 
     for requirement in BASE_SAGELITE_DATA_DEPENDENCIES:
+        package = requirement.split()[0]
+        start = workflow_text.index(f"- name: {package}")
+        end = workflow_text.find("\n          - name:", start + 1)
+        block = workflow_text[start : end if end != -1 else len(workflow_text)]
+
+        assert f"path: companion-packages/{package}" in block
+        assert "publish: true" in block
+
+
+def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    for requirement in BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES:
         package = requirement.split()[0]
         start = workflow_text.index(f"- name: {package}")
         end = workflow_text.find("\n          - name:", start + 1)
