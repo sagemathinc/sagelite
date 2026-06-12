@@ -41,6 +41,7 @@ def clean_runtime_environment():
         "LIE_INFO_DIR",
         "MAXIMA",
         "MAXIMA_FAS",
+        "MAXIMA_IMAGESDIR",
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "MAXIMA_PREFIX",
         "MATHJAX_DIR",
@@ -84,18 +85,20 @@ def _gap_package_root(tmp_path: Path, name: str, package: str = "grape") -> Path
     return root
 
 
-def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
+def _maxima_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path, Path]:
     root = tmp_path / name
     prefix = root
     fas = root / "lib" / "ecl" / "maxima.fas"
     command = root / "bin" / "maxima"
+    imagesdir = root / "lib" / "maxima" / "5.47.0"
     (root / "share" / "maxima" / "5.47.0").mkdir(parents=True)
+    imagesdir.mkdir(parents=True)
     fas.parent.mkdir(parents=True)
     command.parent.mkdir(parents=True)
     fas.write_text("maxima fas\n")
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
-    return prefix, fas, command
+    return prefix, fas, command, imagesdir
 
 
 def _ecm_runtime(tmp_path: Path, name: str) -> Path:
@@ -603,13 +606,14 @@ def test_gap3_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
 
 
 def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
-    prefix, fas, command = _maxima_runtime(tmp_path, "companion")
+    prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
     ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
     ecldir.mkdir(parents=True)
 
     monkeypatch.delenv("MAXIMA", raising=False)
     monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
     monkeypatch.delenv("MAXIMA_FAS", raising=False)
+    monkeypatch.delenv("MAXIMA_IMAGESDIR", raising=False)
     monkeypatch.delenv("ECLDIR", raising=False)
     monkeypatch.setattr(
         env.sage.config,
@@ -625,6 +629,7 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
             ("sagelite_maxima.runtime", "maxima_command"): command,
             ("sagelite_maxima.runtime", "maxima_prefix"): prefix,
             ("sagelite_maxima.runtime", "maxima_fas"): fas,
+            ("sagelite_maxima.runtime", "maxima_imagesdir"): imagesdir,
             ("sagelite_maxima.runtime", "ecl_dir"): ecldir,
             ("sagelite_maxima.runtime", "maxima_layout_autotools"): "true",
         }
@@ -637,24 +642,28 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
     assert env.os.environ["MAXIMA"] == str(command)
     assert env.os.environ["MAXIMA_PREFIX"] == str(prefix)
     assert env.os.environ["MAXIMA_FAS"] == str(fas)
+    assert env.os.environ["MAXIMA_IMAGESDIR"] == str(imagesdir)
     assert env.os.environ["ECLDIR"] == str(ecldir)
     assert env.os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "true"
 
 
 def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
-    prefix, fas, command = _maxima_runtime(tmp_path, "companion")
+    prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
     existing_command = tmp_path / "existing-bin" / "maxima"
     existing = tmp_path / "configured"
     existing_fas = tmp_path / "configured" / "maxima.fas"
+    existing_imagesdir = tmp_path / "configured" / "lib" / "maxima" / "5.47.0"
     existing_command.parent.mkdir()
     existing_command.write_text("#!/bin/sh\n")
     existing_command.chmod(0o755)
     existing_fas.parent.mkdir()
     existing_fas.write_text("existing maxima fas\n")
+    existing_imagesdir.mkdir(parents=True)
 
     monkeypatch.setenv("MAXIMA", str(existing_command))
     monkeypatch.setenv("MAXIMA_PREFIX", str(existing))
     monkeypatch.setenv("MAXIMA_FAS", str(existing_fas))
+    monkeypatch.setenv("MAXIMA_IMAGESDIR", str(existing_imagesdir))
     monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "true")
     monkeypatch.setenv("ECLDIR", str(existing / "lib" / "ecl"))
     monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
@@ -668,6 +677,7 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
                 "maxima_command": command,
                 "maxima_prefix": prefix,
                 "maxima_fas": fas,
+                "maxima_imagesdir": imagesdir,
             }[attr_name]
         ),
     )
@@ -677,6 +687,7 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     assert env.os.environ["MAXIMA"] == str(existing_command)
     assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
     assert env.os.environ["MAXIMA_FAS"] == str(existing_fas)
+    assert env.os.environ["MAXIMA_IMAGESDIR"] == str(existing_imagesdir)
 
 
 def test_kenzo_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

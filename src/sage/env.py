@@ -113,10 +113,18 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     )
     needs_ecldir = not os.environ.get("ECLDIR")
     needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
-    if not (needs_prefix or needs_fas or needs_command or needs_ecldir or needs_layout):
+    needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR")
+    if not (
+        needs_prefix
+        or needs_fas
+        or needs_command
+        or needs_ecldir
+        or needs_layout
+        or needs_imagesdir
+    ):
         return
 
-    prefix = fas = command = ecldir = layout = None
+    prefix = fas = command = ecldir = layout = imagesdir = None
     if needs_prefix:
         prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
     if needs_fas:
@@ -128,6 +136,10 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     if needs_layout:
         layout = _optional_runtime_value(
             "sagelite_maxima.runtime", "maxima_layout_autotools"
+        )
+    if needs_imagesdir:
+        imagesdir = _optional_runtime_value(
+            "sagelite_maxima.runtime", "maxima_imagesdir"
         )
 
     if needs_prefix and prefix and os.path.isdir(prefix):
@@ -145,6 +157,8 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         os.environ.setdefault("ECLDIR", os.fspath(ecldir))
     if needs_layout and layout:
         os.environ.setdefault("MAXIMA_LAYOUT_AUTOTOOLS", os.fspath(layout))
+    if needs_imagesdir and imagesdir and os.path.isdir(imagesdir):
+        os.environ.setdefault("MAXIMA_IMAGESDIR", os.fspath(imagesdir))
 
 
 def _bootstrap_sagelite_kenzo_runtime() -> None:

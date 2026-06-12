@@ -41,6 +41,17 @@ def maxima_command() -> str:
     return os.fspath(files(__package__).joinpath("data", "bin", "maxima"))
 
 
+def maxima_imagesdir() -> str:
+    """
+    Return the bundled ECL Maxima image directory.
+    """
+    return os.fspath(
+        files(__package__).joinpath(
+            "data", "lib", "maxima", _maxima_version_dir().name
+        )
+    )
+
+
 def ecl_dir() -> str:
     """
     Return the bundled ECL support directory used as ``ECLDIR``.
@@ -60,6 +71,7 @@ __all__ = [
     "ecl_dir",
     "maxima_command",
     "maxima_fas",
+    "maxima_imagesdir",
     "maxima_layout_autotools",
     "maxima_prefix",
 ]
