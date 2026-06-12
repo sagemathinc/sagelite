@@ -519,6 +519,27 @@ PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
     "sagelite-threejs-runtime",
 }
 
+RELEASE_REQUIRED_MESON_OPTIONS = {
+    "bliss",
+    "brial",
+    "coxeter3",
+    "eclib",
+    "libbraiding",
+    "libhomfly",
+    "rankwidth",
+}
+
+RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
+    "sage/graphs/bliss.",
+    "sage/graphs/graph_decompositions/rankwidth.",
+    "sage/libs/braiding.",
+    "sage/libs/coxeter3/coxeter.",
+    "sage/libs/eclib/mwrank.",
+    "sage/libs/eclib/newforms.",
+    "sage/libs/homfly.",
+    "sage/rings/polynomial/pbori/pbori.",
+}
+
 
 GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     "atlasrep": [
@@ -744,6 +765,22 @@ def test_release_workflow_separates_expected_runtime_companion_wheels():
         assert f'path: ./{dist_dir}/*.whl' in workflow_text
         assert f'path: {dist_dir}' in workflow_text
         assert f'packages-dir: {dist_dir}/' in workflow_text
+
+
+def test_release_workflow_requires_standard_native_meson_options():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+
+    for option in RELEASE_REQUIRED_MESON_OPTIONS:
+        assert f"setup-args=-D{option}=enabled" in workflow_text
+
+
+def test_release_workflow_verifies_standard_native_extensions():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+
+    for prefix in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES:
+        assert repr(prefix) in workflow_text or f'"{prefix}"' in workflow_text
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():
