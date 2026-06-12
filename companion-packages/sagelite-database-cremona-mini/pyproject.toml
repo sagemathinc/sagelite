@@ -27,6 +27,7 @@ classifiers = [
 urls = { Homepage = "https://www.sagemath.org" }
 
 [project.entry-points."sagemath.data_paths"]
+cremona = "sagelite_database_cremona_mini:cremona_data_path"
 cremona_mini = "sagelite_database_cremona_mini:sage_data_path"
 
 [tool.setuptools]

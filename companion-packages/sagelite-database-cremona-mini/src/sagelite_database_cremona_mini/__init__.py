@@ -9,6 +9,13 @@ def sage_data_path() -> str:
     return os.fspath(files(__package__).joinpath("data"))
 
 
+def cremona_data_path() -> str:
+    """
+    Return the bundled Cremona data directory.
+    """
+    return os.fspath(files(__package__).joinpath("data", "cremona"))
+
+
 def cremona_mini_path() -> str:
     """
     Return the bundled mini Cremona database path.
@@ -16,4 +23,4 @@ def cremona_mini_path() -> str:
     return os.fspath(files(__package__).joinpath("data", "cremona", "cremona_mini.db"))
 
 
-__all__ = ["cremona_mini_path", "sage_data_path"]
+__all__ = ["cremona_data_path", "cremona_mini_path", "sage_data_path"]

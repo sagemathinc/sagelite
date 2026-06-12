@@ -1143,8 +1143,17 @@ def test_cremona_mini_database_registers_data_path():
     setup_py = (
         ROOT / "companion-packages" / "sagelite-database-cremona-mini" / "setup.py"
     ).read_text()
+    package_init = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-database-cremona-mini"
+        / "src"
+        / "sagelite_database_cremona_mini"
+        / "__init__.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "cremona": "sagelite_database_cremona_mini:cremona_data_path",
         "cremona_mini": "sagelite_database_cremona_mini:sage_data_path",
     }
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
@@ -1156,6 +1165,7 @@ def test_cremona_mini_database_registers_data_path():
     assert "SAGELITE_CREMONA_MINI_DB" in setup_py
     assert "local\" / \"share\" / \"cremona" in setup_py
     assert "PACKAGE_DATA_FILE" in setup_py
+    assert "def cremona_data_path()" in package_init
 
 
 def test_cremona_mini_database_is_exposed_by_sagelite_extras():
