@@ -1479,6 +1479,18 @@ def test_lrcalc_pypi_library_is_core_sagelite_dependency():
     assert extras["lrcalc_python"] == [requirement]
 
 
+def test_pyparsing_pypi_library_is_core_sagelite_dependency():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    requirement = "pyparsing >=3.2.3"
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert pyproject["project"]["optional-dependencies"]["pyparsing"] == [
+        requirement
+    ]
+
+
 def test_elliptic_curves_standard_database_extra_installs_split_wheels():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

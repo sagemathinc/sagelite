@@ -69,6 +69,7 @@ dependencies = [
   'pexpect >=4.8.0',
   'pillow >=7.2.0',
   'platformdirs',
+  'pyparsing >=3.2.3',
   # Issue #30922: pplpy 0.8.4 and earlier do not declare dependencies correctly
   'pplpy >=0.8.6; sys_platform != "win32"',
   'primecountpy; sys_platform != "win32"',
@@ -600,6 +601,7 @@ qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 pycosat = ['pycosat >=0.6.3']
 pynormaliz = ['pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"']
+pyparsing = ['pyparsing >=3.2.3']
 regina = ['regina >=7.4.1']
 runtime = [
   'imageio-ffmpeg >=0.6.0',
