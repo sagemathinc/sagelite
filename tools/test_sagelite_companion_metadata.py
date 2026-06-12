@@ -474,6 +474,7 @@ COMPANION_WORKFLOW_DATA_PACKAGES = {
 BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-cunningham-tables >=10.9,<10.10",
     "sagelite-d3js-runtime >=10.9,<10.10",
+    "sagelite-threejs-runtime >=10.9,<10.10",
     "sagelite-database-cremona-mini >=10.9,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
     "sagelite-fplll-data >=10.9,<10.10",
@@ -2302,6 +2303,7 @@ def test_threejs_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-threejs-runtime >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["threejs"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
