@@ -132,6 +132,38 @@ from sage.structure.element import Expression
 from sage.symbolic.operators import FDerivativeOperator, add_vararg, mul_vararg
 from sage.symbolic.ring import SR
 
+def _maxima_library_prefix_is_usable(maxima_prefix: str | None) -> bool:
+    """
+    Return whether ``maxima_prefix`` points at Maxima's versioned library tree.
+    """
+    if not maxima_prefix or not os.path.isdir(maxima_prefix):
+        return False
+    return os.path.isfile(
+        os.path.join(maxima_prefix, "src", "maxima-package.lisp")
+    ) or os.path.isfile(
+        os.path.join(maxima_prefix, "share", "builtins-list.txt")
+    )
+
+
+def _maxima_library_prefix_from_install_root(maxima_prefix: str | None) -> str:
+    """
+    Return a versioned Maxima library tree below an install root, if present.
+    """
+    if not maxima_prefix or not os.path.isdir(maxima_prefix):
+        return ""
+    candidates = []
+    for package_dir in ("maxima", "maxima-sage"):
+        root = os.path.join(maxima_prefix, "share", package_dir)
+        if not os.path.isdir(root):
+            continue
+        candidates.extend(
+            os.path.join(root, name)
+            for name in os.listdir(root)
+            if _maxima_library_prefix_is_usable(os.path.join(root, name))
+        )
+    return sorted(candidates)[-1] if candidates else ""
+
+
 def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
     """
     Return usable Maxima library-mode paths.
@@ -142,14 +174,20 @@ def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
     """
     if not maxima_fas or not os.path.isfile(maxima_fas):
         maxima_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
-    if not maxima_prefix or not os.path.isdir(maxima_prefix):
+    if not _maxima_library_prefix_is_usable(maxima_prefix):
+        maxima_prefix = _maxima_library_prefix_from_install_root(maxima_prefix)
+    if not maxima_prefix:
         maxima_prefix = _optional_runtime_value(
-            "sagelite_maxima.runtime", "maxima_prefix"
+            "sagelite_maxima.runtime", "maxima_library_path"
         )
+        if not maxima_prefix:
+            maxima_prefix = _optional_runtime_value(
+                "sagelite_maxima.runtime", "maxima_prefix"
+            )
 
     if maxima_fas and not os.path.isfile(maxima_fas):
         maxima_fas = ""
-    if maxima_prefix and not os.path.isdir(maxima_prefix):
+    if maxima_prefix and not _maxima_library_prefix_is_usable(maxima_prefix):
         maxima_prefix = ""
     return maxima_fas, maxima_prefix
 

@@ -2589,6 +2589,22 @@ def test_latte_runtime_wheel_declares_copied_runtime_data():
 
 def test_maxima_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-maxima-runtime")
+    package_init = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-maxima-runtime"
+        / "src"
+        / "sagelite_maxima"
+        / "__init__.py"
+    ).read_text()
+    runtime_py = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-maxima-runtime"
+        / "src"
+        / "sagelite_maxima"
+        / "runtime.py"
+    ).read_text()
 
     assert pyproject["project"]["version"] == "10.9.post2"
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
@@ -2597,6 +2613,20 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         "data/lib/**/*",
         "data/share/**/*",
     ]
+    assert "def maxima_library_path()" in runtime_py
+    assert '"maxima_library_path"' in runtime_py
+    assert "maxima_library_path" in package_init
+
+
+def test_maxima_library_mode_prefers_versioned_companion_tree():
+    maxima_lib_py = ROOT / "src" / "sage" / "interfaces" / "maxima_lib.py"
+    maxima_lib_text = maxima_lib_py.read_text()
+
+    assert "def _maxima_library_prefix_is_usable" in maxima_lib_text
+    assert '"maxima_library_path"' in maxima_lib_text
+    assert maxima_lib_text.index('"maxima_library_path"') < maxima_lib_text.index(
+        '"maxima_prefix"'
+    )
 
 
 def test_maxima_runtime_patches_copied_ecl_images():

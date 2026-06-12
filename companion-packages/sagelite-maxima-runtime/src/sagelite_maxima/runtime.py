@@ -20,6 +20,17 @@ def maxima_prefix() -> str:
     return os.fspath(files(__package__).joinpath("data"))
 
 
+def maxima_library_path() -> str:
+    """
+    Return the bundled versioned Maxima library tree.
+
+    Sage's ECL library mode searches this directory directly for Maxima
+    ``.mac`` and ``.lisp`` files, while the standalone Maxima command uses
+    :func:`maxima_prefix` as its autotools install root.
+    """
+    return os.fspath(_maxima_version_dir())
+
+
 def maxima_layout_autotools() -> str:
     """
     Return the Maxima layout mode for the bundled install tree.
@@ -72,6 +83,7 @@ __all__ = [
     "maxima_command",
     "maxima_fas",
     "maxima_imagesdir",
+    "maxima_library_path",
     "maxima_layout_autotools",
     "maxima_prefix",
 ]

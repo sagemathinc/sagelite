@@ -3,6 +3,7 @@ from .runtime import (
     maxima_command,
     maxima_fas,
     maxima_imagesdir,
+    maxima_library_path,
     maxima_layout_autotools,
     maxima_prefix,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "maxima_command",
     "maxima_fas",
     "maxima_imagesdir",
+    "maxima_library_path",
     "maxima_layout_autotools",
     "maxima_prefix",
 ]
