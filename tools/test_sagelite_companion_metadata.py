@@ -483,6 +483,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-database-polytopes >=10.9,<10.10",
     "sagelite-database-sloane >=10.9,<10.10",
     "sagelite-database-symbolic-data >=10.9,<10.10",
+    "sagelite-pari-data >=10.9,<10.10",
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
@@ -723,6 +724,7 @@ def test_pari_data_wheel_is_exposed_by_sagelite_data_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-pari-data >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["pari-data"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["runtime"]
