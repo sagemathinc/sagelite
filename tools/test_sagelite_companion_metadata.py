@@ -2780,6 +2780,7 @@ def test_plantri_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-plantri-runtime >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["plantri"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]

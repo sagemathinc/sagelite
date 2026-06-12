@@ -108,6 +108,7 @@ dependencies = [
   'sagelite-palp-runtime >=10.9,<10.10',
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
+  'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9.post1,<10.10',
   'sagelite-sympow-runtime >=10.9,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
