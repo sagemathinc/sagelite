@@ -487,6 +487,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-database-graphs >=10.9,<10.10",
     "sagelite-database-jones-numfield >=10.9,<10.10",
     "sagelite-database-mutation-class >=10.9,<10.10",
+    "sagelite-database-odlyzko-zeta >=10.9,<10.10",
     "sagelite-database-polytopes >=10.9,<10.10",
     "sagelite-database-sloane >=10.9,<10.10",
     "sagelite-database-stein-watkins-mini >=10.9,<10.10",
