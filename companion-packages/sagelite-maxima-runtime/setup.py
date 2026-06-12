@@ -14,12 +14,26 @@ except ImportError:  # pragma: no cover - wheel is a build requirement
     _bdist_wheel = None
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _candidate_sage_locals() -> list[Path]:
+    roots = []
+    if os.environ.get("SAGE_LOCAL"):
+        roots.append(Path(os.environ["SAGE_LOCAL"]))
+    roots.append(REPO_ROOT / "local")
+    return roots
+
+
 def _candidate_prefixes() -> list[Path]:
     roots = []
     if os.environ.get("SAGELITE_MAXIMA_PREFIX"):
         roots.append(Path(os.environ["SAGELITE_MAXIMA_PREFIX"]))
     if os.environ.get("MAXIMA_PREFIX"):
         roots.append(Path(os.environ["MAXIMA_PREFIX"]))
+    for sage_local in _candidate_sage_locals():
+        roots.extend((sage_local / "share").glob("maxima-sage/*"))
+        roots.extend((sage_local / "share").glob("maxima/*"))
     roots.extend(Path("/usr/share").glob("maxima-sage/*"))
     roots.extend(Path("/usr/share").glob("maxima/*"))
     roots.extend(Path("/usr/local/share").glob("maxima/*"))
@@ -32,6 +46,8 @@ def _candidate_fas_files() -> list[Path]:
         files.append(Path(os.environ["SAGELITE_MAXIMA_FAS"]))
     if os.environ.get("MAXIMA_FAS"):
         files.append(Path(os.environ["MAXIMA_FAS"]))
+    for sage_local in _candidate_sage_locals():
+        files.append(sage_local / "lib" / "ecl" / "maxima.fas")
     files.extend(
         [
             Path("/usr/lib/ecl/maxima.fas"),
@@ -46,6 +62,9 @@ def _candidate_images_dirs(maxima_prefix: Path) -> list[Path]:
     if os.environ.get("SAGELITE_MAXIMA_IMAGESDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_IMAGESDIR"]))
     version = maxima_prefix.name
+    for sage_local in _candidate_sage_locals():
+        dirs.extend((sage_local / "lib").glob(f"maxima-sage/{version}"))
+        dirs.extend((sage_local / "lib").glob(f"maxima/{version}"))
     dirs.extend(Path("/usr/lib").glob(f"maxima-sage/{version}"))
     dirs.extend(Path("/usr/lib").glob(f"maxima/{version}"))
     dirs.extend(Path("/usr/local/lib").glob(f"maxima/{version}"))
@@ -56,6 +75,8 @@ def _candidate_ecl_dirs() -> list[Path]:
     dirs = []
     if os.environ.get("SAGELITE_MAXIMA_ECLDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_ECLDIR"]))
+    for sage_local in _candidate_sage_locals():
+        dirs.extend((sage_local / "lib").glob("ecl-*"))
     for directory in Path("/usr/lib").glob("*-linux-gnu"):
         dirs.extend(directory.glob("ecl-*"))
     dirs.extend(Path("/usr/lib").glob("ecl-*"))
@@ -67,6 +88,8 @@ def _candidate_library_dirs() -> list[Path]:
     dirs = []
     if os.environ.get("SAGELITE_MAXIMA_LIBDIR"):
         dirs.append(Path(os.environ["SAGELITE_MAXIMA_LIBDIR"]))
+    for sage_local in _candidate_sage_locals():
+        dirs.append(sage_local / "lib")
     dirs.extend(Path("/usr/lib").glob("*-linux-gnu"))
     dirs.extend([Path("/usr/lib"), Path("/usr/local/lib")])
     return dirs
