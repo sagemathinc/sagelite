@@ -1117,6 +1117,20 @@ def test_jmol_runtime_helpers_point_at_bundled_files():
 
 def test_cremona_ellcurve_database_registers_data_path():
     pyproject = _pyproject("sagelite-database-cremona-ellcurve")
+    setup_py = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-database-cremona-ellcurve"
+        / "setup.py"
+    ).read_text()
+    package_init = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-database-cremona-ellcurve"
+        / "src"
+        / "sagelite_database_cremona_ellcurve"
+        / "__init__.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
         "cremona": "sagelite_database_cremona_ellcurve:sage_data_path",
@@ -1127,6 +1141,10 @@ def test_cremona_ellcurve_database_registers_data_path():
     ] == [
         "data/cremona/cremona.db",
     ]
+    assert "SAGELITE_CREMONA_ELLCURVE_DB" in setup_py
+    assert "local\" / \"share\" / \"cremona" in setup_py
+    assert '"sdist": sdist' in setup_py
+    assert "def cremona_ellcurve_path()" in package_init
 
 
 def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():

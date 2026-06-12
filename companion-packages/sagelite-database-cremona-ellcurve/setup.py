@@ -6,6 +6,7 @@ from pathlib import Path
 
 from setuptools import setup
 from setuptools.command.build_py import build_py as _build_py
+from setuptools.command.sdist import sdist as _sdist
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -57,7 +58,6 @@ class build_py(_build_py):
     def run(self):
         super().run()
 
-        source = _find_cremona_database()
         target = (
             Path(self.build_lib)
             / "sagelite_database_cremona_ellcurve"
@@ -65,11 +65,29 @@ class build_py(_build_py):
             / "cremona"
             / "cremona.db"
         )
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-
-        if not target.is_file():
-            raise RuntimeError("full Cremona database was not copied into the wheel")
+        _copy_database(_find_cremona_database(), target)
 
 
-setup(cmdclass={"build_py": build_py})
+class sdist(_sdist):
+    def make_release_tree(self, base_dir, files):
+        super().make_release_tree(base_dir, files)
+
+        target = (
+            Path(base_dir)
+            / "src"
+            / "sagelite_database_cremona_ellcurve"
+            / "data"
+            / "cremona"
+            / "cremona.db"
+        )
+        _copy_database(_find_cremona_database(), target)
+
+
+def _copy_database(source: Path, target: Path) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
+    if not target.is_file():
+        raise RuntimeError("full Cremona database was not copied into the package")
+
+
+setup(cmdclass={"build_py": build_py, "sdist": sdist})
