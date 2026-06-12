@@ -510,7 +510,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-imagemagick-runtime >=10.9,<10.10",
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post1,<10.10",
+    "sagelite-maxima-runtime >=10.9.post2,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
@@ -2575,7 +2575,7 @@ def test_latte_runtime_wheel_declares_copied_runtime_data():
 def test_maxima_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-maxima-runtime")
 
-    assert pyproject["project"]["version"] == "10.9.post1"
+    assert pyproject["project"]["version"] == "10.9.post2"
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_maxima"] == [
         "data/bin/*",
@@ -2599,7 +2599,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post2,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement in extras["runtime"]
