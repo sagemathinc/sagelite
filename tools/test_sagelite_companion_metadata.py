@@ -1140,6 +1140,9 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
 
 def test_cremona_mini_database_registers_data_path():
     pyproject = _pyproject("sagelite-database-cremona-mini")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-database-cremona-mini" / "setup.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
         "cremona_mini": "sagelite_database_cremona_mini:sage_data_path",
@@ -1150,6 +1153,9 @@ def test_cremona_mini_database_registers_data_path():
     ] == [
         "data/cremona/cremona_mini.db",
     ]
+    assert "SAGELITE_CREMONA_MINI_DB" in setup_py
+    assert "local\" / \"share\" / \"cremona" in setup_py
+    assert "PACKAGE_DATA_FILE" in setup_py
 
 
 def test_cremona_mini_database_is_exposed_by_sagelite_extras():
@@ -1383,6 +1389,9 @@ def test_odlyzko_zeta_database_is_exposed_by_sagelite_extras():
 
 def test_symbolic_data_database_wheel_declares_packaged_data():
     pyproject = _pyproject("sagelite-database-symbolic-data")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-database-symbolic-data" / "setup.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
         "symbolic_data": "sagelite_database_symbolic_data:sage_data_path",
@@ -1394,6 +1403,9 @@ def test_symbolic_data_database_wheel_declares_packaged_data():
         "data/symbolic_data/COPYING",
         "data/symbolic_data/Data/**/*",
     ]
+    assert "SAGELITE_SYMBOLIC_DATA_DIR" in setup_py
+    assert "local\" / \"share\" / \"symbolic_data" in setup_py
+    assert "Data\" / \"XMLResources" in setup_py
 
 
 def test_symbolic_data_database_is_exposed_by_sagelite_extras():
@@ -2598,6 +2610,12 @@ def test_stein_watkins_database_is_exposed_by_dedicated_sagelite_extra():
 
 def test_stein_watkins_mini_database_registers_data_path():
     pyproject = _pyproject("sagelite-database-stein-watkins-mini")
+    setup_py = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-database-stein-watkins-mini"
+        / "setup.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
         "stein_watkins": "sagelite_database_stein_watkins_mini:sage_data_path",
@@ -2610,6 +2628,9 @@ def test_stein_watkins_mini_database_registers_data_path():
         "data/stein_watkins/a.001.bz2",
         "data/stein_watkins/p.00.bz2",
     ]
+    assert "SAGELITE_STEIN_WATKINS_MINI_DIR" in setup_py
+    assert "local\" / \"share\" / \"stein_watkins" in setup_py
+    assert "STEIN_WATKINS_MINI_FILES" in setup_py
 
 
 def test_stein_watkins_mini_database_is_exposed_by_sagelite_extras():
