@@ -69,6 +69,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-gap-package-design": {
         "sagelite_gap_package_design": ["data/gaproot/pkg/**/*"],
     },
+    "sagelite-gap-package-gapdoc": {
+        "sagelite_gap_package_gapdoc": ["data/gaproot/pkg/**/*"],
+    },
     "sagelite-gap-package-grape": {
         "sagelite_gap_package_grape": ["data/gaproot/pkg/**/*"],
     },
@@ -333,6 +336,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-gap-package-atlasrep",
     "sagelite-gap-package-ctbllib",
     "sagelite-gap-package-design",
+    "sagelite-gap-package-gapdoc",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-hap",
@@ -372,6 +376,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-gap-package-atlasrep",
     "sagelite-gap-package-ctbllib",
     "sagelite-gap-package-design",
+    "sagelite-gap-package-gapdoc",
     "sagelite-gap-package-grape",
     "sagelite-gap-package-guava",
     "sagelite-gap-package-hap",
@@ -509,6 +514,10 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     "design": [
         "sagelite-gap-runtime >=10.9.post2,<10.10",
         "sagelite-gap-package-design >=10.9,<10.10",
+    ],
+    "gapdoc": [
+        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-package-gapdoc >=10.9,<10.10",
     ],
     "grape": [
         "sagelite-gap-runtime >=10.9.post2,<10.10",
@@ -1661,6 +1670,34 @@ def test_gap_design_package_is_exposed_by_sagelite_extras():
     assert extras["gap_package_design"] == [gap_runtime, design]
     assert design in extras["runtime"]
     assert design in extras["full"]
+
+
+def test_gap_gapdoc_package_registers_gap_root_path():
+    pyproject = _pyproject("sagelite-gap-package-gapdoc")
+
+    assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
+        "gapdoc": "sagelite_gap_package_gapdoc.runtime:gap_root_paths",
+    }
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_gap_package_gapdoc"
+    ] == [
+        "data/gaproot/pkg/**/*",
+    ]
+
+
+def test_gap_gapdoc_package_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gapdoc = "sagelite-gap-package-gapdoc >=10.9,<10.10"
+
+    assert extras["gap-gapdoc"] == [gap_runtime, gapdoc]
+    assert extras["gap_package_gapdoc"] == [gap_runtime, gapdoc]
+    assert gapdoc in extras["runtime"]
+    assert gapdoc in extras["full"]
 
 
 def test_gap_guava_package_registers_gap_root_path():
