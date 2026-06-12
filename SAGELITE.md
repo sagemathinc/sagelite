@@ -246,6 +246,7 @@ Examples include:
 - `sagelite-ecl-runtime`
 - `sagelite-ecm-runtime`
 - `sagelite-fricas-runtime`
+- `sagelite-imagemagick-runtime`
 - `sagelite-jmol-runtime`
 - `sagelite-kenzo-runtime`
 - `sagelite-latte-runtime`

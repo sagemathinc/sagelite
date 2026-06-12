@@ -295,6 +295,11 @@ jobs:
             path: companion-packages/sagelite-graphviz-runtime
             apt_packages: graphviz
             publish: false
+          - name: sagelite-imagemagick-runtime
+            import_name: sagelite_imagemagick
+            path: companion-packages/sagelite-imagemagick-runtime
+            apt_packages: imagemagick
+            publish: false
           - name: sagelite-info-runtime
             import_name: sagelite_info
             path: companion-packages/sagelite-info-runtime
@@ -585,6 +590,9 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-graphviz-runtime" ]; then
             export SAGELITE_GRAPHVIZ_BINDIR=/usr/bin
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-imagemagick-runtime" ]; then
+            export SAGELITE_IMAGEMAGICK_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-info-runtime" ]; then
             export SAGELITE_INFO_PREFIX=/usr
@@ -1315,6 +1323,27 @@ jobs:
                   check=True,
               )
               assert "a -- b" in result.stdout
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-imagemagick-runtime":
+              runtime = importlib.import_module("sagelite_imagemagick.runtime")
+              magick = runtime.executable_path("magick")
+              convert = runtime.executable_path("convert")
+              print("magick=", magick)
+              print("convert=", convert)
+              assert magick.exists()
+              assert convert.exists()
+              import shutil
+              import subprocess
+              assert shutil.which("magick")
+              assert shutil.which("convert")
+              result = subprocess.run(
+                  ["convert", "-version"],
+                  text=True,
+                  capture_output=True,
+                  check=True,
+              )
+              assert "imagemagick" in result.stdout.lower()
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-info-runtime":

@@ -138,6 +138,7 @@ csdp = ['sagelite-csdp-runtime >=10.9,<10.10']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cunningham_tables = ['sagelite-cunningham-tables >=10.9,<10.10']
+convert = ['sagelite-imagemagick-runtime >=10.9,<10.10']
 d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
 database-cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 database_cremona_ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
@@ -289,6 +290,7 @@ full = [
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
   'sagelite-graphviz-runtime >=10.9,<10.10',
+  'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
@@ -542,6 +544,7 @@ glucose-syrup = ['sagelite-glucose-runtime >=10.9,<10.10']
 graphviz = ['sagelite-graphviz-runtime >=10.9,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 igraph = ['igraph']
+imagemagick = ['sagelite-imagemagick-runtime >=10.9,<10.10']
 info = ['sagelite-info-runtime >=10.9,<10.10']
 python_igraph = ['igraph']
 jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
@@ -572,6 +575,7 @@ mwrank = ['sagelite-mwrank-runtime >=10.9,<10.10']
 msolve = ['sagelite-msolve-runtime >=10.9,<10.10']
 nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 neato = ['sagelite-graphviz-runtime >=10.9,<10.10']
+magick = ['sagelite-imagemagick-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
 pari-elldata = ['sagelite-pari-data >=10.9,<10.10']
@@ -641,6 +645,7 @@ runtime = [
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
   'sagelite-graphviz-runtime >=10.9,<10.10',
+  'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
@@ -793,6 +798,7 @@ extra = [
   "pkg:generic/csdp",
   "pkg:generic/fricas",
   "pkg:generic/frobby",
+  "pkg:generic/imagemagick",
   "pkg:generic/kenzo",
   "pkg:generic/latte-integrale",
   "pkg:generic/lrslib",

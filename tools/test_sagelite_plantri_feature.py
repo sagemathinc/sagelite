@@ -62,6 +62,7 @@ fricas_module = _load_source_feature_module("fricas")
 gfan_module = _load_source_feature_module("gfan")
 graph_generators_module = _load_source_feature_module("graph_generators")
 gap3_module = _load_source_feature_module("gap3")
+imagemagick_module = _load_source_feature_module("imagemagick")
 latte_module = _load_source_feature_module("latte")
 flatter_module = _load_source_feature_module("flatter")
 lrs_module = _load_source_feature_module("lrs")
@@ -85,6 +86,7 @@ Frobby = frobby_module.Frobby
 FriCAS = fricas_module.FriCAS
 GfanExecutable = gfan_module.GfanExecutable
 Gap3 = gap3_module.Gap3
+Magick = imagemagick_module.Magick
 Benzene = graph_generators_module.Benzene
 Plantri = graph_generators_module.Plantri
 Latte_count = latte_module.Latte_count
@@ -216,6 +218,22 @@ def test_msolve_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     sys.modules.pop("sagelite_msolve.runtime", None)
 
     feature = msolve()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_imagemagick_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_imagemagick", "convert", "executable_path"
+    )
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_imagemagick", None)
+    sys.modules.pop("sagelite_imagemagick.runtime", None)
+
+    feature = Magick()
 
     assert feature.absolute_filename() == os.fspath(executable)
 

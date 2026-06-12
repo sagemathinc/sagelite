@@ -17,8 +17,26 @@ checked in this module.
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
-from . import Executable, FeatureTestResult
+import os
+
+from . import Executable, FeatureNotPresentError, FeatureTestResult
 from .join_feature import JoinFeature
+
+
+def _companion_executable(program, original_error):
+    """
+    Return an ImageMagick executable from the optional companion wheel.
+    """
+    try:
+        from sagelite_imagemagick.runtime import executable_path
+    except ImportError:
+        raise original_error
+
+    executable = executable_path(program)
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable)
+
+    raise original_error
 
 
 class Magick(Executable):
@@ -42,8 +60,21 @@ class Magick(Executable):
         Executable.__init__(self, 'magick', executable='magick')
         try:
             _ = self.absolute_filename()
-        except RuntimeError:
+        except FeatureNotPresentError:
             Executable.__init__(self, 'magick', executable='convert')
+
+    def absolute_filename(self) -> str:
+        r"""
+        Return the ImageMagick executable path.
+
+        Normal Sage installations find ``magick`` or ``convert`` on ``PATH``.
+        Wheel installations can also provide it through the optional
+        ``sagelite-imagemagick-runtime`` companion package.
+        """
+        try:
+            return super().absolute_filename()
+        except FeatureNotPresentError as error:
+            return _companion_executable(self.executable, error)
 
     def is_functional(self):
         r"""

@@ -127,6 +127,9 @@ RUNTIME_PACKAGE_DATA = {
             "data/lib/graphviz/*",
         ],
     },
+    "sagelite-imagemagick-runtime": {
+        "sagelite_imagemagick": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-info-runtime": {
         "sagelite_info": [
             "data/bin/*",
@@ -352,6 +355,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-jmol-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-graphviz-runtime",
+    "sagelite-imagemagick-runtime",
     "sagelite-lie-runtime",
     "sagelite-mathjax-runtime",
     "sagelite-poppler-runtime",
@@ -393,6 +397,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-giac-runtime",
     "sagelite-glucose-runtime",
     "sagelite-graphviz-runtime",
+    "sagelite-imagemagick-runtime",
     "sagelite-info-runtime",
     "sagelite-kenzo-runtime",
     "sagelite-kissat-runtime",
@@ -2303,6 +2308,29 @@ def test_graphviz_runtime_declares_console_scripts():
         "dot": "sagelite_graphviz.runtime:dot",
         "neato": "sagelite_graphviz.runtime:neato",
         "twopi": "sagelite_graphviz.runtime:twopi",
+    }
+
+
+def test_imagemagick_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-imagemagick-runtime >=10.9,<10.10"
+
+    assert extras["imagemagick"] == [requirement]
+    assert extras["magick"] == [requirement]
+    assert extras["convert"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_imagemagick_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-imagemagick-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "convert": "sagelite_imagemagick.runtime:convert",
+        "magick": "sagelite_imagemagick.runtime:magick",
     }
 
 
