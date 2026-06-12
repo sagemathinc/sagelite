@@ -506,6 +506,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post2,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
+    "sagelite-imagemagick-runtime >=10.9,<10.10",
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post1,<10.10",
