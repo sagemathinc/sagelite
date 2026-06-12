@@ -502,6 +502,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
 }
 
 BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
+    "sagelite-dvipng-runtime >=10.9,<10.10",
     "sagelite-ecl-runtime >=10.9,<10.10",
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post2,<10.10",
