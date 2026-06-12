@@ -504,6 +504,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post1,<10.10",
+    "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
@@ -729,6 +730,7 @@ def test_base_sagelite_data_companion_wheels_are_publishable():
 def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
     workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
     workflow_text = workflow.read_text()
+    release_runtime_packages = set(RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES)
 
     for requirement in BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES:
         package = requirement.split()[0]
@@ -737,7 +739,8 @@ def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
         block = workflow_text[start : end if end != -1 else len(workflow_text)]
 
         assert f"path: companion-packages/{package}" in block
-        assert "publish: true" in block
+        if "publish: true" not in block:
+            assert package in release_runtime_packages
 
 
 def test_static_runtime_companion_wheels_are_publishable():
