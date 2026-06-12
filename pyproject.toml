@@ -79,6 +79,7 @@ dependencies = [
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
+  'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
   'sagelite-database-jones-numfield >=10.9,<10.10',
   'sagelite-database-mutation-class >=10.9,<10.10',
@@ -182,6 +183,8 @@ elliptic_curves = [
 dot = ['sagelite-graphviz-runtime >=10.9,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
+fplll-data = ['sagelite-fplll-data >=10.9,<10.10']
+fplll_data = ['sagelite-fplll-data >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
 fricas = ['sagelite-fricas-runtime >=10.9,<10.10']
 ffmpeg = ['imageio-ffmpeg >=0.6.0']
@@ -239,6 +242,7 @@ full = [
   'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-flatter-runtime >=10.9,<10.10',
+  'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',
@@ -589,6 +593,7 @@ runtime = [
   'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
   'sagelite-flatter-runtime >=10.9,<10.10',
+  'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9,<10.10',

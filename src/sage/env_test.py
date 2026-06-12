@@ -383,6 +383,39 @@ def test_optional_runtime_data_dir_ignores_missing_marker(monkeypatch, tmp_path)
     )
 
 
+def test_fplll_default_strategy_file_keeps_usable_fpylll_path(tmp_path):
+    strategy_dir = tmp_path / "strategies"
+    strategy_dir.mkdir()
+    strategy = strategy_dir / "default.json"
+    strategy.write_text("[]")
+
+    assert env._fplll_default_strategy_file(strategy_dir, strategy) == str(strategy)
+
+
+def test_fplll_default_strategy_file_uses_companion_for_stale_fpylll_path(
+    monkeypatch, tmp_path
+):
+    strategy_dir = tmp_path / "strategies"
+    strategy_dir.mkdir()
+    bundled_strategy = strategy_dir / "default.json"
+    bundled_strategy.write_text("[]")
+
+    def optional_runtime_value(module_name, attr_name):
+        if (module_name, attr_name) == (
+            "sagelite_fplll_data.runtime",
+            "default_strategy",
+        ):
+            return str(bundled_strategy)
+        return None
+
+    monkeypatch.setattr(env, "_optional_runtime_value", optional_runtime_value)
+
+    assert env._fplll_default_strategy_file(
+        b"/stale/share/fplll/strategies",
+        b"/stale/share/fplll/strategies/default.json",
+    ) == str(bundled_strategy)
+
+
 def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
     configured = _gap_root(tmp_path, "configured")
     companion = _gap_root(tmp_path, "companion")

@@ -280,6 +280,11 @@ jobs:
             path: companion-packages/sagelite-flatter-runtime
             apt_packages: cmake g++ make libgmp-dev libmpfr-dev fplll-tools libfplll-dev libeigen3-dev libopenblas-dev
             publish: false
+          - name: sagelite-fplll-data
+            import_name: sagelite_fplll_data
+            path: companion-packages/sagelite-fplll-data
+            apt_packages: fplll-tools libfplll-dev
+            publish: true
           - name: sagelite-glucose-runtime
             import_name: sagelite_glucose
             path: companion-packages/sagelite-glucose-runtime
@@ -571,6 +576,9 @@ jobs:
             cmake --install "$RUNNER_TEMP/flatter-build"
             export SAGELITE_FLATTER_BINDIR="$RUNNER_TEMP/flatter-prefix/bin"
             export LD_LIBRARY_PATH="$RUNNER_TEMP/flatter-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-fplll-data" ]; then
+            export SAGELITE_FPLLL_STRATEGIES_DIR=/usr/share/fplll/strategies
           fi
           if [ "${{ matrix.name }}" = "sagelite-glucose-runtime" ]; then
             export SAGELITE_GLUCOSE_BINDIR=/usr/bin
@@ -1244,6 +1252,14 @@ jobs:
                   capture_output=True,
               )
               assert "flatter" in (result.stdout + result.stderr).lower()
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-fplll-data":
+              runtime = importlib.import_module("sagelite_fplll_data.runtime")
+              strategy = runtime.default_strategy()
+              print("default_strategy=", strategy)
+              assert strategy.exists()
+              assert strategy.name == "default.json"
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-glucose-runtime":

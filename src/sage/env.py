@@ -260,6 +260,32 @@ def _optional_runtime_data_dir(
     return None
 
 
+def _fplll_default_strategy_file(default_strategy_path, default_strategy) -> str:
+    """
+    Return a usable FPLLL default BKZ strategy file.
+
+    Some binary ``fpylll`` wheels expose an absolute build-prefix
+    ``BKZ.DEFAULT_STRATEGY``.  When that file is stale, prefer the optional
+    ``sagelite-fplll-data`` companion package.
+    """
+    strategy = os.path.normpath(
+        os.path.join(
+            os.fsdecode(default_strategy_path),
+            os.path.basename(os.fsdecode(default_strategy)),
+        )
+    )
+    if os.path.isfile(strategy):
+        return strategy
+
+    bundled_strategy = _optional_runtime_value(
+        "sagelite_fplll_data.runtime", "default_strategy"
+    )
+    if bundled_strategy and os.path.isfile(bundled_strategy):
+        return bundled_strategy
+
+    return strategy
+
+
 def _gap_root_path_contains_gap(root: str | None) -> bool:
     """
     Return whether ``root`` looks like a usable GAP root directory.

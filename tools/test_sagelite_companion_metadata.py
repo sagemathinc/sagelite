@@ -54,6 +54,9 @@ RUNTIME_PACKAGE_DATA = {
             "data/share/fricas/**/*",
         ],
     },
+    "sagelite-fplll-data": {
+        "sagelite_fplll_data": ["data/strategies/*.json"],
+    },
     "sagelite-gap-runtime": {
         "sagelite_gap_runtime": ["data/bin/*", "data/gap*/**/*"],
     },
@@ -292,6 +295,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-dvipng-runtime",
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
+    "sagelite-fplll-data",
     "sagelite-frobby-runtime",
     "sagelite-gap-runtime",
     "sagelite-gfan-runtime",
@@ -361,6 +365,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-ecl-runtime",
     "sagelite-ecm-runtime",
     "sagelite-flatter-runtime",
+    "sagelite-fplll-data",
     "sagelite-frobby-runtime",
     "sagelite-fricas-runtime",
     "sagelite-gap-runtime",
@@ -471,6 +476,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-d3js-runtime >=10.9,<10.10",
     "sagelite-database-cremona-mini >=10.9,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
+    "sagelite-fplll-data >=10.9,<10.10",
     "sagelite-database-graphs >=10.9,<10.10",
     "sagelite-database-jones-numfield >=10.9,<10.10",
     "sagelite-database-mutation-class >=10.9,<10.10",
@@ -787,6 +793,46 @@ def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     requirement = "sagelite-tides-runtime >=10.9,<10.10"
 
     assert extras["tides"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_fplll_data_wheel_declares_copied_strategy_files():
+    pyproject = _pyproject("sagelite-fplll-data")
+
+    assert pyproject["tool"]["setuptools"]["include-package-data"] is True
+    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_fplll_data"] == [
+        "data/strategies/*.json",
+    ]
+
+
+def test_fplll_data_wheel_helper_points_at_bundled_default_strategy():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-fplll-data" / "src")
+    )
+    try:
+        from sagelite_fplll_data.runtime import default_strategy, strategies_dir
+    finally:
+        sys.path.pop(0)
+
+    assert Path(strategies_dir()).parts[-2:] == ("data", "strategies")
+    assert Path(default_strategy()).parts[-3:] == (
+        "data",
+        "strategies",
+        "default.json",
+    )
+
+
+def test_fplll_data_wheel_is_exposed_by_sagelite_dependencies_and_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    requirement = "sagelite-fplll-data >=10.9,<10.10"
+    assert requirement in pyproject["project"]["dependencies"]
+
+    extras = pyproject["project"]["optional-dependencies"]
+    assert extras["fplll-data"] == [requirement]
+    assert extras["fplll_data"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 

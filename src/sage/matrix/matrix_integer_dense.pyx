@@ -2965,11 +2965,10 @@ cdef class Matrix_integer_dense(Matrix_dense):
             # 2. the user has specified the relevant parameters already
             if "strategies" not in kwds:
                 if proof is False:
-                    import os
-                    kwds["strategies"] = load_strategies_json(
-                        os.path.normpath(os.path.join(
-                            BKZ.DEFAULT_STRATEGY_PATH,
-                            os.path.basename(BKZ.DEFAULT_STRATEGY))))
+                    from sage.env import _fplll_default_strategy_file
+                    strategy = _fplll_default_strategy_file(
+                        BKZ.DEFAULT_STRATEGY_PATH, BKZ.DEFAULT_STRATEGY)
+                    kwds["strategies"] = load_strategies_json(strategy)
 
             if "auto_abort" not in kwds:
                 if proof is False:
