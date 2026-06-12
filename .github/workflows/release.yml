@@ -239,6 +239,12 @@ jobs:
 
       - uses: actions/download-artifact@v6
         with:
+          pattern: "*-dvipng-runtime"
+          path: dvipng-runtime-dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v6
+        with:
           pattern: "*-maxima-runtime"
           path: maxima-runtime-dist
           merge-multiple: true
@@ -401,6 +407,7 @@ jobs:
             buckygen-runtime-dist/*.whl
             cddlib-runtime-dist/*.whl
             csdp-runtime-dist/*.whl
+            dvipng-runtime-dist/*.whl
             maxima-runtime-dist/*.whl
             lie-runtime-dist/*.whl
             lcalc-runtime-dist/*.whl
@@ -577,6 +584,7 @@ jobs:
           rm -rf buckygen-runtime-dist
           rm -rf cddlib-runtime-dist
           rm -rf csdp-runtime-dist
+          rm -rf dvipng-runtime-dist
           rm -rf maxima-runtime-dist
           rm -rf lie-runtime-dist
           rm -rf lcalc-runtime-dist
@@ -767,6 +775,15 @@ jobs:
           find wheelhouse -maxdepth 1 -type f -name "sagelite_csdp_runtime-*.whl" -exec mv -v {} csdp-runtime-dist/ \;
           test "$(find csdp-runtime-dist -maxdepth 1 -type f -name "sagelite_csdp_runtime-*.whl" | wc -l)" -eq 1
           ls -lh csdp-runtime-dist
+
+      - name: Separate dvipng runtime companion wheel
+        if: matrix.python == 'cp312'
+        run: |
+          set -euo pipefail
+          mkdir -p dvipng-runtime-dist
+          find wheelhouse -maxdepth 1 -type f -name "sagelite_dvipng_runtime-*.whl" -exec mv -v {} dvipng-runtime-dist/ \;
+          test "$(find dvipng-runtime-dist -maxdepth 1 -type f -name "sagelite_dvipng_runtime-*.whl" | wc -l)" -eq 1
+          ls -lh dvipng-runtime-dist
 
       - name: Separate Maxima runtime companion wheel
         if: matrix.python == 'cp312'
@@ -1084,6 +1101,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-csdp-runtime
           path: ./csdp-runtime-dist/*.whl
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.python == 'cp312'
+        with:
+          name: ${{ matrix.os }}-${{ matrix.build }}-${{ matrix.arch }}-dvipng-runtime
+          path: ./dvipng-runtime-dist/*.whl
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
@@ -1703,6 +1727,36 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: csdp-runtime-dist/
+          skip-existing: true
+          verbose: true
+
+  upload_dvipng_runtime:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: "*-dvipng-runtime"
+          path: dvipng-runtime-dist
+          merge-multiple: true
+
+      - name: Verify dvipng runtime artifact set
+        run: |
+          set -euo pipefail
+          find dvipng-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
+          test "$(find dvipng-runtime-dist -maxdepth 1 -type f -name "sagelite_dvipng_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find dvipng-runtime-dist -maxdepth 1 -type f -name "sagelite_dvipng_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find dvipng-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dvipng-runtime-dist/
           skip-existing: true
           verbose: true
 

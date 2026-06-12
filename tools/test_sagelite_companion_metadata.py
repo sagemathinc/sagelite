@@ -422,6 +422,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-buckygen-runtime": "buckygen-runtime-dist",
     "sagelite-cddlib-runtime": "cddlib-runtime-dist",
     "sagelite-csdp-runtime": "csdp-runtime-dist",
+    "sagelite-dvipng-runtime": "dvipng-runtime-dist",
     "sagelite-ecm-runtime": "ecm-runtime-dist",
     "sagelite-flatter-runtime": "flatter-runtime-dist",
     "sagelite-frobby-runtime": "frobby-runtime-dist",
