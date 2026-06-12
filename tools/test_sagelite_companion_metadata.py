@@ -486,6 +486,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-database-sloane >=10.9,<10.10",
     "sagelite-database-stein-watkins-mini >=10.9,<10.10",
     "sagelite-database-symbolic-data >=10.9,<10.10",
+    "sagelite-mathjax-runtime >=10.9,<10.10",
     "sagelite-pari-data >=10.9,<10.10",
 }
 
@@ -2293,6 +2294,7 @@ def test_mathjax_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-mathjax-runtime >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["mathjax"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
