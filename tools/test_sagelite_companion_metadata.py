@@ -519,6 +519,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-singular-runtime >=10.9.post1,<10.10",
     "sagelite-sympow-runtime >=10.9,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
+    "sagelite-tides-runtime >=10.9,<10.10",
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
@@ -895,6 +896,7 @@ def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-tides-runtime >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["tides"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
