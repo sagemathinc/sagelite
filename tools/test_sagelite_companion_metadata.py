@@ -2730,6 +2730,19 @@ def test_topcom_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_four_ti_2_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-4ti2-runtime >=10.9,<10.10"
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert extras["4ti2"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_topcom_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-topcom-runtime")
 
