@@ -223,6 +223,7 @@ extra = [
   'dot2tex >=2.11.3',
   'igraph',
   'khoca >=1.4',
+  "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.3',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
@@ -240,6 +241,7 @@ full = [
   'igraph',
   'khoca >=1.4',
   'matroid-database ==0.3',
+  "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.3',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
@@ -574,6 +576,7 @@ lrslib = ['sagelite-lrslib-runtime >=10.9,<10.10']
 matroid-database = ['matroid-database ==0.3']
 matroid_database = ['matroid-database ==0.3']
 matroids = ['matroid-database ==0.3']
+mathics = ["Mathics3 >=10.0.1; python_version < '3.14'"]
 mathjax = ['sagelite-mathjax-runtime >=10.9,<10.10']
 maxima = ['sagelite-maxima-runtime >=10.9.post2,<10.10']
 meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']

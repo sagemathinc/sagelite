@@ -1578,6 +1578,18 @@ def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_mathics_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "Mathics3 >=10.0.1; python_version < '3.14'"
+
+    assert extras["mathics"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["full"]
+
+
 def test_dot2tex_pypi_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
