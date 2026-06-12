@@ -528,7 +528,8 @@ TESTS:
 
 Check the qepcad configuration file::
 
-    sage: with open(os.path.join(SAGE_LOCAL, 'etc', 'default.qepcadrc')) as f:  # optional - qepcad
+    sage: from sage.interfaces.qepcad import _qepcad_default_qepcadrc_path
+    sage: with open(_qepcad_default_qepcadrc_path()) as f:  # optional - qepcad
     ....:     f.readlines()[-1]
     'SINGULAR yes\n'
 
@@ -634,6 +635,7 @@ def _qepcad_runtime():
         root = runtime.root_dir()
         executable = runtime.executable_path()
         help_file = runtime.help_path()
+        default_qepcadrc = runtime.default_qepcadrc_path()
     except Exception:
         return None
 
@@ -642,6 +644,7 @@ def _qepcad_runtime():
         and os.path.isfile(executable)
         and os.access(executable, os.X_OK)
         and os.path.isfile(help_file)
+        and os.path.isfile(default_qepcadrc)
     ):
         return None
 
@@ -676,6 +679,16 @@ def _qepcad_help_path():
     if runtime is not None:
         return os.fspath(runtime.help_path())
     return os.path.join(SAGE_LOCAL, 'share/qepcad', 'qepcad.help')
+
+
+def _qepcad_default_qepcadrc_path():
+    """
+    Return the QEPCAD default configuration-file path used by Sage.
+    """
+    runtime = _qepcad_runtime()
+    if runtime is not None:
+        return os.fspath(runtime.default_qepcadrc_path())
+    return os.path.join(SAGE_LOCAL, 'etc', 'default.qepcadrc')
 
 
 def _qepcad_atoms(formula):

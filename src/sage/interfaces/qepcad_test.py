@@ -30,6 +30,8 @@ def _write_fake_qepcad_runtime(tmp_path):
         "    return root_dir() / 'bin' / 'qepcad'\n"
         "def help_path():\n"
         "    return root_dir() / 'share' / 'qepcad' / 'qepcad.help'\n"
+        "def default_qepcadrc_path():\n"
+        "    return root_dir() / 'etc' / 'default.qepcadrc'\n"
     )
 
     executable.parent.mkdir(parents=True)
@@ -68,5 +70,18 @@ def test_qepcad_help_discovers_sagelite_companion(monkeypatch, tmp_path):
         assert qepcad_module._command_info_cache["finish"][3] == "Finish QEPCAD.\n"
     finally:
         qepcad_module._command_info_cache = None
+        sys.modules.pop("sagelite_qepcad", None)
+        sys.modules.pop("sagelite_qepcad.runtime", None)
+
+
+def test_qepcad_default_qepcadrc_discovers_sagelite_companion(monkeypatch, tmp_path):
+    root = _write_fake_qepcad_runtime(tmp_path)
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+
+    try:
+        assert qepcad_module._qepcad_default_qepcadrc_path() == os.fspath(
+            root / "etc" / "default.qepcadrc"
+        )
+    finally:
         sys.modules.pop("sagelite_qepcad", None)
         sys.modules.pop("sagelite_qepcad.runtime", None)
