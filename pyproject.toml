@@ -100,6 +100,7 @@ dependencies = [
   'sagelite-graphviz-runtime >=10.9,<10.10',
   'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
+  'sagelite-kissat-runtime >=10.9,<10.10',
   'sagelite-lcalc-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',
   'sagelite-maxima-runtime >=10.9.post2,<10.10',
