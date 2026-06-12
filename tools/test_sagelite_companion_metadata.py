@@ -1284,6 +1284,19 @@ def test_conway_polynomials_pypi_database_is_core_sagelite_dependency():
     ]
 
 
+def test_lrcalc_pypi_library_is_core_sagelite_dependency():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    requirement = 'lrcalc ~=2.1; sys_platform != "win32"'
+    extras = pyproject["project"]["optional-dependencies"]
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert extras["lrcalc"] == [requirement]
+    assert extras["lrcalc-python"] == [requirement]
+    assert extras["lrcalc_python"] == [requirement]
+
+
 def test_elliptic_curves_standard_database_extra_installs_split_wheels():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1458,6 +1471,7 @@ def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
         "database_stein_watkins_mini": "database-stein-watkins-mini",
         "database_symbolic_data": "database-symbolic-data",
         "latte_int": "latte",
+        "lrcalc_python": "lrcalc",
         "matroid_database": "matroid-database",
         "polytopes_db": "polytopes-db",
         "polytopes_db_4d": "polytopes-db-4d",
