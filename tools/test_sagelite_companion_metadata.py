@@ -504,6 +504,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post1,<10.10",
+    "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
     "sagelite-planarity-runtime >=10.9,<10.10",
