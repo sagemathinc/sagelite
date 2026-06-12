@@ -81,6 +81,28 @@ def _check_lrcalc():
     return lrcoef([2], [1], [1])
 
 
+def _check_cddlib_runtime():
+    try:
+        import sagelite_cddlib  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.cddlib import CddExecutable
+
+    executables = {}
+    for program in ("cddexec", "cddexec_gmp"):
+        feature = CddExecutable(program).is_present()
+        if not bool(feature):
+            raise RuntimeError(
+                f"cddlib executable {program!r} is not available: {feature.reason}"
+            )
+        executables[program] = feature.absolute_filename()
+    return (
+        f"cddexec={executables['cddexec']}, "
+        f"cddexec_gmp={executables['cddexec_gmp']}"
+    )
+
+
 def _check_lie_runtime():
     try:
         import sagelite_lie  # noqa: F401
@@ -627,6 +649,7 @@ def main() -> int:
         ("eclib mwrank library", _check_eclib_mwrank),
         ("brial pbori library", _check_brial_pbori),
         ("lrcalc python library", _check_lrcalc),
+        ("cddlib executable runtime", _check_cddlib_runtime),
         ("LiE executable runtime", _check_lie_runtime),
         ("PARI data runtime", _check_pari_data),
         ("Singular library runtime", _check_singular_runtime),
