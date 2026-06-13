@@ -282,6 +282,23 @@ def test_sage_data_paths_accepts_registered_named_directory(monkeypatch, tmp_pat
     assert str(direct) in env.sage_data_paths("cremona")
 
 
+def test_sage_data_paths_accepts_registered_file_path(monkeypatch, tmp_path):
+    root = tmp_path / "companion-data"
+    direct = root / "cremona"
+    database = direct / "cremona_mini.db"
+    direct.mkdir(parents=True)
+    database.write_text("cremona\n")
+
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: database)],
+    )
+    monkeypatch.setattr(env, "SAGE_DATA_PATH", None)
+
+    assert str(direct) in env.sage_data_paths("cremona")
+
+
 def test_sage_data_paths_keeps_registered_roots_without_name(monkeypatch, tmp_path):
     root = tmp_path / "companion-data"
     root.mkdir()
@@ -306,6 +323,25 @@ def test_sage_data_paths_accepts_multiple_registered_directories(monkeypatch, tm
         env.importlib_metadata,
         "entry_points",
         lambda **kwargs: [_EntryPoint(lambda: [first, second])],
+    )
+
+    assert env._registered_sage_data_paths() == {str(first), str(second)}
+
+
+def test_sage_data_paths_accepts_registered_file_paths_in_iterables(
+    monkeypatch, tmp_path
+):
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    database = second / "graphs.db"
+    first.mkdir()
+    second.mkdir()
+    database.write_text("graphs\n")
+
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: [first, database])],
     )
 
     assert env._registered_sage_data_paths() == {str(first), str(second)}

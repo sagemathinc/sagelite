@@ -1478,8 +1478,10 @@ def _registered_sage_data_paths() -> set[str]:
 
     Companion wheels can register an entry point in the
     ``sagemath.data_paths`` group that returns either one directory or an
-    iterable of directories. Invalid entry points are ignored so that optional
-    data packages never become mandatory runtime dependencies.
+    iterable of directories. If an entry point returns a direct file path, the
+    containing directory is used as the search path. Invalid entry points are
+    ignored so that optional data packages never become mandatory runtime
+    dependencies.
     """
     try:
         entry_points = importlib_metadata.entry_points(group="sagemath.data_paths")
@@ -1508,13 +1510,16 @@ def _coerce_sage_data_paths(value) -> set[str]:
     if value is None:
         return set()
     if isinstance(value, (str, bytes, PathLike)):
-        return {os.fspath(value)}
+        path = os.fspath(value)
+        return {os.path.dirname(path) if os.path.isfile(path) else path}
     try:
         iterator = iter(value)
     except TypeError:
         return set()
     return {
-        os.fspath(path)
+        os.path.dirname(os.fspath(path))
+        if os.path.isfile(path)
+        else os.fspath(path)
         for path in iterator
         if isinstance(path, (str, bytes, PathLike))
     }
