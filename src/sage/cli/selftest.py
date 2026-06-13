@@ -461,6 +461,22 @@ def _check_database_cremona_mini():
     return "cremona_mini.db available"
 
 
+def _check_database_cremona_ellcurve():
+    try:
+        import sagelite_database_cremona_ellcurve  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseCremona
+
+    database = DatabaseCremona().is_present()
+    if not bool(database):
+        raise RuntimeError(
+            f"Cremona elliptic curve database is not available: {database.reason}"
+        )
+    return "cremona.db available"
+
+
 def _check_database_ellcurves():
     try:
         import sagelite_database_ellcurves  # noqa: F401
@@ -542,6 +558,22 @@ def _check_database_polytopes():
             f"reflexive polytope database is not available: {database.reason}"
         )
     return "2d/3d reflexive polytope data available"
+
+
+def _check_database_polytopes_4d():
+    try:
+        import sagelite_database_polytopes_4d  # noqa: F401
+    except ImportError:
+        return "not installed"
+
+    from sage.features.databases import DatabaseReflexivePolytopes
+
+    database = DatabaseReflexivePolytopes("polytopes_db_4d").is_present()
+    if not bool(database):
+        raise RuntimeError(
+            f"4D reflexive polytope database is not available: {database.reason}"
+        )
+    return "4D reflexive polytope data available"
 
 
 def _check_database_mutation_class():
@@ -672,11 +704,13 @@ def main() -> int:
         ("Cunningham tables runtime", _check_cunningham_tables),
         ("graphs database runtime", _check_database_graphs),
         ("Cremona mini database runtime", _check_database_cremona_mini),
+        ("Cremona elliptic curve database runtime", _check_database_cremona_ellcurve),
         ("ellcurves database runtime", _check_database_ellcurves),
         ("Jones number field database runtime", _check_database_jones_numfield),
         ("Sloane/OEIS database runtime", _check_database_sloane),
         ("Kohel polynomial database runtime", _check_database_kohel),
         ("reflexive polytopes database runtime", _check_database_polytopes),
+        ("4D reflexive polytopes database runtime", _check_database_polytopes_4d),
         ("mutation class database runtime", _check_database_mutation_class),
         ("SymbolicData database runtime", _check_database_symbolic_data),
         ("Odlyzko zeta database runtime", _check_database_odlyzko_zeta),

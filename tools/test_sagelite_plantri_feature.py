@@ -337,6 +337,71 @@ def test_sagelite_selftest_nauty_runtime_uses_companion_paths(monkeypatch, tmp_p
     ]
 
 
+def test_sagelite_selftest_checks_cremona_ellcurve_database(monkeypatch):
+    calls = []
+
+    class Present:
+        reason = ""
+
+        def __bool__(self):
+            return True
+
+    class DatabaseCremona:
+        def __init__(self, name="cremona"):
+            calls.append(name)
+
+        def is_present(self):
+            return Present()
+
+    databases = types.ModuleType("sage.features.databases")
+    databases.DatabaseCremona = DatabaseCremona
+    monkeypatch.setitem(
+        sys.modules,
+        "sagelite_database_cremona_ellcurve",
+        types.ModuleType("sagelite_database_cremona_ellcurve"),
+    )
+    monkeypatch.setitem(sys.modules, "sage.features.databases", databases)
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    assert selftest._check_database_cremona_ellcurve() == "cremona.db available"
+    assert calls == ["cremona"]
+
+
+def test_sagelite_selftest_checks_polytopes_4d_database(monkeypatch):
+    calls = []
+
+    class Present:
+        reason = ""
+
+        def __bool__(self):
+            return True
+
+    class DatabaseReflexivePolytopes:
+        def __init__(self, name="polytopes_db"):
+            calls.append(name)
+
+        def is_present(self):
+            return Present()
+
+    databases = types.ModuleType("sage.features.databases")
+    databases.DatabaseReflexivePolytopes = DatabaseReflexivePolytopes
+    monkeypatch.setitem(
+        sys.modules,
+        "sagelite_database_polytopes_4d",
+        types.ModuleType("sagelite_database_polytopes_4d"),
+    )
+    monkeypatch.setitem(sys.modules, "sage.features.databases", databases)
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    assert (
+        selftest._check_database_polytopes_4d()
+        == "4D reflexive polytope data available"
+    )
+    assert calls == ["polytopes_db_4d"]
+
+
 def test_ecm_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     executable = _write_fake_runtime(tmp_path, "sagelite_ecm", "ecm", "executable_path")
 
