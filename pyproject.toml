@@ -87,6 +87,7 @@ dependencies = [
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
+  'sagelite-flatter-runtime >=10.9,<10.10',
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
   'sagelite-database-jones-numfield >=10.9,<10.10',
