@@ -85,6 +85,7 @@ dependencies = [
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-dvipng-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
+  'sagelite-database-cremona-ellcurve >=10.9,<10.10',
   'sagelite-database-cremona-mini >=10.9,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-ecl-runtime >=10.9,<10.10',

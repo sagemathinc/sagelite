@@ -487,6 +487,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-cunningham-tables >=10.9,<10.10",
     "sagelite-d3js-runtime >=10.9,<10.10",
     "sagelite-threejs-runtime >=10.9,<10.10",
+    "sagelite-database-cremona-ellcurve >=10.9,<10.10",
     "sagelite-database-cremona-mini >=10.9,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
     "sagelite-fplll-data >=10.9,<10.10",
@@ -651,6 +652,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
 
     dependencies = set(pyproject["project"]["dependencies"])
 
+    assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in dependencies
     assert "sagelite-database-cremona-mini >=10.9,<10.10" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-maxima-runtime >=10.9.post3,<10.10" in dependencies
@@ -1226,6 +1228,7 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-database-cremona-ellcurve >=10.9,<10.10"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["cremona-ellcurve"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
