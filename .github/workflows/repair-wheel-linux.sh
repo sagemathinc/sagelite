@@ -1011,9 +1011,13 @@ build_poppler_runtime_companion() {
   esac
 
   local poppler_bindir="$prefix/bin"
+  if [ ! -x "$poppler_bindir/pdftocairo" ] && [ -x /usr/bin/pdftocairo ]; then
+    poppler_bindir="/usr/bin"
+  fi
   if [ ! -x "$poppler_bindir/pdftocairo" ]; then
-    echo "Skipping Poppler runtime companion; pdftocairo not found under $poppler_bindir" >&2
-    return 0
+    echo "pdftocairo executable not found under $prefix/bin or /usr/bin; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 -name pdftocairo -print >&2 || true
+    exit 1
   fi
 
   local project_dir="/project"
