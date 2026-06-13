@@ -26,6 +26,9 @@ classifiers = [
 ]
 urls = { Homepage = "https://www.sagemath.org" }
 
+[project.scripts]
+maxima = "sagelite_maxima.runtime:maxima"
+
 [tool.setuptools]
 include-package-data = true
 zip-safe = false

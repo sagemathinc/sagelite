@@ -1,4 +1,5 @@
 import os
+import sys
 from importlib.resources import files
 
 
@@ -52,6 +53,17 @@ def maxima_command() -> str:
     return os.fspath(files(__package__).joinpath("data", "bin", "maxima"))
 
 
+def maxima() -> int:
+    """
+    Run the bundled Maxima executable.
+    """
+    executable = maxima_command()
+    if not os.path.isfile(executable):
+        raise RuntimeError("Maxima executable is missing from companion package")
+    os.execv(executable, ["maxima", *sys.argv[1:]])
+    return 127
+
+
 def maxima_imagesdir() -> str:
     """
     Return the bundled ECL Maxima image directory.
@@ -80,6 +92,7 @@ def ecl_dir() -> str:
 
 __all__ = [
     "ecl_dir",
+    "maxima",
     "maxima_command",
     "maxima_fas",
     "maxima_imagesdir",

@@ -2608,6 +2608,9 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
     ).read_text()
 
     assert pyproject["project"]["version"] == "10.9.post2"
+    assert pyproject["project"]["scripts"] == {
+        "maxima": "sagelite_maxima.runtime:maxima",
+    }
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_maxima"] == [
         "data/bin/*",
@@ -2615,6 +2618,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         "data/share/**/*",
     ]
     assert "def maxima_library_path()" in runtime_py
+    assert "def maxima()" in runtime_py
     assert '"maxima_library_path"' in runtime_py
     assert "maxima_library_path" in package_init
 

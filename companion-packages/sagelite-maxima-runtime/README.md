@@ -7,7 +7,8 @@ Maxima executable image, Lisp image, ECL runtime support files, and share tree
 are separate runtime assets. Installing this package in the same Python
 environment gives `sagelite` relocatable `MAXIMA`, `MAXIMA_PREFIX`, and
 `MAXIMA_FAS` values, plus the matching `MAXIMA_IMAGESDIR` and `ECLDIR`,
-without requiring users to set them manually.
+without requiring users to set them manually. It also installs a `maxima`
+console script that runs the bundled Maxima executable.
 
 This package is built by copying an existing Sage-built Maxima runtime. Set
 `SAGELITE_MAXIMA_PREFIX` to the versioned Maxima share directory and
