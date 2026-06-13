@@ -181,8 +181,12 @@ def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
             "sagelite_maxima.runtime", "maxima_library_path"
         )
         if not maxima_prefix:
-            maxima_prefix = _optional_runtime_value(
+            companion_prefix = _optional_runtime_value(
                 "sagelite_maxima.runtime", "maxima_prefix"
+            )
+            maxima_prefix = (
+                _maxima_library_prefix_from_install_root(companion_prefix)
+                or companion_prefix
             )
 
     if maxima_fas and not os.path.isfile(maxima_fas):
