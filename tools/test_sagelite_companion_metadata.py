@@ -1723,6 +1723,7 @@ def test_imageio_ffmpeg_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "imageio-ffmpeg >=0.6.0"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["ffmpeg"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
@@ -1750,6 +1751,7 @@ def test_pypandoc_binary_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "pypandoc-binary >=1.17"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["pandoc"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
