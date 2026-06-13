@@ -488,7 +488,7 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-d3js-runtime >=10.9,<10.10",
     "sagelite-threejs-runtime >=10.9,<10.10",
     "sagelite-database-cremona-ellcurve >=10.9,<10.10",
-    "sagelite-database-cremona-mini >=10.9,<10.10",
+    "sagelite-database-cremona-mini >=10.9.post1,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
     "sagelite-fplll-data >=10.9,<10.10",
     "sagelite-database-graphs >=10.9,<10.10",
@@ -659,7 +659,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in dependencies
-    assert "sagelite-database-cremona-mini >=10.9,<10.10" in dependencies
+    assert "sagelite-database-cremona-mini >=10.9.post1,<10.10" in dependencies
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
@@ -1318,7 +1318,7 @@ def test_cremona_mini_database_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-database-cremona-mini >=10.9,<10.10"
+    requirement = "sagelite-database-cremona-mini >=10.9.post1,<10.10"
 
     assert extras["cremona"] == [requirement]
     assert requirement in extras["databases"]
@@ -1621,7 +1621,7 @@ def test_elliptic_curves_standard_database_extra_installs_split_wheels():
 
     extras = pyproject["project"]["optional-dependencies"]
     requirements = [
-        "sagelite-database-cremona-mini >=10.9,<10.10",
+        "sagelite-database-cremona-mini >=10.9.post1,<10.10",
         "sagelite-database-ellcurves >=10.9,<10.10",
     ]
 
