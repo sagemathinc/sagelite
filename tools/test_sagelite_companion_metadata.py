@@ -502,24 +502,37 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
 }
 
 BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
+    "sagelite-4ti2-runtime >=10.9,<10.10",
+    "sagelite-benzene-runtime >=10.9,<10.10",
+    "sagelite-buckygen-runtime >=10.9,<10.10",
+    "sagelite-cddlib-runtime >=10.9,<10.10",
     "sagelite-csdp-runtime >=10.9,<10.10",
     "sagelite-dvipng-runtime >=10.9,<10.10",
     "sagelite-ecl-runtime >=10.9,<10.10",
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-flatter-runtime >=10.9,<10.10",
+    "sagelite-frobby-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post2,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
+    "sagelite-giac-runtime >=10.9,<10.10",
     "sagelite-glucose-runtime >=10.9,<10.10",
     "sagelite-imagemagick-runtime >=10.9,<10.10",
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-kissat-runtime >=10.9,<10.10",
+    "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
+    "sagelite-lie-runtime >=10.9,<10.10",
+    "sagelite-lrslib-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post3,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
+    "sagelite-msolve-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
+    "sagelite-pdf2svg-runtime >=10.9,<10.10",
     "sagelite-planarity-runtime >=10.9,<10.10",
+    "sagelite-plantri-runtime >=10.9,<10.10",
+    "sagelite-qepcad-runtime >=10.9,<10.10",
     "sagelite-rubiks-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
     "sagelite-sympow-runtime >=10.9,<10.10",
@@ -748,6 +761,10 @@ def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
 
     for requirement in BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES:
         package = requirement.split()[0]
+        if f"- name: {package}" not in workflow_text:
+            assert package in release_runtime_packages
+            continue
+
         start = workflow_text.index(f"- name: {package}")
         end = workflow_text.find("\n          - name:", start + 1)
         block = workflow_text[start : end if end != -1 else len(workflow_text)]
