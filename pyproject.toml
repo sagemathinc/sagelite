@@ -80,6 +80,7 @@ dependencies = [
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
   'pyparsing >=3.2.3',
+  'pynormaliz >=2.18; sys_platform != "win32"',
   # Issue #30922: pplpy 0.8.4 and earlier do not declare dependencies correctly
   'pplpy >=0.8.6; sys_platform != "win32"',
   'primecountpy; sys_platform != "win32"',
@@ -278,7 +279,7 @@ extra = [
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
-  'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
+  'pynormaliz >=2.18; sys_platform != "win32"',
   'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
@@ -296,7 +297,7 @@ full = [
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
-  'pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"', # Not yet available for Linux aarch64
+  'pynormaliz >=2.18; sys_platform != "win32"',
   'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
@@ -664,7 +665,7 @@ polytopes_db_4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 pycosat = ['pycosat >=0.6.3']
-pynormaliz = ['pynormaliz >=2.18; platform_machine != "aarch64" and platform_machine != "arm64"']
+pynormaliz = ['pynormaliz >=2.18; sys_platform != "win32"']
 pyparsing = ['pyparsing >=3.2.3']
 regina = ['regina >=7.4.1']
 runtime = [
@@ -673,6 +674,7 @@ runtime = [
   'khoca >=1.4',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
+  'pynormaliz >=2.18; sys_platform != "win32"',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
   'sagelite-buckygen-runtime >=10.9,<10.10',

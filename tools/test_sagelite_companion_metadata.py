@@ -553,6 +553,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
 BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "khoca >=1.4",
     "pycosat >=0.6.3",
+    'pynormaliz >=2.18; sys_platform != "win32"',
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
@@ -1743,6 +1744,20 @@ def test_pycryptosat_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_pynormaliz_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = 'pynormaliz >=2.18; sys_platform != "win32"'
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert extras["pynormaliz"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1880,7 +1895,7 @@ def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
     for alias, canonical in aliases.items():
         assert extras[alias] == extras[canonical]
 
-    for alias in ("pycosat", "pynormaliz", "sage_numerical_backends_coin"):
+    for alias in ("pycosat", "sage_numerical_backends_coin"):
         assert extras[alias][0] in extras["extra"]
         assert extras[alias][0] in extras["full"]
 
