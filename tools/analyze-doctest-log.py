@@ -26,7 +26,12 @@ RUN_RE = re.compile(
     r"^(?:python3 -m sage\.doctest|(?:\S+/)?sage -t) .* (?P<path>\S+?)(?:\s+#\s+(?P<summary>.+))?$"
 )
 
+FILE_RE = re.compile(
+    r'^File "(?P<path>[^"]+)", line \d+, in (?P<context>\S+)$'
+)
+
 FAIL_LINE_RE = re.compile(r"^\s*(?P<count>\d+)\s+doctests failed$")
+ITEM_FAILURES_RE = re.compile(r"^\d+\s+items?\s+had failures:$")
 
 
 def normalize_module_name(path: str) -> str:
@@ -157,6 +162,18 @@ def parse_log(log_path: Path) -> dict[str, ModuleResult]:
                 capture_traceback = False
                 continue
 
+            match = FILE_RE.match(line)
+            if match:
+                module = normalize_module_name(match.group("path"))
+                current = results.setdefault(
+                    module,
+                    ModuleResult(module=module, path=match.group("path")),
+                )
+                if current.status == "passed":
+                    current.status = "failed"
+                capture_traceback = False
+                continue
+
             if current is None:
                 continue
 
@@ -169,6 +186,10 @@ def parse_log(log_path: Path) -> dict[str, ModuleResult]:
                 current.failed_examples += 1
                 current.status = "failed"
                 capture_traceback = True
+                continue
+
+            if ITEM_FAILURES_RE.match(stripped):
+                capture_traceback = False
                 continue
 
             fail_match = FAIL_LINE_RE.match(stripped)
