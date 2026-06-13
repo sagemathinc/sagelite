@@ -256,7 +256,8 @@ def _patch_ecl_fas(path: Path) -> None:
     these images bind to the already-loaded library.
     """
     ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
-    if not ecl_soname:
+    allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
+    if not ecl_soname and allow_system_ecl:
         return
 
     try:
@@ -266,6 +267,20 @@ def _patch_ecl_fas(path: Path) -> None:
             capture_output=True,
             text=True,
         ).stdout.splitlines()
+        ecl_needed = [name for name in needed if name.startswith("libecl")]
+        if not ecl_needed:
+            return
+        if not ecl_soname:
+            if allow_system_ecl:
+                return
+            raise RuntimeError(
+                f"{path} depends on {', '.join(ecl_needed)} but "
+                "SAGELITE_MAXIMA_ECL_SONAME is not set. Build production "
+                "Maxima runtime wheels from the repaired sagelite wheel and "
+                "set SAGELITE_MAXIMA_ECL_SONAME to its bundled ECL SONAME, "
+                "or set SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 for an explicit "
+                "system-ECL test build."
+            )
         for original in needed:
             if not original.startswith("libecl") or original == ecl_soname:
                 continue
@@ -282,7 +297,7 @@ def _patch_ecl_fas(path: Path) -> None:
         subprocess.run(["patchelf", "--remove-rpath", os.fspath(path)], check=True)
     except FileNotFoundError as err:
         raise RuntimeError(
-            "patchelf is required when SAGELITE_MAXIMA_ECL_SONAME is set"
+            "patchelf is required to validate or patch Maxima ECL images"
         ) from err
 
 

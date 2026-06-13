@@ -619,6 +619,7 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-maxima-runtime" ]; then
             export SAGELITE_MAXIMA_RUNTIME_PLAT_NAME=linux_x86_64
+            export SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1
           fi
           if [ "${{ matrix.name }}" = "sagelite-mwrank-runtime" ]; then
             export SAGELITE_MWRANK_BINDIR=/usr/bin

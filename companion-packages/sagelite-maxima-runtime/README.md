@@ -32,6 +32,11 @@ SAGELITE_MAXIMA_ECL_SONAME=libecl-<auditwheel-hash>.so.24.5.10 \
 python -m build companion-packages/sagelite-maxima-runtime
 ```
 
+The build rejects ECL-loaded images that still depend on a generic
+`libecl.so` SONAME unless `SAGELITE_MAXIMA_ECL_SONAME` is set. For a local
+test build that intentionally targets the system ECL package instead of a
+repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1` explicitly.
+
 If the variables are not set, the build checks common Sage and system
 locations, including Debian/Ubuntu's `maxima-sage` layout. For production
 wheels, build this package from the same Sage prefix used to build the
