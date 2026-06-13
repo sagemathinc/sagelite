@@ -49,6 +49,7 @@ classifiers = [
 ]
 dependencies = [
   'conway-polynomials >=0.8',
+  'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'matroid-database ==0.3',
   'cypari2 >=2.2.1; sys_platform != "win32"',

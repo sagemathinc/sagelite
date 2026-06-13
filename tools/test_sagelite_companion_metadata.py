@@ -656,6 +656,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
 
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in dependencies
     assert "sagelite-database-cremona-mini >=10.9,<10.10" in dependencies
+    assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-maxima-runtime >=10.9.post3,<10.10" in dependencies
@@ -1609,6 +1610,7 @@ def test_cubic_hecke_pypi_database_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "database-cubic-hecke ==2022.4.4"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["cubic-hecke"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
