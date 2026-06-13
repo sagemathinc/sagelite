@@ -519,6 +519,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
     "sagelite-planarity-runtime >=10.9,<10.10",
+    "sagelite-rubiks-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
     "sagelite-sympow-runtime >=10.9,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
