@@ -547,6 +547,10 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-topcom-runtime >=10.9,<10.10",
 }
 
+BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
+    "pycosat >=0.6.3",
+}
+
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-mathjax-runtime",
@@ -746,6 +750,18 @@ def test_base_sagelite_installs_standard_runtime_companion_wheels():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES <= dependencies
+
+
+def test_base_sagelite_installs_standard_pypi_runtime_wheels():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+    extras = pyproject["project"]["optional-dependencies"]
+
+    assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= dependencies
+    assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= set(extras["runtime"])
+    assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= set(extras["full"])
 
 
 def test_base_sagelite_companion_dependencies_are_build_covered():
