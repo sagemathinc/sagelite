@@ -645,6 +645,17 @@ def _pyproject(name: str) -> dict:
         return tomllib.load(handle)
 
 
+def test_sagelite_default_dependencies_include_short_doctest_companions():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+
+    assert "sagelite-database-cremona-mini >=10.9,<10.10" in dependencies
+    assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post3,<10.10" in dependencies
+
+
 def test_runtime_companion_wheels_declare_copied_package_data():
     for package, package_data in RUNTIME_PACKAGE_DATA.items():
         pyproject = _pyproject(package)
