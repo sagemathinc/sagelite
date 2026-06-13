@@ -18,6 +18,13 @@ PACKAGE_DATA_FILE = (
     / "cremona"
     / "cremona_mini.db"
 )
+PACKAGE_DATA_RELATIVE = os.fspath(
+    Path("src")
+    / "sagelite_database_cremona_mini"
+    / "data"
+    / "cremona"
+    / "cremona_mini.db"
+)
 
 
 def _candidate_cremona_mini_databases() -> list[Path]:
@@ -107,4 +114,7 @@ class sdist(_sdist):
         _copy_database(_find_cremona_mini_database(), target)
 
 
-setup(cmdclass={"build_py": build_py, "sdist": sdist})
+setup(
+    cmdclass={"build_py": build_py, "sdist": sdist},
+    data_files=[("share/cremona", [PACKAGE_DATA_RELATIVE])],
+)

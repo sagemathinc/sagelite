@@ -95,7 +95,7 @@ dependencies = [
   'sagelite-dvipng-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
   'sagelite-database-cremona-ellcurve >=10.9,<10.10',
-  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-ecl-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
@@ -186,7 +186,7 @@ buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']
 cddlib = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cddexec = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cddexec_gmp = ['sagelite-cddlib-runtime >=10.9,<10.10']
-cremona = ['sagelite-database-cremona-mini >=10.9,<10.10']
+cremona = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
 cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 conway-polynomials = ['conway-polynomials >=0.8']
 conway_polynomials = ['conway-polynomials >=0.8']
@@ -198,8 +198,8 @@ convert = ['sagelite-imagemagick-runtime >=10.9,<10.10']
 d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
 database-cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 database_cremona_ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
-database-cremona-mini-ellcurve = ['sagelite-database-cremona-mini >=10.9,<10.10']
-database_cremona_mini_ellcurve = ['sagelite-database-cremona-mini >=10.9,<10.10']
+database-cremona-mini-ellcurve = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
+database_cremona_mini_ellcurve = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
 database-cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 database_cubic_hecke = ['database-cubic-hecke ==2022.4.4']
 database-ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
@@ -232,7 +232,7 @@ databases = [
   'matroid-database ==0.3',
   'sagelite-cunningham-tables >=10.9,<10.10',
   'sagelite-database-cremona-ellcurve >=10.9,<10.10',
-  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
   'sagelite-database-jones-numfield >=10.9,<10.10',
@@ -252,11 +252,11 @@ ecl = ['sagelite-ecl-runtime >=10.9,<10.10']
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
 elliptic-curves = [
-  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
 ]
 elliptic_curves = [
-  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
 ]
 dot = ['sagelite-graphviz-runtime >=10.9,<10.10']
@@ -307,7 +307,7 @@ full = [
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-dvipng-runtime >=10.9,<10.10',
   'sagelite-database-cremona-ellcurve >=10.9,<10.10',
-  'sagelite-database-cremona-mini >=10.9,<10.10',
+  'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-database-graphs >=10.9,<10.10',
   'sagelite-database-jones-numfield >=10.9,<10.10',
