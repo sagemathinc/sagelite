@@ -1040,14 +1040,16 @@ jobs:
 
       - name: Smoke test wheel in a fresh virtualenv
         run: |
+          set -euo pipefail
           "${{ steps.python.outputs.python-path }}" -m venv test-venv
           test-venv/bin/python -m pip install --upgrade pip
-          test-venv/bin/python -m pip install wheelhouse/*.whl
+          wheels=(wheelhouse/*.whl)
           for companion_dist in gap-runtime-dist gap3-runtime-dist gfan-runtime-dist giac-runtime-dist glucose-runtime-dist graphviz-runtime-dist info-runtime-dist kissat-runtime-dist ecm-runtime-dist frobby-runtime-dist flatter-runtime-dist fplll-data-dist four-ti-2-runtime-dist benzene-runtime-dist buckygen-runtime-dist cddlib-runtime-dist csdp-runtime-dist dvipng-runtime-dist maxima-runtime-dist lie-runtime-dist lcalc-runtime-dist latte-runtime-dist lrslib-runtime-dist meataxe-runtime-dist msolve-runtime-dist mwrank-runtime-dist nauty-runtime-dist rubiks-runtime-dist palp-runtime-dist pdf2svg-runtime-dist poppler-runtime-dist planarity-runtime-dist plantri-runtime-dist qepcad-runtime-dist sympow-runtime-dist pari-data-dist singular-runtime-dist tachyon-runtime-dist tides-runtime-dist topcom-runtime-dist; do
             if compgen -G "$companion_dist/*.whl" > /dev/null; then
-              test-venv/bin/python -m pip install "$companion_dist"/*.whl
+              wheels+=("$companion_dist"/*.whl)
             fi
           done
+          test-venv/bin/python -m pip install "${wheels[@]}"
           test-venv/bin/sagelite-selftest
 
       - uses: actions/upload-artifact@v4

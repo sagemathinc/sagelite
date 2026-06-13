@@ -912,6 +912,20 @@ def test_release_workflow_separates_expected_runtime_companion_wheels():
         assert f'packages-dir: {dist_dir}/' in workflow_text
 
 
+def test_release_workflow_smoke_test_installs_sagelite_with_local_companions():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+
+    start = workflow_text.index("- name: Smoke test wheel in a fresh virtualenv")
+    end = workflow_text.index("- uses: actions/upload-artifact@v4", start)
+    block = workflow_text[start:end]
+
+    assert "wheels=(wheelhouse/*.whl)" in block
+    assert 'wheels+=("$companion_dist"/*.whl)' in block
+    assert 'pip install "${wheels[@]}"' in block
+    assert "pip install wheelhouse/*.whl" not in block
+
+
 def test_release_workflow_verifies_current_maxima_runtime_version():
     workflow = ROOT / ".github" / "workflows" / "release.yml"
     workflow_text = workflow.read_text()
