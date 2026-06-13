@@ -36,3 +36,8 @@ If the variables are not set, the build checks common Sage and system
 locations, including Debian/Ubuntu's `maxima-sage` layout. For production
 wheels, build this package from the same Sage prefix used to build the
 corresponding `sagelite` wheel.
+
+The bundled ECL support directory also contains `maxima.fas` and a small
+`maxima.asd` descriptor. This lets ECL resolve plain `(require 'maxima)` from
+the companion `ECLDIR`, which is useful when Sage falls back to ECL's standard
+module lookup instead of passing `MAXIMA_FAS` explicitly.

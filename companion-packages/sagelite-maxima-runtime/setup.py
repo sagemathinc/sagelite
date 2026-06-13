@@ -304,6 +304,19 @@ def _copy_maxima_info_indexes(maxima_prefix: Path, target: Path) -> None:
         shutil.copy2(path, info_target / path.name)
 
 
+def _write_maxima_asd(path: Path) -> None:
+    """
+    Register the bundled Maxima image with ECL's ``require`` mechanism.
+    """
+    path.write_text(
+        """(defsystem "maxima" :class asdf::prebuilt-system
+        :lib #P"SYS:MAXIMA.FAS"
+        :depends-on NIL
+        :components ((:compiled-file "maxima" :pathname #P"SYS:MAXIMA.FAS")))
+""",
+    )
+
+
 class build_py(_build_py):
     def run(self):
         maxima_prefix = _find_maxima_prefix()
@@ -323,11 +336,6 @@ class build_py(_build_py):
         )
         _copy_maxima_info_indexes(maxima_prefix, target)
 
-        fas_target = target / "lib" / "ecl" / "maxima.fas"
-        fas_target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(maxima_fas, fas_target)
-        _patch_ecl_fas(fas_target)
-
         images_target = target / "lib" / "maxima" / maxima_prefix.name
         if maxima_images_dir is not None:
             shutil.copytree(
@@ -336,7 +344,13 @@ class build_py(_build_py):
 
         ecl_target = target / "lib" / ecl_dir.name
         shutil.copytree(ecl_dir, ecl_target, ignore_dangling_symlinks=True)
+        fas_target = ecl_target / "maxima.fas"
+        shutil.copy2(maxima_fas, fas_target)
+        _patch_ecl_fas(fas_target)
+        _write_maxima_asd(ecl_target / "maxima.asd")
         for ecl_fas in ecl_target.glob("*.fas"):
+            if ecl_fas == fas_target:
+                continue
             _patch_ecl_fas(ecl_fas)
 
         runtime_target = target / "lib" / "runtime"
