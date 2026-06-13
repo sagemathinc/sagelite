@@ -124,6 +124,7 @@ dependencies = [
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-poppler-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9.post1,<10.10',
