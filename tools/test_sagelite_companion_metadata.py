@@ -509,6 +509,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-flatter-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post2,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
+    "sagelite-glucose-runtime >=10.9,<10.10",
     "sagelite-imagemagick-runtime >=10.9,<10.10",
     "sagelite-info-runtime >=10.9,<10.10",
     "sagelite-kissat-runtime >=10.9,<10.10",
