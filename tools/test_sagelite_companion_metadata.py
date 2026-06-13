@@ -1632,6 +1632,7 @@ def test_matroid_pypi_database_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "matroid-database ==0.3"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["matroids"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["full"]
