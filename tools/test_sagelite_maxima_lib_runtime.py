@@ -17,6 +17,21 @@ def _maxima_path_helpers(optional_runtime_value):
     return namespace
 
 
+def _maxima_require_helpers(optional_runtime_value, ecl_eval):
+    source = MAXIMA_LIB.read_text()
+    start = source.index("def _maxima_library_prefix_is_usable")
+    end = source.index("# We begin here by initializing Maxima in library mode")
+    namespace = {
+        "os": os,
+        "_optional_runtime_value": optional_runtime_value,
+        "ecl_eval": ecl_eval,
+        "MAXIMA_FAS": "",
+        "MAXIMA_PREFIX": "",
+    }
+    exec(source[start:end], namespace)
+    return namespace
+
+
 def test_maxima_lib_uses_companion_library_path_for_stale_build_paths(tmp_path):
     fas = tmp_path / "runtime" / "lib" / "ecl-24.5.10" / "maxima.fas"
     library = tmp_path / "runtime" / "share" / "maxima" / "5.47.0"
@@ -37,6 +52,39 @@ def test_maxima_lib_uses_companion_library_path_for_stale_build_paths(tmp_path):
     assert helpers["_configured_maxima_paths"](
         str(tmp_path / "stale.fas"), str(tmp_path / "stale-prefix")
     ) == (str(fas), str(library))
+
+
+def test_maxima_require_retries_companion_fas_after_plain_lookup_failure(tmp_path):
+    fas = tmp_path / "runtime" / "lib" / "ecl-24.5.10" / "maxima.fas"
+    fas.parent.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
+    calls = []
+    fallback_enabled = False
+
+    def optional_runtime_value(module_name, attr_name):
+        if (
+            fallback_enabled
+            and (module_name, attr_name) == ("sagelite_maxima.runtime", "maxima_fas")
+        ):
+            return str(fas)
+        return None
+
+    def ecl_eval(command):
+        calls.append(command)
+        if command == "(require 'maxima)":
+            raise RuntimeError(
+                "ECL says: Module error: Don't know how to REQUIRE MAXIMA."
+            )
+
+    helpers = _maxima_require_helpers(optional_runtime_value, ecl_eval)
+    fallback_enabled = True
+
+    helpers["_require_maxima"]()
+
+    assert calls == [
+        "(require 'maxima)",
+        f"(require 'maxima \"{fas}\")",
+    ]
 
 
 def test_maxima_lib_resolves_companion_install_root_without_library_helper(tmp_path):

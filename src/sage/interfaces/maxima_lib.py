@@ -211,7 +211,15 @@ def _require_maxima():
         if MAXIMA_FAS:
             ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
         else:
-            ecl_eval("(require 'maxima)")
+            try:
+                ecl_eval("(require 'maxima)")
+            except RuntimeError:
+                companion_fas = _optional_runtime_value(
+                    "sagelite_maxima.runtime", "maxima_fas"
+                )
+                if not (companion_fas and os.path.isfile(companion_fas)):
+                    raise
+                ecl_eval("(require 'maxima \"{}\")".format(companion_fas))
     except RuntimeError as err:
         detail = str(err).splitlines()[0]
         raise ImportError(
