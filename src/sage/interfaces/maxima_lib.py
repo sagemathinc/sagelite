@@ -234,6 +234,20 @@ def _configure_companion_maxima_runtime_environment() -> None:
             os.environ[env_name] = os.fspath(value)
 
 
+def _publish_maxima_library_prefix(maxima_prefix: str | None) -> None:
+    """
+    Publish ``maxima_prefix`` only when no install root is already configured.
+
+    The sagelite Maxima companion uses Maxima's autotools layout, where
+    ``MAXIMA_PREFIX`` is the install root.  Sage's library-mode search paths
+    use the versioned library directory instead.  Keep an existing environment
+    value so Maxima's own ``set-pathnames`` logic can still see the install
+    root supplied by the companion package.
+    """
+    if maxima_prefix and not os.environ.get("MAXIMA_PREFIX"):
+        os.environ["MAXIMA_PREFIX"] = os.fspath(maxima_prefix)
+
+
 MAXIMA_FAS, MAXIMA_PREFIX = _configured_maxima_paths(MAXIMA_FAS, MAXIMA_PREFIX)
 _configure_companion_maxima_runtime_environment()
 
@@ -273,8 +287,7 @@ _require_maxima()
 ecl_eval("(in-package :maxima)")
 ecl_eval("(set-locale-subdir)")
 
-if MAXIMA_PREFIX:
-    os.environ["MAXIMA_PREFIX"] = MAXIMA_PREFIX
+_publish_maxima_library_prefix(MAXIMA_PREFIX)
 
 # This workaround has to happen before any call to (set-pathnames).
 # To be safe please do not call anything other than

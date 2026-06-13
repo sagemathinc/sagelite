@@ -151,6 +151,37 @@ def test_maxima_lib_seeds_companion_runtime_environment(monkeypatch, tmp_path):
     assert os.environ["MAXIMA_PREFIX"] == str(prefix)
 
 
+def test_maxima_lib_preserves_companion_install_root_environment(
+    monkeypatch, tmp_path
+):
+    fas = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10" / "maxima.fas"
+    install_root = tmp_path / "runtime" / "data"
+    library = install_root / "share" / "maxima" / "5.47.0"
+    fas.parent.mkdir(parents=True)
+    library.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
+    (library / "share").mkdir()
+    (library / "share" / "builtins-list.txt").write_text("builtins\n")
+
+    monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
+
+    def optional_runtime_value(module_name, attr_name):
+        assert module_name == "sagelite_maxima.runtime"
+        return {
+            "maxima_fas": str(fas),
+            "maxima_prefix": str(install_root),
+        }.get(attr_name)
+
+    helpers = _maxima_path_helpers(optional_runtime_value)
+    maxima_fas, maxima_library = helpers["_configured_maxima_paths"]("", "")
+    helpers["_configure_companion_maxima_runtime_environment"]()
+    helpers["_publish_maxima_library_prefix"](maxima_library)
+
+    assert maxima_fas == str(fas)
+    assert maxima_library == str(library)
+    assert os.environ["MAXIMA_PREFIX"] == str(install_root)
+
+
 def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
     runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
     runtime_lib.mkdir(parents=True)
