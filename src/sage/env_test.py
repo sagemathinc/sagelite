@@ -495,6 +495,31 @@ def test_gap_root_paths_appends_registered_package_roots(monkeypatch, tmp_path):
     assert env._gap_root_paths().split(";") == [str(core), str(package)]
 
 
+def test_gap_root_paths_supports_legacy_entry_point_api(monkeypatch, tmp_path):
+    core = _gap_root(tmp_path, "core")
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(core)
+        if (module_name, attr_name) == ("sagelite_gap_runtime.runtime", "gap_root_paths")
+        else None,
+    )
+
+    def legacy_entry_points(**kwargs):
+        if kwargs:
+            raise TypeError("legacy importlib.metadata API")
+        return {"sagemath.gap_root_paths": [_EntryPoint(lambda: package)]}
+
+    monkeypatch.setattr(env.importlib_metadata, "entry_points", legacy_entry_points)
+
+    assert env._gap_root_paths().split(";") == [str(core), str(package)]
+
+
 def test_gap_root_paths_ignores_package_roots_without_core(monkeypatch, tmp_path):
     package = _gap_package_root(tmp_path, "grape")
 

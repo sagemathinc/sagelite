@@ -348,6 +348,19 @@ def _gap_root_path_contains_gap_packages(root: str | None) -> bool:
     )
 
 
+def _entry_points(group: str):
+    """
+    Return package entry points in ``group`` across importlib.metadata APIs.
+    """
+    try:
+        return importlib_metadata.entry_points(group=group)
+    except TypeError:
+        all_entry_points = importlib_metadata.entry_points()
+        if hasattr(all_entry_points, "select"):
+            return all_entry_points.select(group=group)
+        return all_entry_points.get(group, ())
+
+
 def _registered_gap_root_paths() -> list[str]:
     """
     Return GAP roots contributed by companion-package entry points.
@@ -356,19 +369,8 @@ def _registered_gap_root_paths() -> list[str]:
     ``sagemath.gap_root_paths`` group.  Each entry point may return a single
     root, a semicolon-separated root string, or an iterable of roots.
     """
-    try:
-        entry_points = importlib_metadata.entry_points(
-            group="sagemath.gap_root_paths"
-        )
-    except TypeError:
-        all_entry_points = importlib_metadata.entry_points()
-        if hasattr(all_entry_points, "select"):
-            entry_points = all_entry_points.select(group="sagemath.gap_root_paths")
-        else:
-            entry_points = all_entry_points.get("sagemath.gap_root_paths", ())
-
     roots = []
-    for entry_point in entry_points:
+    for entry_point in _entry_points(group="sagemath.gap_root_paths"):
         try:
             value = entry_point.load()
             value = value() if callable(value) else value
@@ -1483,17 +1485,8 @@ def _registered_sage_data_paths() -> set[str]:
     ignored so that optional data packages never become mandatory runtime
     dependencies.
     """
-    try:
-        entry_points = importlib_metadata.entry_points(group="sagemath.data_paths")
-    except TypeError:
-        all_entry_points = importlib_metadata.entry_points()
-        if hasattr(all_entry_points, "select"):
-            entry_points = all_entry_points.select(group="sagemath.data_paths")
-        else:
-            entry_points = all_entry_points.get("sagemath.data_paths", ())
-
     paths = set()
-    for entry_point in entry_points:
+    for entry_point in _entry_points(group="sagemath.data_paths"):
         try:
             value = entry_point.load()
             value = value() if callable(value) else value
