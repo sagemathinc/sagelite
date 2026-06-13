@@ -890,6 +890,16 @@ def test_release_workflow_requires_standard_native_meson_options():
         assert f"setup-args=-D{option}=enabled" in workflow_text
 
 
+def test_sagelite_wheel_build_requires_standard_native_meson_options():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    setup_args = set(pyproject["tool"]["meson-python"]["args"]["setup"])
+
+    for option in RELEASE_REQUIRED_MESON_OPTIONS:
+        assert f"-D{option}=enabled" in setup_args
+
+
 def test_release_workflow_verifies_standard_native_extensions():
     workflow = ROOT / ".github" / "workflows" / "release.yml"
     workflow_text = workflow.read_text()
