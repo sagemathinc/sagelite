@@ -1687,8 +1687,10 @@ def test_dot2tex_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "dot2tex >=2.11.3"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["dot2tex"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
