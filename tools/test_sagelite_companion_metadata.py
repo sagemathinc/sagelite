@@ -745,6 +745,25 @@ def test_base_sagelite_installs_standard_runtime_companion_wheels():
     assert BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES <= dependencies
 
 
+def test_base_sagelite_companion_dependencies_are_build_covered():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    workflow_text = (
+        (ROOT / ".github" / "workflows" / "companion-packages.yml").read_text()
+        + (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
+    )
+    dependencies = {
+        requirement.split()[0]
+        for requirement in pyproject["project"]["dependencies"]
+        if requirement.startswith("sagelite-")
+    }
+
+    for package in dependencies:
+        assert (ROOT / "companion-packages" / package).is_dir()
+        assert f"companion-packages/{package}" in workflow_text
+
+
 def test_gap_package_wheels_are_exposed_by_upstream_package_name_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
