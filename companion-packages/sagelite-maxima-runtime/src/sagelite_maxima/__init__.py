@@ -7,6 +7,7 @@ from .runtime import (
     maxima_library_path,
     maxima_layout_autotools,
     maxima_prefix,
+    runtime_library_dir,
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "maxima_library_path",
     "maxima_layout_autotools",
     "maxima_prefix",
+    "runtime_library_dir",
 ]

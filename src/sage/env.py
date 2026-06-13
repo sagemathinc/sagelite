@@ -82,6 +82,20 @@ def _optional_runtime_value(module_name: str, attr_name: str) -> Optional[str]:
     return os.fspath(value)
 
 
+def _prepend_env_path(name: str, path: Optional[str]) -> None:
+    """
+    Prepend ``path`` to an environment variable containing search paths.
+    """
+    if not path:
+        return
+    path = os.fspath(path)
+    current = os.environ.get(name)
+    paths = current.split(os.pathsep) if current else []
+    if path in paths:
+        return
+    os.environ[name] = path if not current else os.pathsep.join([path, current])
+
+
 def _bootstrap_sagelite_maxima_runtime() -> None:
     """
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
@@ -114,6 +128,11 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     needs_ecldir = not os.environ.get("ECLDIR")
     needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
     needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR")
+    runtime_library_dir = _optional_runtime_value(
+        "sagelite_maxima.runtime", "runtime_library_dir"
+    )
+    _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
+
     if not (
         needs_prefix
         or needs_fas

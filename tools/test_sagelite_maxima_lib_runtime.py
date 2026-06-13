@@ -108,3 +108,74 @@ def test_maxima_lib_resolves_companion_install_root_without_library_helper(tmp_p
     assert helpers["_configured_maxima_paths"](
         str(tmp_path / "stale.fas"), str(tmp_path / "stale-prefix")
     ) == (str(fas), str(library))
+
+
+def test_maxima_lib_seeds_companion_runtime_environment(monkeypatch, tmp_path):
+    runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
+    ecl_dir = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10"
+    images_dir = tmp_path / "runtime" / "data" / "lib" / "maxima" / "5.47.0"
+    prefix = tmp_path / "runtime" / "data"
+    runtime_lib.mkdir(parents=True)
+    ecl_dir.mkdir(parents=True)
+    images_dir.mkdir(parents=True)
+
+    monkeypatch.setenv("LD_LIBRARY_PATH", "/existing/lib")
+    for name in (
+        "ECLDIR",
+        "MAXIMA_IMAGESDIR",
+        "MAXIMA_LAYOUT_AUTOTOOLS",
+        "MAXIMA_PREFIX",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    def optional_runtime_value(module_name, attr_name):
+        assert module_name == "sagelite_maxima.runtime"
+        return {
+            "runtime_library_dir": str(runtime_lib),
+            "ecl_dir": str(ecl_dir) + os.sep,
+            "maxima_imagesdir": str(images_dir),
+            "maxima_layout_autotools": "true",
+            "maxima_prefix": str(prefix),
+        }.get(attr_name)
+
+    helpers = _maxima_path_helpers(optional_runtime_value)
+    helpers["_configure_companion_maxima_runtime_environment"]()
+
+    assert os.environ["LD_LIBRARY_PATH"].split(os.pathsep)[:2] == [
+        str(runtime_lib),
+        "/existing/lib",
+    ]
+    assert os.environ["ECLDIR"] == str(ecl_dir) + os.sep
+    assert os.environ["MAXIMA_IMAGESDIR"] == str(images_dir)
+    assert os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "true"
+    assert os.environ["MAXIMA_PREFIX"] == str(prefix)
+
+
+def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
+    runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
+    runtime_lib.mkdir(parents=True)
+
+    monkeypatch.setenv("LD_LIBRARY_PATH", str(runtime_lib))
+    monkeypatch.setenv("ECLDIR", "/custom/ecl")
+    monkeypatch.setenv("MAXIMA_IMAGESDIR", "/custom/images")
+    monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "false")
+    monkeypatch.setenv("MAXIMA_PREFIX", "/custom/prefix")
+
+    def optional_runtime_value(module_name, attr_name):
+        assert module_name == "sagelite_maxima.runtime"
+        return {
+            "runtime_library_dir": str(runtime_lib),
+            "ecl_dir": "/companion/ecl/",
+            "maxima_imagesdir": "/companion/images",
+            "maxima_layout_autotools": "true",
+            "maxima_prefix": "/companion/prefix",
+        }.get(attr_name)
+
+    helpers = _maxima_path_helpers(optional_runtime_value)
+    helpers["_configure_companion_maxima_runtime_environment"]()
+
+    assert os.environ["LD_LIBRARY_PATH"] == str(runtime_lib)
+    assert os.environ["ECLDIR"] == "/custom/ecl"
+    assert os.environ["MAXIMA_IMAGESDIR"] == "/custom/images"
+    assert os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "false"
+    assert os.environ["MAXIMA_PREFIX"] == "/custom/prefix"

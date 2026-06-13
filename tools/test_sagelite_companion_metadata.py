@@ -528,7 +528,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-lie-runtime >=10.9,<10.10",
     "sagelite-lrslib-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post3,<10.10",
+    "sagelite-maxima-runtime >=10.9.post4,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-msolve-runtime >=10.9,<10.10",
@@ -663,7 +663,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post3,<10.10" in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post4,<10.10" in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -2717,7 +2717,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         / "runtime.py"
     ).read_text()
 
-    assert pyproject["project"]["version"] == "10.9.post3"
+    assert pyproject["project"]["version"] == "10.9.post4"
     assert pyproject["project"]["scripts"] == {
         "maxima": "sagelite_maxima.runtime:maxima",
     }
@@ -2728,9 +2728,12 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         "data/share/**/*",
     ]
     assert "def maxima_library_path()" in runtime_py
+    assert "def runtime_library_dir()" in runtime_py
     assert "def maxima()" in runtime_py
     assert '"maxima_library_path"' in runtime_py
+    assert '"runtime_library_dir"' in runtime_py
     assert "maxima_library_path" in package_init
+    assert "runtime_library_dir" in package_init
 
 
 def test_maxima_library_mode_prefers_versioned_companion_tree():
@@ -2759,7 +2762,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post3,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post4,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement in extras["runtime"]

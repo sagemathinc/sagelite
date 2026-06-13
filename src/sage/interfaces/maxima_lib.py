@@ -196,7 +196,46 @@ def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
     return maxima_fas, maxima_prefix
 
 
+def _prepend_env_path(name: str, path: str | None) -> None:
+    """
+    Prepend ``path`` to an environment variable containing search paths.
+    """
+    if not path:
+        return
+    path = os.fspath(path)
+    current = os.environ.get(name)
+    paths = current.split(os.pathsep) if current else []
+    if path in paths:
+        return
+    os.environ[name] = path if not current else os.pathsep.join([path, current])
+
+
+def _configure_companion_maxima_runtime_environment() -> None:
+    """
+    Seed environment variables needed by a bundled Maxima/ECL runtime.
+
+    The standalone ``maxima`` launcher from ``sagelite-maxima-runtime`` sets
+    these before exec.  Library mode runs inside the Python process, so it has
+    to do the same work before loading ``maxima.fas`` into ECL.
+    """
+    runtime_library_dir = _optional_runtime_value(
+        "sagelite_maxima.runtime", "runtime_library_dir"
+    )
+    _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
+
+    for env_name, attr_name in (
+        ("ECLDIR", "ecl_dir"),
+        ("MAXIMA_IMAGESDIR", "maxima_imagesdir"),
+        ("MAXIMA_LAYOUT_AUTOTOOLS", "maxima_layout_autotools"),
+        ("MAXIMA_PREFIX", "maxima_prefix"),
+    ):
+        value = _optional_runtime_value("sagelite_maxima.runtime", attr_name)
+        if value and not os.environ.get(env_name):
+            os.environ[env_name] = os.fspath(value)
+
+
 MAXIMA_FAS, MAXIMA_PREFIX = _configured_maxima_paths(MAXIMA_FAS, MAXIMA_PREFIX)
+_configure_companion_maxima_runtime_environment()
 
 
 def _require_maxima():

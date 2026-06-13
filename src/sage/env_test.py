@@ -38,6 +38,7 @@ def clean_runtime_environment():
         "JMOL_DIR",
         "KENZO_FAS",
         "LATTE_BINS_PREFIX",
+        "LD_LIBRARY_PATH",
         "LIE_INFO_DIR",
         "MAXIMA",
         "MAXIMA_FAS",
@@ -608,7 +609,9 @@ def test_gap3_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
 def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
     ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
+    runtime_library_dir = tmp_path / "companion" / "lib" / "runtime"
     ecldir.mkdir(parents=True)
+    runtime_library_dir.mkdir(parents=True)
 
     monkeypatch.delenv("MAXIMA", raising=False)
     monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
@@ -632,6 +635,7 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
             ("sagelite_maxima.runtime", "maxima_imagesdir"): imagesdir,
             ("sagelite_maxima.runtime", "ecl_dir"): ecldir,
             ("sagelite_maxima.runtime", "maxima_layout_autotools"): "true",
+            ("sagelite_maxima.runtime", "runtime_library_dir"): runtime_library_dir,
         }
         return values.get((module_name, attr_name))
 
@@ -645,6 +649,9 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
     assert env.os.environ["MAXIMA_IMAGESDIR"] == str(imagesdir)
     assert env.os.environ["ECLDIR"] == str(ecldir)
     assert env.os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "true"
+    assert env.os.environ["LD_LIBRARY_PATH"].split(env.os.pathsep)[0] == str(
+        runtime_library_dir
+    )
 
 
 def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
@@ -666,6 +673,7 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     monkeypatch.setenv("MAXIMA_IMAGESDIR", str(existing_imagesdir))
     monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "true")
     monkeypatch.setenv("ECLDIR", str(existing / "lib" / "ecl"))
+    monkeypatch.setenv("LD_LIBRARY_PATH", "/existing/lib")
     monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", "", raising=False)
@@ -678,6 +686,7 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
                 "maxima_prefix": prefix,
                 "maxima_fas": fas,
                 "maxima_imagesdir": imagesdir,
+                "runtime_library_dir": tmp_path / "companion" / "lib" / "runtime",
             }[attr_name]
         ),
     )
@@ -688,6 +697,7 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
     assert env.os.environ["MAXIMA_FAS"] == str(existing_fas)
     assert env.os.environ["MAXIMA_IMAGESDIR"] == str(existing_imagesdir)
+    assert env.os.environ["LD_LIBRARY_PATH"].endswith("/existing/lib")
 
 
 def test_kenzo_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):

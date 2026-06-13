@@ -87,6 +87,13 @@ def maxima_imagesdir() -> str:
     )
 
 
+def runtime_library_dir() -> str:
+    """
+    Return the bundled shared-library runtime directory.
+    """
+    return os.fspath(files(__package__).joinpath("data", "lib", "runtime"))
+
+
 def ecl_dir() -> str:
     """
     Return the bundled ECL support directory used as ``ECLDIR``.
@@ -103,4 +110,5 @@ __all__ = [
     "maxima_library_path",
     "maxima_layout_autotools",
     "maxima_prefix",
+    "runtime_library_dir",
 ]
