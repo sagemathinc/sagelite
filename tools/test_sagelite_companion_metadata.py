@@ -780,6 +780,21 @@ def test_release_workflow_separates_expected_runtime_companion_wheels():
         assert f'packages-dir: {dist_dir}/' in workflow_text
 
 
+def test_release_workflow_verifies_current_maxima_runtime_version():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+    version = _pyproject("sagelite-maxima-runtime")["project"]["version"]
+
+    assert (
+        f"sagelite_maxima_runtime-{version}-py3-none-manylinux_2_28_x86_64.whl"
+        in workflow_text
+    )
+    assert (
+        f"sagelite_maxima_runtime-{version}-py3-none-manylinux_2_28_aarch64.whl"
+        in workflow_text
+    )
+
+
 def test_release_workflow_requires_standard_native_meson_options():
     workflow = ROOT / ".github" / "workflows" / "release.yml"
     workflow_text = workflow.read_text()
