@@ -551,6 +551,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
 }
 
 BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
+    "khoca >=1.4",
     "pycosat >=0.6.3",
 }
 
@@ -1735,8 +1736,10 @@ def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "khoca >=1.4"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["khoca"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
