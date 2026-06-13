@@ -743,6 +743,7 @@ jobs:
           import importlib
           import importlib.metadata as metadata
           import os
+          import shutil
           import sqlite3
 
           module = importlib.import_module("${{ matrix.import_name }}")
@@ -1513,12 +1514,17 @@ jobs:
               prefix = runtime.maxima_prefix()
               fas = runtime.maxima_fas()
               ecldir = runtime.ecl_dir()
+              asd = os.path.join(ecldir.rstrip(os.sep), "maxima.asd")
+              runtime_libdir = os.path.join(prefix, "lib", "runtime")
               print("maxima=", maxima)
               print("maxima_prefix=", prefix)
               print("maxima_fas=", fas)
               print("ecldir=", ecldir)
+              print("maxima_asd=", asd)
               assert os.path.isdir(os.path.join(prefix, "share", "maxima"))
               assert os.path.exists(fas)
+              assert os.path.exists(asd)
+              assert "prebuilt-system" in open(asd, encoding="utf-8").read()
               assert os.path.exists(os.path.join(ecldir, "sockets.fas"))
               if os.path.exists(maxima):
                   import subprocess
@@ -1529,6 +1535,23 @@ jobs:
                       check=True,
                   )
                   assert "5" in result.stdout
+              ecl = shutil.which("ecl")
+              if ecl:
+                  import subprocess
+                  env = os.environ.copy()
+                  env["ECLDIR"] = ecldir
+                  env["LD_LIBRARY_PATH"] = runtime_libdir + (
+                      os.pathsep + env["LD_LIBRARY_PATH"]
+                      if env.get("LD_LIBRARY_PATH")
+                      else ""
+                  )
+                  subprocess.run(
+                      [ecl, "--norc", "--eval", "(require 'maxima)", "--eval", "(quit)"],
+                      env=env,
+                      text=True,
+                      capture_output=True,
+                      check=True,
+                  )
               raise SystemExit(0)
 
           if "${{ matrix.name }}" == "sagelite-nauty-runtime":
