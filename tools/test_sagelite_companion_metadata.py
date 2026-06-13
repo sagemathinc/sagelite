@@ -525,6 +525,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-sympow-runtime >=10.9,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
     "sagelite-tides-runtime >=10.9,<10.10",
+    "sagelite-topcom-runtime >=10.9,<10.10",
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
