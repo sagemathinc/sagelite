@@ -665,6 +665,17 @@ def test_runtime_companion_wheels_declare_copied_package_data():
         assert setuptools["package-data"] == package_data
 
 
+def test_maxima_runtime_wheel_excludes_python_bytecode():
+    pyproject = _pyproject("sagelite-maxima-runtime")
+    setuptools = pyproject["tool"]["setuptools"]
+
+    assert setuptools["exclude-package-data"]["*"] == [
+        "__pycache__/*",
+        "*.pyc",
+        "*.pyo",
+    ]
+
+
 def test_source_bundled_data_companion_wheels_ship_declared_payloads():
     for package, package_data in SOURCE_BUNDLED_DATA_PACKAGE_DATA.items():
         pyproject = _pyproject(package)

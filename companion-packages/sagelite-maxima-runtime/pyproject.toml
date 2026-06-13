@@ -42,3 +42,10 @@ sagelite_maxima = [
   "data/lib/**/*",
   "data/share/**/*",
 ]
+
+[tool.setuptools.exclude-package-data]
+"*" = [
+  "__pycache__/*",
+  "*.pyc",
+  "*.pyo",
+]
