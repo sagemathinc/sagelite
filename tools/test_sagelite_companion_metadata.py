@@ -4,6 +4,9 @@ import tomllib
 import sys
 from pathlib import Path
 
+from packaging.requirements import Requirement
+from packaging.version import Version
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -650,6 +653,47 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
         return tomllib.load(handle)
+
+
+def _companion_versions() -> dict[str, Version]:
+    versions = {}
+    for pyproject_toml in (ROOT / "companion-packages").glob(
+        "sagelite-*/pyproject.toml"
+    ):
+        pyproject = tomllib.loads(pyproject_toml.read_text())
+        versions[pyproject["project"]["name"]] = Version(
+            pyproject["project"]["version"]
+        )
+    return versions
+
+
+def _requirement_minimum_version(requirement: Requirement) -> Version | None:
+    lower_bounds = [
+        Version(specifier.version)
+        for specifier in requirement.specifier
+        if specifier.operator in {">=", ">", "~="}
+    ]
+    return max(lower_bounds) if lower_bounds else None
+
+
+def test_sagelite_dependency_floors_match_companion_package_versions():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    companion_versions = _companion_versions()
+    requirements = list(pyproject["project"]["dependencies"])
+    for extra_requirements in pyproject["project"]["optional-dependencies"].values():
+        requirements.extend(extra_requirements)
+
+    for requirement_text in requirements:
+        requirement = Requirement(requirement_text)
+        companion_version = companion_versions.get(requirement.name)
+        if companion_version is None:
+            continue
+
+        minimum_version = _requirement_minimum_version(requirement)
+        assert minimum_version is not None
+        assert minimum_version >= companion_version, requirement_text
 
 
 def test_sagelite_default_dependencies_include_short_doctest_companions():

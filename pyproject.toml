@@ -114,7 +114,7 @@ dependencies = [
   'sagelite-database-stein-watkins >=10.9,<10.10',
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
-  'sagelite-gap3-runtime >=10.9,<10.10',
+  'sagelite-gap3-runtime >=10.9.post1,<10.10',
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
@@ -326,7 +326,7 @@ full = [
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
-  'sagelite-gap3-runtime >=10.9,<10.10',
+  'sagelite-gap3-runtime >=10.9.post1,<10.10',
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
@@ -594,7 +594,7 @@ transgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
 ]
-gap3 = ['sagelite-gap3-runtime >=10.9,<10.10']
+gap3 = ['sagelite-gap3-runtime >=10.9.post1,<10.10']
 gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
 giac = ['sagelite-giac-runtime >=10.9,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
@@ -684,7 +684,7 @@ runtime = [
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
-  'sagelite-gap3-runtime >=10.9,<10.10',
+  'sagelite-gap3-runtime >=10.9.post1,<10.10',
   'sagelite-gap-package-atlasrep >=10.9,<10.10',
   'sagelite-gap-package-ctbllib >=10.9,<10.10',
   'sagelite-gap-package-design >=10.9,<10.10',
