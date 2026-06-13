@@ -46,3 +46,39 @@ Exception raised:
     assert result.failed_examples == 1
     assert result.traceback_lines[-1].startswith("ImportError: Maxima library mode")
     assert report["fingerprint_counts"] == {"maxima-library-mode-missing": 1}
+    assert result.suggested_package == "sagelite-maxima-runtime"
+    assert (
+        report["top_examples"]["optional-external"][0]["suggested_package"]
+        == "sagelite-maxima-runtime"
+    )
+
+
+def test_report_suggests_cremona_companion_package(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/calculus/expr.py", line 47, in sage.calculus.expr.symbolic_expression
+Failed example:
+    E = EllipticCurve('15a'); E
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_cremona_mini_ellcurve is not available.
+    'cremona_mini.db' not found in any of ['/usr/share/cremona']
+**********************************************************************
+1 item had failures:
+   1 of  11 in sage.calculus.expr.symbolic_expression
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.calculus.expr"]
+
+    assert result.fingerprint == "missing-cremona-db"
+    assert result.suggested_package == "sagelite-database-cremona-mini"
+    assert (
+        report["top_examples"]["optional-data"][0]["suggested_package"]
+        == "sagelite-database-cremona-mini"
+    )

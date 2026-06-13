@@ -67,6 +67,7 @@ class ModuleResult:
     category: str = "unknown"
     fingerprint: str = "unknown"
     evidence: str = ""
+    suggested_package: str = ""
 
 
 def classify(result: ModuleResult) -> tuple[str, str, str]:
@@ -133,6 +134,25 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         return "core-supported", "passed", "module passed"
 
     return "unknown", "unknown", "no rule matched"
+
+
+def suggested_package(fingerprint: str) -> str:
+    """
+    Return the companion package most likely to address ``fingerprint``.
+
+    The analyzer is used during sagelite wheel triage, where the next useful
+    action is often "build or install this companion wheel" rather than just
+    reading the exception text.
+    """
+    return {
+        "maxima-library-mode-missing": "sagelite-maxima-runtime",
+        "missing-cremona-db": "sagelite-database-cremona-mini",
+        "missing-knotinfo-db": "database-knotinfo",
+        "missing-database": "matching sagelite-database-* companion package",
+        "missing-executable": "matching sagelite-*-runtime companion package",
+        "optional-feature-missing": "matching sagelite companion package or PyPI dependency",
+        "optional-native-lib-missing": "matching sagelite runtime or sagelite core extension",
+    }.get(fingerprint, "")
 
 
 def parse_log(log_path: Path) -> dict[str, ModuleResult]:
@@ -226,6 +246,7 @@ def merge_stats(results: dict[str, ModuleResult], stats_path: Path | None) -> No
 def build_report(results: dict[str, ModuleResult]) -> dict[str, Any]:
     for result in results.values():
         result.category, result.fingerprint, result.evidence = classify(result)
+        result.suggested_package = suggested_package(result.fingerprint)
 
     failed = [r for r in results.values() if r.status != "passed" or r.failed_flag]
     category_counts = Counter(r.category for r in failed)
@@ -254,6 +275,7 @@ def build_report(results: dict[str, ModuleResult]) -> dict[str, Any]:
                 "ntests": result.ntests,
                 "walltime": result.walltime,
                 "evidence": result.evidence,
+                "suggested_package": result.suggested_package,
                 "traceback_excerpt": result.traceback_lines[:12],
             }
         )
@@ -309,6 +331,8 @@ def render_markdown(report: dict[str, Any], log_path: Path, stats_path: Path | N
             lines.append(f"- `{example['module']}`: {summary}")
             lines.append(f"  fingerprint: `{example['fingerprint']}`")
             lines.append(f"  evidence: {example['evidence']}")
+            if example["suggested_package"]:
+                lines.append(f"  suggested package: `{example['suggested_package']}`")
             if example["traceback_excerpt"]:
                 excerpt = " | ".join(example["traceback_excerpt"][:3])
                 lines.append(f"  excerpt: `{excerpt}`")
