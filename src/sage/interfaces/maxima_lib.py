@@ -258,6 +258,16 @@ def _publish_maxima_library_prefix(maxima_prefix: str | None) -> None:
         os.environ["MAXIMA_PREFIX"] = os.fspath(maxima_prefix)
 
 
+def _companion_maxima_fas() -> str:
+    """
+    Return a usable Maxima FAS from the optional companion runtime, if present.
+    """
+    companion_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    if companion_fas and os.path.isfile(companion_fas):
+        return os.fspath(companion_fas)
+    return ""
+
+
 MAXIMA_FAS, MAXIMA_PREFIX = _configured_maxima_paths(MAXIMA_FAS, MAXIMA_PREFIX)
 _configure_companion_maxima_runtime_environment()
 
@@ -272,15 +282,19 @@ def _require_maxima():
     """
     try:
         if MAXIMA_FAS:
-            ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
+            try:
+                ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
+            except RuntimeError:
+                companion_fas = _companion_maxima_fas()
+                if not companion_fas or companion_fas == MAXIMA_FAS:
+                    raise
+                ecl_eval("(require 'maxima \"{}\")".format(companion_fas))
         else:
             try:
                 ecl_eval("(require 'maxima)")
             except RuntimeError:
-                companion_fas = _optional_runtime_value(
-                    "sagelite_maxima.runtime", "maxima_fas"
-                )
-                if not (companion_fas and os.path.isfile(companion_fas)):
+                companion_fas = _companion_maxima_fas()
+                if not companion_fas:
                     raise
                 ecl_eval("(require 'maxima \"{}\")".format(companion_fas))
     except RuntimeError as err:

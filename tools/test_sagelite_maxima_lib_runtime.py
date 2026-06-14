@@ -17,7 +17,7 @@ def _maxima_path_helpers(optional_runtime_value):
     return namespace
 
 
-def _maxima_require_helpers(optional_runtime_value, ecl_eval):
+def _maxima_require_helpers(optional_runtime_value, ecl_eval, maxima_fas=""):
     source = MAXIMA_LIB.read_text()
     start = source.index("def _maxima_library_prefix_is_usable")
     end = source.index("# We begin here by initializing Maxima in library mode")
@@ -25,7 +25,7 @@ def _maxima_require_helpers(optional_runtime_value, ecl_eval):
         "os": os,
         "_optional_runtime_value": optional_runtime_value,
         "ecl_eval": ecl_eval,
-        "MAXIMA_FAS": "",
+        "MAXIMA_FAS": maxima_fas,
         "MAXIMA_PREFIX": "",
     }
     exec(source[start:end], namespace)
@@ -84,6 +84,37 @@ def test_maxima_require_retries_companion_fas_after_plain_lookup_failure(tmp_pat
     assert calls == [
         "(require 'maxima)",
         f"(require 'maxima \"{fas}\")",
+    ]
+
+
+def test_maxima_require_retries_companion_fas_after_configured_fas_failure(tmp_path):
+    configured_fas = tmp_path / "configured" / "maxima.fas"
+    companion_fas = tmp_path / "runtime" / "lib" / "ecl-24.5.10" / "maxima.fas"
+    configured_fas.parent.mkdir(parents=True)
+    companion_fas.parent.mkdir(parents=True)
+    configured_fas.write_text("configured maxima fas\n")
+    companion_fas.write_text("companion maxima fas\n")
+    calls = []
+
+    def optional_runtime_value(module_name, attr_name):
+        if (module_name, attr_name) == ("sagelite_maxima.runtime", "maxima_fas"):
+            return str(companion_fas)
+        return None
+
+    def ecl_eval(command):
+        calls.append(command)
+        if command == f"(require 'maxima \"{configured_fas}\")":
+            raise RuntimeError("configured FAS failed")
+
+    helpers = _maxima_require_helpers(
+        optional_runtime_value, ecl_eval, maxima_fas=str(configured_fas)
+    )
+
+    helpers["_require_maxima"]()
+
+    assert calls == [
+        f"(require 'maxima \"{configured_fas}\")",
+        f"(require 'maxima \"{companion_fas}\")",
     ]
 
 
