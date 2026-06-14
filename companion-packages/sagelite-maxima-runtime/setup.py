@@ -299,6 +299,33 @@ def _is_ecl_runtime_symbol(symbol: str) -> bool:
     return symbol.startswith(("ecl_", "_ecl_", "cl_", "si_", "ext_", "FE"))
 
 
+def _system_ecl_libraries() -> list[Path]:
+    """
+    Return system ECL shared libraries that an unrepaired sagelite wheel may load.
+
+    ``SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1`` is only for local or distribution
+    test builds where Sage's ``sage.libs.ecl`` extension is expected to bind to
+    the system ECL library.  Validate copied Maxima images against that runtime
+    too, otherwise a Sage-built Maxima/ECL image can be accidentally packaged
+    with symbols that the installed extension will not provide.
+    """
+    candidates = []
+    for directory in (
+        Path("/usr/lib"),
+        Path("/usr/local/lib"),
+        *Path("/usr/lib").glob("*-linux-gnu"),
+        *Path("/usr/local/lib").glob("*-linux-gnu"),
+    ):
+        candidates.extend(directory.glob("libecl.so*"))
+
+    libraries = [
+        path.resolve()
+        for path in candidates
+        if path.is_file() or path.is_symlink()
+    ]
+    return sorted({path.name: path for path in libraries}.values())
+
+
 def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
     """
     Return ECL libraries that copied images must be loadable against.
@@ -325,6 +352,14 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
                 f"SAGELITE_MAXIMA_ECL_LIBRARY does not name a file: {path}"
             )
         targets["sagelite ECL runtime"] = [path]
+    elif os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1":
+        system_libraries = _system_ecl_libraries()
+        if not system_libraries:
+            raise RuntimeError(
+                "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 was set, but no system "
+                "libecl.so* could be found for validation"
+            )
+        targets["system ECL runtime"] = system_libraries
 
     return targets
 

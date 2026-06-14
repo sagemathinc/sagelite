@@ -3096,8 +3096,10 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert 'for ecl_fas in ecl_target.glob("*.fas")' in setup_text
     assert "_patch_ecl_fas(ecl_fas)" in setup_text
     assert "def _is_ecl_runtime_symbol" in setup_text
+    assert "def _system_ecl_libraries" in setup_text
     assert "def _validation_targets" in setup_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY" in setup_text
+    assert "system ECL runtime" in setup_text
     assert '"FE"' in setup_text
 
 
@@ -3154,6 +3156,42 @@ def test_maxima_runtime_validation_checks_target_sagelite_ecl(
     monkeypatch.setitem(helpers, "_dynamic_symbols", dynamic_symbols)
 
     with pytest.raises(RuntimeError, match="sagelite ECL runtime"):
+        helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
+
+
+def test_maxima_runtime_validation_checks_system_ecl_builds(
+    monkeypatch, tmp_path
+):
+    helpers = _maxima_runtime_setup_helpers()
+    ecl_dir = tmp_path / "lib" / "ecl-24.5.10"
+    runtime_dir = tmp_path / "lib" / "runtime"
+    image = ecl_dir / "maxima.fas"
+    copied_libecl = runtime_dir / "libecl.so.24.5.10"
+    system_libecl = tmp_path / "usr" / "lib" / "libecl.so.24.5"
+    image.parent.mkdir(parents=True)
+    copied_libecl.parent.mkdir(parents=True)
+    system_libecl.parent.mkdir(parents=True)
+    image.write_text("compiled maxima image\n")
+    copied_libecl.write_text("copied ecl runtime\n")
+    system_libecl.write_text("system ecl runtime\n")
+    monkeypatch.setenv("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL", "1")
+    monkeypatch.delenv("SAGELITE_MAXIMA_ECL_LIBRARY", raising=False)
+    monkeypatch.setitem(
+        helpers, "_system_ecl_libraries", lambda: [system_libecl]
+    )
+
+    def dynamic_symbols(path, *args):
+        if path == copied_libecl and "--defined-only" in args:
+            return {"FEstack_advance", "ecl_stack_pop_values"}
+        if path == system_libecl and "--defined-only" in args:
+            return {"ecl_stack_pop_values"}
+        if path == image and "--undefined-only" in args:
+            return {"FEstack_advance", "__stack_chk_fail"}
+        return set()
+
+    monkeypatch.setitem(helpers, "_dynamic_symbols", dynamic_symbols)
+
+    with pytest.raises(RuntimeError, match="system ECL runtime"):
         helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
 
 
