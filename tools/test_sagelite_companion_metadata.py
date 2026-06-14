@@ -584,6 +584,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "dot2tex >=2.11.3",
     "imageio-ffmpeg >=0.6.0",
     "igraph",
+    "jupyter-jsmol >=2022.1.0",
     "khoca >=1.4",
     "Mathics3 >=10.0.1; python_version < '3.14'",
     "phitigra >=0.2.6",
@@ -2019,9 +2020,11 @@ def test_jupyter_jsmol_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "jupyter-jsmol >=2022.1.0"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["jupyter-jsmol"] == [requirement]
     assert extras["jupyter_jsmol"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
