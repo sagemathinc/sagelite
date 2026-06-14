@@ -676,6 +676,8 @@ pari-nftables = ['sagelite-pari-data >=10.9,<10.10']
 pari_nftables = ['sagelite-pari-data >=10.9,<10.10']
 pari-seadata = ['sagelite-pari-data >=10.9,<10.10']
 pari_seadata = ['sagelite-pari-data >=10.9,<10.10']
+pari-seadata-small = ['sagelite-pari-data >=10.9,<10.10']
+pari_seadata_small = ['sagelite-pari-data >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
 pdftocairo = ['sagelite-poppler-runtime >=10.9,<10.10']
 pdf2svg = ['sagelite-pdf2svg-runtime >=10.9,<10.10']
@@ -867,6 +869,7 @@ host-requires = [
   "pkg:generic/pari-galpol",
   "pkg:generic/pari-nftables",
   "pkg:generic/pari-seadata",
+  "pkg:generic/pari-seadata-small",
   "pkg:generic/planarity",
   "pkg:generic/primecount",
   "pkg:generic/primesieve",

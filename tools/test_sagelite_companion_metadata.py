@@ -1121,6 +1121,8 @@ def test_pari_data_wheel_is_exposed_by_sagelite_data_extras():
 
     assert requirement in pyproject["project"]["dependencies"]
     assert extras["pari-data"] == [requirement]
+    assert extras["pari-seadata-small"] == [requirement]
+    assert extras["pari_seadata_small"] == [requirement]
     assert requirement in extras["databases"]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
@@ -1137,6 +1139,7 @@ def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
     assert "pkg:generic/pari-galpol" in host_requires
     assert "pkg:generic/pari-nftables" in host_requires
     assert "pkg:generic/pari-seadata" in host_requires
+    assert "pkg:generic/pari-seadata-small" in host_requires
 
 
 def test_pari_data_workflows_build_complete_payload():
