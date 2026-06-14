@@ -220,9 +220,14 @@ def _check_maxima_runtime():
     except ImportError:
         return "not installed"
 
+    from sage.all import RR, var
     from sage.interfaces.maxima_lib import maxima_lib
 
-    return maxima_lib.eval("1+1")
+    value = maxima_lib.eval("1+1")
+    x = var("x", domain=RR)
+    if x.conjugate() != x:
+        raise RuntimeError("Maxima-backed symbolic assumptions are not available")
+    return value
 
 
 def _check_meataxe_runtime():

@@ -368,6 +368,42 @@ def test_sagelite_selftest_checks_cremona_ellcurve_database(monkeypatch):
     assert calls == ["cremona"]
 
 
+def test_sagelite_selftest_checks_maxima_symbolic_domain(monkeypatch):
+    class Symbol:
+        def conjugate(self):
+            return self
+
+    calls = []
+    sage_all = types.ModuleType("sage.all")
+    sage_all.RR = object()
+
+    def var(name, domain=None):
+        calls.append((name, domain))
+        return Symbol()
+
+    sage_all.var = var
+
+    class MaximaLib:
+        @staticmethod
+        def eval(command):
+            calls.append(command)
+            return "2"
+
+    maxima_lib = types.ModuleType("sage.interfaces.maxima_lib")
+    maxima_lib.maxima_lib = MaximaLib()
+
+    monkeypatch.setitem(
+        sys.modules, "sagelite_maxima", types.ModuleType("sagelite_maxima")
+    )
+    monkeypatch.setitem(sys.modules, "sage.all", sage_all)
+    monkeypatch.setitem(sys.modules, "sage.interfaces.maxima_lib", maxima_lib)
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    assert selftest._check_maxima_runtime() == "2"
+    assert calls == ["1+1", ("x", sage_all.RR)]
+
+
 def test_sagelite_selftest_checks_polytopes_4d_database(monkeypatch):
     calls = []
 
