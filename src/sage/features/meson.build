@@ -63,6 +63,7 @@ py.install_sources(
   'symengine_py.py',
   'tdlib.py',
   'threejs.py',
+  'tides.py',
   'topcom.py',
   subdir: 'sage/features',
 )
