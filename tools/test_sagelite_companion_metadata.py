@@ -3025,6 +3025,15 @@ def test_maxima_runtime_patches_copied_ecl_images():
     setup_py = ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
     setup_text = setup_py.read_text()
 
+    assert "def _install_roots_for_maxima_prefix" in setup_text
+    assert "def _validate_maxima_prefix" in setup_text
+    assert "_validate_maxima_prefix(maxima_prefix)" in setup_text
+    assert "requires Maxima >= 5.47.0" in setup_text
+    assert "src/maxima-package.lisp" in setup_text
+    assert "def _validate_copied_ecl_images" in setup_text
+    assert "_find_maxima_fas(maxima_prefix)" in setup_text
+    assert "_find_ecl_dir(maxima_prefix)" in setup_text
+    assert "_validate_copied_ecl_images(ecl_target, runtime_target)" in setup_text
     assert 'original.startswith("libecl")' in setup_text
     assert "SAGELITE_MAXIMA_ECL_SONAME is not set" in setup_text
     assert "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL" in setup_text
@@ -3037,6 +3046,8 @@ def test_companion_workflow_marks_maxima_system_ecl_builds_explicit():
     workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
     workflow_text = workflow.read_text()
 
+    assert "apt_packages: maxima-sage maxima-sage-share ecl" in workflow_text
+    assert "Package: maxima-sage maxima-sage-share ecl libecl-dev libecl24.5" in workflow_text
     assert "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1" in workflow_text
 
 
