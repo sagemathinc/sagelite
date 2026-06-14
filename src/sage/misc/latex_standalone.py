@@ -1004,12 +1004,16 @@ class Standalone(SageObject):
         # set the command
         if program == 'pdftocairo':
             from sage.features.poppler import pdftocairo
-            pdftocairo().require()
-            cmd = ['pdftocairo', '-svg', temp_filename_pdf, temp_filename_svg]
+            pdftocairo_feature = pdftocairo()
+            pdftocairo_feature.require()
+            cmd = [pdftocairo_feature.absolute_filename(),
+                   '-svg', temp_filename_pdf, temp_filename_svg]
         elif program == 'pdf2svg':
             from sage.features.pdf2svg import pdf2svg
-            pdf2svg().require()
-            cmd = ['pdf2svg', temp_filename_pdf, temp_filename_svg]
+            pdf2svg_feature = pdf2svg()
+            pdf2svg_feature.require()
+            cmd = [pdf2svg_feature.absolute_filename(),
+                   temp_filename_pdf, temp_filename_svg]
         else:
             raise ValueError("program(={}) should be 'pdftocairo' or"
                              " 'pdf2svg'".format(program))
@@ -1108,13 +1112,15 @@ class Standalone(SageObject):
 
         if program == 'pdftocairo':
             from sage.features.poppler import pdftocairo
-            pdftocairo().require()
+            pdftocairo_feature = pdftocairo()
+            pdftocairo_feature.require()
             # set the temporary filenames
             temp_filename_pdf = self.pdf(filename=None, view=False)
             temp_filename, ext = os.path.splitext(temp_filename_pdf)
             temp_filename_eps = temp_filename + '.eps'
             # set the command
-            cmd = ['pdftocairo', '-eps', temp_filename_pdf, temp_filename_eps]
+            cmd = [pdftocairo_feature.absolute_filename(),
+                   '-eps', temp_filename_pdf, temp_filename_eps]
         elif program == 'dvips':
             from sage.features.latex import dvips
             dvips().require()

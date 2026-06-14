@@ -774,7 +774,12 @@ def _run_latex_(filename, debug=False, density=150, engine=None, png=False, do_i
     lt = [command, r'\nonstopmode', r'\input{' + filename + '.tex}']
     # dvipng is run with the 'picky' option: this means that if
     # there are warnings, no png file is created.
-    dvipng = ['dvipng', '--picky', '-q', '-T', 'tight',
+    dvipng_feature = dvipng()
+    dvipng_present = dvipng_feature.is_present()
+    dvipng_cmd = (
+        dvipng_feature.absolute_filename() if dvipng_present else 'dvipng'
+    )
+    dvipng = [dvipng_cmd, '--picky', '-q', '-T', 'tight',
               '-D', str(density), filename + '.dvi', '-o', filename + '.png']
 
     dvips = ['dvips', filename + '.dvi']
@@ -809,7 +814,7 @@ def _run_latex_(filename, debug=False, density=150, engine=None, png=False, do_i
             e = e and subpcall(magick)
     else:  # latex
         if (png or check_validity):
-            if dvipng().is_present():
+            if dvipng_present:
                 if debug:
                     print(lt)
                     print(dvipng)
