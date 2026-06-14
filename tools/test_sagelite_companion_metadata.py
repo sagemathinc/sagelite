@@ -3213,6 +3213,16 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     repair_text = repair_script.read_text()
 
     assert 'auditwheel repair --plat "$AUDITWHEEL_PLAT"' in repair_text
+    assert "verify_repaired_sagelite_wheel()" in repair_text
+    assert "sage/libs/ecl." in repair_text
+    assert "expected exactly one bundled ECL runtime" in repair_text
+    verify_call = repair_text.index("\nverify_repaired_sagelite_wheel\n")
+    maxima_call = repair_text.index("\nbuild_maxima_runtime_companion\n")
+    assert verify_call < maxima_call
+    assert (
+        repair_text.index('auditwheel repair --plat "$AUDITWHEEL_PLAT"')
+        < verify_call
+    )
     assert 'sagelite_ecl_library="$tmpdir/$ecl_soname"' in repair_text
     assert "with zipfile.ZipFile(wheel_path) as wheel:" in repair_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text

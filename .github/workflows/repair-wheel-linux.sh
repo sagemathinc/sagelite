@@ -1474,6 +1474,51 @@ build_singular_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+verify_repaired_sagelite_wheel() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local repaired_sagelite_wheel
+  repaired_sagelite_wheel="$(find "$dest_dir" -maxdepth 1 -type f -name 'sagelite-*.whl' -print -quit)"
+  if [ -z "$repaired_sagelite_wheel" ]; then
+    echo "repaired sagelite wheel not found in $dest_dir" >&2
+    exit 1
+  fi
+
+  "$python_bin" - "$repaired_sagelite_wheel" <<'PY'
+import os
+import sys
+import zipfile
+
+wheel_path = sys.argv[1]
+with zipfile.ZipFile(wheel_path) as wheel:
+    names = wheel.namelist()
+
+ecl_extensions = [
+    name
+    for name in names
+    if name.startswith("sage/libs/ecl.") and name.endswith(".so")
+]
+if not ecl_extensions:
+    raise SystemExit("expected sage.libs.ecl extension in repaired sagelite wheel")
+
+bundled_ecl = sorted(
+    name
+    for name in names
+    if name.startswith("sagelite.libs/libecl") and name.endswith(".so.24.5.10")
+)
+if len(bundled_ecl) != 1:
+    raise SystemExit(
+        "expected exactly one bundled ECL runtime for sage.libs.ecl; "
+        f"found {bundled_ecl}"
+    )
+
+print(f"verified repaired sagelite ECL runtime: {os.path.basename(bundled_ecl[0])}")
+PY
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -1523,6 +1568,7 @@ if command -v ccache >/dev/null 2>&1; then
 fi
 
 auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
+verify_repaired_sagelite_wheel
 build_gap_runtime_companion
 build_gap3_runtime_companion
 build_gfan_runtime_companion
