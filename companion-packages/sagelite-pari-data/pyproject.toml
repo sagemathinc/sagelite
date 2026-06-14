@@ -26,6 +26,9 @@ classifiers = [
 ]
 urls = { Homepage = "https://www.sagemath.org" }
 
+[project.entry-points."sagemath.data_paths"]
+pari = "sagelite_pari_data:sage_data_path"
+
 [tool.setuptools]
 include-package-data = true
 zip-safe = false

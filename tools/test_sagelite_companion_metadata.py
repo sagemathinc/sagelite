@@ -1069,7 +1069,19 @@ def test_release_workflow_verifies_standard_native_extensions():
 
 def test_pari_data_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-pari-data")
+    package_init = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-pari-data"
+        / "src"
+        / "sagelite_pari_data"
+        / "__init__.py"
+    ).read_text()
 
+    assert pyproject["project"]["entry-points"]["sagemath.data_paths"] == {
+        "pari": "sagelite_pari_data:sage_data_path",
+    }
+    assert "def sage_data_path()" in package_init
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_pari_data"] == [
         "data/pari/galdata/**/*",

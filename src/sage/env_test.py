@@ -370,14 +370,17 @@ def test_sage_data_paths_accepts_direct_sagelite_companion_paths(
     monkeypatch, tmp_path
 ):
     database_companion = tmp_path / "database-companion" / "data"
+    pari_companion = tmp_path / "pari-companion" / "data" / "pari"
     static_companion = tmp_path / "static-companion" / "data"
     database_companion.mkdir(parents=True)
+    pari_companion.mkdir(parents=True)
     static_companion.mkdir(parents=True)
 
     monkeypatch.setattr(env, "_entry_points", lambda group: [])
 
     values = {
         ("sagelite_database_jones_numfield", "sage_data_path"): database_companion,
+        ("sagelite_pari_data", "sage_data_path"): pari_companion,
         ("sagelite_threejs_runtime", "sage_data_path"): static_companion,
     }
     monkeypatch.setattr(
@@ -388,6 +391,7 @@ def test_sage_data_paths_accepts_direct_sagelite_companion_paths(
 
     assert env._registered_sage_data_paths() == {
         str(database_companion),
+        str(pari_companion),
         str(static_companion),
     }
 

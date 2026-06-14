@@ -1532,6 +1532,7 @@ def _sagelite_companion_data_paths() -> set[str]:
         "sagelite_database_symbolic_data",
         "sagelite_jmol_runtime",
         "sagelite_mathjax_runtime",
+        "sagelite_pari_data",
         "sagelite_threejs_runtime",
     ):
         paths.update(
