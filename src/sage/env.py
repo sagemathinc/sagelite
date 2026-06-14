@@ -737,6 +737,35 @@ def _bootstrap_sagelite_info_runtime() -> None:
             )
 
 
+def _bootstrap_sagelite_graphviz_runtime() -> None:
+    """
+    Seed Graphviz paths from an optional companion package.
+
+    Most Sage code uses :mod:`sage.features.graphviz`, which can discover
+    companion executables directly.  Some graph layout paths go through
+    ``dot2tex`` or other subprocess callers that invoke Graphviz programs by
+    name, so installed wheels also need the companion ``bin`` directory and
+    plugin path in the subprocess environment.
+    """
+    if all(shutil.which(program) for program in ("dot", "neato", "twopi")):
+        return
+
+    dot = _optional_runtime_value("sagelite_graphviz.runtime", "executable_path")
+    if not (dot and os.path.isfile(dot) and os.access(dot, os.X_OK)):
+        return
+
+    bindir = _optional_runtime_value("sagelite_graphviz.runtime", "bin_dir")
+    libdir = _optional_runtime_value("sagelite_graphviz.runtime", "library_dir")
+    plugin_dir = _optional_runtime_value("sagelite_graphviz.runtime", "plugin_dir")
+
+    if bindir and os.path.isdir(bindir):
+        _prepend_env_path("PATH", bindir)
+    if libdir and os.path.isdir(libdir):
+        _prepend_env_path("LD_LIBRARY_PATH", libdir)
+    if plugin_dir and os.path.isdir(plugin_dir):
+        _prepend_env_path("GV_PLUGIN_PATH", plugin_dir)
+
+
 def _bootstrap_sagelite_meataxe_runtime() -> None:
     """
     Seed ``MTXLIB`` from an optional ``sagelite_meataxe`` package.
@@ -1179,6 +1208,7 @@ _bootstrap_sagelite_jmol_runtime()
 JMOL_DIR = var("JMOL_DIR")
 _bootstrap_sagelite_mathjax_runtime()
 MATHJAX_DIR = var("MATHJAX_DIR", join(SAGE_SHARE, "mathjax"))
+_bootstrap_sagelite_graphviz_runtime()
 _bootstrap_sagelite_meataxe_runtime()
 MTXLIB = var("MTXLIB", join(SAGE_SHARE, "meataxe"))
 _bootstrap_sagelite_threejs_runtime()

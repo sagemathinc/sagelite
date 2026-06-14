@@ -34,6 +34,7 @@ def clean_runtime_environment():
         "GAP_ROOT_PATHS",
         "GFAN_BINS_PREFIX",
         "GP_DATA_DIR",
+        "GV_PLUGIN_PATH",
         "INFOPATH",
         "JMOL_DIR",
         "KENZO_FAS",
@@ -243,6 +244,19 @@ def _info_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
     command.chmod(0o755)
     (info_dir / "singular.info").write_text("Singular manual\n")
     return command, info_dir
+
+
+def _graphviz_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path, Path]:
+    root = tmp_path / name / "data"
+    bin_dir = root / "bin"
+    lib_dir = root / "lib"
+    plugin_dir = lib_dir / "graphviz"
+    bin_dir.mkdir(parents=True)
+    plugin_dir.mkdir(parents=True)
+    dot = bin_dir / "dot"
+    dot.write_text("#!/bin/sh\n")
+    dot.chmod(0o755)
+    return dot, bin_dir, lib_dir, plugin_dir
 
 
 class _EntryPoint:
@@ -1876,3 +1890,72 @@ def test_info_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
 
     assert env.os.environ["PATH"] == str(command.parent)
     assert "INFOPATH" not in env.os.environ
+
+
+def test_graphviz_runtime_prepends_companion_subprocess_paths(monkeypatch, tmp_path):
+    dot, bin_dir, lib_dir, plugin_dir = _graphviz_runtime(tmp_path, "companion")
+    existing_bin = tmp_path / "existing" / "bin"
+    existing_lib = tmp_path / "existing" / "lib"
+    existing_plugins = tmp_path / "existing" / "graphviz"
+    existing_bin.mkdir(parents=True)
+    existing_lib.mkdir(parents=True)
+    existing_plugins.mkdir(parents=True)
+
+    monkeypatch.setenv("PATH", str(existing_bin))
+    monkeypatch.setenv("LD_LIBRARY_PATH", str(existing_lib))
+    monkeypatch.setenv("GV_PLUGIN_PATH", str(existing_plugins))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_graphviz.runtime", "executable_path"): dot,
+            ("sagelite_graphviz.runtime", "bin_dir"): bin_dir,
+            ("sagelite_graphviz.runtime", "library_dir"): lib_dir,
+            ("sagelite_graphviz.runtime", "plugin_dir"): plugin_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_graphviz_runtime()
+
+    assert env.os.environ["PATH"].split(env.os.pathsep) == [
+        str(bin_dir),
+        str(existing_bin),
+    ]
+    assert env.os.environ["LD_LIBRARY_PATH"].split(env.os.pathsep) == [
+        str(lib_dir),
+        str(existing_lib),
+    ]
+    assert env.os.environ["GV_PLUGIN_PATH"].split(env.os.pathsep) == [
+        str(plugin_dir),
+        str(existing_plugins),
+    ]
+
+
+def test_graphviz_runtime_keeps_existing_programs(monkeypatch, tmp_path):
+    dot, bin_dir, lib_dir, plugin_dir = _graphviz_runtime(tmp_path, "companion")
+    existing_bin = tmp_path / "existing" / "bin"
+    existing_bin.mkdir(parents=True)
+    for program in ("dot", "neato", "twopi"):
+        command = existing_bin / program
+        command.write_text("#!/bin/sh\n")
+        command.chmod(0o755)
+
+    monkeypatch.setenv("PATH", str(existing_bin))
+    monkeypatch.delenv("LD_LIBRARY_PATH", raising=False)
+    monkeypatch.delenv("GV_PLUGIN_PATH", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_graphviz.runtime", "executable_path"): dot,
+            ("sagelite_graphviz.runtime", "bin_dir"): bin_dir,
+            ("sagelite_graphviz.runtime", "library_dir"): lib_dir,
+            ("sagelite_graphviz.runtime", "plugin_dir"): plugin_dir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_graphviz_runtime()
+
+    assert env.os.environ["PATH"] == str(existing_bin)
+    assert "LD_LIBRARY_PATH" not in env.os.environ
+    assert "GV_PLUGIN_PATH" not in env.os.environ

@@ -2006,7 +2006,7 @@ def test_graphviz_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-graphviz-runtime >=10.9,<10.10"
+    requirement = "sagelite-graphviz-runtime >=10.9.post1,<10.10"
 
     assert extras["graphviz"] == [requirement]
     assert extras["dot"] == [requirement]

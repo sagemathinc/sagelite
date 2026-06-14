@@ -12,14 +12,22 @@ def data_dir() -> Path:
     return Path(__file__).resolve().parent / "data"
 
 
+def bin_dir() -> Path:
+    return data_dir() / "bin"
+
+
 def executable_path(program: str = "dot") -> Path:
     if program not in PROGRAMS:
         raise ValueError(f"unknown Graphviz program: {program}")
-    return data_dir() / "bin" / program
+    return bin_dir() / program
+
+
+def library_dir() -> Path:
+    return data_dir() / "lib"
 
 
 def plugin_dir() -> Path:
-    return data_dir() / "lib" / "graphviz"
+    return library_dir() / "graphviz"
 
 
 def run_program(program: str) -> int:
@@ -55,7 +63,9 @@ def twopi() -> int:
 
 __all__ = [
     "dot",
+    "bin_dir",
     "executable_path",
+    "library_dir",
     "neato",
     "plugin_dir",
     "run_program",

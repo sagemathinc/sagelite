@@ -146,7 +146,7 @@ dependencies = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post1,<10.10',
   'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
@@ -274,7 +274,7 @@ elliptic_curves = [
   'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
 ]
-dot = ['sagelite-graphviz-runtime >=10.9,<10.10']
+dot = ['sagelite-graphviz-runtime >=10.9.post1,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
 fplll-data = ['sagelite-fplll-data >=10.9,<10.10']
@@ -374,7 +374,7 @@ full = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post1,<10.10',
   'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
@@ -608,7 +608,7 @@ tomlib = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
 ]
-twopi = ['sagelite-graphviz-runtime >=10.9,<10.10']
+twopi = ['sagelite-graphviz-runtime >=10.9.post1,<10.10']
 gap-transgrp = [
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
@@ -626,7 +626,7 @@ gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
 giac = ['sagelite-giac-runtime >=10.9,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
 glucose-syrup = ['sagelite-glucose-runtime >=10.9,<10.10']
-graphviz = ['sagelite-graphviz-runtime >=10.9,<10.10']
+graphviz = ['sagelite-graphviz-runtime >=10.9.post1,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 igraph = ['igraph']
 imagemagick = ['sagelite-imagemagick-runtime >=10.9,<10.10']
@@ -662,7 +662,7 @@ mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
 mwrank = ['sagelite-mwrank-runtime >=10.9,<10.10']
 msolve = ['sagelite-msolve-runtime >=10.9,<10.10']
 nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
-neato = ['sagelite-graphviz-runtime >=10.9,<10.10']
+neato = ['sagelite-graphviz-runtime >=10.9.post1,<10.10']
 magick = ['sagelite-imagemagick-runtime >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 palp = ['sagelite-palp-runtime >=10.9,<10.10']
@@ -752,7 +752,7 @@ runtime = [
   'sagelite-gfan-runtime >=10.9,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post1,<10.10',
   'sagelite-imagemagick-runtime >=10.9,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
