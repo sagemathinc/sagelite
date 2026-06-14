@@ -1500,7 +1500,42 @@ def _registered_sage_data_paths() -> set[str]:
         except Exception:
             continue
         paths.update(_coerce_sage_data_paths(value))
+    paths.update(_sagelite_companion_data_paths())
     return {path for path in paths if os.path.exists(path)}
+
+
+def _sagelite_companion_data_paths() -> set[str]:
+    r"""
+    Return data roots exposed directly by installed ``sagelite-*`` wheels.
+
+    Entry points are the normal companion-wheel integration point.  The direct
+    imports here are a fallback for environments where wheel metadata is
+    stripped or not visible to :mod:`importlib.metadata`.
+    """
+    paths = set()
+    for module_name in (
+        "sagelite_cunningham_tables",
+        "sagelite_database_cremona_ellcurve",
+        "sagelite_database_cremona_mini",
+        "sagelite_database_ellcurves",
+        "sagelite_database_graphs",
+        "sagelite_database_jones_numfield",
+        "sagelite_database_kohel",
+        "sagelite_database_mutation_class",
+        "sagelite_database_odlyzko_zeta",
+        "sagelite_database_polytopes",
+        "sagelite_database_polytopes_4d",
+        "sagelite_database_sloane",
+        "sagelite_database_stein_watkins",
+        "sagelite_database_stein_watkins_mini",
+        "sagelite_database_symbolic_data",
+    ):
+        paths.update(
+            _coerce_sage_data_paths(
+                _optional_runtime_value(module_name, "sage_data_path")
+            )
+        )
+    return paths
 
 
 def _coerce_sage_data_paths(value) -> set[str]:

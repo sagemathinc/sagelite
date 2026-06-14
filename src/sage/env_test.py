@@ -324,6 +324,7 @@ def test_sage_data_paths_accepts_multiple_registered_directories(monkeypatch, tm
         "entry_points",
         lambda **kwargs: [_EntryPoint(lambda: [first, second])],
     )
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda *args: None)
 
     assert env._registered_sage_data_paths() == {str(first), str(second)}
 
@@ -343,6 +344,7 @@ def test_sage_data_paths_accepts_registered_file_paths_in_iterables(
         "entry_points",
         lambda **kwargs: [_EntryPoint(lambda: [first, database])],
     )
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda *args: None)
 
     assert env._registered_sage_data_paths() == {str(first), str(second)}
 
@@ -359,8 +361,47 @@ def test_sage_data_paths_ignores_broken_entry_points(monkeypatch, tmp_path):
         "entry_points",
         lambda **kwargs: [_EntryPoint(broken), _EntryPoint(existing)],
     )
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda *args: None)
 
     assert env._registered_sage_data_paths() == {str(existing)}
+
+
+def test_sage_data_paths_accepts_direct_sagelite_companion_paths(
+    monkeypatch, tmp_path
+):
+    companion = tmp_path / "companion" / "data"
+    companion.mkdir(parents=True)
+
+    monkeypatch.setattr(env, "_entry_points", lambda group: [])
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: (
+            str(companion)
+            if (
+                module_name == "sagelite_database_jones_numfield"
+                and attr_name == "sage_data_path"
+            )
+            else None
+        ),
+    )
+
+    assert env._registered_sage_data_paths() == {str(companion)}
+
+
+def test_sage_data_paths_filters_missing_direct_sagelite_companion_paths(
+    monkeypatch, tmp_path
+):
+    missing = tmp_path / "missing" / "data"
+
+    monkeypatch.setattr(env, "_entry_points", lambda group: [])
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(missing),
+    )
+
+    assert env._registered_sage_data_paths() == set()
 
 
 def test_optional_runtime_data_dir_accepts_companion_directory(monkeypatch, tmp_path):
