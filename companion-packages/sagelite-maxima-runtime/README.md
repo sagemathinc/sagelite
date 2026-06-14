@@ -19,8 +19,11 @@ should also set `SAGELITE_MAXIMA_IMAGESDIR`, `SAGELITE_MAXIMA_ECLDIR`, and
 `SAGELITE_MAXIMA_LIBDIR` from the same Sage prefix. When building a companion
 for a repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ECL_SONAME` to the
 auditwheel-renamed ECL SONAME from that wheel so library mode uses the already
-loaded ECL runtime instead of loading a second copy. The build patches both
-`maxima.fas` and copied ECL support images such as `cmp.fas`:
+loaded ECL runtime instead of loading a second copy. Also set
+`SAGELITE_MAXIMA_ECL_LIBRARY` to the extracted ECL shared library from that
+repaired `sagelite` wheel so the build can reject Maxima images that need
+symbols unavailable in library mode. The build patches both `maxima.fas` and
+copied ECL support images such as `cmp.fas`:
 
 ```bash
 SAGELITE_MAXIMA_PREFIX=/path/to/share/maxima/5.47.0 \
@@ -29,6 +32,7 @@ SAGELITE_MAXIMA_IMAGESDIR=/path/to/lib/maxima/5.47.0 \
 SAGELITE_MAXIMA_ECLDIR=/path/to/lib/ecl-24.5.10 \
 SAGELITE_MAXIMA_LIBDIR=/path/to/lib \
 SAGELITE_MAXIMA_ECL_SONAME=libecl-<auditwheel-hash>.so.24.5.10 \
+SAGELITE_MAXIMA_ECL_LIBRARY=/path/to/extracted/libecl-<auditwheel-hash>.so.24.5.10 \
 python -m build companion-packages/sagelite-maxima-runtime
 ```
 

@@ -299,6 +299,36 @@ def _is_ecl_runtime_symbol(symbol: str) -> bool:
     return symbol.startswith(("ecl_", "_ecl_", "cl_", "si_", "ext_", "FE"))
 
 
+def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
+    """
+    Return ECL libraries that copied images must be loadable against.
+
+    The copied runtime library is used by the standalone Maxima launcher.  In
+    Sage library mode, however, ``sage.libs.ecl`` has already loaded the ECL
+    library bundled in the repaired ``sagelite`` wheel.  Release builds pass
+    that library explicitly so this package rejects ABI-mismatched images
+    before publishing a wheel.
+    """
+    ecl_libraries = sorted(runtime_library_dir.glob("libecl.so*"))
+    if not ecl_libraries:
+        raise RuntimeError(
+            f"could not validate copied ECL images: no libecl.so* in {runtime_library_dir}"
+        )
+
+    targets = {"copied ECL runtime": ecl_libraries}
+
+    sagelite_ecl = os.environ.get("SAGELITE_MAXIMA_ECL_LIBRARY")
+    if sagelite_ecl:
+        path = Path(sagelite_ecl)
+        if not path.is_file():
+            raise RuntimeError(
+                f"SAGELITE_MAXIMA_ECL_LIBRARY does not name a file: {path}"
+            )
+        targets["sagelite ECL runtime"] = [path]
+
+    return targets
+
+
 def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> None:
     """
     Check copied ECL images against the copied ECL shared library.
@@ -307,37 +337,41 @@ def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> Non
     distribution release and ``libecl`` from another, which otherwise build a
     wheel that installs but fails when Sage evaluates ``(require 'maxima)``.
     """
-    ecl_libraries = sorted(runtime_library_dir.glob("libecl.so*"))
-    if not ecl_libraries:
-        raise RuntimeError(
-            f"could not validate copied ECL images: no libecl.so* in {runtime_library_dir}"
-        )
+    missing_by_target = {}
+    for target, libraries in _validation_targets(runtime_library_dir).items():
+        exported = set()
+        for library in libraries:
+            exported.update(_dynamic_symbols(library, "--defined-only"))
 
-    exported = set()
-    for library in ecl_libraries:
-        exported.update(_dynamic_symbols(library, "--defined-only"))
+        missing_by_image = {}
+        for image in sorted(ecl_dir.glob("*.fas")):
+            undefined = {
+                symbol
+                for symbol in _dynamic_symbols(image, "--undefined-only")
+                if _is_ecl_runtime_symbol(symbol) and symbol not in exported
+            }
+            if undefined:
+                missing_by_image[image.name] = sorted(undefined)
 
-    missing_by_image = {}
-    for image in sorted(ecl_dir.glob("*.fas")):
-        undefined = {
-            symbol
-            for symbol in _dynamic_symbols(image, "--undefined-only")
-            if _is_ecl_runtime_symbol(symbol) and symbol not in exported
-        }
-        if undefined:
-            missing_by_image[image.name] = sorted(undefined)
+        if missing_by_image:
+            missing_by_target[target] = missing_by_image
 
-    if missing_by_image:
+    if missing_by_target:
         details = "\n".join(
-            f"  {image}: {', '.join(symbols)}"
-            for image, symbols in missing_by_image.items()
+            f"  {target}:\n"
+            + "\n".join(
+                f"    {image}: {', '.join(symbols)}"
+                for image, symbols in missing_by_image.items()
+            )
+            for target, missing_by_image in missing_by_target.items()
         )
         raise RuntimeError(
             "copied ECL images require symbols that are not exported by the "
-            f"copied libecl runtime:\n{details}\n"
+            f"target ECL runtime:\n{details}\n"
             "Use matching Maxima, ECL support, and libecl inputs; set "
-            "SAGELITE_MAXIMA_ECLDIR and SAGELITE_MAXIMA_LIBDIR explicitly if "
-            "auto-detection selected mixed installation trees."
+            "SAGELITE_MAXIMA_ECLDIR, SAGELITE_MAXIMA_LIBDIR, and "
+            "SAGELITE_MAXIMA_ECL_LIBRARY explicitly if auto-detection selected "
+            "mixed installation trees."
         )
 
 
