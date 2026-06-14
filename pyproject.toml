@@ -283,7 +283,7 @@ extra = [
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
   "Mathics3 >=10.0.1; python_version < '3.14'",
-  'phitigra >=0.2.3',
+  'phitigra >=0.2.6',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
@@ -303,7 +303,7 @@ full = [
   'khoca >=1.4',
   'matroid-database ==0.3',
   "Mathics3 >=10.0.1; python_version < '3.14'",
-  'phitigra >=0.2.3',
+  'phitigra >=0.2.6',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
@@ -664,7 +664,7 @@ pari_seadata = ['sagelite-pari-data >=10.9,<10.10']
 pari-data = ['sagelite-pari-data >=10.9,<10.10']
 pdftocairo = ['sagelite-poppler-runtime >=10.9,<10.10']
 pdf2svg = ['sagelite-pdf2svg-runtime >=10.9,<10.10']
-phitigra = ['phitigra >=0.2.3']
+phitigra = ['phitigra >=0.2.6']
 planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 poppler = ['sagelite-poppler-runtime >=10.9,<10.10']

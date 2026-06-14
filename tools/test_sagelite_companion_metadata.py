@@ -1875,7 +1875,7 @@ def test_phitigra_pypi_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "phitigra >=0.2.3"
+    requirement = "phitigra >=0.2.6"
 
     assert extras["phitigra"] == [requirement]
     assert requirement in extras["extra"]
