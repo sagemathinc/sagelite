@@ -591,6 +591,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "khoca >=1.4",
     'lrcalc ~=2.1; sys_platform != "win32"',
     "Mathics3 >=10.0.1; python_version < '3.14'",
+    "packaging",
     "phitigra >=0.2.6",
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",

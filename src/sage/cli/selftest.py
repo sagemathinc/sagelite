@@ -4,11 +4,15 @@ Small runtime self-test for sagelite installations.
 
 from __future__ import annotations
 
+import importlib.metadata as importlib_metadata
 import sys
 import subprocess
 import tempfile
 import traceback
 from typing import TYPE_CHECKING
+
+from packaging.requirements import Requirement
+from packaging.version import Version
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -32,6 +36,37 @@ def _run_check(name: str, check: Callable[[], object]) -> bool:
 
 def _check_import_sage_all():
     import sage.all  # noqa: F401
+
+
+def _check_installed_requirements(distribution_name: str = "sagelite"):
+    distribution = importlib_metadata.distribution(distribution_name)
+    issues = []
+
+    for requirement_text in distribution.requires or []:
+        requirement = Requirement(requirement_text)
+        if requirement.marker is not None and not requirement.marker.evaluate():
+            continue
+
+        try:
+            installed_version = Version(importlib_metadata.version(requirement.name))
+        except importlib_metadata.PackageNotFoundError:
+            continue
+
+        if requirement.specifier and not requirement.specifier.contains(
+            installed_version, prereleases=True
+        ):
+            issues.append(
+                f"{requirement.name} {installed_version} does not satisfy "
+                f"{requirement.specifier}"
+            )
+
+    if issues:
+        raise RuntimeError(
+            f"{distribution_name} has installed requirement version conflicts:\n  "
+            + "\n  ".join(issues)
+        )
+
+    return "installed requirement versions satisfy metadata"
 
 
 def _check_factor():
@@ -752,6 +787,7 @@ def main() -> int:
     Run a quick smoke test of the installed sagelite runtime.
     """
     checks = [
+        ("installed package requirements", _check_installed_requirements),
         ("import sage.all", _check_import_sage_all),
         ("integer factorization", _check_factor),
         ("symbolic integration", _check_symbolic_integration),
