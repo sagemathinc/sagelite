@@ -599,6 +599,13 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "symengine >= 0.6.1",
 }
 
+OPTIONAL_CVXPY_SOLVER_RUNTIME_DEPENDENCIES = {
+    "cvxpy": "cvxpy >=1.6.7",
+    "cylp": "cylp >=0.92.3",
+    "ortools": "ortools >=9.11",
+    "pyscipopt": "pyscipopt >=5.1.1",
+}
+
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
     "sagelite-d3js-runtime",
     "sagelite-mathjax-runtime",
@@ -887,6 +894,19 @@ def test_base_sagelite_installs_standard_pypi_runtime_wheels():
     assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= dependencies
     assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= set(extras["runtime"])
     assert BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES <= set(extras["full"])
+
+
+def test_cvxpy_solver_runtime_wheels_are_exposed_by_feature_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+
+    for feature, requirement in OPTIONAL_CVXPY_SOLVER_RUNTIME_DEPENDENCIES.items():
+        assert extras[feature] == [requirement]
+        assert requirement in extras["extra"]
+        assert requirement in extras["runtime"]
+        assert requirement in extras["full"]
 
 
 def test_base_sagelite_companion_dependencies_are_build_covered():

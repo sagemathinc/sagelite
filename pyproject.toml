@@ -203,6 +203,8 @@ conway-polynomials = ['conway-polynomials >=0.8']
 conway_polynomials = ['conway-polynomials >=0.8']
 csdp = ['sagelite-csdp-runtime >=10.9,<10.10']
 cvxopt = ['cvxopt >=1.3.3']
+cvxpy = ['cvxpy >=1.6.7']
+cylp = ['cylp >=0.92.3']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cunningham_tables = ['sagelite-cunningham-tables >=10.9,<10.10']
@@ -282,22 +284,28 @@ ffmpeg = ['imageio-ffmpeg >=0.6.0']
 pandoc = ['pypandoc-binary >=1.17']
 extra = [
   'cvxopt >=1.3.3',
+  'cvxpy >=1.6.7',
+  'cylp >=0.92.3',
   'dot2tex >=2.11.3',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
+  'ortools >=9.11',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.6',
   #'p_group_cohomology >=3.3', # Only used in tests, not available on PyPI
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
+  'pyscipopt >=5.1.1',
   'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
 ]
 full = [
   'cvxopt >=1.3.3',
+  'cvxpy >=1.6.7',
+  'cylp >=0.92.3',
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'dot2tex >=2.11.3',
@@ -307,11 +315,13 @@ full = [
   'khoca >=1.4',
   'matroid-database ==0.3',
   "Mathics3 >=10.0.1; python_version < '3.14'",
+  'ortools >=9.11',
   'phitigra >=0.2.6',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
+  'pyscipopt >=5.1.1',
   'regina >=7.4.1',
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9,<10.10',
@@ -669,6 +679,7 @@ pari-data = ['sagelite-pari-data >=10.9,<10.10']
 pdftocairo = ['sagelite-poppler-runtime >=10.9,<10.10']
 pdf2svg = ['sagelite-pdf2svg-runtime >=10.9,<10.10']
 phitigra = ['phitigra >=0.2.6']
+ortools = ['ortools >=9.11']
 planarity = ['sagelite-planarity-runtime >=10.9,<10.10']
 plantri = ['sagelite-plantri-runtime >=10.9,<10.10']
 poppler = ['sagelite-poppler-runtime >=10.9,<10.10']
@@ -682,20 +693,25 @@ qepcad = ['sagelite-qepcad-runtime >=10.9,<10.10']
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 pycosat = ['pycosat >=0.6.3']
 pynormaliz = ['pynormaliz >=2.18; sys_platform != "win32"']
+pyscipopt = ['pyscipopt >=5.1.1']
 pyparsing = ['pyparsing >=3.2.3']
 regina = ['regina >=7.4.1']
 runtime = [
   'cvxopt >=1.3.3',
+  'cvxpy >=1.6.7',
+  'cylp >=0.92.3',
   'dot2tex >=2.11.3',
   'imageio-ffmpeg >=0.6.0',
   'igraph',
   'khoca >=1.4',
   "Mathics3 >=10.0.1; python_version < '3.14'",
+  'ortools >=9.11',
   'phitigra >=0.2.6',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
+  'pyscipopt >=5.1.1',
   'regina >=7.4.1',
   'symengine >= 0.6.1',
   'sagelite-4ti2-runtime >=10.9,<10.10',
