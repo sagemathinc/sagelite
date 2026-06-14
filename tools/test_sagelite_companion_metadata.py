@@ -716,6 +716,13 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     ],
 }
 
+DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES = {
+    requirement
+    for requirements in GAP_PACKAGE_EXTRA_REQUIREMENTS.values()
+    for requirement in requirements
+    if requirement.startswith("sagelite-gap-package-")
+}
+
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
@@ -993,6 +1000,26 @@ def test_base_sagelite_data_companion_wheels_are_publishable():
     workflow_text = workflow.read_text()
 
     for requirement in BASE_SAGELITE_DATA_DEPENDENCIES:
+        package = requirement.split()[0]
+        start = workflow_text.index(f"- name: {package}")
+        end = workflow_text.find("\n          - name:", start + 1)
+        block = workflow_text[start : end if end != -1 else len(workflow_text)]
+
+        assert f"path: companion-packages/{package}" in block
+        assert "publish: true" in block
+
+
+def test_default_gap_package_companion_wheels_are_publishable():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+
+    assert DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES <= dependencies
+
+    for requirement in DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES:
         package = requirement.split()[0]
         start = workflow_text.index(f"- name: {package}")
         end = workflow_text.find("\n          - name:", start + 1)

@@ -149,82 +149,82 @@ jobs:
             import_name: sagelite_gap_package_atlasrep
             path: companion-packages/sagelite-gap-package-atlasrep
             apt_packages: gap gap-atlasrep
-            publish: false
+            publish: true
           - name: sagelite-gap-package-ctbllib
             import_name: sagelite_gap_package_ctbllib
             path: companion-packages/sagelite-gap-package-ctbllib
             apt_packages: gap gap-character-tables
-            publish: false
+            publish: true
           - name: sagelite-gap-package-design
             import_name: sagelite_gap_package_design
             path: companion-packages/sagelite-gap-package-design
             apt_packages: gap gap-design
-            publish: false
+            publish: true
           - name: sagelite-gap-package-gapdoc
             import_name: sagelite_gap_package_gapdoc
             path: companion-packages/sagelite-gap-package-gapdoc
             apt_packages: gap gap-gapdoc
-            publish: false
+            publish: true
           - name: sagelite-gap-package-grape
             import_name: sagelite_gap_package_grape
             path: companion-packages/sagelite-gap-package-grape
             apt_packages: gap gap-grape
-            publish: false
+            publish: true
           - name: sagelite-gap-package-guava
             import_name: sagelite_gap_package_guava
             path: companion-packages/sagelite-gap-package-guava
             apt_packages: gap gap-guava gap-guava-bin gap-sonata
-            publish: false
+            publish: true
           - name: sagelite-gap-package-hap
             import_name: sagelite_gap_package_hap
             path: companion-packages/sagelite-gap-package-hap
             apt_packages: ""
-            publish: false
+            publish: true
           - name: sagelite-gap-package-polenta
             import_name: sagelite_gap_package_polenta
             path: companion-packages/sagelite-gap-package-polenta
             apt_packages: ""
-            publish: false
+            publish: true
           - name: sagelite-gap-package-polycyclic
             import_name: sagelite_gap_package_polycyclic
             path: companion-packages/sagelite-gap-package-polycyclic
             apt_packages: gap gap-alnuth gap-autpgrp gap-polycyclic
-            publish: false
+            publish: true
           - name: sagelite-gap-package-primgrp
             import_name: sagelite_gap_package_primgrp
             path: companion-packages/sagelite-gap-package-primgrp
             apt_packages: gap gap-primgrp
-            publish: false
+            publish: true
           - name: sagelite-gap-package-qpa
             import_name: sagelite_gap_package_qpa
             path: companion-packages/sagelite-gap-package-qpa
             apt_packages: ""
-            publish: false
+            publish: true
           - name: sagelite-gap-package-quagroup
             import_name: sagelite_gap_package_quagroup
             path: companion-packages/sagelite-gap-package-quagroup
             apt_packages: ""
-            publish: false
+            publish: true
           - name: sagelite-gap-package-repsn
             import_name: sagelite_gap_package_repsn
             path: companion-packages/sagelite-gap-package-repsn
             apt_packages: ""
-            publish: false
+            publish: true
           - name: sagelite-gap-package-smallgrp
             import_name: sagelite_gap_package_smallgrp
             path: companion-packages/sagelite-gap-package-smallgrp
             apt_packages: gap gap-smallgrp
-            publish: false
+            publish: true
           - name: sagelite-gap-package-tomlib
             import_name: sagelite_gap_package_tomlib
             path: companion-packages/sagelite-gap-package-tomlib
             apt_packages: gap gap-table-of-marks
-            publish: false
+            publish: true
           - name: sagelite-gap-package-transgrp
             import_name: sagelite_gap_package_transgrp
             path: companion-packages/sagelite-gap-package-transgrp
             apt_packages: gap gap-transgrp
-            publish: false
+            publish: true
           - name: sagelite-gfan-runtime
             import_name: sagelite_gfan
             path: companion-packages/sagelite-gfan-runtime
