@@ -3243,6 +3243,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
 def test_singular_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-singular-runtime")
 
+    assert pyproject["project"]["version"] == "10.9.post1"
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"][
         "sagelite_singular_runtime"
@@ -3260,6 +3261,20 @@ def test_singular_runtime_copies_factory_gftables():
     assert '"share" / "factory"' in setup_text
     assert '"gftables"' in setup_text
     assert 'target / "share" / "factory"' in setup_text
+
+
+def test_release_upload_expects_current_singular_runtime_version():
+    release = ROOT / ".github" / "workflows" / "release.yml"
+    release_text = release.read_text()
+
+    assert (
+        "sagelite_singular_runtime-10.9.post1-py3-none-manylinux_2_28_x86_64.whl"
+        in release_text
+    )
+    assert (
+        "sagelite_singular_runtime-10.9-py3-none-manylinux_2_28_x86_64.whl"
+        not in release_text
+    )
 
 
 def test_polytopes_4d_database_registers_reflexive_polytope_data_path():
