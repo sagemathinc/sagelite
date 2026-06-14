@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import email.parser
 import os
 import sys
 import tomllib
@@ -769,6 +770,20 @@ def test_sagelite_dependency_floors_match_companion_package_versions():
         minimum_version = _requirement_minimum_version(requirement)
         assert minimum_version is not None
         assert minimum_version >= companion_version, requirement_text
+
+
+def test_generated_companion_egg_info_matches_pyproject_when_present():
+    for pyproject_toml in (ROOT / "companion-packages").glob(
+        "sagelite-*/pyproject.toml"
+    ):
+        pyproject = tomllib.loads(pyproject_toml.read_text())
+        project = pyproject["project"]
+
+        for pkg_info in pyproject_toml.parent.glob("src/*.egg-info/PKG-INFO"):
+            metadata = email.parser.Parser().parsestr(pkg_info.read_text())
+
+            assert metadata["Name"] == project["name"], pkg_info
+            assert metadata["Version"] == project["version"], pkg_info
 
 
 def test_sagelite_default_dependencies_include_short_doctest_companions():
