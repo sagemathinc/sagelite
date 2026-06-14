@@ -101,31 +101,15 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     """
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
 
-    This is only used when the user or the build configuration has not already
-    provided usable Maxima paths.  Binary wheels can contain build-time Maxima
-    paths that no longer exist after installation; those stale paths should not
-    prevent a companion runtime from being used.
+    This is only used when the user has not already provided Maxima paths in
+    the environment.  Binary wheels can contain build-time Maxima paths that
+    either no longer exist after installation or still exist but belong to a
+    different runtime; those configured paths should not prevent an installed
+    companion runtime from being used.
     """
-    configured_prefix = getattr(sage.config, "MAXIMA_PREFIX", None)
-    configured_fas = getattr(sage.config, "MAXIMA_FAS", None)
-    configured_command = getattr(sage.config, "MAXIMA", None)
-
-    needs_prefix = (
-        not os.environ.get("MAXIMA_PREFIX")
-        and not (configured_prefix and os.path.isdir(os.fspath(configured_prefix)))
-    )
-    needs_fas = (
-        not os.environ.get("MAXIMA_FAS")
-        and not (configured_fas and os.path.isfile(os.fspath(configured_fas)))
-    )
-    needs_command = (
-        not os.environ.get("MAXIMA")
-        and not (
-            configured_command
-            and os.path.isfile(os.fspath(configured_command))
-            and os.access(os.fspath(configured_command), os.X_OK)
-        )
-    )
+    needs_prefix = not os.environ.get("MAXIMA_PREFIX")
+    needs_fas = not os.environ.get("MAXIMA_FAS")
+    needs_command = not os.environ.get("MAXIMA")
     needs_ecldir = not _ecldir_contains_maxima(os.environ.get("ECLDIR"))
     needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
     needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR")
