@@ -593,6 +593,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
         "(sys_platform == 'linux' and platform_machine == 'x86_64'))"
     ),
     'pynormaliz >=2.18; sys_platform != "win32"',
+    "regina >=7.4.1",
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
@@ -1885,8 +1886,10 @@ def test_regina_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "regina >=7.4.1"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["regina"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
