@@ -125,7 +125,7 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
             and os.access(os.fspath(configured_command), os.X_OK)
         )
     )
-    needs_ecldir = not os.environ.get("ECLDIR")
+    needs_ecldir = not _ecldir_contains_maxima(os.environ.get("ECLDIR"))
     needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
     needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR")
     runtime_library_dir = _optional_runtime_value(
@@ -173,7 +173,7 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     ):
         os.environ.setdefault("MAXIMA", os.fspath(command))
     if needs_ecldir and ecldir and os.path.isdir(ecldir):
-        os.environ.setdefault("ECLDIR", os.fspath(ecldir))
+        os.environ["ECLDIR"] = os.fspath(ecldir)
     if needs_layout and layout:
         os.environ.setdefault("MAXIMA_LAYOUT_AUTOTOOLS", os.fspath(layout))
     if needs_imagesdir and imagesdir and os.path.isdir(imagesdir):
@@ -199,6 +199,13 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
     fas = _optional_runtime_value("sagelite_kenzo.runtime", "kenzo_fas")
     if fas and os.path.isfile(fas):
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
+
+
+def _ecldir_contains_maxima(ecldir: str | os.PathLike | None) -> bool:
+    """
+    Return whether ``ecldir`` can satisfy ECL's plain ``(require 'maxima)``.
+    """
+    return bool(ecldir) and os.path.isfile(os.path.join(ecldir, "maxima.asd"))
 
 
 def _bootstrap_sagelite_ecl_runtime() -> None:

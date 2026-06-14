@@ -210,6 +210,13 @@ def _prepend_env_path(name: str, path: str | None) -> None:
     os.environ[name] = path if not current else os.pathsep.join([path, current])
 
 
+def _ecldir_contains_maxima(ecldir: str | os.PathLike | None) -> bool:
+    """
+    Return whether ``ecldir`` can satisfy ECL's plain ``(require 'maxima)``.
+    """
+    return bool(ecldir) and os.path.isfile(os.path.join(ecldir, "maxima.asd"))
+
+
 def _configure_companion_maxima_runtime_environment() -> None:
     """
     Seed environment variables needed by a bundled Maxima/ECL runtime.
@@ -223,8 +230,11 @@ def _configure_companion_maxima_runtime_environment() -> None:
     )
     _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
 
+    ecldir = _optional_runtime_value("sagelite_maxima.runtime", "ecl_dir")
+    if ecldir and not _ecldir_contains_maxima(os.environ.get("ECLDIR")):
+        os.environ["ECLDIR"] = os.fspath(ecldir)
+
     for env_name, attr_name in (
-        ("ECLDIR", "ecl_dir"),
         ("MAXIMA_IMAGESDIR", "maxima_imagesdir"),
         ("MAXIMA_LAYOUT_AUTOTOOLS", "maxima_layout_autotools"),
         ("MAXIMA_PREFIX", "maxima_prefix"),

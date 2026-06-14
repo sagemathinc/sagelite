@@ -721,19 +721,22 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     existing = tmp_path / "configured"
     existing_fas = tmp_path / "configured" / "maxima.fas"
     existing_imagesdir = tmp_path / "configured" / "lib" / "maxima" / "5.47.0"
+    existing_ecldir = existing / "lib" / "ecl"
     existing_command.parent.mkdir()
     existing_command.write_text("#!/bin/sh\n")
     existing_command.chmod(0o755)
     existing_fas.parent.mkdir()
     existing_fas.write_text("existing maxima fas\n")
     existing_imagesdir.mkdir(parents=True)
+    existing_ecldir.mkdir(parents=True)
+    (existing_ecldir / "maxima.asd").write_text("existing maxima asd\n")
 
     monkeypatch.setenv("MAXIMA", str(existing_command))
     monkeypatch.setenv("MAXIMA_PREFIX", str(existing))
     monkeypatch.setenv("MAXIMA_FAS", str(existing_fas))
     monkeypatch.setenv("MAXIMA_IMAGESDIR", str(existing_imagesdir))
     monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "true")
-    monkeypatch.setenv("ECLDIR", str(existing / "lib" / "ecl"))
+    monkeypatch.setenv("ECLDIR", str(existing_ecldir))
     monkeypatch.setenv("LD_LIBRARY_PATH", "/existing/lib")
     monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
@@ -758,7 +761,75 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     assert env.os.environ["MAXIMA_PREFIX"] == str(existing)
     assert env.os.environ["MAXIMA_FAS"] == str(existing_fas)
     assert env.os.environ["MAXIMA_IMAGESDIR"] == str(existing_imagesdir)
+    assert env.os.environ["ECLDIR"] == str(existing_ecldir)
     assert env.os.environ["LD_LIBRARY_PATH"].endswith("/existing/lib")
+
+
+def test_maxima_runtime_replaces_generic_ecldir(monkeypatch, tmp_path):
+    prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
+    generic_ecldir = tmp_path / "generic-ecl" / "lib" / "ecl-24.5.10"
+    maxima_ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
+    generic_ecldir.mkdir(parents=True)
+    maxima_ecldir.mkdir(parents=True)
+    (maxima_ecldir / "maxima.asd").write_text("maxima asd\n")
+
+    monkeypatch.setenv("ECLDIR", str(generic_ecldir))
+    monkeypatch.delenv("MAXIMA", raising=False)
+    monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
+    monkeypatch.delenv("MAXIMA_FAS", raising=False)
+    monkeypatch.delenv("MAXIMA_IMAGESDIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_maxima.runtime", "maxima_command"): command,
+            ("sagelite_maxima.runtime", "maxima_prefix"): prefix,
+            ("sagelite_maxima.runtime", "maxima_fas"): fas,
+            ("sagelite_maxima.runtime", "maxima_imagesdir"): imagesdir,
+            ("sagelite_maxima.runtime", "ecl_dir"): maxima_ecldir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_maxima_runtime()
+
+    assert env.os.environ["ECLDIR"] == str(maxima_ecldir)
+
+
+def test_maxima_runtime_keeps_ecldir_with_maxima_asd(monkeypatch, tmp_path):
+    prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
+    existing_ecldir = tmp_path / "existing-ecl" / "lib" / "ecl-24.5.10"
+    maxima_ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
+    existing_ecldir.mkdir(parents=True)
+    maxima_ecldir.mkdir(parents=True)
+    (existing_ecldir / "maxima.asd").write_text("existing maxima asd\n")
+    (maxima_ecldir / "maxima.asd").write_text("companion maxima asd\n")
+
+    monkeypatch.setenv("ECLDIR", str(existing_ecldir))
+    monkeypatch.delenv("MAXIMA", raising=False)
+    monkeypatch.delenv("MAXIMA_PREFIX", raising=False)
+    monkeypatch.delenv("MAXIMA_FAS", raising=False)
+    monkeypatch.delenv("MAXIMA_IMAGESDIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA", "", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_PREFIX", "", raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", "", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_maxima.runtime", "maxima_command"): command,
+            ("sagelite_maxima.runtime", "maxima_prefix"): prefix,
+            ("sagelite_maxima.runtime", "maxima_fas"): fas,
+            ("sagelite_maxima.runtime", "maxima_imagesdir"): imagesdir,
+            ("sagelite_maxima.runtime", "ecl_dir"): maxima_ecldir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_maxima_runtime()
+
+    assert env.os.environ["ECLDIR"] == str(existing_ecldir)
 
 
 def test_kenzo_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
