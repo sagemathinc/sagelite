@@ -585,6 +585,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "imageio-ffmpeg >=0.6.0",
     "igraph",
     "khoca >=1.4",
+    "Mathics3 >=10.0.1; python_version < '3.14'",
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",
     (
@@ -1848,8 +1849,10 @@ def test_mathics_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "Mathics3 >=10.0.1; python_version < '3.14'"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["mathics"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
