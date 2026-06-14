@@ -543,6 +543,26 @@ def test_gap_root_paths_appends_registered_package_roots(monkeypatch, tmp_path):
     assert env._gap_root_paths().split(";") == [str(core), str(package)]
 
 
+def test_gap_root_paths_appends_direct_package_companion_roots(monkeypatch, tmp_path):
+    core = _gap_root(tmp_path, "core")
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_entry_points", lambda group: [])
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_gap_runtime.runtime", "gap_root_paths"): str(core),
+            ("sagelite_gap_package_grape.runtime", "gap_root_paths"): str(package),
+        }.get((module_name, attr_name)),
+    )
+
+    assert env._gap_root_paths().split(";") == [str(core), str(package)]
+
+
 def test_gap_root_paths_supports_legacy_entry_point_api(monkeypatch, tmp_path):
     core = _gap_root(tmp_path, "core")
     package = _gap_package_root(tmp_path, "grape")

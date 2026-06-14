@@ -441,6 +441,9 @@ def _gap_root_paths() -> str:
     for root in _registered_gap_root_paths():
         _append_gap_root(core_roots, package_roots, root)
 
+    for root in _sagelite_gap_package_root_paths():
+        _append_gap_root(core_roots, package_roots, root)
+
     bundled = join(SAGE_EXTCODE, "gap_root")
     if bundled:
         _append_gap_root(core_roots, package_roots, bundled)
@@ -453,6 +456,39 @@ def _gap_root_paths() -> str:
         return ";".join(core_roots + package_roots)
 
     return ""
+
+
+def _sagelite_gap_package_root_paths() -> set[str]:
+    r"""
+    Return GAP package roots exposed directly by installed companion wheels.
+
+    The ``sagemath.gap_root_paths`` entry point group is the normal discovery
+    path.  Direct imports keep installed wheels usable in environments where
+    wheel metadata is stripped or not visible to :mod:`importlib.metadata`.
+    """
+    paths = set()
+    for module_name in (
+        "sagelite_gap_package_atlasrep.runtime",
+        "sagelite_gap_package_ctbllib.runtime",
+        "sagelite_gap_package_design.runtime",
+        "sagelite_gap_package_gapdoc.runtime",
+        "sagelite_gap_package_grape.runtime",
+        "sagelite_gap_package_guava.runtime",
+        "sagelite_gap_package_hap.runtime",
+        "sagelite_gap_package_polenta.runtime",
+        "sagelite_gap_package_polycyclic.runtime",
+        "sagelite_gap_package_primgrp.runtime",
+        "sagelite_gap_package_qpa.runtime",
+        "sagelite_gap_package_quagroup.runtime",
+        "sagelite_gap_package_repsn.runtime",
+        "sagelite_gap_package_smallgrp.runtime",
+        "sagelite_gap_package_tomlib.runtime",
+        "sagelite_gap_package_transgrp.runtime",
+    ):
+        value = _optional_runtime_value(module_name, "gap_root_paths")
+        if value:
+            paths.update(path for path in value.split(";") if path)
+    return paths
 
 
 def _installed_command_or_fallback(command: str | None, fallback: str) -> str:
