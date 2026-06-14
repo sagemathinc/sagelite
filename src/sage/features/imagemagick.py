@@ -114,7 +114,7 @@ class Magick(Executable):
 
         # running command magick/convert (taken from sage/plot/animate.py)
         from subprocess import run
-        cmd = [self.executable, '-dispose', 'Background', '-delay', '20',
+        cmd = [self.absolute_filename(), '-dispose', 'Background', '-delay', '20',
                 '-loop', '0', filename_png, filename_gif]
 
         try:

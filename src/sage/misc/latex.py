@@ -785,7 +785,7 @@ def _run_latex_(filename, debug=False, density=150, engine=None, png=False, do_i
     # when using dvipng:
     density = int(1.4 * density / 1.3)
     from sage.features.imagemagick import Magick
-    magick = [Magick().executable, '-density',
+    magick = [Magick().absolute_filename(), '-density',
                '{0}x{0}'.format(density), '-trim', filename + '.' + suffix,
                filename + '.png']
 

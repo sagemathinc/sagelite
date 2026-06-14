@@ -905,7 +905,7 @@ class Standalone(SageObject):
             sage: path_to_file[-4:]                 # long time (fast)  # optional - latex imagemagick
             '.png'
         """
-        from sage.features.imagemagick import ImageMagick
+        from sage.features.imagemagick import ImageMagick, Magick
         ImageMagick().require()
 
         temp_filename_pdf = self.pdf(filename=None, view=False)
@@ -913,7 +913,7 @@ class Standalone(SageObject):
         temp_filename_png = temp_filename + '.png'
 
         # convert to png
-        cmd = ['convert', '-density',
+        cmd = [Magick().absolute_filename(), '-density',
                '{0}x{0}'.format(density), '-trim', temp_filename_pdf,
                temp_filename_png]
         result = run(cmd, capture_output=True, text=True)
