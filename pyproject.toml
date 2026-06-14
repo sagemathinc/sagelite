@@ -175,6 +175,7 @@ dependencies = [
   'scipy >=1.11',
   'sphinx >=6.2',
   'sphinx-copybutton',
+  'symengine >= 0.6.1',
   'sympy >=1.6, <2.0',
   # TODO: Remove this once the migration to meson is complete
   'pkgconfig',
@@ -694,6 +695,7 @@ runtime = [
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
   'regina >=7.4.1',
+  'symengine >= 0.6.1',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
   'sagelite-buckygen-runtime >=10.9,<10.10',
@@ -766,6 +768,8 @@ sloane-database = ['sagelite-database-sloane >=10.9,<10.10']
 sloane_database = ['sagelite-database-sloane >=10.9,<10.10']
 stein-watkins = ['sagelite-database-stein-watkins >=10.9,<10.10']
 stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
+symengine = ['symengine >= 0.6.1']
+symengine_py = ['symengine >= 0.6.1']
 sympow = ['sagelite-sympow-runtime >=10.9,<10.10']
 symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 sage_numerical_backends_coin = ['sage_numerical_backends_coin']

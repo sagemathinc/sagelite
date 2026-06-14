@@ -596,6 +596,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     ),
     'pynormaliz >=2.18; sys_platform != "win32"',
     "regina >=7.4.1",
+    "symengine >= 0.6.1",
 }
 
 PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
@@ -1899,6 +1900,21 @@ def test_regina_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_symengine_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "symengine >= 0.6.1"
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert extras["symengine"] == [requirement]
+    assert extras["symengine_py"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
 def test_imageio_ffmpeg_pypi_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1997,6 +2013,7 @@ def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
         "python_igraph": "igraph",
         "rpy2": "R",
         "sloane_database": "sloane-database",
+        "symengine_py": "symengine",
     }
     for alias, canonical in aliases.items():
         assert extras[alias] == extras[canonical]
