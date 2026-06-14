@@ -619,6 +619,7 @@ RELEASE_REQUIRED_MESON_OPTIONS = {
 
 RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
     "sage/graphs/bliss.",
+    "sage/graphs/cliquer.",
     "sage/graphs/graph_decompositions/tdlib.",
     "sage/graphs/graph_decompositions/rankwidth.",
     "sage/graphs/mcqd.",
@@ -627,6 +628,10 @@ RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
     "sage/libs/eclib/mwrank.",
     "sage/libs/eclib/newforms.",
     "sage/libs/homfly.",
+    "sage/libs/symmetrica/symmetrica.",
+    "sage/numerical/backends/glpk_backend.",
+    "sage/numerical/backends/glpk_exact_backend.",
+    "sage/numerical/backends/glpk_graph_backend.",
     "sage/rings/polynomial/pbori/pbori.",
 }
 
