@@ -586,6 +586,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "igraph",
     "jupyter-jsmol >=2022.1.0",
     "khoca >=1.4",
+    'lrcalc ~=2.1; sys_platform != "win32"',
     "Mathics3 >=10.0.1; python_version < '3.14'",
     "phitigra >=0.2.6",
     "pypandoc-binary >=1.17",
@@ -1776,6 +1777,8 @@ def test_conway_polynomials_pypi_database_is_core_sagelite_dependency():
     assert pyproject["project"]["optional-dependencies"]["conway_polynomials"] == [
         requirement
     ]
+    assert requirement in pyproject["project"]["optional-dependencies"]["databases"]
+    assert requirement in pyproject["project"]["optional-dependencies"]["full"]
 
 
 def test_lrcalc_pypi_library_is_core_sagelite_dependency():
@@ -1789,6 +1792,8 @@ def test_lrcalc_pypi_library_is_core_sagelite_dependency():
     assert extras["lrcalc"] == [requirement]
     assert extras["lrcalc-python"] == [requirement]
     assert extras["lrcalc_python"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
 
 
 def test_pyparsing_pypi_library_is_core_sagelite_dependency():
