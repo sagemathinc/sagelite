@@ -276,6 +276,7 @@ extra = [
   'cvxopt >=1.3.3',
   'dot2tex >=2.11.3',
   'igraph',
+  'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.3',
@@ -294,6 +295,7 @@ full = [
   'dot2tex >=2.11.3',
   'imageio-ffmpeg >=0.6.0',
   'igraph',
+  'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
   'matroid-database ==0.3',
   "Mathics3 >=10.0.1; python_version < '3.14'",
@@ -613,6 +615,8 @@ info = ['sagelite-info-runtime >=10.9,<10.10']
 python_igraph = ['igraph']
 jones-numfield = ['sagelite-database-jones-numfield >=10.9,<10.10']
 jmol = ['sagelite-jmol-runtime >=10.9,<10.10']
+jupyter-jsmol = ['jupyter-jsmol >=2022.1.0']
+jupyter_jsmol = ['jupyter-jsmol >=2022.1.0']
 kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
 kissat = ['sagelite-kissat-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']

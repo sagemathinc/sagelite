@@ -1920,6 +1920,19 @@ def test_pypandoc_binary_pypi_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_jupyter_jsmol_pypi_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "jupyter-jsmol >=2022.1.0"
+
+    assert extras["jupyter-jsmol"] == [requirement]
+    assert extras["jupyter_jsmol"] == [requirement]
+    assert requirement in extras["extra"]
+    assert requirement in extras["full"]
+
+
 def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -1940,6 +1953,7 @@ def test_upstream_feature_name_aliases_are_exposed_by_sagelite_extras():
         "database_stein_watkins": "database-stein-watkins",
         "database_stein_watkins_mini": "database-stein-watkins-mini",
         "database_symbolic_data": "database-symbolic-data",
+        "jupyter_jsmol": "jupyter-jsmol",
         "latte_int": "latte",
         "lrcalc_python": "lrcalc",
         "matroid_database": "matroid-database",
