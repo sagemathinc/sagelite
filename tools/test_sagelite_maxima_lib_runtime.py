@@ -184,10 +184,13 @@ def test_maxima_lib_preserves_companion_install_root_environment(
 
 def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
     runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
+    custom_ecl = tmp_path / "custom" / "ecl"
     runtime_lib.mkdir(parents=True)
+    custom_ecl.mkdir(parents=True)
+    (custom_ecl / "maxima.asd").write_text("existing maxima asd\n")
 
     monkeypatch.setenv("LD_LIBRARY_PATH", str(runtime_lib))
-    monkeypatch.setenv("ECLDIR", "/custom/ecl")
+    monkeypatch.setenv("ECLDIR", str(custom_ecl))
     monkeypatch.setenv("MAXIMA_IMAGESDIR", "/custom/images")
     monkeypatch.setenv("MAXIMA_LAYOUT_AUTOTOOLS", "false")
     monkeypatch.setenv("MAXIMA_PREFIX", "/custom/prefix")
@@ -206,7 +209,26 @@ def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
     helpers["_configure_companion_maxima_runtime_environment"]()
 
     assert os.environ["LD_LIBRARY_PATH"] == str(runtime_lib)
-    assert os.environ["ECLDIR"] == "/custom/ecl"
+    assert os.environ["ECLDIR"] == str(custom_ecl)
     assert os.environ["MAXIMA_IMAGESDIR"] == "/custom/images"
     assert os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "false"
     assert os.environ["MAXIMA_PREFIX"] == "/custom/prefix"
+
+
+def test_maxima_lib_replaces_unusable_ecldir(monkeypatch, tmp_path):
+    companion_ecl = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10"
+    companion_ecl.mkdir(parents=True)
+    (companion_ecl / "maxima.asd").write_text("companion maxima asd\n")
+
+    monkeypatch.setenv("ECLDIR", "/custom/ecl")
+
+    def optional_runtime_value(module_name, attr_name):
+        assert module_name == "sagelite_maxima.runtime"
+        return {
+            "ecl_dir": str(companion_ecl),
+        }.get(attr_name)
+
+    helpers = _maxima_path_helpers(optional_runtime_value)
+    helpers["_configure_companion_maxima_runtime_environment"]()
+
+    assert os.environ["ECLDIR"] == str(companion_ecl)
