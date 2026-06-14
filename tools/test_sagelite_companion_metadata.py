@@ -295,6 +295,35 @@ SOURCE_BUNDLED_DATA_PACKAGE_DATA = {
     },
 }
 
+BUILD_COPIED_DATA_PACKAGE_DATA = {
+    "sagelite-cunningham-tables": {
+        "sagelite_cunningham_tables": [
+            "data/cunningham_tables/cunningham_prime_factors.sobj",
+        ],
+    },
+    "sagelite-database-cremona-ellcurve": {
+        "sagelite_database_cremona_ellcurve": [
+            "data/cremona/cremona.db",
+        ],
+    },
+    "sagelite-database-polytopes-4d": {
+        "sagelite_database_polytopes_4d": [
+            "data/reflexive_polytopes/Hodge4d/**/*",
+        ],
+    },
+    "sagelite-database-sloane": {
+        "sagelite_database_sloane": [
+            "data/sloane/sloane-oeis.bz2",
+            "data/sloane/sloane-names.bz2",
+        ],
+    },
+    "sagelite-database-stein-watkins": {
+        "sagelite_database_stein_watkins": [
+            "data/stein_watkins/**/*",
+        ],
+    },
+}
+
 REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-4ti2-runtime",
     "sagelite-benzene-runtime",
@@ -749,6 +778,33 @@ def test_source_bundled_data_companion_wheels_ship_declared_payloads():
                     f"{package} declares {module}:{pattern} but no payload files "
                     "are present in the source tree"
                 )
+
+
+def test_build_copied_data_companion_wheels_declare_packaged_payloads():
+    for package, package_data in BUILD_COPIED_DATA_PACKAGE_DATA.items():
+        pyproject = _pyproject(package)
+        setuptools = pyproject["tool"]["setuptools"]
+
+        assert setuptools["include-package-data"] is True
+        assert setuptools["package-data"] == package_data
+
+
+def test_companion_wheels_with_package_data_are_classified():
+    classified = (
+        set(RUNTIME_PACKAGE_DATA)
+        | set(SOURCE_BUNDLED_DATA_PACKAGE_DATA)
+        | set(BUILD_COPIED_DATA_PACKAGE_DATA)
+        | {"sagelite-pari-data"}
+    )
+    declared = set()
+    for pyproject_toml in (ROOT / "companion-packages").glob(
+        "sagelite-*/pyproject.toml"
+    ):
+        pyproject = tomllib.loads(pyproject_toml.read_text())
+        if pyproject.get("tool", {}).get("setuptools", {}).get("package-data"):
+            declared.add(pyproject["project"]["name"])
+
+    assert declared == classified
 
 
 def test_linux_repair_builds_expected_runtime_companion_wheels():
