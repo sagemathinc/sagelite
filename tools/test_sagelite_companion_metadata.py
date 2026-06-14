@@ -583,6 +583,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "cvxopt >=1.3.3",
     "dot2tex >=2.11.3",
     "imageio-ffmpeg >=0.6.0",
+    "igraph",
     "khoca >=1.4",
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",
@@ -1891,6 +1892,21 @@ def test_imageio_ffmpeg_pypi_runtime_is_exposed_by_sagelite_extras():
 
     assert requirement in pyproject["project"]["dependencies"]
     assert extras["ffmpeg"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_igraph_pypi_runtime_is_core_sagelite_dependency():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "igraph"
+
+    assert requirement in pyproject["project"]["dependencies"]
+    assert extras["igraph"] == [requirement]
+    assert extras["python_igraph"] == [requirement]
+    assert requirement in extras["extra"]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
