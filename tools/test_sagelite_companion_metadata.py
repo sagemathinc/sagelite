@@ -3131,6 +3131,7 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()
 
+    assert 'auditwheel repair --plat "$AUDITWHEEL_PLAT"' in repair_text
     assert 'sagelite_ecl_library="$tmpdir/$ecl_soname"' in repair_text
     assert "with zipfile.ZipFile(wheel_path) as wheel:" in repair_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text

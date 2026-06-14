@@ -1522,7 +1522,7 @@ if command -v ccache >/dev/null 2>&1; then
   ccache -s || true
 fi
 
-auditwheel repair -w "$dest_dir" "$repaired_input"
+auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
 build_gap_runtime_companion
 build_gap3_runtime_companion
 build_gfan_runtime_companion
