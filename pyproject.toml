@@ -81,6 +81,7 @@ dependencies = [
   'platformdirs',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
+  "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pyparsing >=3.2.3',
   'pynormaliz >=2.18; sys_platform != "win32"',
   # Issue #30922: pplpy 0.8.4 and earlier do not declare dependencies correctly
@@ -685,6 +686,7 @@ runtime = [
   'khoca >=1.4',
   'pypandoc-binary >=1.17',
   'pycosat >=0.6.3',
+  "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
   'sagelite-4ti2-runtime >=10.9,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',

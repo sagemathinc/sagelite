@@ -587,6 +587,11 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "khoca >=1.4",
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",
+    (
+        "pycryptosat; python_version < '3.13' and "
+        "(sys_platform == 'darwin' or "
+        "(sys_platform == 'linux' and platform_machine == 'x86_64'))"
+    ),
     'pynormaliz >=2.18; sys_platform != "win32"',
 }
 
@@ -1800,8 +1805,10 @@ def test_pycryptosat_pypi_runtime_is_exposed_by_sagelite_extras():
         "(sys_platform == 'linux' and platform_machine == 'x86_64'))"
     )
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["pycryptosat"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
