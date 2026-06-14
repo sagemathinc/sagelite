@@ -46,7 +46,19 @@ def copytree_if_present(src: Path, dest: Path) -> None:
     )
 
 
+def reject_private_pari_runtime(src_root: Path) -> None:
+    libraries = sorted((src_root / "cypari2.libs").glob("libpari*"))
+    if libraries:
+        joined = "\n".join(str(path) for path in libraries)
+        raise SystemExit(
+            "refusing to vendor cypari2 with a private PARI runtime. "
+            "Build cypari2 from source against Sage's PARI before merging it "
+            f"into sagelite:\n{joined}"
+        )
+
+
 def copy_cypari_runtime(src_root: Path, dest_root: Path) -> None:
+    reject_private_pari_runtime(src_root)
     copytree_if_present(src_root / "cypari2", dest_root / "cypari2")
     copytree_if_present(src_root / "cypari2.libs", dest_root / "cypari2.libs")
 
