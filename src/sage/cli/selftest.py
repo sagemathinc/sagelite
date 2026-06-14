@@ -5,6 +5,8 @@ Small runtime self-test for sagelite installations.
 from __future__ import annotations
 
 import sys
+import subprocess
+import tempfile
 import traceback
 from typing import TYPE_CHECKING
 
@@ -244,20 +246,62 @@ def _check_gfan_runtime():
     return "gfan executable available"
 
 
+_MAXIMA_RUNTIME_PROBE = """
+from sage.all import RR, var
+from sage.interfaces.maxima_lib import maxima_lib
+
+value = maxima_lib.eval("1+1")
+x = var("x", domain=RR)
+if x.conjugate() != x:
+    raise RuntimeError("Maxima-backed symbolic assumptions are not available")
+print(value)
+"""
+
+
+def _tail(file, limit: int = 4096) -> str:
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(max(0, size - limit))
+    return file.read().decode("utf-8", "replace")
+
+
+def _run_subprocess_probe(script: str, timeout: int = 30) -> str:
+    with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+        process = subprocess.Popen(
+            [sys.executable, "-c", script],
+            stdout=stdout,
+            stderr=stderr,
+        )
+        try:
+            returncode = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired as err:
+            process.kill()
+            process.wait()
+            raise RuntimeError(
+                "Maxima runtime probe timed out.\n"
+                f"Last stdout:\n{_tail(stdout)}\n"
+                f"Last stderr:\n{_tail(stderr)}"
+            ) from err
+
+        if returncode != 0:
+            raise RuntimeError(
+                f"Maxima runtime probe exited with status {returncode}.\n"
+                f"Last stdout:\n{_tail(stdout)}\n"
+                f"Last stderr:\n{_tail(stderr)}"
+            )
+
+        output = _tail(stdout).strip().splitlines()
+        return output[-1] if output else "ok"
+
+
 def _check_maxima_runtime():
     try:
         import sagelite_maxima  # noqa: F401
     except ImportError:
         return "not installed"
 
-    from sage.all import RR, var
-    from sage.interfaces.maxima_lib import maxima_lib
+    return _run_subprocess_probe(_MAXIMA_RUNTIME_PROBE)
 
-    value = maxima_lib.eval("1+1")
-    x = var("x", domain=RR)
-    if x.conjugate() != x:
-        raise RuntimeError("Maxima-backed symbolic assumptions are not available")
-    return value
 
 
 def _check_meataxe_runtime():
