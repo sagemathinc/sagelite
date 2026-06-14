@@ -1516,7 +1516,6 @@ jobs:
               fas = runtime.maxima_fas()
               ecldir = runtime.ecl_dir()
               asd = os.path.join(ecldir.rstrip(os.sep), "maxima.asd")
-              runtime_libdir = os.path.join(prefix, "lib", "runtime")
               print("maxima=", maxima)
               print("maxima_prefix=", prefix)
               print("maxima_fas=", fas)
@@ -1541,13 +1540,13 @@ jobs:
                   import subprocess
                   env = os.environ.copy()
                   env["ECLDIR"] = ecldir
-                  env["LD_LIBRARY_PATH"] = runtime_libdir + (
-                      os.pathsep + env["LD_LIBRARY_PATH"]
-                      if env.get("LD_LIBRARY_PATH")
-                      else ""
-                  )
+                  # Do not prepend the copied runtime library here.  This
+                  # workflow explicitly validates the non-publishable
+                  # system-ECL build path used by local probes, where
+                  # sage.libs.ecl is already bound to the system libecl before
+                  # sagelite can adjust LD_LIBRARY_PATH.
                   subprocess.run(
-                      [ecl, "--norc", "--eval", "(require 'maxima)", "--eval", "(quit)"],
+                      [ecl, "-norc", "-eval", "(require 'maxima)", "-eval", "(quit)"],
                       env=env,
                       text=True,
                       capture_output=True,

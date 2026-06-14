@@ -3208,6 +3208,25 @@ def test_companion_workflow_marks_maxima_system_ecl_builds_explicit():
     assert "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1" in workflow_text
 
 
+def test_companion_workflow_smoke_tests_maxima_library_mode_with_system_ecl():
+    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
+    workflow_text = workflow.read_text()
+    maxima_start = workflow_text.index(
+        'if "${{ matrix.name }}" == "sagelite-maxima-runtime":'
+    )
+    maxima_end = workflow_text.index(
+        'if "${{ matrix.name }}" == "sagelite-nauty-runtime":', maxima_start
+    )
+    maxima_block = workflow_text[maxima_start:maxima_end]
+    ecl_start = maxima_block.index('ecl = shutil.which("ecl")')
+    ecl_block = maxima_block[ecl_start:]
+
+    assert 'env["ECLDIR"] = ecldir' in ecl_block
+    assert '"(require \'maxima)"' in ecl_block
+    assert 'env["LD_LIBRARY_PATH"]' not in ecl_block
+    assert 'env.get("LD_LIBRARY_PATH")' not in ecl_block
+
+
 def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()
