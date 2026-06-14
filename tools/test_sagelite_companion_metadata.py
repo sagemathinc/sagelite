@@ -586,6 +586,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "igraph",
     "khoca >=1.4",
     "Mathics3 >=10.0.1; python_version < '3.14'",
+    "phitigra >=0.2.6",
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",
     (
@@ -1877,8 +1878,10 @@ def test_phitigra_pypi_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "phitigra >=0.2.6"
 
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["phitigra"] == [requirement]
     assert requirement in extras["extra"]
+    assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
 
