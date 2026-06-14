@@ -76,11 +76,18 @@ class GapPackage(Feature):
 
 def all_features():
     return [GapPackage("atlasrep", spkg='gap_packages'),
+            GapPackage("ctbllib", spkg='gap_packages'),
             GapPackage("design", spkg='gap_packages'),
+            GapPackage("gapdoc", spkg='gap_packages'),
             GapPackage("grape", spkg='gap_packages'),
             GapPackage("guava", spkg='gap_packages'),
             GapPackage("hap", spkg='gap_packages'),
             GapPackage("polenta", spkg='gap_packages'),
             GapPackage("polycyclic", spkg='gap_packages'),
+            GapPackage("primgrp", spkg='gap_packages'),
             GapPackage("qpa", spkg='gap_packages'),
-            GapPackage("quagroup", spkg='gap_packages')]
+            GapPackage("quagroup", spkg='gap_packages'),
+            GapPackage("repsn", spkg='gap_packages'),
+            GapPackage("smallgrp", spkg='gap_packages'),
+            GapPackage("tomlib", spkg='gap_packages'),
+            GapPackage("transgrp", spkg='gap_packages')]

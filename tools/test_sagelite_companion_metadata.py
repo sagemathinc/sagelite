@@ -941,6 +941,13 @@ def test_gap_package_wheels_are_exposed_by_upstream_package_name_extras():
         assert extras[f"gap_package_{package}"] == requirements
 
 
+def test_packaged_gap_companions_are_declared_as_sage_features():
+    source = (ROOT / "src" / "sage" / "features" / "gap.py").read_text()
+
+    for package in GAP_PACKAGE_EXTRA_REQUIREMENTS:
+        assert f'GapPackage("{package}", spkg=' in source
+
+
 def test_lrslib_runtime_is_exposed_by_lrs_extra():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
