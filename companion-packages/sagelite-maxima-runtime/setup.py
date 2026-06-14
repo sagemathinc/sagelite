@@ -287,6 +287,18 @@ def _dynamic_symbols(path: Path, *args: str) -> set[str]:
     return symbols
 
 
+def _is_ecl_runtime_symbol(symbol: str) -> bool:
+    """
+    Return whether ``symbol`` should be provided by the loaded ECL runtime.
+
+    Compiled ECL images reference more than the public ``ecl_*`` namespace.
+    In particular, Maxima and ECL support images can require ``FE*`` entry
+    points such as ``FEstack_advance``; missing those passes a narrow
+    ``ecl_*`` check but fails when Sage evaluates ``(require 'maxima)``.
+    """
+    return symbol.startswith(("ecl_", "_ecl_", "cl_", "si_", "ext_", "FE"))
+
+
 def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> None:
     """
     Check copied ECL images against the copied ECL shared library.
@@ -310,7 +322,7 @@ def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> Non
         undefined = {
             symbol
             for symbol in _dynamic_symbols(image, "--undefined-only")
-            if symbol.startswith("ecl_") and symbol not in exported
+            if _is_ecl_runtime_symbol(symbol) and symbol not in exported
         }
         if undefined:
             missing_by_image[image.name] = sorted(undefined)

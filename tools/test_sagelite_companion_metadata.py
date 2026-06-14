@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import tomllib
 import sys
+import tomllib
 from pathlib import Path
 
+import pytest
 from packaging.requirements import Requirement
 from packaging.version import Version
 
@@ -560,7 +561,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-lie-runtime >=10.9,<10.10",
     "sagelite-lrslib-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post5,<10.10",
+    "sagelite-maxima-runtime >=10.9.post6,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-msolve-runtime >=10.9,<10.10",
@@ -718,6 +719,16 @@ def _pyproject(name: str) -> dict:
         return tomllib.load(handle)
 
 
+def _maxima_runtime_setup_helpers() -> dict:
+    setup_py = ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
+    source = setup_py.read_text()
+    start = source.index("def _dynamic_symbols")
+    end = source.index("\ndef _ignore_maxima_files")
+    namespace = {"Path": Path, "subprocess": None}
+    exec(source[start:end], namespace)
+    return namespace
+
+
 def _companion_versions() -> dict[str, Version]:
     versions = {}
     for pyproject_toml in (ROOT / "companion-packages").glob(
@@ -770,7 +781,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post5,<10.10" in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post6,<10.10" in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -2991,7 +3002,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         / "runtime.py"
     ).read_text()
 
-    assert pyproject["project"]["version"] == "10.9.post5"
+    assert pyproject["project"]["version"] == "10.9.post6"
     assert pyproject["project"]["scripts"] == {
         "maxima": "sagelite_maxima.runtime:maxima",
     }
@@ -3040,13 +3051,43 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "_patch_ecl_fas(fas_target)" in setup_text
     assert 'for ecl_fas in ecl_target.glob("*.fas")' in setup_text
     assert "_patch_ecl_fas(ecl_fas)" in setup_text
+    assert "def _is_ecl_runtime_symbol" in setup_text
+    assert '"FE"' in setup_text
+
+
+def test_maxima_runtime_validation_rejects_missing_fe_symbols(monkeypatch, tmp_path):
+    helpers = _maxima_runtime_setup_helpers()
+    ecl_dir = tmp_path / "lib" / "ecl-24.5.10"
+    runtime_dir = tmp_path / "lib" / "runtime"
+    image = ecl_dir / "maxima.fas"
+    libecl = runtime_dir / "libecl.so.24.5"
+    image.parent.mkdir(parents=True)
+    libecl.parent.mkdir(parents=True)
+    image.write_text("compiled maxima image\n")
+    libecl.write_text("ecl runtime\n")
+
+    def dynamic_symbols(path, *args):
+        if path == libecl and "--defined-only" in args:
+            return {"ecl_stack_pop_values"}
+        if path == image and "--undefined-only" in args:
+            return {"FEstack_advance", "__stack_chk_fail"}
+        return set()
+
+    monkeypatch.setitem(helpers, "_dynamic_symbols", dynamic_symbols)
+
+    with pytest.raises(RuntimeError, match="FEstack_advance"):
+        helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
 
 
 def test_companion_workflow_marks_maxima_system_ecl_builds_explicit():
     workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
     workflow_text = workflow.read_text()
+    matrix_start = workflow_text.index("- name: sagelite-maxima-runtime")
+    matrix_end = workflow_text.index("- name: sagelite-mwrank-runtime", matrix_start)
+    matrix_block = workflow_text[matrix_start:matrix_end]
 
     assert "apt_packages: maxima-sage maxima-sage-share ecl" in workflow_text
+    assert "publish: false" in matrix_block
     assert "Package: maxima-sage maxima-sage-share ecl libecl-dev libecl24.5" in workflow_text
     assert "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1" in workflow_text
 
@@ -3056,7 +3097,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post5,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post6,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement in extras["runtime"]

@@ -334,7 +334,7 @@ jobs:
             import_name: sagelite_maxima
             path: companion-packages/sagelite-maxima-runtime
             apt_packages: maxima-sage maxima-sage-share ecl
-            publish: true
+            publish: false
           - name: sagelite-mwrank-runtime
             import_name: sagelite_mwrank
             path: companion-packages/sagelite-mwrank-runtime
