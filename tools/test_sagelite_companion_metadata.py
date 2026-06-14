@@ -551,6 +551,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
 }
 
 BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
+    "cvxopt >=1.3.3",
     "khoca >=1.4",
     "pycosat >=0.6.3",
     'pynormaliz >=2.18; sys_platform != "win32"',

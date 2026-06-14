@@ -54,6 +54,7 @@ dependencies = [
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'matroid-database ==0.3',
+  'cvxopt >=1.3.3',
   'cypari2 >=2.2.1; sys_platform != "win32"',
   'six >=1.15.0',
   # Exclude 1.12.0 because of https://github.com/sagemath/cysignals/issues/212
@@ -193,6 +194,7 @@ cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 conway-polynomials = ['conway-polynomials >=0.8']
 conway_polynomials = ['conway-polynomials >=0.8']
 csdp = ['sagelite-csdp-runtime >=10.9,<10.10']
+cvxopt = ['cvxopt >=1.3.3']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cunningham_tables = ['sagelite-cunningham-tables >=10.9,<10.10']
@@ -271,6 +273,7 @@ fricas = ['sagelite-fricas-runtime >=10.9,<10.10']
 ffmpeg = ['imageio-ffmpeg >=0.6.0']
 pandoc = ['pypandoc-binary >=1.17']
 extra = [
+  'cvxopt >=1.3.3',
   'dot2tex >=2.11.3',
   'igraph',
   'khoca >=1.4',
@@ -285,6 +288,7 @@ extra = [
   'symengine >= 0.6.1', # Only used in tests
 ]
 full = [
+  'cvxopt >=1.3.3',
   'database-cubic-hecke ==2022.4.4',
   'database-knotinfo >=2026.3.1',
   'dot2tex >=2.11.3',
@@ -669,6 +673,7 @@ pynormaliz = ['pynormaliz >=2.18; sys_platform != "win32"']
 pyparsing = ['pyparsing >=3.2.3']
 regina = ['regina >=7.4.1']
 runtime = [
+  'cvxopt >=1.3.3',
   'dot2tex >=2.11.3',
   'imageio-ffmpeg >=0.6.0',
   'khoca >=1.4',
