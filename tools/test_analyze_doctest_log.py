@@ -82,3 +82,32 @@ Exception raised:
         report["top_examples"]["optional-data"][0]["suggested_package"]
         == "sagelite-database-cremona-mini"
     )
+
+
+def test_report_identifies_maxima_runtime_abi_mismatch(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/calculus/var.pyx", line 70, in sage.calculus.var.var
+Failed example:
+    x = var('x', domain=RR); x; x.conjugate()
+Exception raised:
+    Traceback (most recent call last):
+    RuntimeError: ECL says: LOAD: Could not load file #P"/.venv/lib/python3.12/site-packages/sagelite_maxima/data/lib/ecl-24.5.10/maxima.fas" (Error: "/.venv/lib/python3.12/site-packages/sagelite_maxima/data/lib/ecl-24.5.10/maxima.fas: undefined symbol: FEstack_advance")
+    ImportError: Maxima library mode is unavailable in this Sage installation: ECL says: LOAD: Could not load file #P"/.venv/lib/python3.12/site-packages/sagelite_maxima/data/lib/ecl-24.5.10/maxima.fas" (Error: "/.venv/lib/python3.12/site-packages/sagelite_maxima/data/lib/ecl-24.5.10/maxima.fas: undefined symbol: FEstack_advance")
+**********************************************************************
+1 item had failures:
+   1 of  22 in sage.calculus.var.var
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.calculus.var"]
+
+    assert result.fingerprint == "maxima-runtime-abi-mismatch"
+    assert result.evidence == "Maxima runtime wheel is ABI-incompatible with the loaded ECL library"
+    assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post7"
+    assert report["fingerprint_counts"] == {"maxima-runtime-abi-mismatch": 1}

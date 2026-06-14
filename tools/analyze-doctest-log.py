@@ -95,6 +95,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             return category, fingerprint, evidence
 
     external_patterns = [
+        (
+            "undefined symbol: festack_advance",
+            "optional-external",
+            "maxima-runtime-abi-mismatch",
+            "Maxima runtime wheel is ABI-incompatible with the loaded ECL library",
+        ),
         ("featurenotpresenterror", "optional-external", "optional-feature-missing", "optional feature is unavailable"),
         ("executable '", "optional-external", "missing-executable", "standalone executable not found"),
         ("not found on path", "optional-external", "missing-executable", "standalone executable not found"),
@@ -145,6 +151,7 @@ def suggested_package(fingerprint: str) -> str:
     reading the exception text.
     """
     return {
+        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post7",
         "maxima-library-mode-missing": "sagelite-maxima-runtime",
         "missing-cremona-db": "sagelite-database-cremona-mini",
         "missing-knotinfo-db": "database-knotinfo",
