@@ -36,7 +36,7 @@ from sage.rings.complex_mpfr import ComplexField
 from sage.rings.integer import Integer
 from sage.misc.verbose import verbose
 import sage.interfaces.gp
-from sage.env import SAGE_EXTCODE
+from sage.env import pari_script_dir
 
 
 class Dokchitser(SageObject):
@@ -183,8 +183,8 @@ class Dokchitser(SageObject):
     __globals_re = None
     __instance = 0  # Monotonically increasing unique instance ID
     __n_instances = 0  # Number of currently allocated instances
-    __template_filename = os.path.join(SAGE_EXTCODE, 'pari', 'dokchitser',
-                                       'computel.gp.template')
+    __script_dir = pari_script_dir('dokchitser')
+    __template_filename = os.path.join(__script_dir, 'computel.gp.template')
     __init = False
 
     def __new__(cls, *args, **kwargs):
@@ -264,7 +264,7 @@ class Dokchitser(SageObject):
     def _instantiate_gp(cls):
         from sage.env import DOT_SAGE
         logfile = os.path.join(DOT_SAGE, 'dokchitser.log')
-        cls.__gp = sage.interfaces.gp.Gp(script_subdirectory='dokchitser',
+        cls.__gp = sage.interfaces.gp.Gp(path=os.fspath(cls.__script_dir),
                                          logfile=logfile)
         # Read the script template and parse out all indexed global variables
         # (easy because they all end in "_$i" and there's nothing else in the

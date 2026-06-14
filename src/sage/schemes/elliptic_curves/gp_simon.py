@@ -16,11 +16,9 @@ Denis Simon's PARI scripts
 #
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
-from pathlib import Path
-
 from cypari2.handle_error import PariError
 
-from sage.env import SAGE_EXTCODE
+from sage.env import pari_script_dir
 from sage.libs.pari import pari
 from sage.misc.randstate import current_randstate
 from sage.misc.superseded import deprecation
@@ -29,7 +27,7 @@ from sage.rings.rational_field import QQ
 from sage.structure.parent_gens import localvars
 
 
-simon_dir = Path(SAGE_EXTCODE) / 'pari' / 'simon'
+simon_dir = pari_script_dir('simon')
 
 
 def simon_two_descent(E, verbose=0, lim1=None, lim3=None, limtriv=None,

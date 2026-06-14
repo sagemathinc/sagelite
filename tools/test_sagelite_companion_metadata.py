@@ -1097,7 +1097,13 @@ def test_pari_data_wheel_declares_copied_runtime_data():
         "data/pari/seadata/**/*",
         "data/pari/galpol/**/*",
         "data/pari/nftables/**/*",
+        "data/pari/buzzard/**/*",
+        "data/pari/dokchitser/**/*",
+        "data/pari/simon/**/*",
     ]
+
+    for script_dir in ("buzzard", "dokchitser", "simon"):
+        assert (ROOT / "src" / "sage" / "ext_data" / "pari" / script_dir).is_dir()
 
 
 def test_pari_data_wheel_runtime_helper_points_at_bundled_data():

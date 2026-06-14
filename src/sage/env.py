@@ -26,6 +26,7 @@ import sys
 import sysconfig
 from importlib import import_module
 from os import PathLike
+from pathlib import Path
 from typing import Optional
 
 from platformdirs import site_data_dir, user_data_dir
@@ -275,6 +276,22 @@ def _bootstrap_sagelite_pari_data_runtime() -> None:
     data_dir = _optional_runtime_value("sagelite_pari_data.runtime", "pari_data_dir")
     if _pari_data_dir_is_usable(data_dir):
         os.environ.setdefault("GP_DATA_DIR", os.fspath(data_dir))
+
+
+def pari_script_dir(name: str) -> Path:
+    """
+    Return a directory containing Sage's PARI helper scripts.
+
+    ``sagelite-pari-data`` can provide these files outside of ``SAGE_EXTCODE``
+    for installed-wheel environments. Source builds keep using the traditional
+    ``SAGE_EXTCODE/pari`` fallback.
+    """
+    for pari_root in sage_data_paths("pari"):
+        candidate = Path(pari_root) / name
+        if candidate.is_dir():
+            return candidate
+
+    return Path(SAGE_EXTCODE) / "pari" / name
 
 
 def _optional_runtime_data_dir(

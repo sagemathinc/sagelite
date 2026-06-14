@@ -1489,10 +1489,10 @@ class FreeQuadraticModule_integer_symmetric(FreeQuadraticModule_submodule_with_b
         """
         p, n = self.signature_pair()
         if p * n != 0:
-            from sage.env import SAGE_EXTCODE
+            from sage.env import pari_script_dir
             from sage.libs.pari import pari
             m = self.gram_matrix()
-            pari.read(Path(SAGE_EXTCODE) / "pari" / "simon" / "qfsolve.gp")
+            pari.read(pari_script_dir("simon") / "qfsolve.gp")
             m = pari('qflllgram_indefgoon')(m)
             # convert the output to sage
             G, U = m.sage()

@@ -2920,9 +2920,9 @@ class GenusSymbol_global_ring:
 
             sig = self.signature_pair_of_matrix()
             if sig[0] * sig[1] != 0:
-                from sage.env import SAGE_EXTCODE
+                from sage.env import pari_script_dir
                 m = pari(L)
-                pari.read(Path(SAGE_EXTCODE) / "pari" / "simon" / "qfsolve.gp")
+                pari.read(pari_script_dir("simon") / "qfsolve.gp")
                 m = pari('qflllgram_indefgoon')(m)
                 # convert the output string to sage
                 L = m.sage()[0]

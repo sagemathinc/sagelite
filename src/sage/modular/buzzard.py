@@ -18,12 +18,10 @@ AUTHORS:
 #
 #                  https://www.gnu.org/licenses/
 #############################################################################
-from pathlib import Path
-
-from sage.env import SAGE_EXTCODE
+from sage.env import pari_script_dir
 from sage.libs.pari import pari
 
-buzzard_dir = Path(SAGE_EXTCODE) / "pari" / "buzzard"
+buzzard_dir = pari_script_dir("buzzard")
 
 # def buzzard_dimension_cusp_forms(eps, k):
 #     r"""

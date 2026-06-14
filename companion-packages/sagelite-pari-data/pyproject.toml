@@ -43,4 +43,7 @@ sagelite_pari_data = [
   "data/pari/seadata/**/*",
   "data/pari/galpol/**/*",
   "data/pari/nftables/**/*",
+  "data/pari/buzzard/**/*",
+  "data/pari/dokchitser/**/*",
+  "data/pari/simon/**/*",
 ]

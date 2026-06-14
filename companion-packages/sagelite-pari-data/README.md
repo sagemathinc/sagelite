@@ -1,7 +1,8 @@
 # sagelite-pari-data
 
 Companion data wheel for `sagelite` that provides PARI data directories such
-as `galdata`, `elldata`, `seadata`, `galpol`, and `nftables`.
+as `galdata`, `elldata`, `seadata`, `galpol`, and `nftables`, together with
+Sage's redistributable PARI helper scripts.
 
 Set `SAGELITE_PARI_DATA_DIR` to a PARI data root containing `galdata`,
 `elldata`, `seadata`, and `galpol`. If that root does not already contain

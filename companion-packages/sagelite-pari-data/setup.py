@@ -9,7 +9,9 @@ from pathlib import Path
 from setuptools import setup
 from setuptools.command.build_py import build_py as _build_py
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PARI_DATA_DIRS = ("galdata", "elldata", "seadata", "galpol", "nftables")
+SAGE_PARI_SCRIPT_DIRS = ("buzzard", "dokchitser", "simon")
 
 
 def _candidate_pari_roots() -> list[Path]:
@@ -112,6 +114,13 @@ class build_py(_build_py):
             if source.is_dir():
                 shutil.copytree(source, target / name, ignore_dangling_symlinks=True)
                 copied.append(name)
+
+        sage_pari_root = REPO_ROOT / "src" / "sage" / "ext_data" / "pari"
+        for name in SAGE_PARI_SCRIPT_DIRS:
+            source = sage_pari_root / name
+            if not source.is_dir():
+                raise RuntimeError(f"missing Sage PARI script directory {source}")
+            shutil.copytree(source, target / name, ignore_dangling_symlinks=True)
 
         if "nftables" not in copied and _extract_nftables_tarball(target / "nftables"):
             copied.append("nftables")

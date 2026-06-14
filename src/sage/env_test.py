@@ -989,6 +989,17 @@ def test_pari_data_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
     assert "GP_DATA_DIR" not in env.os.environ
 
 
+def test_pari_script_dir_uses_registered_companion_path(monkeypatch, tmp_path):
+    companion = tmp_path / "companion" / "data" / "pari" / "simon"
+    companion.mkdir(parents=True)
+    (companion / "qfsolve.gp").write_text("qfsolve\n")
+
+    monkeypatch.setattr(env, "sage_data_paths", lambda name: {str(companion.parent)})
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "missing-ext-data"))
+
+    assert env.pari_script_dir("simon") == companion
+
+
 def test_meataxe_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     table_dir = _meataxe_runtime(tmp_path, "companion")
 
