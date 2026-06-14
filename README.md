@@ -78,11 +78,13 @@ executables may still work when compatible versions are already installed on
 the user's `PATH`, but those integrations are optional rather than part of the
 core wheel contract.
 
-Small redistributable datasets that are standard in source Sage are installed
-as companion-wheel dependencies of `sagelite`, including Cremona mini,
-elliptic-curve, graph, Stein-Watkins mini, SymbolicData, and 2D/3D
-reflexive-polytope data. Larger or specialized datasets remain available
-through extras such as `sagelite[databases]`.
+Redistributable datasets used by standard Sage functionality and common
+doctests are installed as companion-wheel dependencies of `sagelite`,
+including Cremona, elliptic-curve, graph, Kohel, PARI, Stein-Watkins,
+SymbolicData, Cunningham, Sloane/OEIS, Odlyzko, and reflexive-polytope data.
+Dataset-specific extras such as `sagelite[database-graphs]` and the aggregate
+`sagelite[databases]` remain available as stable names for targeted installs
+and downstream packaging.
 
 Some optional runtimes are provided as companion packages. For example,
 `sagelite-gap-runtime` supplies GAP's runtime files for in-process `libgap`;

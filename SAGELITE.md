@@ -100,8 +100,7 @@ The base `sagelite` wheel does not guarantee the following:
 
 - Bundled standalone executables such as `gap`, `Singular`, `maxima`, or `gp`.
 - A traditional Sage filesystem layout or runtime prefix.
-- Optional databases or data packages beyond the small redistributable datasets
-  that are standard in source Sage and installed as base companion-wheel
+- Database or data packages that are not listed as base companion-wheel
   dependencies.
 - Feature parity with every aspect of the full Sage distribution.
 
@@ -193,11 +192,12 @@ Examples include:
 
 Policy:
 
-- Small redistributable datasets that are standard in source Sage should be
-  installed by default as companion-wheel dependencies rather than copied into
-  the core wheel.
-- Larger or specialized optional data is not installed by the core `sagelite`
-  dependency set by default.
+- Redistributable Sage datasets that materially reduce installed-wheel doctest
+  failures should be installable as companion-wheel dependencies rather than
+  copied into the core wheel.
+- A curated set of these data companions is installed by the core `sagelite`
+  dependency set by default; larger or more specialized datasets can remain
+  available only through targeted extras.
 - Missing optional data should surface as an explicit missing-feature or
   missing-data condition.
 - Companion packages are the preferred delivery mechanism for both standard
