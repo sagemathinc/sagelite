@@ -369,24 +369,27 @@ def test_sage_data_paths_ignores_broken_entry_points(monkeypatch, tmp_path):
 def test_sage_data_paths_accepts_direct_sagelite_companion_paths(
     monkeypatch, tmp_path
 ):
-    companion = tmp_path / "companion" / "data"
-    companion.mkdir(parents=True)
+    database_companion = tmp_path / "database-companion" / "data"
+    static_companion = tmp_path / "static-companion" / "data"
+    database_companion.mkdir(parents=True)
+    static_companion.mkdir(parents=True)
 
     monkeypatch.setattr(env, "_entry_points", lambda group: [])
+
+    values = {
+        ("sagelite_database_jones_numfield", "sage_data_path"): database_companion,
+        ("sagelite_threejs_runtime", "sage_data_path"): static_companion,
+    }
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
-        lambda module_name, attr_name: (
-            str(companion)
-            if (
-                module_name == "sagelite_database_jones_numfield"
-                and attr_name == "sage_data_path"
-            )
-            else None
-        ),
+        lambda module_name, attr_name: values.get((module_name, attr_name)),
     )
 
-    assert env._registered_sage_data_paths() == {str(companion)}
+    assert env._registered_sage_data_paths() == {
+        str(database_companion),
+        str(static_companion),
+    }
 
 
 def test_sage_data_paths_filters_missing_direct_sagelite_companion_paths(

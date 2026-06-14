@@ -1515,6 +1515,7 @@ def _sagelite_companion_data_paths() -> set[str]:
     paths = set()
     for module_name in (
         "sagelite_cunningham_tables",
+        "sagelite_d3js_runtime",
         "sagelite_database_cremona_ellcurve",
         "sagelite_database_cremona_mini",
         "sagelite_database_ellcurves",
@@ -1529,6 +1530,9 @@ def _sagelite_companion_data_paths() -> set[str]:
         "sagelite_database_stein_watkins",
         "sagelite_database_stein_watkins_mini",
         "sagelite_database_symbolic_data",
+        "sagelite_jmol_runtime",
+        "sagelite_mathjax_runtime",
+        "sagelite_threejs_runtime",
     ):
         paths.update(
             _coerce_sage_data_paths(
