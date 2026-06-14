@@ -528,7 +528,7 @@ jobs:
       CIBW_REPAIR_WHEEL_COMMAND_LINUX: "bash .github/workflows/repair-wheel-linux.sh {wheel} {dest_dir}"
       # Environment during wheel build
       CIBW_ENVIRONMENT: "PATH=/project/build/bin:$PATH:/host/sage-${AUDITWHEEL_PLAT}/bin:$(pwd)/prefix/bin SAGE_PYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/python3 CYTHON=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/cython CPATH=/host/sage-${AUDITWHEEL_PLAT}/include:$(pwd)/prefix/include:$CPATH LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LIBRARY_PATH LD_LIBRARY_PATH=/host/sage-${AUDITWHEEL_PLAT}/lib:$(pwd)/prefix/lib:$LD_LIBRARY_PATH PKG_CONFIG_PATH=/opt/python/${{ matrix.python }}-${{ matrix.python }}/lib/pkgconfig:/opt/python/${{ matrix.python }}-${{ matrix.python }}/lib64/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/lib/pkgconfig:/host/sage-${AUDITWHEEL_PLAT}/share/pkgconfig:$(pwd)/prefix/lib/pkgconfig:$(pwd)/prefix/share/pkgconfig:$PKG_CONFIG_PATH CMAKE_PREFIX_PATH=/opt/python/${{ matrix.python }}-${{ matrix.python }}:/host/sage-${AUDITWHEEL_PLAT}:$(pwd)/prefix:$CMAKE_PREFIX_PATH ACLOCAL_PATH=/usr/share/aclocal PIP_CONSTRAINT=$(pwd)/constraints.txt PIP_FIND_LINKS=file://$(pwd)/wheelhouse SAGE_NUM_THREADS=6 CCACHE_DIR=/project/.ccache-wheel/${AUDITWHEEL_PLAT}-${{ matrix.python }} CCACHE_BASEDIR=/project/unpacked CCACHE_COMPILERCHECK=content CCACHE_NOHASHDIR=1 CCACHE_MAXSIZE=2G CC='ccache cc' CXX='ccache c++'"
-      CIBW_CONFIG_SETTINGS: "setup-args=-Dbliss=enabled setup-args=-Dbrial=enabled setup-args=-Dcoxeter3=enabled setup-args=-Declib=enabled setup-args=-Dlibbraiding=enabled setup-args=-Dlibhomfly=enabled setup-args=-Drankwidth=enabled"
+      CIBW_CONFIG_SETTINGS: "setup-args=-Dbliss=enabled setup-args=-Dbrial=enabled setup-args=-Dcoxeter3=enabled setup-args=-Declib=enabled setup-args=-Dlibbraiding=enabled setup-args=-Dlibhomfly=enabled setup-args=-Dmcqd=enabled setup-args=-Drankwidth=enabled setup-args=-Dtdlib=enabled"
       # Use 'build' without isolation so Meson uses the prepared build environment.
       CIBW_BUILD_FRONTEND: "build; args: --no-isolation"
     steps:
@@ -647,7 +647,9 @@ jobs:
 
           required = [
               "sage/graphs/bliss.",
+              "sage/graphs/graph_decompositions/tdlib.",
               "sage/graphs/graph_decompositions/rankwidth.",
+              "sage/graphs/mcqd.",
               "sage/libs/coxeter3/coxeter.",
               "sage/libs/braiding.",
               "sage/libs/eclib/mwrank.",

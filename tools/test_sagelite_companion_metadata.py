@@ -612,12 +612,16 @@ RELEASE_REQUIRED_MESON_OPTIONS = {
     "eclib",
     "libbraiding",
     "libhomfly",
+    "mcqd",
     "rankwidth",
+    "tdlib",
 }
 
 RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
     "sage/graphs/bliss.",
+    "sage/graphs/graph_decompositions/tdlib.",
     "sage/graphs/graph_decompositions/rankwidth.",
+    "sage/graphs/mcqd.",
     "sage/libs/braiding.",
     "sage/libs/coxeter3/coxeter.",
     "sage/libs/eclib/mwrank.",

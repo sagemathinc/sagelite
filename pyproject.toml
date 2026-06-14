@@ -29,7 +29,9 @@ setup = [
   '-Declib=enabled',
   '-Dlibbraiding=enabled',
   '-Dlibhomfly=enabled',
+  '-Dmcqd=enabled',
   '-Drankwidth=enabled',
+  '-Dtdlib=enabled',
 ]
 
 [project]
