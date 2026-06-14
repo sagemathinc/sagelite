@@ -404,6 +404,68 @@ def test_sagelite_selftest_checks_maxima_symbolic_domain(monkeypatch):
     assert calls == ["1+1", ("x", sage_all.RR)]
 
 
+def test_sagelite_selftest_checks_packaged_native_extensions(monkeypatch):
+    calls = []
+
+    class Graph:
+        def canonical_label(self, algorithm=None):
+            calls.append(("canonical_label", algorithm))
+            return self
+
+        def num_verts(self):
+            return 10
+
+        def vertex_cover(self, algorithm=None, value_only=False):
+            calls.append(("vertex_cover", algorithm, value_only))
+            return 6
+
+        def treewidth(self, algorithm=None):
+            calls.append(("treewidth", algorithm))
+            return 4
+
+    graphs = types.SimpleNamespace(PetersenGraph=Graph)
+    sage_all = types.ModuleType("sage.all")
+    sage_all.graphs = graphs
+    monkeypatch.setitem(sys.modules, "sage.all", sage_all)
+
+    coxeter_group = types.ModuleType("sage.combinat.root_system.coxeter_group")
+
+    class LongElement:
+        @staticmethod
+        def length():
+            return 6
+
+    class Group:
+        @staticmethod
+        def long_element():
+            return LongElement()
+
+    def CoxeterGroup(cartan_type, implementation=None):
+        calls.append(("CoxeterGroup", cartan_type, implementation))
+        return Group()
+
+    coxeter_group.CoxeterGroup = CoxeterGroup
+    monkeypatch.setitem(
+        sys.modules, "sage.combinat.root_system.coxeter_group", coxeter_group
+    )
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    assert (
+        selftest._check_bliss_library()
+        == "canonical Petersen graph has 10 vertices"
+    )
+    assert selftest._check_coxeter3_library() == "A3 long element length 6"
+    assert selftest._check_mcqd_library() == "Petersen vertex cover size 6"
+    assert selftest._check_tdlib_library() == "Petersen treewidth 4"
+    assert calls == [
+        ("canonical_label", "bliss"),
+        ("CoxeterGroup", ["A", 3], "coxeter3"),
+        ("vertex_cover", "mcqd", True),
+        ("treewidth", "tdlib"),
+    ]
+
+
 def test_sagelite_selftest_checks_polytopes_4d_database(monkeypatch):
     calls = []
 

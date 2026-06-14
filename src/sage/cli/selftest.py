@@ -177,6 +177,36 @@ def _check_libhomfly():
     return homfly_polynomial_dict(trefoil)
 
 
+def _check_bliss_library():
+    from sage.all import graphs
+
+    graph = graphs.PetersenGraph()
+    canonical = graph.canonical_label(algorithm="bliss")
+    return f"canonical Petersen graph has {canonical.num_verts()} vertices"
+
+
+def _check_coxeter3_library():
+    from sage.combinat.root_system.coxeter_group import CoxeterGroup
+
+    group = CoxeterGroup(["A", 3], implementation="coxeter3")
+    return f"A3 long element length {group.long_element().length()}"
+
+
+def _check_mcqd_library():
+    from sage.all import graphs
+
+    graph = graphs.PetersenGraph()
+    cover_size = graph.vertex_cover(algorithm="mcqd", value_only=True)
+    return f"Petersen vertex cover size {cover_size}"
+
+
+def _check_tdlib_library():
+    from sage.all import graphs
+
+    graph = graphs.PetersenGraph()
+    return f"Petersen treewidth {graph.treewidth(algorithm='tdlib')}"
+
+
 def _check_gapdoc_runtime():
     try:
         import sagelite_gap_runtime  # noqa: F401
@@ -692,6 +722,10 @@ def main() -> int:
         ("Singular library runtime", _check_singular_runtime),
         ("libbraiding library", _check_libbraiding),
         ("libhomfly library", _check_libhomfly),
+        ("bliss graph isomorphism library", _check_bliss_library),
+        ("coxeter3 Coxeter group library", _check_coxeter3_library),
+        ("mcqd clique library", _check_mcqd_library),
+        ("tdlib tree decomposition library", _check_tdlib_library),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("gfan executable runtime", _check_gfan_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
