@@ -754,7 +754,7 @@ def _maxima_runtime_setup_helpers() -> dict:
     setup_py = ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
     source = setup_py.read_text()
     start = source.index("def _dynamic_symbols")
-    end = source.index("\ndef _ignore_maxima_files")
+    end = source.index("\ndef _copy_maxima_info_indexes")
     namespace = {"os": os, "Path": Path, "REPO_ROOT": ROOT, "subprocess": None}
     exec(source[start:end], namespace)
     return namespace
@@ -3156,6 +3156,69 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "SAGELITE_MAXIMA_ECL_LIBRARY" in setup_text
     assert "system ECL runtime" in setup_text
     assert '"FE"' in setup_text
+    assert "--remove-rpath" in setup_text
+
+
+def test_maxima_runtime_strips_rpath_for_system_ecl_images(
+    monkeypatch, tmp_path
+):
+    helpers = _maxima_runtime_setup_helpers()
+    image = tmp_path / "maxima.fas"
+    commands = []
+
+    class Patchelf:
+        @staticmethod
+        def run(args, **kwargs):
+            commands.append(args)
+            assert kwargs["check"] is True
+            if args[:2] == ["patchelf", "--print-needed"]:
+                assert kwargs["capture_output"] is True
+                assert kwargs["text"] is True
+
+                class Result:
+                    stdout = "libecl.so.24.5\nlibc.so.6\n"
+
+                return Result()
+            return None
+
+    monkeypatch.setenv("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL", "1")
+    monkeypatch.delenv("SAGELITE_MAXIMA_ECL_SONAME", raising=False)
+    monkeypatch.setitem(helpers, "subprocess", Patchelf)
+
+    helpers["_patch_ecl_fas"](image)
+
+    assert ["patchelf", "--remove-rpath", os.fspath(image)] in commands
+    assert not any("--replace-needed" in command for command in commands)
+
+
+def test_maxima_runtime_strips_rpath_without_ecl_needed(tmp_path):
+    helpers = _maxima_runtime_setup_helpers()
+    image = tmp_path / "sockets.fas"
+    commands = []
+
+    class Patchelf:
+        @staticmethod
+        def run(args, **kwargs):
+            commands.append(args)
+            assert kwargs["check"] is True
+            if args[:2] == ["patchelf", "--print-needed"]:
+                assert kwargs["capture_output"] is True
+                assert kwargs["text"] is True
+
+                class Result:
+                    stdout = "libc.so.6\n"
+
+                return Result()
+            return None
+
+    helpers["subprocess"] = Patchelf
+
+    helpers["_patch_ecl_fas"](image)
+
+    assert commands == [
+        ["patchelf", "--print-needed", os.fspath(image)],
+        ["patchelf", "--remove-rpath", os.fspath(image)],
+    ]
 
 
 def test_maxima_runtime_validation_rejects_missing_fe_symbols(monkeypatch, tmp_path):

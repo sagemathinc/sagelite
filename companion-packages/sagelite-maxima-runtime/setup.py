@@ -469,12 +469,12 @@ def _patch_ecl_fas(path: Path) -> None:
     library bundled in ``sagelite.libs``.  If copied ECL images still depend on
     the original ``libecl.so`` SONAME, dlopen can load a second ECL runtime and
     crash the process.  Release builds pass the repaired sagelite ECL SONAME so
-    these images bind to the already-loaded library.
+    these images bind to the already-loaded library.  All builds remove RPATHs
+    from copied images so they cannot keep searching the original Sage build
+    prefix after installation.
     """
     ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
     allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
-    if not ecl_soname and allow_system_ecl:
-        return
 
     try:
         needed = subprocess.run(
@@ -484,10 +484,11 @@ def _patch_ecl_fas(path: Path) -> None:
             text=True,
         ).stdout.splitlines()
         ecl_needed = [name for name in needed if name.startswith("libecl")]
-        if not ecl_needed:
-            return
-        if not ecl_soname:
+        if ecl_needed and not ecl_soname:
             if allow_system_ecl:
+                subprocess.run(
+                    ["patchelf", "--remove-rpath", os.fspath(path)], check=True
+                )
                 return
             raise RuntimeError(
                 f"{path} depends on {', '.join(ecl_needed)} but "
