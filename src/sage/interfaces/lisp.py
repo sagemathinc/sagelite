@@ -65,6 +65,29 @@ from sage.structure.element import RingElement, parent
 from sage.structure.richcmp import rich_to_bool
 
 
+def _lisp_command():
+    """
+    Return the ECL command used by the Lisp pexpect interface.
+
+    Installed wheels can provide ECL through the optional
+    ``sagelite-ecl-runtime`` companion package.  Source builds and system
+    installations keep using ``ecl`` from ``PATH``.
+    """
+    try:
+        from sagelite_ecl.runtime import ecl_command
+    except ImportError:
+        return "ecl"
+
+    try:
+        command = ecl_command()
+    except Exception:
+        return "ecl"
+
+    if os.path.isfile(command) and os.access(command, os.X_OK):
+        return os.fspath(command)
+    return "ecl"
+
+
 class Lisp(Expect):
     def __init__(self,
                  maxread=None, script_subdirectory=None,
@@ -90,7 +113,7 @@ class Lisp(Expect):
                         prompt='> ',
 
                         # This is the command that starts up your program
-                        command='ecl',
+                        command=_lisp_command(),
 
                         server=server,
                         server_tmpdir=server_tmpdir,
