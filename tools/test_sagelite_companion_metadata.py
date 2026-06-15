@@ -218,6 +218,9 @@ RUNTIME_PACKAGE_DATA = {
             "data/singular/**/*",
         ],
     },
+    "sagelite-sirocco-runtime": {
+        "sagelite_sirocco": ["data/include/*", "data/lib/*"],
+    },
     "sagelite-sympow-runtime": {
         "sagelite_sympow": [
             "data/bin/*",
@@ -406,6 +409,7 @@ REPAIR_WORKFLOW_EXTERNAL_RUNTIME_PACKAGES = {
     "sagelite-lie-runtime",
     "sagelite-mathjax-runtime",
     "sagelite-poppler-runtime",
+    "sagelite-sirocco-runtime",
     "sagelite-threejs-runtime",
 }
 
@@ -466,6 +470,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-qepcad-runtime",
     "sagelite-rubiks-runtime",
     "sagelite-singular-runtime",
+    "sagelite-sirocco-runtime",
     "sagelite-sympow-runtime",
     "sagelite-tachyon-runtime",
     "sagelite-threejs-runtime",
@@ -1432,6 +1437,34 @@ def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
 
     assert requirement in pyproject["project"]["dependencies"]
     assert extras["tides"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_sirocco_runtime_wheel_helper_points_at_bundled_files():
+    sys.path.insert(
+        0, str(ROOT / "companion-packages" / "sagelite-sirocco-runtime" / "src")
+    )
+    try:
+        from sagelite_sirocco.runtime import include_dir, library_dir, library_path
+    finally:
+        sys.path.pop(0)
+
+    assert Path(include_dir()).parts[-2:] == ("data", "include")
+    assert Path(library_dir()).parts[-2:] == ("data", "lib")
+    assert Path(library_path()).parts[-3:-1] == ("data", "lib")
+    assert Path(library_path()).name.startswith("libsirocco")
+
+
+def test_sirocco_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-sirocco-runtime >=10.9,<10.10"
+
+    assert requirement not in pyproject["project"]["dependencies"]
+    assert extras["sirocco"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 

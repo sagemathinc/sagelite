@@ -265,6 +265,7 @@ Examples include:
 - `sagelite-poppler-runtime`
 - `sagelite-rubiks-runtime`
 - `sagelite-singular-runtime`
+- `sagelite-sirocco-runtime`
 - `sagelite-sympow-runtime`
 - `sagelite-threejs-runtime`
 - `sagelite-tides-runtime`

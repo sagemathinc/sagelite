@@ -408,6 +408,7 @@ full = [
   'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9.post1,<10.10',
+  'sagelite-sirocco-runtime >=10.9,<10.10',
   'sagelite-sympow-runtime >=10.9,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
@@ -794,6 +795,7 @@ runtime = [
   'sagelite-qepcad-runtime >=10.9,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9.post1,<10.10',
+  'sagelite-sirocco-runtime >=10.9,<10.10',
   'sagelite-sympow-runtime >=10.9,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
@@ -802,6 +804,7 @@ runtime = [
 ]
 rubiks = ['sagelite-rubiks-runtime >=10.9,<10.10']
 singular = ['sagelite-singular-runtime >=10.9.post1,<10.10']
+sirocco = ['sagelite-sirocco-runtime >=10.9,<10.10']
 sloane = ['sagelite-database-sloane >=10.9,<10.10']
 sloane-database = ['sagelite-database-sloane >=10.9,<10.10']
 sloane_database = ['sagelite-database-sloane >=10.9,<10.10']

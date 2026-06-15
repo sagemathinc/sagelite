@@ -400,6 +400,11 @@ jobs:
             path: companion-packages/sagelite-singular-runtime
             apt_packages: singular
             publish: true
+          - name: sagelite-sirocco-runtime
+            import_name: sagelite_sirocco
+            path: companion-packages/sagelite-sirocco-runtime
+            apt_packages: gcc make libgmp-dev libmpfr-dev
+            publish: true
           - name: sagelite-sympow-runtime
             import_name: sagelite_sympow
             path: companion-packages/sagelite-sympow-runtime
@@ -668,6 +673,17 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-singular-runtime" ]; then
             export SAGELITE_SINGULAR_ROOT=/usr
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-sirocco-runtime" ]; then
+            tarball="$(PYTHONPATH=build build/bin/sage-package download sirocco | tail -n 1)"
+            mkdir -p "$RUNNER_TEMP/sirocco-src"
+            tar -xzf "$tarball" -C "$RUNNER_TEMP/sirocco-src"
+            sirocco_src="$(find "$RUNNER_TEMP/sirocco-src" -maxdepth 2 -type f -name configure -printf '%h\n' | head -n 1)"
+            (cd "$sirocco_src" && ./configure --prefix="$RUNNER_TEMP/sirocco-prefix")
+            make -C "$sirocco_src" -j2
+            make -C "$sirocco_src" install
+            export SAGELITE_SIROCCO_PREFIX="$RUNNER_TEMP/sirocco-prefix"
+            export LD_LIBRARY_PATH="$RUNNER_TEMP/sirocco-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           fi
           if [ "${{ matrix.name }}" = "sagelite-sympow-runtime" ]; then
             export SAGELITE_SYMPOW_BINDIR=/usr/bin
@@ -1760,6 +1776,19 @@ jobs:
               assert library_path.exists()
               assert (include_dir / "minc_tides.h").exists()
               assert library_path.name == "libTIDES.a"
+              assert library_path.stat().st_size > 0
+              raise SystemExit(0)
+
+          if "${{ matrix.name }}" == "sagelite-sirocco-runtime":
+              runtime = importlib.import_module("sagelite_sirocco.runtime")
+              include_dir = runtime.include_dir()
+              library_path = runtime.library_path()
+              print("include_dir=", include_dir)
+              print("library_path=", library_path)
+              assert include_dir.exists()
+              assert library_path.exists()
+              assert (include_dir / "sirocco.h").exists()
+              assert library_path.name.startswith("libsirocco")
               assert library_path.stat().st_size > 0
               raise SystemExit(0)
 
