@@ -365,6 +365,30 @@ def _check_csdp_runtime():
     )
 
 
+def _check_plantri_runtime():
+    from sage.features.graph_generators import Plantri
+
+    return _check_companion_feature(
+        "sagelite_plantri", Plantri, "plantri graph generator runtime"
+    )
+
+
+def _check_buckygen_runtime():
+    from sage.features.graph_generators import Buckygen
+
+    return _check_companion_feature(
+        "sagelite_buckygen", Buckygen, "buckygen graph generator runtime"
+    )
+
+
+def _check_benzene_runtime():
+    from sage.features.graph_generators import Benzene
+
+    return _check_companion_feature(
+        "sagelite_benzene", Benzene, "benzene graph generator runtime"
+    )
+
+
 def _check_fricas_runtime():
     from sage.features.fricas import FriCAS
 
@@ -394,6 +418,31 @@ def _check_graphviz_runtime():
 
     return _check_companion_feature(
         "sagelite_graphviz", Graphviz, "Graphviz executable runtime"
+    )
+
+
+def _check_glucose_runtime():
+    try:
+        importlib.import_module("sagelite_glucose")
+    except ImportError:
+        return "not installed"
+
+    from sage.features.sat import Glucose
+
+    for program in ("glucose", "glucose-syrup"):
+        presence = Glucose(program).is_present()
+        if not bool(presence):
+            raise RuntimeError(
+                f"Glucose executable {program!r} is not available: {presence.reason}"
+            )
+    return "Glucose executable runtime available"
+
+
+def _check_kissat_runtime():
+    from sage.features.sat import Kissat
+
+    return _check_companion_feature(
+        "sagelite_kissat", Kissat, "Kissat executable runtime"
     )
 
 
@@ -1041,6 +1090,9 @@ def main() -> int:
         ("mcqd clique library", _check_mcqd_library),
         ("tdlib tree decomposition library", _check_tdlib_library),
         ("CSDP executable runtime", _check_csdp_runtime),
+        ("plantri graph generator runtime", _check_plantri_runtime),
+        ("buckygen graph generator runtime", _check_buckygen_runtime),
+        ("benzene graph generator runtime", _check_benzene_runtime),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("GAP3 executable runtime", _check_gap3_runtime),
         ("FriCAS executable runtime", _check_fricas_runtime),
@@ -1048,6 +1100,8 @@ def main() -> int:
         ("gfan executable runtime", _check_gfan_runtime),
         ("Giac executable runtime", _check_giac_runtime),
         ("Graphviz executable runtime", _check_graphviz_runtime),
+        ("Glucose executable runtime", _check_glucose_runtime),
+        ("Kissat executable runtime", _check_kissat_runtime),
         ("ImageMagick executable runtime", _check_imagemagick_runtime),
         ("dvipng executable runtime", _check_dvipng_runtime),
         ("pdf2svg executable runtime", _check_pdf2svg_runtime),

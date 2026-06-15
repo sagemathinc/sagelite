@@ -1,3 +1,6 @@
+import sys
+import types
+
 import pytest
 
 from sage.cli import selftest
@@ -140,3 +143,47 @@ def test_companion_feature_accepts_present_feature(monkeypatch):
         )
         == "present runtime available"
     )
+
+
+def test_glucose_runtime_checks_both_companion_executables(monkeypatch):
+    checked = []
+
+    class FakeGlucose:
+        def __init__(self, program):
+            checked.append(program)
+
+        def is_present(self):
+            return FakeFeatureResult(True)
+
+    fake_sat = types.ModuleType("sage.features.sat")
+    fake_sat.Glucose = FakeGlucose
+    monkeypatch.setitem(sys.modules, "sage.features.sat", fake_sat)
+    monkeypatch.setattr(
+        selftest.importlib,
+        "import_module",
+        lambda name: object() if name == "sagelite_glucose" else None,
+    )
+
+    assert selftest._check_glucose_runtime() == "Glucose executable runtime available"
+    assert checked == ["glucose", "glucose-syrup"]
+
+
+def test_glucose_runtime_rejects_missing_companion_executable(monkeypatch):
+    class FakeGlucose:
+        def __init__(self, program):
+            self.program = program
+
+        def is_present(self):
+            return FakeFeatureResult(self.program == "glucose", "missing syrup")
+
+    fake_sat = types.ModuleType("sage.features.sat")
+    fake_sat.Glucose = FakeGlucose
+    monkeypatch.setitem(sys.modules, "sage.features.sat", fake_sat)
+    monkeypatch.setattr(
+        selftest.importlib,
+        "import_module",
+        lambda name: object() if name == "sagelite_glucose" else None,
+    )
+
+    with pytest.raises(RuntimeError, match="glucose-syrup"):
+        selftest._check_glucose_runtime()

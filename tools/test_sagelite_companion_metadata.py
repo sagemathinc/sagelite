@@ -1108,6 +1108,16 @@ def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
 def test_selftest_exercises_standard_feature_runtime_companions():
     selftest = (ROOT / "src" / "sage" / "cli" / "selftest.py").read_text()
     expected = {
+        "sagelite-benzene-runtime": (
+            "sagelite_benzene",
+            "benzene graph generator runtime",
+            "_check_benzene_runtime",
+        ),
+        "sagelite-buckygen-runtime": (
+            "sagelite_buckygen",
+            "buckygen graph generator runtime",
+            "_check_buckygen_runtime",
+        ),
         "sagelite-csdp-runtime": (
             "sagelite_csdp",
             "CSDP executable runtime",
@@ -1133,6 +1143,11 @@ def test_selftest_exercises_standard_feature_runtime_companions():
             "Giac executable runtime",
             "_check_giac_runtime",
         ),
+        "sagelite-glucose-runtime": (
+            "sagelite_glucose",
+            "Glucose executable runtime",
+            "_check_glucose_runtime",
+        ),
         "sagelite-info-runtime": (
             "sagelite_info",
             "GNU Info executable runtime",
@@ -1142,6 +1157,11 @@ def test_selftest_exercises_standard_feature_runtime_companions():
             "sagelite_kenzo",
             "Kenzo ECL runtime",
             "_check_kenzo_runtime",
+        ),
+        "sagelite-kissat-runtime": (
+            "sagelite_kissat",
+            "Kissat executable runtime",
+            "_check_kissat_runtime",
         ),
         "sagelite-latte-runtime": (
             "sagelite_latte",
@@ -1167,6 +1187,11 @@ def test_selftest_exercises_standard_feature_runtime_companions():
             "sagelite_planarity",
             "planarity executable runtime",
             "_check_planarity_runtime",
+        ),
+        "sagelite-plantri-runtime": (
+            "sagelite_plantri",
+            "plantri graph generator runtime",
+            "_check_plantri_runtime",
         ),
         "sagelite-qepcad-runtime": (
             "sagelite_qepcad",
