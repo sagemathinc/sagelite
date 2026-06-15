@@ -246,6 +246,7 @@ def test_four_ti_2_executable_discovers_sagelite_companion(monkeypatch, tmp_path
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
     monkeypatch.setenv("PATH", "")
     monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    monkeypatch.setitem(sage.env.SAGE_ENV, "FOURTITWO_HILBERT", None)
     sys.modules.pop("sagelite_four_ti_2", None)
     sys.modules.pop("sagelite_four_ti_2.runtime", None)
 
@@ -262,6 +263,7 @@ def test_gfan_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
     monkeypatch.setenv("PATH", "")
     monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    monkeypatch.setattr(gfan_module, "GFAN_BINS_PREFIX", "")
     sys.modules.pop("sagelite_gfan", None)
     sys.modules.pop("sagelite_gfan.runtime", None)
 
@@ -379,7 +381,7 @@ def test_sagelite_selftest_checks_maxima_symbolic_domain(monkeypatch):
     monkeypatch.setattr(
         selftest,
         "_run_subprocess_probe",
-        lambda script: calls.append(script) or "2",
+        lambda script, *args, **kwargs: calls.append(script) or "2",
     )
 
     assert selftest._check_maxima_runtime() == "2"
@@ -635,6 +637,7 @@ def test_palp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
     monkeypatch.setenv("PATH", "")
     monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    monkeypatch.setattr(palp_module, "PALP_BINS_PREFIX", "")
     sys.modules.pop("sagelite_palp", None)
     sys.modules.pop("sagelite_palp.runtime", None)
 
