@@ -54,6 +54,8 @@ class Threejs(StaticFile):
 
         Defining what version is required is delegated to the distribution package
         that provides the file ``threejs-version.txt`` in :mod:`sage.ext_data.threejs`.
+        Wheel installations can also read the version from the optional
+        ``sagelite-threejs-runtime`` companion package.
 
         If the file is not provided, :exc:`FileNotFoundError` is raised.
 
@@ -63,11 +65,21 @@ class Threejs(StaticFile):
             sage: Threejs().required_version()
             'r...'
         """
-        from sage.env import SAGE_EXTCODE
+        from sage.env import SAGE_EXTCODE, _optional_runtime_value
 
         filename = Path(SAGE_EXTCODE) / 'threejs' / 'threejs-version.txt'
 
-        with open(filename) as f:
+        try:
+            f = open(filename)
+        except FileNotFoundError:
+            threejs_dir = _optional_runtime_value(
+                "sagelite_threejs_runtime", "threejs_sage_path"
+            )
+            if not threejs_dir:
+                raise
+            f = open(Path(threejs_dir) / "version")
+
+        with f:
             return f.read().strip()
 
 
