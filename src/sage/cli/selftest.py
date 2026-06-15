@@ -750,6 +750,29 @@ def _check_tides_runtime():
     )
 
 
+def _check_sirocco_runtime():
+    try:
+        from sagelite_sirocco import runtime
+    except ImportError:
+        return "not installed"
+
+    include_dir = Path(runtime.include_dir())
+    library_dir = Path(runtime.library_dir())
+    header = include_dir / "sirocco.h"
+    libraries = sorted(
+        path
+        for path in library_dir.glob("libsirocco*")
+        if path.is_file() and path.suffix != ".la"
+    )
+
+    if not header.is_file():
+        raise RuntimeError(f"SIROCCO header is not available: {header}")
+    if not libraries:
+        raise RuntimeError(f"SIROCCO library is not available in {library_dir}")
+
+    return f"{header.name} and {libraries[0].name} available"
+
+
 def _check_topcom_runtime():
     from sage.features.topcom import TOPCOM
 
@@ -1124,6 +1147,7 @@ def main() -> int:
         ("planarity executable runtime", _check_planarity_runtime),
         ("QEPCAD executable runtime", _check_qepcad_runtime),
         ("Rubiks executable runtime", _check_rubiks_runtime),
+        ("SIROCCO library runtime", _check_sirocco_runtime),
         ("TIDES compile-time runtime", _check_tides_runtime),
         ("TOPCOM executable runtime", _check_topcom_runtime),
         ("Three.js static runtime", _check_threejs_runtime),
