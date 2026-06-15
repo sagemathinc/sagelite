@@ -170,6 +170,9 @@ def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
         "sympow executable runtime",
         "Tachyon executable runtime",
         "MathJax static runtime",
+        "Cubic Hecke database runtime",
+        "KnotInfo database runtime",
+        "matroid database runtime",
     ):
         assert name in calls
 

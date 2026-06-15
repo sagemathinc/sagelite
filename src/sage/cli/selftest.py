@@ -999,6 +999,35 @@ def _check_database_jones_numfield():
     return f"{len(fields)} quadratic fields unramified outside 2"
 
 
+def _check_database_cubic_hecke():
+    from sage.databases.cubic_hecke_db import CubicHeckeDataBase
+
+    database = CubicHeckeDataBase()
+    version = database.version()
+    basis = database.read(database.section.basis, nstrands=4)
+    return f"database-cubic-hecke {version}, {len(basis)} basis elements"
+
+
+def _check_database_knotinfo():
+    from sage.databases.knotinfo_db import KnotInfoDataBase
+
+    database = KnotInfoDataBase()
+    version = database.version()
+    return f"database-knotinfo {version}, {database.read_num_knots()} knots"
+
+
+def _check_database_matroids():
+    from sage.features.databases import DatabaseMatroids
+    from sage.matroids.database_collections import AllMatroids
+
+    database = DatabaseMatroids().is_present()
+    if not bool(database):
+        raise RuntimeError(f"matroid database is not available: {database.reason}")
+
+    matroids = list(AllMatroids(2))
+    return f"{len(matroids)} matroids on 2 elements available"
+
+
 def _check_database_sloane():
     try:
         import sagelite_database_sloane  # noqa: F401
@@ -1236,6 +1265,9 @@ def main() -> int:
         ("Cremona elliptic curve database runtime", _check_database_cremona_ellcurve),
         ("ellcurves database runtime", _check_database_ellcurves),
         ("Jones number field database runtime", _check_database_jones_numfield),
+        ("Cubic Hecke database runtime", _check_database_cubic_hecke),
+        ("KnotInfo database runtime", _check_database_knotinfo),
+        ("matroid database runtime", _check_database_matroids),
         ("Sloane/OEIS database runtime", _check_database_sloane),
         ("Kohel polynomial database runtime", _check_database_kohel),
         ("reflexive polytopes database runtime", _check_database_polytopes),
