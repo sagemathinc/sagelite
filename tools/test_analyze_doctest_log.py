@@ -144,3 +144,65 @@ Exception raised:
         "rebuild sagelite with source-built cypari2 and one repaired libpari"
     )
     assert report["fingerprint_counts"] == {"mixed-pari-runtime": 1}
+
+
+def test_report_suggests_runtime_for_named_missing_executable(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/backend_cdd.py", line 42, in sage.geometry.polyhedron.backend_cdd
+Failed example:
+    polytopes.hypercube(3).Hrepresentation()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: cddexec_gmp is not available.
+    Executable 'cddexec_gmp' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.backend_cdd
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.geometry.polyhedron.backend_cdd"]
+
+    assert result.fingerprint == "missing-executable"
+    assert result.suggested_package == "sagelite-cddlib-runtime"
+    assert (
+        report["top_examples"]["optional-external"][0]["suggested_package"]
+        == "sagelite-cddlib-runtime"
+    )
+
+
+def test_report_suggests_runtime_for_named_missing_database(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/rings/polynomial/kohel.py", line 42, in sage.rings.polynomial.kohel
+Failed example:
+    ClassicalModularPolynomialDatabase()[5]
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_kohel is not available.
+    'PolMod/Cls/pol.005.dbz' not found in any of ['/usr/share/kohel']
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.rings.polynomial.kohel
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.rings.polynomial.kohel"]
+
+    assert result.fingerprint == "missing-database"
+    assert result.suggested_package == "sagelite-database-kohel"
+    assert (
+        report["top_examples"]["optional-data"][0]["suggested_package"]
+        == "sagelite-database-kohel"
+    )

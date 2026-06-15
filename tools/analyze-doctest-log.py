@@ -112,9 +112,9 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             "maxima-runtime-abi-mismatch",
             "Maxima runtime wheel is ABI-incompatible with the loaded ECL library",
         ),
-        ("featurenotpresenterror", "optional-external", "optional-feature-missing", "optional feature is unavailable"),
         ("executable '", "optional-external", "missing-executable", "standalone executable not found"),
         ("not found on path", "optional-external", "missing-executable", "standalone executable not found"),
+        ("featurenotpresenterror", "optional-external", "optional-feature-missing", "optional feature is unavailable"),
         ("module error: don't know how to require maxima", "optional-external", "maxima-library-mode-missing", "Maxima library mode is unavailable"),
         (".mesonpy-", "optional-external", "stale-build-path", "installed code still refers to a build-tree path"),
         ("attributeerror: module 'sage.interfaces' has no attribute 'maxima_lib'", "optional-external", "maxima-library-mode-missing", "Maxima library mode is unavailable"),
@@ -153,14 +153,93 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
     return "unknown", "unknown", "no rule matched"
 
 
-def suggested_package(fingerprint: str) -> str:
+MISSING_EXECUTABLE_PACKAGES = {
+    "4ti2": "sagelite-4ti2-runtime",
+    "buckygen": "sagelite-buckygen-runtime",
+    "cddexec": "sagelite-cddlib-runtime",
+    "cddexec_gmp": "sagelite-cddlib-runtime",
+    "csdp": "sagelite-csdp-runtime",
+    "dot": "sagelite-graphviz-runtime",
+    "dvipng": "sagelite-dvipng-runtime",
+    "ecm": "sagelite-ecm-runtime",
+    "flatter": "sagelite-flatter-runtime",
+    "fricas": "sagelite-fricas-runtime",
+    "frobby": "sagelite-frobby-runtime",
+    "gap": "sagelite-gap-runtime",
+    "gap3": "sagelite-gap3-runtime",
+    "gfan": "sagelite-gfan-runtime",
+    "giac": "sagelite-giac-runtime",
+    "glucose": "sagelite-glucose-runtime",
+    "glucose-syrup": "sagelite-glucose-runtime",
+    "info": "sagelite-info-runtime",
+    "kissat": "sagelite-kissat-runtime",
+    "latte-count": "sagelite-latte-runtime",
+    "latte-integrate": "sagelite-latte-runtime",
+    "lcalc": "sagelite-lcalc-runtime",
+    "lie": "sagelite-lie-runtime",
+    "lrs": "sagelite-lrslib-runtime",
+    "lrsnash": "sagelite-lrslib-runtime",
+    "mwrank": "sagelite-mwrank-runtime",
+    "msolve": "sagelite-msolve-runtime",
+    "pdftocairo": "sagelite-poppler-runtime",
+    "pdf2svg": "sagelite-pdf2svg-runtime",
+    "planarity": "sagelite-planarity-runtime",
+    "plantri": "sagelite-plantri-runtime",
+    "qepcad": "sagelite-qepcad-runtime",
+    "rubiks": "sagelite-rubiks-runtime",
+    "singular": "sagelite-singular-runtime",
+    "sympow": "sagelite-sympow-runtime",
+    "tachyon": "sagelite-tachyon-runtime",
+}
+
+MISSING_DATABASE_PACKAGES = {
+    "cunningham": "sagelite-cunningham-tables",
+    "database_cremona_ellcurve": "sagelite-database-cremona-ellcurve",
+    "database_cremona_mini_ellcurve": "sagelite-database-cremona-mini",
+    "database_ellcurves": "sagelite-database-ellcurves",
+    "database_graphs": "sagelite-database-graphs",
+    "database_jones_numfield": "sagelite-database-jones-numfield",
+    "database_kohel": "sagelite-database-kohel",
+    "database_mutation_class": "sagelite-database-mutation-class",
+    "database_odlyzko_zeta": "sagelite-database-odlyzko-zeta",
+    "database_polytopes": "sagelite-database-polytopes",
+    "database_polytopes_4d": "sagelite-database-polytopes-4d",
+    "database_sloane": "sagelite-database-sloane",
+    "database_stein_watkins": "sagelite-database-stein-watkins",
+    "database_stein_watkins_mini": "sagelite-database-stein-watkins-mini",
+    "database_symbolic_data": "sagelite-database-symbolic-data",
+    "matroid": "matroid-database",
+}
+
+
+def _matched_package(text: str, packages: dict[str, str]) -> str:
+    for needle, package in sorted(packages.items(), key=lambda item: -len(item[0])):
+        if re.search(
+            rf"(?<![a-z0-9_-]){re.escape(needle)}(?![a-z0-9_-])",
+            text,
+        ):
+            return package
+    return ""
+
+
+def suggested_package(result: ModuleResult) -> str:
     """
-    Return the companion package most likely to address ``fingerprint``.
+    Return the companion package most likely to address a failed doctest.
 
     The analyzer is used during sagelite wheel triage, where the next useful
     action is often "build or install this companion wheel" rather than just
     reading the exception text.
     """
+    text = "\n".join([result.summary or "", *result.traceback_lines[:80]]).lower()
+    if result.fingerprint == "missing-executable":
+        package = _matched_package(text, MISSING_EXECUTABLE_PACKAGES)
+        if package:
+            return package
+    if result.fingerprint in {"missing-database", "optional-feature-missing"}:
+        package = _matched_package(text, MISSING_DATABASE_PACKAGES)
+        if package:
+            return package
+
     return {
         "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post10",
         "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post10",
@@ -171,7 +250,7 @@ def suggested_package(fingerprint: str) -> str:
         "mixed-pari-runtime": "rebuild sagelite with source-built cypari2 and one repaired libpari",
         "optional-feature-missing": "matching sagelite companion package or PyPI dependency",
         "optional-native-lib-missing": "matching sagelite runtime or sagelite core extension",
-    }.get(fingerprint, "")
+    }.get(result.fingerprint, "")
 
 
 def parse_log(log_path: Path) -> dict[str, ModuleResult]:
@@ -265,7 +344,7 @@ def merge_stats(results: dict[str, ModuleResult], stats_path: Path | None) -> No
 def build_report(results: dict[str, ModuleResult]) -> dict[str, Any]:
     for result in results.values():
         result.category, result.fingerprint, result.evidence = classify(result)
-        result.suggested_package = suggested_package(result.fingerprint)
+        result.suggested_package = suggested_package(result)
 
     failed = [r for r in results.values() if r.status != "passed" or r.failed_flag]
     category_counts = Counter(r.category for r in failed)
