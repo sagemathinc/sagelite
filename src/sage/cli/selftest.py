@@ -25,7 +25,9 @@ def _run_check(name: str, check: Callable[[], object]) -> bool:
     print(f"checking {name} ... ", end="", flush=True)
     try:
         result = check()
-    except Exception:
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except BaseException:
         print("FAIL")
         traceback.print_exc()
         return False
