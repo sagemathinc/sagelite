@@ -1516,6 +1516,43 @@ if len(bundled_ecl) != 1:
     )
 
 print(f"verified repaired sagelite ECL runtime: {os.path.basename(bundled_ecl[0])}")
+
+cypari_extensions = sorted(
+    name
+    for name in names
+    if name.startswith("cypari2/") and name.endswith(".so")
+)
+if not cypari_extensions:
+    raise SystemExit(
+        "expected vendored cypari2 extension modules in repaired sagelite wheel"
+    )
+
+cypari_pari_libraries = sorted(
+    name
+    for name in names
+    if name.startswith("cypari2.libs/")
+    and os.path.basename(name).startswith("libpari")
+)
+if cypari_pari_libraries:
+    raise SystemExit(
+        "repaired sagelite wheel still contains prebuilt cypari2 PARI runtime; "
+        f"found {cypari_pari_libraries}"
+    )
+
+bundled_pari = sorted(
+    name
+    for name in names
+    if name.startswith("sagelite.libs/")
+    and os.path.basename(name).startswith("libpari")
+    and ".so" in os.path.basename(name)
+)
+if len(bundled_pari) != 1:
+    raise SystemExit(
+        "expected exactly one bundled PARI runtime shared by sagelite and cypari2; "
+        f"found {bundled_pari}"
+    )
+
+print(f"verified repaired sagelite PARI runtime: {os.path.basename(bundled_pari[0])}")
 PY
 }
 
@@ -1535,7 +1572,16 @@ vendored_site="$tmpdir/cypari-site"
 
 # Build cypari2 from source against the same PARI that Sage linked against.
 # Installing the prebuilt wheel would reintroduce a second bundled libpari.
-env -u PIP_CONSTRAINT "$python_bin" -m pip install \
+cypari_pkg_config_path="$prefix/lib/pkgconfig:$prefix/share/pkgconfig"
+cypari_pkg_config_path="$cypari_pkg_config_path${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+env -u PIP_CONSTRAINT \
+  PATH="$prefix/bin:$PATH" \
+  LD_LIBRARY_PATH="$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+  LIBRARY_PATH="$prefix/lib${LIBRARY_PATH:+:$LIBRARY_PATH}" \
+  CPATH="$prefix/include${CPATH:+:$CPATH}" \
+  PKG_CONFIG_PATH="$cypari_pkg_config_path" \
+  SAGE_LOCAL="$prefix" \
+  "$python_bin" -m pip install \
   --no-deps \
   --no-binary cypari2 \
   --target "$vendored_site" \

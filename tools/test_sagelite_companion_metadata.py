@@ -3247,6 +3247,29 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text
 
 
+def test_linux_repair_rejects_mixed_pari_runtimes():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert 'PATH="$prefix/bin:$PATH"' in repair_text
+    assert (
+        'LD_LIBRARY_PATH="$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"'
+        in repair_text
+    )
+    assert (
+        'LIBRARY_PATH="$prefix/lib${LIBRARY_PATH:+:$LIBRARY_PATH}"'
+        in repair_text
+    )
+    assert 'CPATH="$prefix/include${CPATH:+:$CPATH}"' in repair_text
+    assert 'PKG_CONFIG_PATH="$cypari_pkg_config_path"' in repair_text
+    assert 'SAGE_LOCAL="$prefix"' in repair_text
+    assert "expected vendored cypari2 extension modules" in repair_text
+    assert "cypari2.libs/" in repair_text
+    assert "prebuilt cypari2 PARI runtime" in repair_text
+    assert "expected exactly one bundled PARI runtime" in repair_text
+    assert "verified repaired sagelite PARI runtime" in repair_text
+
+
 def test_maxima_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
