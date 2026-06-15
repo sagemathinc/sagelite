@@ -65,3 +65,57 @@ def test_installed_requirements_ignores_missing_runtime(monkeypatch):
         selftest._check_installed_requirements()
         == "installed requirement versions satisfy metadata"
     )
+
+
+class FakeFeatureResult:
+    def __init__(self, present, reason=""):
+        self.present = present
+        self.reason = reason
+
+    def __bool__(self):
+        return self.present
+
+
+class FakeFeature:
+    def __init__(self, present, reason=""):
+        self.present = present
+        self.reason = reason
+
+    def is_present(self):
+        return FakeFeatureResult(self.present, self.reason)
+
+
+def test_companion_feature_skips_missing_companion(monkeypatch):
+    def missing_module(name):
+        raise ImportError(name)
+
+    monkeypatch.setattr(selftest.importlib, "import_module", missing_module)
+
+    assert (
+        selftest._check_companion_feature(
+            "sagelite_missing", lambda: FakeFeature(True), "missing runtime"
+        )
+        == "not installed"
+    )
+
+
+def test_companion_feature_rejects_installed_but_missing_feature(monkeypatch):
+    monkeypatch.setattr(selftest.importlib, "import_module", lambda name: object())
+
+    with pytest.raises(RuntimeError, match="not executable"):
+        selftest._check_companion_feature(
+            "sagelite_broken",
+            lambda: FakeFeature(False, "not executable"),
+            "broken runtime",
+        )
+
+
+def test_companion_feature_accepts_present_feature(monkeypatch):
+    monkeypatch.setattr(selftest.importlib, "import_module", lambda name: object())
+
+    assert (
+        selftest._check_companion_feature(
+            "sagelite_present", lambda: FakeFeature(True), "present runtime"
+        )
+        == "present runtime available"
+    )

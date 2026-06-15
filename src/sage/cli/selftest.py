@@ -4,6 +4,7 @@ Small runtime self-test for sagelite installations.
 
 from __future__ import annotations
 
+import importlib
 import importlib.metadata as importlib_metadata
 import importlib.util
 import sys
@@ -145,6 +146,23 @@ def _check_lrcalc():
     from sage.libs.lrcalc.lrcalc import lrcoef
 
     return lrcoef([2], [1], [1])
+
+
+def _check_companion_feature(
+    module_name: str,
+    feature_factory: Callable[[], object],
+    description: str,
+):
+    try:
+        importlib.import_module(module_name)
+    except ImportError:
+        return "not installed"
+
+    feature = feature_factory()
+    result = feature.is_present()
+    if not bool(result):
+        raise RuntimeError(f"{description} is not available: {result.reason}")
+    return f"{description} available"
 
 
 def _check_cddlib_runtime():
@@ -308,6 +326,46 @@ def _check_gfan_runtime():
     if "Q[x,y]" not in result:
         raise RuntimeError(f"unexpected gfan output: {result!r}")
     return "gfan executable available"
+
+
+def _check_graphviz_runtime():
+    from sage.features.graphviz import Graphviz
+
+    return _check_companion_feature(
+        "sagelite_graphviz", Graphviz, "Graphviz executable runtime"
+    )
+
+
+def _check_imagemagick_runtime():
+    from sage.features.imagemagick import ImageMagick
+
+    return _check_companion_feature(
+        "sagelite_imagemagick", ImageMagick, "ImageMagick executable runtime"
+    )
+
+
+def _check_dvipng_runtime():
+    from sage.features.dvipng import dvipng
+
+    return _check_companion_feature(
+        "sagelite_dvipng", dvipng, "dvipng executable runtime"
+    )
+
+
+def _check_pdf2svg_runtime():
+    from sage.features.pdf2svg import pdf2svg
+
+    return _check_companion_feature(
+        "sagelite_pdf2svg", pdf2svg, "pdf2svg executable runtime"
+    )
+
+
+def _check_poppler_runtime():
+    from sage.features.poppler import pdftocairo
+
+    return _check_companion_feature(
+        "sagelite_poppler", pdftocairo, "Poppler pdftocairo executable runtime"
+    )
 
 
 _MAXIMA_RUNTIME_PROBE = """
@@ -840,6 +898,11 @@ def main() -> int:
         ("tdlib tree decomposition library", _check_tdlib_library),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("gfan executable runtime", _check_gfan_runtime),
+        ("Graphviz executable runtime", _check_graphviz_runtime),
+        ("ImageMagick executable runtime", _check_imagemagick_runtime),
+        ("dvipng executable runtime", _check_dvipng_runtime),
+        ("pdf2svg executable runtime", _check_pdf2svg_runtime),
+        ("Poppler executable runtime", _check_poppler_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
