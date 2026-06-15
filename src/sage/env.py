@@ -1539,7 +1539,11 @@ def sage_data_paths(name: str = '') -> set[str]:
     if not name:
         return {path for path in paths if os.path.exists(path)}
 
-    resolved = {os.path.join(path, name) for path in paths if os.path.exists(path)}
+    resolved = {
+        os.path.join(path, name)
+        for path in paths
+        if os.path.exists(os.path.join(path, name))
+    }
     resolved.update(
         path
         for path in paths

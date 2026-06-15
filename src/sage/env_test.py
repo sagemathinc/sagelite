@@ -296,6 +296,26 @@ def test_sage_data_paths_accepts_registered_named_directory(monkeypatch, tmp_pat
     assert str(direct) in env.sage_data_paths("cremona")
 
 
+def test_sage_data_paths_ignores_missing_named_subdirectories(
+    monkeypatch, tmp_path
+):
+    root = tmp_path / "companion-data"
+    direct = root / "cremona"
+    unrelated = tmp_path / "other-companion-data"
+    direct.mkdir(parents=True)
+    unrelated.mkdir()
+
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: [root, unrelated])],
+    )
+    monkeypatch.setattr(env, "SAGE_DATA_PATH", None)
+    monkeypatch.setattr(env, "_optional_runtime_value", lambda *args: None)
+
+    assert env.sage_data_paths("cremona") == {str(direct)}
+
+
 def test_sage_data_paths_accepts_registered_file_path(monkeypatch, tmp_path):
     root = tmp_path / "companion-data"
     direct = root / "cremona"
