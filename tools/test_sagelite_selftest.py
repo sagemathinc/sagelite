@@ -152,6 +152,28 @@ def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
     assert calls.index("Maxima library runtime") < calls.index("symbolic integration")
 
 
+def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return True
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+    monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
+
+    assert selftest.main() == 0
+
+    for name in (
+        "ECL executable runtime",
+        "sympow executable runtime",
+        "Tachyon executable runtime",
+        "MathJax static runtime",
+    ):
+        assert name in calls
+
+
 def test_subprocess_probe_reports_probe_description(tmp_path):
     selftest = _load_selftest()
     script = tmp_path / "fail.py"

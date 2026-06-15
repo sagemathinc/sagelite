@@ -7,8 +7,9 @@ from __future__ import annotations
 import importlib
 import importlib.metadata as importlib_metadata
 import importlib.util
-import sys
+import os
 import subprocess
+import sys
 import tempfile
 import traceback
 from pathlib import Path
@@ -331,6 +332,28 @@ def _check_gapdoc_runtime():
     )
 
 
+def _check_ecl_runtime():
+    try:
+        from sagelite_ecl import runtime
+    except ImportError:
+        return "not installed"
+
+    from sage.env import ECL_CONFIG
+
+    command = Path(runtime.ecl_config_command())
+    if not command.is_file() or not os.access(command, os.X_OK):
+        raise RuntimeError(f"ecl-config companion command is not executable: {command}")
+    if os.fspath(command) != ECL_CONFIG:
+        raise RuntimeError(
+            f"Sage is not using the ECL companion ecl-config: {ECL_CONFIG}"
+        )
+
+    ecldir = Path(runtime.ecl_dir())
+    if not ecldir.is_dir():
+        raise RuntimeError(f"ECL support directory is not available: {ecldir}")
+    return "ECL command and support directory available"
+
+
 def _check_gap3_runtime():
     from sage.features.gap3 import Gap3
 
@@ -508,6 +531,22 @@ def _check_lrslib_runtime():
     return _check_companion_feature(
         "sagelite_lrslib", Lrslib, "lrslib executable runtime"
     )
+
+
+def _check_sympow_runtime():
+    try:
+        from sagelite_sympow import runtime
+    except ImportError:
+        return "not installed"
+
+    from sage.env import SYMPOW
+
+    command = Path(runtime.sympow_command())
+    if not command.is_file() or not os.access(command, os.X_OK):
+        raise RuntimeError(f"sympow companion command is not executable: {command}")
+    if os.fspath(command) != SYMPOW:
+        raise RuntimeError(f"Sage is not using the sympow companion runtime: {SYMPOW}")
+    return "sympow executable runtime available"
 
 
 _MAXIMA_RUNTIME_PROBE = """
@@ -750,6 +789,22 @@ def _check_tides_runtime():
     )
 
 
+def _check_tachyon_runtime():
+    try:
+        from sagelite_tachyon import runtime
+    except ImportError:
+        return "not installed"
+
+    from sage.env import TACHYON
+
+    command = Path(runtime.executable_path())
+    if not command.is_file() or not os.access(command, os.X_OK):
+        raise RuntimeError(f"tachyon companion command is not executable: {command}")
+    if os.fspath(command) != TACHYON:
+        raise RuntimeError(f"Sage is not using the Tachyon companion runtime: {TACHYON}")
+    return "Tachyon executable runtime available"
+
+
 def _check_sirocco_runtime():
     try:
         from sagelite_sirocco import runtime
@@ -793,6 +848,24 @@ def _check_threejs_runtime():
     if not bool(threejs):
         raise RuntimeError(f"Three.js runtime is not available: {threejs.reason}")
     return "Three.js static runtime available"
+
+
+def _check_mathjax_runtime():
+    try:
+        import sagelite_mathjax_runtime
+    except ImportError:
+        return "not installed"
+
+    from sage.env import MATHJAX_DIR
+
+    tex_chtml = Path(sagelite_mathjax_runtime.tex_chtml_js_path())
+    if not tex_chtml.is_file():
+        raise RuntimeError(f"MathJax tex-chtml.js is not available: {tex_chtml}")
+    if os.fspath(tex_chtml.parent) != MATHJAX_DIR:
+        raise RuntimeError(
+            f"Sage is not using the MathJax companion runtime: {MATHJAX_DIR}"
+        )
+    return "MathJax static runtime available"
 
 
 def _check_d3js_runtime():
@@ -1118,6 +1191,7 @@ def main() -> int:
         ("plantri graph generator runtime", _check_plantri_runtime),
         ("buckygen graph generator runtime", _check_buckygen_runtime),
         ("benzene graph generator runtime", _check_benzene_runtime),
+        ("ECL executable runtime", _check_ecl_runtime),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
         ("GAP3 executable runtime", _check_gap3_runtime),
         ("FriCAS executable runtime", _check_fricas_runtime),
@@ -1135,6 +1209,7 @@ def main() -> int:
         ("LattE executable runtime", _check_latte_runtime),
         ("lcalc executable runtime", _check_lcalc_runtime),
         ("lrslib executable runtime", _check_lrslib_runtime),
+        ("sympow executable runtime", _check_sympow_runtime),
         ("Kenzo ECL runtime", _check_kenzo_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
@@ -1149,7 +1224,9 @@ def main() -> int:
         ("Rubiks executable runtime", _check_rubiks_runtime),
         ("SIROCCO library runtime", _check_sirocco_runtime),
         ("TIDES compile-time runtime", _check_tides_runtime),
+        ("Tachyon executable runtime", _check_tachyon_runtime),
         ("TOPCOM executable runtime", _check_topcom_runtime),
+        ("MathJax static runtime", _check_mathjax_runtime),
         ("Three.js static runtime", _check_threejs_runtime),
         ("D3.js static runtime", _check_d3js_runtime),
         ("Jmol static runtime", _check_jmol_runtime),
