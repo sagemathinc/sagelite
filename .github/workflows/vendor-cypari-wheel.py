@@ -57,8 +57,36 @@ def reject_private_pari_runtime(src_root: Path) -> None:
         )
 
 
+def reject_private_pari_extension_dependencies(src_root: Path) -> None:
+    """
+    Reject cypari2 extension modules that still name an auditwheel-private PARI.
+
+    Source-built cypari2 should link to the ordinary ``libpari.so`` from the
+    Sage prefix.  Prebuilt wheels often depend on a hashed ``libpari-*.so``;
+    copying such an extension into sagelite can later load a second PARI
+    runtime even if the companion ``cypari2.libs`` directory was pruned.
+    """
+    offenders = []
+    for extension in sorted((src_root / "cypari2").glob("*.so")):
+        try:
+            payload = extension.read_bytes()
+        except OSError:
+            continue
+        if b"libpari-" in payload:
+            offenders.append(extension)
+
+    if offenders:
+        joined = "\n".join(str(path) for path in offenders)
+        raise SystemExit(
+            "refusing to vendor cypari2 extension modules that still depend "
+            "on an auditwheel-private PARI runtime. Build cypari2 from source "
+            f"against Sage's PARI before merging it into sagelite:\n{joined}"
+        )
+
+
 def copy_cypari_runtime(src_root: Path, dest_root: Path) -> None:
     reject_private_pari_runtime(src_root)
+    reject_private_pari_extension_dependencies(src_root)
     copytree_if_present(src_root / "cypari2", dest_root / "cypari2")
     copytree_if_present(src_root / "cypari2.libs", dest_root / "cypari2.libs")
 

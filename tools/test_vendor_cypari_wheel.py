@@ -35,6 +35,36 @@ def test_vendor_cypari_rejects_private_pari_runtime(tmp_path):
         vendor.copy_cypari_runtime(src, tmp_path / "wheel")
 
 
+def test_vendor_cypari_rejects_extensions_needing_private_pari(tmp_path):
+    vendor = _load_vendor()
+    src = tmp_path / "site"
+    (src / "cypari2").mkdir(parents=True)
+    (src / "cypari2" / "__init__.py").write_text("", encoding="utf-8")
+    (src / "cypari2" / "gen.cpython-312-x86_64-linux-gnu.so").write_bytes(
+        b"\x7fELF\0libpari-3a78ce10.so.2.17.2\0"
+    )
+
+    with pytest.raises(SystemExit, match="auditwheel-private PARI runtime"):
+        vendor.copy_cypari_runtime(src, tmp_path / "wheel")
+
+
+def test_vendor_cypari_accepts_extensions_needing_plain_pari(tmp_path):
+    vendor = _load_vendor()
+    src = tmp_path / "site"
+    dest = tmp_path / "wheel"
+    (src / "cypari2").mkdir(parents=True)
+    (src / "cypari2" / "__init__.py").write_text("", encoding="utf-8")
+    (src / "cypari2" / "gen.cpython-312-x86_64-linux-gnu.so").write_bytes(
+        b"\x7fELF\0libpari.so.2\0"
+    )
+
+    vendor.copy_cypari_runtime(src, dest)
+
+    assert (
+        dest / "cypari2" / "gen.cpython-312-x86_64-linux-gnu.so"
+    ).is_file()
+
+
 def test_vendor_cypari_keeps_non_pari_private_libraries(tmp_path):
     vendor = _load_vendor()
     src = tmp_path / "site"
