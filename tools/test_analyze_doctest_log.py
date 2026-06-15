@@ -111,3 +111,36 @@ Exception raised:
     assert result.evidence == "Maxima runtime wheel is ABI-incompatible with the loaded ECL library"
     assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post9"
     assert report["fingerprint_counts"] == {"maxima-runtime-abi-mismatch": 1}
+
+
+def test_report_identifies_mixed_pari_runtime_crash(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/modular/modsym/modsym.py", line 64, in sage.modular.modsym.modsym
+Failed example:
+    ModularSymbols(389, sign=1).T(2).fcp()
+Exception raised:
+    Traceback (most recent call last):
+    File "cypari2/gen.pyx", line 4782, in cypari2.gen.objtogen
+    File "sage/libs/pari/convert_sage.pyx", line 401, in sage.libs.pari.convert_sage.new_gen_from_integer
+    File "sage/libs/pari/convert_gmp.pyx", line 52, in sage.libs.pari.convert_gmp.new_gen_from_mpz_t
+    cysignals.signals.SignalError: Segmentation fault
+**********************************************************************
+1 item had failures:
+   1 of  8 in sage.modular.modsym.modsym
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.modular.modsym.modsym"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "mixed-pari-runtime"
+    assert result.suggested_package == (
+        "rebuild sagelite with source-built cypari2 and one repaired libpari"
+    )
+    assert report["fingerprint_counts"] == {"mixed-pari-runtime": 1}

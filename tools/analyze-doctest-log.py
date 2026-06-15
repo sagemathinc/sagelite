@@ -94,6 +94,17 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         if needle in text:
             return category, fingerprint, evidence
 
+    if (
+        "cypari2" in text
+        and "sage.libs.pari" in text
+        and ("segmentation fault" in text or "signalerror" in text)
+    ):
+        return (
+            "optional-external",
+            "mixed-pari-runtime",
+            "cypari2 and Sage PARI conversion crashed in native code",
+        )
+
     external_patterns = [
         (
             "undefined symbol: festack_advance",
@@ -157,6 +168,7 @@ def suggested_package(fingerprint: str) -> str:
         "missing-knotinfo-db": "database-knotinfo",
         "missing-database": "matching sagelite-database-* companion package",
         "missing-executable": "matching sagelite-*-runtime companion package",
+        "mixed-pari-runtime": "rebuild sagelite with source-built cypari2 and one repaired libpari",
         "optional-feature-missing": "matching sagelite companion package or PyPI dependency",
         "optional-native-lib-missing": "matching sagelite runtime or sagelite core extension",
     }.get(fingerprint, "")
