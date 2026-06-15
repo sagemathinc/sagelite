@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib
 import importlib.metadata as importlib_metadata
 import importlib.util
+import ctypes
 import os
 import subprocess
 import sys
@@ -550,6 +551,10 @@ def _check_sympow_runtime():
 
 
 _MAXIMA_RUNTIME_PROBE = """
+from sage.cli.selftest import _check_loaded_ecl_matches_maxima_runtime
+
+_check_loaded_ecl_matches_maxima_runtime()
+
 from sage.all import RR, var
 from sage.interfaces.maxima_lib import maxima_lib
 
@@ -559,6 +564,78 @@ if x.conjugate() != x:
     raise RuntimeError("Maxima-backed symbolic assumptions are not available")
 print(value)
 """
+
+
+def _loaded_libecl_paths() -> list[Path]:
+    """
+    Return ECL shared libraries currently mapped in this process.
+    """
+    maps = Path("/proc/self/maps")
+    if not maps.is_file():
+        return []
+
+    paths = []
+    seen = set()
+    for line in maps.read_text(encoding="utf-8", errors="replace").splitlines():
+        if "libecl" not in line:
+            continue
+        path_text = line.rsplit(maxsplit=1)[-1]
+        path = Path(path_text)
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        paths.append(path)
+    return paths
+
+
+def _library_exports_symbol(path: Path, symbol: str) -> bool:
+    """
+    Return whether ``path`` exports ``symbol`` through the dynamic loader.
+    """
+    try:
+        library = ctypes.CDLL(os.fspath(path))
+    except OSError:
+        return False
+    return hasattr(library, symbol)
+
+
+def _check_loaded_ecl_matches_maxima_runtime():
+    """
+    Detect Maxima companion images that cannot load against Sage's ECL runtime.
+
+    Installed-wheel processes cannot repair extension-module library choices by
+    changing ``LD_LIBRARY_PATH`` after Python has started.  If ``sage.libs.ecl``
+    has already loaded an ECL library that lacks symbols required by the
+    companion ``maxima.fas``, fail before the broader symbolic probe reports a
+    less direct Maxima import error.
+    """
+    try:
+        runtime = importlib.import_module("sagelite_maxima.runtime")
+    except ImportError:
+        return "not installed"
+
+    importlib.import_module("sage.libs.ecl")
+
+    maxima_fas = Path(runtime.maxima_fas())
+    try:
+        requires_fe_stack = b"FEstack_advance" in maxima_fas.read_bytes()
+    except OSError:
+        return "maxima.fas not readable"
+    if not requires_fe_stack:
+        return "maxima.fas does not require FEstack_advance"
+
+    loaded_libecl = _loaded_libecl_paths()
+    if any(_library_exports_symbol(path, "FEstack_advance") for path in loaded_libecl):
+        return "loaded ECL exports Maxima image symbols"
+
+    loaded = ", ".join(os.fspath(path) for path in loaded_libecl) or "none"
+    raise RuntimeError(
+        "Maxima companion maxima.fas requires FEstack_advance, but the loaded "
+        f"ECL runtime does not export it. Loaded libecl: {loaded}. Rebuild "
+        "sagelite and sagelite-maxima-runtime from matching ECL inputs, or "
+        "build the Maxima companion with SAGELITE_MAXIMA_ECL_LIBRARY pointing "
+        "at the ECL shared library used by the sagelite wheel."
+    )
 
 
 def _tail(file, limit: int = 4096) -> str:

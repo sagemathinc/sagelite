@@ -111,6 +111,70 @@ def test_selftest_pari_conversion_uses_labeled_subprocess_probe(monkeypatch):
     assert probes == [(selftest._PARI_RUNTIME_PROBE, "PARI runtime probe", 30)]
 
 
+def test_selftest_rejects_maxima_fas_with_mismatched_loaded_ecl(
+    monkeypatch, tmp_path
+):
+    selftest = _load_selftest()
+    maxima_fas = tmp_path / "maxima.fas"
+    loaded_libecl = tmp_path / "libecl.so.24.5"
+    maxima_fas.write_bytes(b"compiled image needs FEstack_advance")
+    loaded_libecl.write_text("loaded ecl runtime\n", encoding="utf-8")
+
+    class Runtime:
+        @staticmethod
+        def maxima_fas():
+            return str(maxima_fas)
+
+    original_import_module = selftest.importlib.import_module
+
+    def import_module(name):
+        if name == "sagelite_maxima.runtime":
+            return Runtime
+        if name == "sage.libs.ecl":
+            return object()
+        return original_import_module(name)
+
+    monkeypatch.setattr(selftest.importlib, "import_module", import_module)
+    monkeypatch.setattr(selftest, "_loaded_libecl_paths", lambda: [loaded_libecl])
+    monkeypatch.setattr(selftest, "_library_exports_symbol", lambda path, symbol: False)
+
+    with pytest.raises(RuntimeError, match="requires FEstack_advance"):
+        selftest._check_loaded_ecl_matches_maxima_runtime()
+
+
+def test_selftest_accepts_maxima_fas_with_matching_loaded_ecl(
+    monkeypatch, tmp_path
+):
+    selftest = _load_selftest()
+    maxima_fas = tmp_path / "maxima.fas"
+    loaded_libecl = tmp_path / "libecl.so.24.5"
+    maxima_fas.write_bytes(b"compiled image needs FEstack_advance")
+    loaded_libecl.write_text("loaded ecl runtime\n", encoding="utf-8")
+
+    class Runtime:
+        @staticmethod
+        def maxima_fas():
+            return str(maxima_fas)
+
+    original_import_module = selftest.importlib.import_module
+
+    def import_module(name):
+        if name == "sagelite_maxima.runtime":
+            return Runtime
+        if name == "sage.libs.ecl":
+            return object()
+        return original_import_module(name)
+
+    monkeypatch.setattr(selftest.importlib, "import_module", import_module)
+    monkeypatch.setattr(selftest, "_loaded_libecl_paths", lambda: [loaded_libecl])
+    monkeypatch.setattr(selftest, "_library_exports_symbol", lambda path, symbol: True)
+
+    assert (
+        selftest._check_loaded_ecl_matches_maxima_runtime()
+        == "loaded ECL exports Maxima image symbols"
+    )
+
+
 def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []
