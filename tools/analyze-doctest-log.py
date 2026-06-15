@@ -285,8 +285,8 @@ def suggested_package(result: ModuleResult) -> str:
             return package
 
     return {
-        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post12",
-        "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post12",
+        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post13",
+        "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post13",
         "missing-cremona-db": "sagelite-database-cremona-mini",
         "missing-knotinfo-db": "database-knotinfo",
         "missing-database": "matching sagelite-database-* companion package",
