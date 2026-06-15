@@ -151,8 +151,8 @@ def suggested_package(fingerprint: str) -> str:
     reading the exception text.
     """
     return {
-        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post7",
-        "maxima-library-mode-missing": "sagelite-maxima-runtime",
+        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post8",
+        "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post8",
         "missing-cremona-db": "sagelite-database-cremona-mini",
         "missing-knotinfo-db": "database-knotinfo",
         "missing-database": "matching sagelite-database-* companion package",
