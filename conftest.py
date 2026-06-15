@@ -321,6 +321,11 @@ def pytest_ignore_collect(
     See `pytest documentation <https://docs.pytest.org/en/latest/reference/reference.html#pytest.hookspec.pytest_ignore_collect>`_.
     """
     root = config.rootpath
+    if using_installed_sagelite(root) and is_subpath(collection_path, root / "src"):
+        # Source-tree tests import the active sage package.  In an installed-wheel
+        # check, that package can be older than the checkout, so these tests do
+        # not validate the wheel that was installed by pip.
+        return True
     if (
         is_subpath(collection_path, root / "src" / "sage_docbuild")
         or is_subpath(collection_path, root / "src" / "sage_setup")

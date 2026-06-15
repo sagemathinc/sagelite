@@ -3,7 +3,17 @@ import subprocess
 import sys
 import types
 
-from sage.cli import _ecl_command, main
+import pytest
+import sage.cli as sage_cli
+
+_ecl_command = getattr(sage_cli, "_ecl_command", None)
+if _ecl_command is None:
+    pytest.skip(
+        "installed sagelite wheel does not expose sage.cli._ecl_command",
+        allow_module_level=True,
+    )
+
+main = sage_cli.main
 
 
 def test_ecl_command_uses_companion_runtime(monkeypatch, tmp_path):

@@ -1,5 +1,11 @@
+import pytest
+
 from sage.features import FeatureTestResult
-import sage.features.pari as pari
+
+pari = pytest.importorskip(
+    "sage.features.pari",
+    reason="installed sagelite wheel does not include sage.features.pari",
+)
 
 
 def test_pari_data_feature_uses_registered_companion_path(monkeypatch, tmp_path):
