@@ -1105,6 +1105,96 @@ def test_base_sagelite_standard_runtime_companion_wheels_are_publishable():
             assert package in release_runtime_packages
 
 
+def test_selftest_exercises_standard_feature_runtime_companions():
+    selftest = (ROOT / "src" / "sage" / "cli" / "selftest.py").read_text()
+    expected = {
+        "sagelite-csdp-runtime": (
+            "sagelite_csdp",
+            "CSDP executable runtime",
+            "_check_csdp_runtime",
+        ),
+        "sagelite-fricas-runtime": (
+            "sagelite_fricas",
+            "FriCAS executable runtime",
+            "_check_fricas_runtime",
+        ),
+        "sagelite-frobby-runtime": (
+            "sagelite_frobby",
+            "Frobby executable runtime",
+            "_check_frobby_runtime",
+        ),
+        "sagelite-gap3-runtime": (
+            "sagelite_gap3",
+            "GAP3 executable runtime",
+            "_check_gap3_runtime",
+        ),
+        "sagelite-giac-runtime": (
+            "sagelite_giac",
+            "Giac executable runtime",
+            "_check_giac_runtime",
+        ),
+        "sagelite-info-runtime": (
+            "sagelite_info",
+            "GNU Info executable runtime",
+            "_check_info_runtime",
+        ),
+        "sagelite-kenzo-runtime": (
+            "sagelite_kenzo",
+            "Kenzo ECL runtime",
+            "_check_kenzo_runtime",
+        ),
+        "sagelite-latte-runtime": (
+            "sagelite_latte",
+            "LattE executable runtime",
+            "_check_latte_runtime",
+        ),
+        "sagelite-lcalc-runtime": (
+            "sagelite_lcalc",
+            "lcalc executable runtime",
+            "_check_lcalc_runtime",
+        ),
+        "sagelite-lrslib-runtime": (
+            "sagelite_lrslib",
+            "lrslib executable runtime",
+            "_check_lrslib_runtime",
+        ),
+        "sagelite-msolve-runtime": (
+            "sagelite_msolve",
+            "msolve executable runtime",
+            "_check_msolve_runtime",
+        ),
+        "sagelite-planarity-runtime": (
+            "sagelite_planarity",
+            "planarity executable runtime",
+            "_check_planarity_runtime",
+        ),
+        "sagelite-qepcad-runtime": (
+            "sagelite_qepcad",
+            "QEPCAD executable runtime",
+            "_check_qepcad_runtime",
+        ),
+        "sagelite-tides-runtime": (
+            "sagelite_tides",
+            "TIDES compile-time runtime",
+            "_check_tides_runtime",
+        ),
+        "sagelite-topcom-runtime": (
+            "sagelite_topcom",
+            "TOPCOM executable runtime",
+            "_check_topcom_runtime",
+        ),
+    }
+
+    for package, (module_name, label, check_name) in expected.items():
+        assert any(
+            requirement.startswith(f"{package} ")
+            for requirement in BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES
+        )
+        assert f'"{module_name}"' in selftest
+        assert f'def {check_name}()' in selftest
+        assert f'("{label}", {check_name})' in selftest
+
+
 def test_static_runtime_companion_wheels_are_publishable():
     workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
     workflow_text = workflow.read_text()

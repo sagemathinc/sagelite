@@ -331,6 +331,14 @@ def _check_gapdoc_runtime():
     )
 
 
+def _check_gap3_runtime():
+    from sage.features.gap3 import Gap3
+
+    return _check_companion_feature(
+        "sagelite_gap3", Gap3, "GAP3 executable runtime"
+    )
+
+
 def _check_gfan_runtime():
     try:
         import sagelite_gfan  # noqa: F401
@@ -347,6 +355,38 @@ def _check_gfan_runtime():
     if "Q[x,y]" not in result:
         raise RuntimeError(f"unexpected gfan output: {result!r}")
     return "gfan executable available"
+
+
+def _check_csdp_runtime():
+    from sage.features.csdp import CSDP
+
+    return _check_companion_feature(
+        "sagelite_csdp", CSDP, "CSDP executable runtime"
+    )
+
+
+def _check_fricas_runtime():
+    from sage.features.fricas import FriCAS
+
+    return _check_companion_feature(
+        "sagelite_fricas", FriCAS, "FriCAS executable runtime"
+    )
+
+
+def _check_frobby_runtime():
+    from sage.features.frobby import Frobby
+
+    return _check_companion_feature(
+        "sagelite_frobby", Frobby, "Frobby executable runtime"
+    )
+
+
+def _check_giac_runtime():
+    from sage.features.giac import Giac
+
+    return _check_companion_feature(
+        "sagelite_giac", Giac, "Giac executable runtime"
+    )
 
 
 def _check_graphviz_runtime():
@@ -386,6 +426,38 @@ def _check_poppler_runtime():
 
     return _check_companion_feature(
         "sagelite_poppler", pdftocairo, "Poppler pdftocairo executable runtime"
+    )
+
+
+def _check_info_runtime():
+    from sage.features.info import Info
+
+    return _check_companion_feature(
+        "sagelite_info", Info, "GNU Info executable runtime"
+    )
+
+
+def _check_latte_runtime():
+    from sage.features.latte import Latte
+
+    return _check_companion_feature(
+        "sagelite_latte", Latte, "LattE executable runtime"
+    )
+
+
+def _check_lcalc_runtime():
+    from sage.features.lcalc import Lcalc
+
+    return _check_companion_feature(
+        "sagelite_lcalc", Lcalc, "lcalc executable runtime"
+    )
+
+
+def _check_lrslib_runtime():
+    from sage.features.lrs import Lrslib
+
+    return _check_companion_feature(
+        "sagelite_lrslib", Lrslib, "lrslib executable runtime"
     )
 
 
@@ -447,6 +519,13 @@ def _check_maxima_runtime():
 
     return _run_subprocess_probe(_MAXIMA_RUNTIME_PROBE, "Maxima runtime probe")
 
+
+def _check_kenzo_runtime():
+    from sage.features.kenzo import Kenzo
+
+    return _check_companion_feature(
+        "sagelite_kenzo", Kenzo, "Kenzo ECL runtime"
+    )
 
 
 def _check_meataxe_runtime():
@@ -562,6 +641,14 @@ def _check_mwrank_runtime():
     return "mwrank executable available"
 
 
+def _check_msolve_runtime():
+    from sage.features.msolve import msolve
+
+    return _check_companion_feature(
+        "sagelite_msolve", msolve, "msolve executable runtime"
+    )
+
+
 def _check_palp_runtime():
     try:
         import sagelite_palp  # noqa: F401
@@ -576,6 +663,22 @@ def _check_palp_runtime():
     return "PALP executables available"
 
 
+def _check_planarity_runtime():
+    from sage.features.planarity import Planarity
+
+    return _check_companion_feature(
+        "sagelite_planarity", Planarity, "planarity executable runtime"
+    )
+
+
+def _check_qepcad_runtime():
+    from sage.features.qepcad import Qepcad
+
+    return _check_companion_feature(
+        "sagelite_qepcad", Qepcad, "QEPCAD executable runtime"
+    )
+
+
 def _check_rubiks_runtime():
     try:
         import sagelite_rubiks  # noqa: F401
@@ -588,6 +691,22 @@ def _check_rubiks_runtime():
     if not bool(rubiks):
         raise RuntimeError(f"Rubiks executables are not available: {rubiks.reason}")
     return "Rubiks executables available"
+
+
+def _check_tides_runtime():
+    from sage.features.tides import Tides
+
+    return _check_companion_feature(
+        "sagelite_tides", Tides, "TIDES compile-time runtime"
+    )
+
+
+def _check_topcom_runtime():
+    from sage.features.topcom import TOPCOM
+
+    return _check_companion_feature(
+        "sagelite_topcom", TOPCOM, "TOPCOM executable runtime"
+    )
 
 
 def _check_threejs_runtime():
@@ -921,22 +1040,37 @@ def main() -> int:
         ("coxeter3 Coxeter group library", _check_coxeter3_library),
         ("mcqd clique library", _check_mcqd_library),
         ("tdlib tree decomposition library", _check_tdlib_library),
+        ("CSDP executable runtime", _check_csdp_runtime),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
+        ("GAP3 executable runtime", _check_gap3_runtime),
+        ("FriCAS executable runtime", _check_fricas_runtime),
+        ("Frobby executable runtime", _check_frobby_runtime),
         ("gfan executable runtime", _check_gfan_runtime),
+        ("Giac executable runtime", _check_giac_runtime),
         ("Graphviz executable runtime", _check_graphviz_runtime),
         ("ImageMagick executable runtime", _check_imagemagick_runtime),
         ("dvipng executable runtime", _check_dvipng_runtime),
         ("pdf2svg executable runtime", _check_pdf2svg_runtime),
         ("Poppler executable runtime", _check_poppler_runtime),
+        ("GNU Info executable runtime", _check_info_runtime),
+        ("LattE executable runtime", _check_latte_runtime),
+        ("lcalc executable runtime", _check_lcalc_runtime),
+        ("lrslib executable runtime", _check_lrslib_runtime),
         ("Maxima library runtime", _check_maxima_runtime),
+        ("Kenzo ECL runtime", _check_kenzo_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
         ("4ti2 executable runtime", _check_four_ti_2_runtime),
         ("flatter executable runtime", _check_flatter_runtime),
         ("ECM executable runtime", _check_ecm_runtime),
         ("mwrank executable runtime", _check_mwrank_runtime),
+        ("msolve executable runtime", _check_msolve_runtime),
         ("PALP executable runtime", _check_palp_runtime),
+        ("planarity executable runtime", _check_planarity_runtime),
+        ("QEPCAD executable runtime", _check_qepcad_runtime),
         ("Rubiks executable runtime", _check_rubiks_runtime),
+        ("TIDES compile-time runtime", _check_tides_runtime),
+        ("TOPCOM executable runtime", _check_topcom_runtime),
         ("Three.js static runtime", _check_threejs_runtime),
         ("D3.js static runtime", _check_d3js_runtime),
         ("Jmol static runtime", _check_jmol_runtime),
