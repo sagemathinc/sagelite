@@ -614,6 +614,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-qepcad-runtime >=10.9,<10.10",
     "sagelite-rubiks-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
+    "sagelite-sirocco-runtime >=10.9,<10.10",
     "sagelite-sympow-runtime >=10.9,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
     "sagelite-tides-runtime >=10.9,<10.10",
@@ -1463,7 +1464,7 @@ def test_sirocco_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-sirocco-runtime >=10.9,<10.10"
 
-    assert requirement not in pyproject["project"]["dependencies"]
+    assert requirement in pyproject["project"]["dependencies"]
     assert extras["sirocco"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
