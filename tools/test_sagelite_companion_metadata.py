@@ -614,6 +614,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "Mathics3 >=10.0.1; python_version < '3.14'",
     "packaging",
     "phitigra >=0.2.6",
+    'primecountpy >=0.2.1; sys_platform != "win32"',
     "pypandoc-binary >=1.17",
     "pycosat >=0.6.3",
     (
