@@ -75,7 +75,36 @@ def test_selftest_stops_after_pari_runtime_packaging_failure(monkeypatch):
 
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
-    assert selftest.main() == 1
+    assert selftest.main([]) == 1
+    assert calls == ["installed package requirements", "PARI runtime packaging"]
+
+
+def test_selftest_help_does_not_run_runtime_checks(monkeypatch, capsys):
+    selftest = _load_selftest()
+
+    def run_check(name, check):
+        raise AssertionError(f"unexpected runtime check: {name}")
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    with pytest.raises(SystemExit) as exc:
+        selftest.main(["--help"])
+
+    assert exc.value.code == 0
+    assert "Run a quick smoke test" in capsys.readouterr().out
+
+
+def test_selftest_main_accepts_explicit_empty_argv(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "PARI runtime packaging"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    assert selftest.main([]) == 1
     assert calls == ["installed package requirements", "PARI runtime packaging"]
 
 
@@ -89,7 +118,7 @@ def test_selftest_runs_pari_conversion_before_broader_checks(monkeypatch):
 
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
-    assert selftest.main() == 1
+    assert selftest.main([]) == 1
     assert calls == [
         "installed package requirements",
         "PARI runtime packaging",
@@ -185,7 +214,7 @@ def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
 
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
-    assert selftest.main() == 1
+    assert selftest.main([]) == 1
     assert calls == [
         "installed package requirements",
         "PARI runtime packaging",
@@ -205,7 +234,7 @@ def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
     monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
 
-    assert selftest.main() == 1
+    assert selftest.main([]) == 1
     assert calls[:5] == [
         "installed package requirements",
         "PARI runtime packaging",
@@ -227,7 +256,7 @@ def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
     monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
 
-    assert selftest.main() == 0
+    assert selftest.main([]) == 0
 
     for name in (
         "ECL executable runtime",

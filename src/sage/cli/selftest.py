@@ -4,10 +4,11 @@ Small runtime self-test for sagelite installations.
 
 from __future__ import annotations
 
+import argparse
+import ctypes
 import importlib
 import importlib.metadata as importlib_metadata
 import importlib.util
-import ctypes
 import os
 import subprocess
 import sys
@@ -1262,10 +1263,19 @@ def _optional_runtime_summary() -> None:
             print("  Maxima library mode: present")
 
 
-def main() -> int:
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run a quick smoke test of the installed sagelite runtime.",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
     """
     Run a quick smoke test of the installed sagelite runtime.
     """
+    _parse_args(argv)
+
     ok = _run_check("installed package requirements", _check_installed_requirements)
     if not _run_check("PARI runtime packaging", _check_single_pari_runtime):
         return 1
