@@ -375,6 +375,14 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
                 "libecl.so* could be found for validation"
             )
         targets["system ECL runtime"] = system_libraries
+    else:
+        raise RuntimeError(
+            "could not validate copied ECL images against the ECL runtime used "
+            "by sagelite. Set SAGELITE_MAXIMA_ECL_LIBRARY to the extracted "
+            "libecl shared library from the repaired sagelite wheel, or set "
+            "SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 for an explicit system-ECL "
+            "test build."
+        )
 
     return targets
 

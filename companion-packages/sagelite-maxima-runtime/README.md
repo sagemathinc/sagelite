@@ -21,9 +21,9 @@ for a repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ECL_SONAME` to the
 auditwheel-renamed ECL SONAME from that wheel so library mode uses the already
 loaded ECL runtime instead of loading a second copy. Also set
 `SAGELITE_MAXIMA_ECL_LIBRARY` to the extracted ECL shared library from that
-repaired `sagelite` wheel so the build can reject Maxima images that need
-symbols unavailable in library mode. The build patches both `maxima.fas` and
-copied ECL support images such as `cmp.fas`:
+repaired `sagelite` wheel; release builds require this so the build can reject
+Maxima images that need symbols unavailable in library mode. The build patches
+both `maxima.fas` and copied ECL support images such as `cmp.fas`:
 
 ```bash
 SAGELITE_MAXIMA_PREFIX=/path/to/share/maxima/5.47.0 \
@@ -37,9 +37,11 @@ python -m build companion-packages/sagelite-maxima-runtime
 ```
 
 The build rejects ECL-loaded images that still depend on a generic
-`libecl.so` SONAME unless `SAGELITE_MAXIMA_ECL_SONAME` is set. For a local
-test build that intentionally targets the system ECL package instead of a
-repaired `sagelite` wheel, set `SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1` explicitly.
+`libecl.so` SONAME unless `SAGELITE_MAXIMA_ECL_SONAME` is set. It also rejects
+builds that do not validate the copied Maxima images against the ECL runtime
+that `sagelite` will load. For a local test build that intentionally targets
+the system ECL package instead of a repaired `sagelite` wheel, set
+`SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1` explicitly.
 
 If the variables are not set, the build checks common Sage and system
 locations, including Debian/Ubuntu's `maxima-sage` layout. For production

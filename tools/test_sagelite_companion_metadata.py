@@ -601,7 +601,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-lie-runtime >=10.9,<10.10",
     "sagelite-lrslib-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post10,<10.10",
+    "sagelite-maxima-runtime >=10.9.post11,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-msolve-runtime >=10.9,<10.10",
@@ -846,7 +846,7 @@ def test_sagelite_default_dependencies_include_short_doctest_companions():
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post10,<10.10" in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post11,<10.10" in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -3257,7 +3257,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         / "runtime.py"
     ).read_text()
 
-    assert pyproject["project"]["version"] == "10.9.post10"
+    assert pyproject["project"]["version"] == "10.9.post11"
     assert pyproject["project"]["scripts"] == {
         "maxima": "sagelite_maxima.runtime:maxima",
     }
@@ -3383,14 +3383,20 @@ def test_maxima_runtime_validation_rejects_missing_fe_symbols(monkeypatch, tmp_p
     runtime_dir = tmp_path / "lib" / "runtime"
     image = ecl_dir / "maxima.fas"
     libecl = runtime_dir / "libecl.so.24.5"
+    target_libecl = tmp_path / "sagelite.libs" / "libecl-sagelite.so.24.5.10"
     image.parent.mkdir(parents=True)
     libecl.parent.mkdir(parents=True)
+    target_libecl.parent.mkdir(parents=True)
     image.write_text("compiled maxima image\n")
     libecl.write_text("ecl runtime\n")
+    target_libecl.write_text("target ecl runtime\n")
+    monkeypatch.setenv("SAGELITE_MAXIMA_ECL_LIBRARY", str(target_libecl))
 
     def dynamic_symbols(path, *args):
         if path == libecl and "--defined-only" in args:
             return {"ecl_stack_pop_values"}
+        if path == target_libecl and "--defined-only" in args:
+            return {"FEstack_advance", "ecl_stack_pop_values"}
         if path == image and "--undefined-only" in args:
             return {"FEstack_advance", "__stack_chk_fail"}
         return set()
@@ -3399,6 +3405,19 @@ def test_maxima_runtime_validation_rejects_missing_fe_symbols(monkeypatch, tmp_p
 
     with pytest.raises(RuntimeError, match="FEstack_advance"):
         helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
+
+
+def test_maxima_runtime_validation_requires_target_ecl(monkeypatch, tmp_path):
+    helpers = _maxima_runtime_setup_helpers()
+    runtime_dir = tmp_path / "lib" / "runtime"
+    copied_libecl = runtime_dir / "libecl.so.24.5"
+    copied_libecl.parent.mkdir(parents=True)
+    copied_libecl.write_text("copied ecl runtime\n")
+    monkeypatch.delenv("SAGELITE_MAXIMA_ECL_LIBRARY", raising=False)
+    monkeypatch.delenv("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL", raising=False)
+
+    with pytest.raises(RuntimeError, match="SAGELITE_MAXIMA_ECL_LIBRARY"):
+        helpers["_validation_targets"](runtime_dir)
 
 
 def test_maxima_runtime_validation_checks_target_sagelite_ecl(
@@ -3578,7 +3597,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post10,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post11,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement in extras["runtime"]
