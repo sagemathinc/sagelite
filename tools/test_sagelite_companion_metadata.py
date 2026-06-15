@@ -325,6 +325,18 @@ BUILD_COPIED_DATA_PACKAGE_DATA = {
             "data/stein_watkins/**/*",
         ],
     },
+    "sagelite-pari-data": {
+        "sagelite_pari_data": [
+            "data/pari/galdata/**/*",
+            "data/pari/elldata/**/*",
+            "data/pari/seadata/**/*",
+            "data/pari/galpol/**/*",
+            "data/pari/nftables/**/*",
+            "data/pari/buzzard/**/*",
+            "data/pari/dokchitser/**/*",
+            "data/pari/simon/**/*",
+        ],
+    },
 }
 
 REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
@@ -882,7 +894,6 @@ def test_companion_wheels_with_package_data_are_classified():
         set(RUNTIME_PACKAGE_DATA)
         | set(SOURCE_BUNDLED_DATA_PACKAGE_DATA)
         | set(BUILD_COPIED_DATA_PACKAGE_DATA)
-        | {"sagelite-pari-data"}
     )
     declared = set()
     for pyproject_toml in (ROOT / "companion-packages").glob(
@@ -1318,16 +1329,10 @@ def test_pari_data_wheel_declares_copied_runtime_data():
     }
     assert "def sage_data_path()" in package_init
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
-    assert pyproject["tool"]["setuptools"]["package-data"]["sagelite_pari_data"] == [
-        "data/pari/galdata/**/*",
-        "data/pari/elldata/**/*",
-        "data/pari/seadata/**/*",
-        "data/pari/galpol/**/*",
-        "data/pari/nftables/**/*",
-        "data/pari/buzzard/**/*",
-        "data/pari/dokchitser/**/*",
-        "data/pari/simon/**/*",
-    ]
+    assert (
+        pyproject["tool"]["setuptools"]["package-data"]
+        == BUILD_COPIED_DATA_PACKAGE_DATA["sagelite-pari-data"]
+    )
 
     for script_dir in ("buzzard", "dokchitser", "simon"):
         assert (ROOT / "src" / "sage" / "ext_data" / "pari" / script_dir).is_dir()
