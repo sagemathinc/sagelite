@@ -755,7 +755,7 @@ def _maxima_runtime_setup_helpers() -> dict:
     source = setup_py.read_text()
     start = source.index("def _dynamic_symbols")
     end = source.index("\ndef _ignore_maxima_files")
-    namespace = {"os": os, "Path": Path, "subprocess": None}
+    namespace = {"os": os, "Path": Path, "REPO_ROOT": ROOT, "subprocess": None}
     exec(source[start:end], namespace)
     return namespace
 
@@ -3212,6 +3212,35 @@ def test_maxima_runtime_validation_checks_target_sagelite_ecl(
 
     with pytest.raises(RuntimeError, match="sagelite ECL runtime"):
         helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
+
+
+def test_maxima_runtime_validation_accepts_repo_relative_target_ecl(
+    monkeypatch, tmp_path
+):
+    helpers = _maxima_runtime_setup_helpers()
+    ecl_dir = tmp_path / "lib" / "ecl-24.5.10"
+    runtime_dir = tmp_path / "lib" / "runtime"
+    image = ecl_dir / "maxima.fas"
+    copied_libecl = runtime_dir / "libecl.so.24.5.10"
+    target_libecl = ROOT / "pyproject.toml"
+    image.parent.mkdir(parents=True)
+    copied_libecl.parent.mkdir(parents=True)
+    image.write_text("compiled maxima image\n")
+    copied_libecl.write_text("copied ecl runtime\n")
+    monkeypatch.setenv(
+        "SAGELITE_MAXIMA_ECL_LIBRARY", os.fspath(target_libecl.relative_to(ROOT))
+    )
+
+    def dynamic_symbols(path, *args):
+        if path in {copied_libecl, target_libecl} and "--defined-only" in args:
+            return {"FEstack_advance"}
+        if path == image and "--undefined-only" in args:
+            return {"FEstack_advance"}
+        return set()
+
+    monkeypatch.setitem(helpers, "_dynamic_symbols", dynamic_symbols)
+
+    helpers["_validate_copied_ecl_images"](ecl_dir, runtime_dir)
 
 
 def test_maxima_runtime_validation_checks_system_ecl_builds(

@@ -326,6 +326,22 @@ def _system_ecl_libraries() -> list[Path]:
     return sorted({path.name: path for path in libraries}.values())
 
 
+def _environment_path(name: str) -> Path | None:
+    value = os.environ.get(name)
+    if not value:
+        return None
+
+    path = Path(value)
+    if path.is_absolute():
+        return path
+
+    repo_path = REPO_ROOT / path
+    if repo_path.exists():
+        return repo_path
+
+    return path
+
+
 def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
     """
     Return ECL libraries that copied images must be loadable against.
@@ -344,9 +360,8 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
 
     targets = {"copied ECL runtime": ecl_libraries}
 
-    sagelite_ecl = os.environ.get("SAGELITE_MAXIMA_ECL_LIBRARY")
-    if sagelite_ecl:
-        path = Path(sagelite_ecl)
+    path = _environment_path("SAGELITE_MAXIMA_ECL_LIBRARY")
+    if path is not None:
         if not path.is_file():
             raise RuntimeError(
                 f"SAGELITE_MAXIMA_ECL_LIBRARY does not name a file: {path}"
