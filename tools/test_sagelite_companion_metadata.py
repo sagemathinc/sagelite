@@ -667,6 +667,7 @@ RELEASE_REQUIRED_MESON_OPTIONS = {
     "libhomfly",
     "mcqd",
     "rankwidth",
+    "sirocco",
     "tdlib",
 }
 

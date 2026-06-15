@@ -31,6 +31,7 @@ setup = [
   '-Dlibhomfly=enabled',
   '-Dmcqd=enabled',
   '-Drankwidth=enabled',
+  '-Dsirocco=enabled',
   '-Dtdlib=enabled',
 ]
 
