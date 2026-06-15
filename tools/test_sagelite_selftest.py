@@ -140,6 +140,64 @@ def test_selftest_pari_conversion_uses_labeled_subprocess_probe(monkeypatch):
     assert probes == [(selftest._PARI_RUNTIME_PROBE, "PARI runtime probe", 30)]
 
 
+def test_selftest_pari_probe_checks_loaded_runtime_before_conversion():
+    selftest = _load_selftest()
+
+    assert (
+        "from sage.cli.selftest import _check_loaded_pari_runtime"
+        in selftest._PARI_RUNTIME_PROBE
+    )
+    assert (
+        selftest._PARI_RUNTIME_PROBE.index("_check_loaded_pari_runtime()")
+        < selftest._PARI_RUNTIME_PROBE.index("primitive_root")
+    )
+
+
+def test_selftest_rejects_multiple_loaded_pari_runtimes(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    system_pari = tmp_path / "usr" / "libpari-gmp-tls.so.2.17.3"
+    bundled_pari = (
+        tmp_path / "site-packages" / "sagelite.libs" / "libpari-abc.so.2.17.3"
+    )
+    system_pari.parent.mkdir(parents=True)
+    bundled_pari.parent.mkdir(parents=True)
+    system_pari.write_text("system pari\n", encoding="utf-8")
+    bundled_pari.write_text("bundled pari\n", encoding="utf-8")
+
+    imported = []
+
+    def import_module(name):
+        imported.append(name)
+        return object()
+
+    monkeypatch.setattr(selftest.importlib, "import_module", import_module)
+    monkeypatch.setattr(
+        selftest, "_loaded_libpari_paths", lambda: [system_pari, bundled_pari]
+    )
+
+    with pytest.raises(RuntimeError, match="multiple PARI runtime libraries"):
+        selftest._check_loaded_pari_runtime()
+
+    assert imported == ["sage.libs.pari.convert_gmp", "cypari2.pari_instance"]
+
+
+def test_selftest_accepts_single_loaded_pari_runtime(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    bundled_pari = (
+        tmp_path / "site-packages" / "sagelite.libs" / "libpari-abc.so.2.17.3"
+    )
+    bundled_pari.parent.mkdir(parents=True)
+    bundled_pari.write_text("bundled pari\n", encoding="utf-8")
+
+    monkeypatch.setattr(selftest.importlib, "import_module", lambda name: object())
+    monkeypatch.setattr(selftest, "_loaded_libpari_paths", lambda: [bundled_pari])
+
+    assert (
+        selftest._check_loaded_pari_runtime()
+        == "loaded PARI runtime: libpari-abc.so.2.17.3"
+    )
+
+
 def test_selftest_rejects_maxima_fas_with_mismatched_loaded_ecl(
     monkeypatch, tmp_path
 ):

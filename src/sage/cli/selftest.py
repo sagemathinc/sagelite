@@ -106,10 +106,62 @@ def _check_single_pari_runtime():
 
 
 _PARI_RUNTIME_PROBE = """
+from sage.cli.selftest import _check_loaded_pari_runtime
+
+_check_loaded_pari_runtime()
+
 from sage.arith.misc import primitive_root
 
 print(primitive_root(389, check=False))
 """
+
+
+def _loaded_libpari_paths() -> list[Path]:
+    """
+    Return PARI shared libraries currently mapped in this process.
+    """
+    maps = Path("/proc/self/maps")
+    if not maps.is_file():
+        return []
+
+    paths = []
+    seen = set()
+    for line in maps.read_text(encoding="utf-8", errors="replace").splitlines():
+        if "libpari" not in line:
+            continue
+        path_text = line.rsplit(maxsplit=1)[-1]
+        path = Path(path_text)
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        paths.append(path)
+    return paths
+
+
+def _check_loaded_pari_runtime():
+    """
+    Reject installed wheels that have already loaded multiple PARI runtimes.
+
+    The packaging check catches the common prebuilt ``cypari2`` wheel case
+    before imports.  This runtime check catches lower-level repair mistakes,
+    such as Sage extensions resolving a system PARI while cypari2 resolves a
+    bundled one.
+    """
+    importlib.import_module("sage.libs.pari.convert_gmp")
+    importlib.import_module("cypari2.pari_instance")
+
+    loaded_libpari = sorted({path.resolve() for path in _loaded_libpari_paths()})
+    if len(loaded_libpari) > 1:
+        loaded = ", ".join(os.fspath(path) for path in loaded_libpari)
+        raise RuntimeError(
+            "multiple PARI runtime libraries are loaded in this process. "
+            f"Loaded libpari: {loaded}. Rebuild the sagelite wheel so Sage "
+            "extension modules and cypari2 share the same repaired libpari."
+        )
+
+    if loaded_libpari:
+        return f"loaded PARI runtime: {loaded_libpari[0].name}"
+    return "no loaded PARI shared library found"
 
 
 def _check_pari_runtime_roundtrip():
