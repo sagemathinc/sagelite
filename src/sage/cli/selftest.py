@@ -55,6 +55,7 @@ def _check_installed_requirements(distribution_name: str = "sagelite"):
         try:
             installed_version = Version(importlib_metadata.version(requirement.name))
         except importlib_metadata.PackageNotFoundError:
+            issues.append(f"{requirement.name} is not installed")
             continue
 
         if requirement.specifier and not requirement.specifier.contains(

@@ -49,7 +49,7 @@ def test_installed_requirements_rejects_stale_companion_version(monkeypatch):
         selftest._check_installed_requirements()
 
 
-def test_installed_requirements_ignores_missing_runtime(monkeypatch):
+def test_installed_requirements_rejects_missing_runtime(monkeypatch):
     monkeypatch.setattr(
         selftest.importlib_metadata,
         "distribution",
@@ -61,10 +61,8 @@ def test_installed_requirements_ignores_missing_runtime(monkeypatch):
 
     monkeypatch.setattr(selftest.importlib_metadata, "version", missing_version)
 
-    assert (
+    with pytest.raises(RuntimeError, match="sagelite-pari-data is not installed"):
         selftest._check_installed_requirements()
-        == "installed requirement versions satisfy metadata"
-    )
 
 
 def test_run_check_reports_signal_style_failures(capsys):
