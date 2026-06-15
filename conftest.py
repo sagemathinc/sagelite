@@ -8,9 +8,12 @@ See https://docs.pytest.org/en/latest/index.html for more details.
 from __future__ import annotations
 
 import doctest
+import importlib.util
 import inspect
 import sys
 import warnings
+from functools import cache
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
 import pytest
@@ -33,7 +36,6 @@ from sage.doctest.parsing import SageDocTestParser, SageOutputChecker
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
 
 def is_subpath(path: Path, parent: Path) -> bool:
@@ -45,6 +47,49 @@ def is_subpath(path: Path, parent: Path) -> bool:
         return True
     except ValueError:
         return False
+
+
+@cache
+def maxima_library_mode_available() -> bool:
+    try:
+        import sage.interfaces.maxima_lib  # noqa: F401
+    except ImportError as exception:
+        if str(exception).startswith(
+            "Maxima library mode is unavailable in this Sage installation:"
+        ):
+            return False
+        raise
+    return True
+
+
+@cache
+def using_installed_sagelite(root: Path) -> bool:
+    import sage
+
+    return not is_subpath(Path(sage.__file__), root / "src")
+
+
+def needs_missing_optional_runtime(file_path: Path, root: Path) -> str | None:
+    if file_path.relative_to(root).as_posix() == "src/sage/tests/cmdline.py":
+        if using_installed_sagelite(root):
+            return "source-tree Sage command line"
+    if (
+        is_subpath(
+            file_path,
+            root / "src" / "sage" / "tests" / "books" / "computational_mathematics_with_sagemath",
+        )
+        or file_path.relative_to(root).as_posix()
+        in {
+            "src/sage/tests/gosper-sum.py",
+            "src/sage/tests/lazy_imports.py",
+        }
+    ):
+        if not maxima_library_mode_available():
+            return "Maxima library mode"
+    if file_path.relative_to(root).as_posix() == "src/sage/tests/modular_group_cohomology.py":
+        if importlib.util.find_spec("pGroupCohomology") is None:
+            return "p_group_cohomology"
+    return None
 
 
 class SageDoctestModule(DoctestModule):
@@ -123,6 +168,12 @@ class SageDoctestModule(DoctestModule):
                             pytest.skip(
                                 f"unable to import module {self.path} due to missing feature {exception.name}"
                             )
+                    if str(exception).startswith(
+                        "Maxima library mode is unavailable in this Sage installation:"
+                    ):
+                        pytest.skip(
+                            f"unable to import module {self.path} due to missing Maxima library mode"
+                        )
                     raise
         # Uses internal doctest module parsing mechanism.
         finder = MockAwareDocTestFinder()
@@ -188,6 +239,12 @@ def pytest_collect_file(
         return IgnoreCollector.from_parent(parent)
     elif file_path.suffix == ".py":
         if parent.config.option.doctest:
+            missing_optional = needs_missing_optional_runtime(
+                file_path, parent.config.rootpath
+            )
+            if missing_optional is not None:
+                return IgnoreCollector.from_parent(parent)
+
             if file_path.name == "__main__.py" or file_path.name == "setup.py":
                 # We don't allow tests to be defined in __main__.py/setup.py files (because their import will fail).
                 return IgnoreCollector.from_parent(parent)
