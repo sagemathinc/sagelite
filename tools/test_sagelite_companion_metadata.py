@@ -471,10 +471,12 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-ecm-runtime": "ecm-runtime-dist",
     "sagelite-flatter-runtime": "flatter-runtime-dist",
     "sagelite-frobby-runtime": "frobby-runtime-dist",
+    "sagelite-gap3-runtime": "gap3-runtime-dist",
     "sagelite-gap-runtime": "gap-runtime-dist",
     "sagelite-gfan-runtime": "gfan-runtime-dist",
     "sagelite-giac-runtime": "giac-runtime-dist",
     "sagelite-glucose-runtime": "glucose-runtime-dist",
+    "sagelite-graphviz-runtime": "graphviz-runtime-dist",
     "sagelite-info-runtime": "info-runtime-dist",
     "sagelite-kissat-runtime": "kissat-runtime-dist",
     "sagelite-latte-runtime": "latte-runtime-dist",
@@ -552,12 +554,17 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-flatter-runtime >=10.9,<10.10",
     "sagelite-frobby-runtime >=10.9,<10.10",
+    "sagelite-fricas-runtime >=10.9,<10.10",
+    "sagelite-gap3-runtime >=10.9.post1,<10.10",
     "sagelite-gap-runtime >=10.9.post2,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
     "sagelite-giac-runtime >=10.9,<10.10",
     "sagelite-glucose-runtime >=10.9,<10.10",
+    "sagelite-graphviz-runtime >=10.9.post1,<10.10",
     "sagelite-imagemagick-runtime >=10.9,<10.10",
     "sagelite-info-runtime >=10.9,<10.10",
+    "sagelite-jmol-runtime >=10.9,<10.10",
+    "sagelite-kenzo-runtime >=10.9,<10.10",
     "sagelite-kissat-runtime >=10.9,<10.10",
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
@@ -919,6 +926,30 @@ def test_base_sagelite_installs_standard_runtime_companion_wheels():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES <= dependencies
+
+
+def test_base_sagelite_companion_dependencies_are_contract_classified():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = {
+        requirement
+        for requirement in pyproject["project"]["dependencies"]
+        if requirement.startswith("sagelite-")
+    }
+    gap_package_dependencies = {
+        requirement
+        for requirements in GAP_PACKAGE_EXTRA_REQUIREMENTS.values()
+        for requirement in requirements
+        if requirement.startswith("sagelite-gap-package-")
+    }
+    classified = (
+        BASE_SAGELITE_DATA_DEPENDENCIES
+        | BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES
+        | gap_package_dependencies
+    )
+
+    assert dependencies == classified
 
 
 def test_base_sagelite_installs_standard_pypi_runtime_wheels():
