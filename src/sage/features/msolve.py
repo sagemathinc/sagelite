@@ -43,6 +43,7 @@ class msolve(Executable):
             True
         """
         Executable.__init__(self, "msolve", executable='msolve',
+                            spkg="msolve", type="optional",
                             url='https://msolve.lip6.fr/')
 
     def absolute_filename(self) -> str:
