@@ -413,3 +413,76 @@ Exception raised:
         report["top_examples"]["optional-data"][0]["suggested_package"]
         == "sagelite-database-kohel"
     )
+
+
+def test_report_suggests_pypi_data_wheels_for_named_missing_databases(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/databases/cubic_hecke_db.py", line 42, in sage.databases.cubic_hecke_db
+Failed example:
+    CubicHeckeDataBase().version()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_cubic_hecke is not available.
+    No module named 'database_cubic_hecke'
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.databases.cubic_hecke_db
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/databases/knotinfo_db.py", line 42, in sage.databases.knotinfo_db
+Failed example:
+    KnotInfoDataBase().version()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_knotinfo is not available.
+    No module named 'database_knotinfo'
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.databases.knotinfo_db
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/matroids/database_collections.py", line 42, in sage.matroids.database_collections
+Failed example:
+    list(AllMatroids(2))
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_matroids is not available.
+    No module named 'matroid_database'
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.matroids.database_collections
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/databases/conway.py", line 42, in sage.databases.conway
+Failed example:
+    ConwayPolynomials()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: conway_polynomials is not available.
+    No module named 'conway_polynomials'
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.databases.conway
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+
+    assert (
+        results["sage.databases.cubic_hecke_db"].suggested_package
+        == "database-cubic-hecke"
+    )
+    assert (
+        results["sage.databases.knotinfo_db"].suggested_package
+        == "database-knotinfo"
+    )
+    assert (
+        results["sage.matroids.database_collections"].suggested_package
+        == "matroid-database"
+    )
+    assert (
+        results["sage.databases.conway"].suggested_package
+        == "conway-polynomials"
+    )

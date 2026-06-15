@@ -237,13 +237,18 @@ MISSING_EXECUTABLE_PACKAGES = {
 }
 
 MISSING_DATABASE_PACKAGES = {
+    "conway_polynomials": "conway-polynomials",
+    "cubic_hecke": "database-cubic-hecke",
     "cunningham": "sagelite-cunningham-tables",
     "database_cremona_ellcurve": "sagelite-database-cremona-ellcurve",
     "database_cremona_mini_ellcurve": "sagelite-database-cremona-mini",
+    "database_cubic_hecke": "database-cubic-hecke",
     "database_ellcurves": "sagelite-database-ellcurves",
     "database_graphs": "sagelite-database-graphs",
     "database_jones_numfield": "sagelite-database-jones-numfield",
+    "database_knotinfo": "database-knotinfo",
     "database_kohel": "sagelite-database-kohel",
+    "database_matroids": "matroid-database",
     "database_mutation_class": "sagelite-database-mutation-class",
     "database_odlyzko_zeta": "sagelite-database-odlyzko-zeta",
     "database_polytopes": "sagelite-database-polytopes",
@@ -252,7 +257,9 @@ MISSING_DATABASE_PACKAGES = {
     "database_stein_watkins": "sagelite-database-stein-watkins",
     "database_stein_watkins_mini": "sagelite-database-stein-watkins-mini",
     "database_symbolic_data": "sagelite-database-symbolic-data",
+    "knotinfo": "database-knotinfo",
     "matroid": "matroid-database",
+    "matroid_database": "matroid-database",
 }
 
 
