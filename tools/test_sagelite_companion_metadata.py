@@ -2935,6 +2935,7 @@ def test_csdp_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-csdp-runtime >=10.9,<10.10"
 
     assert extras["csdp"] == [requirement]
+    assert extras["theta"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -3742,6 +3743,18 @@ def test_topcom_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-topcom-runtime >=10.9,<10.10"
 
     assert extras["topcom"] == [requirement]
+    for extra in (
+        "points2allfinetriang",
+        "points2allfinetriangs",
+        "points2alltriangs",
+        "points2finetriang",
+        "points2finetriangs",
+        "points2placingtriang",
+        "points2placingtriangs",
+        "points2triang",
+        "points2triangs",
+    ):
+        assert extras[extra] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -3755,6 +3768,69 @@ def test_four_ti_2_runtime_is_exposed_by_sagelite_extras():
 
     assert requirement in pyproject["project"]["dependencies"]
     assert extras["4ti2"] == [requirement]
+    for extra in (
+        "circuits",
+        "graver",
+        "groebner",
+        "hilbert",
+        "markov",
+        "ppi",
+        "qsolve",
+        "rays",
+        "zsolve",
+    ):
+        assert extras[extra] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_gfan_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-gfan-runtime >=10.9,<10.10"
+
+    assert extras["gfan"] == [requirement]
+    assert extras["gfan_bases"] == [requirement]
+    assert extras["gfan_groebnercone"] == [requirement]
+    assert extras["gfan_render"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_nauty_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-nauty-runtime >=10.9,<10.10"
+
+    assert extras["nauty"] == [requirement]
+    for extra in (
+        "directg",
+        "genbg",
+        "geng",
+        "genktreeg",
+        "genposetg",
+        "gentourng",
+        "gentreeg",
+    ):
+        assert extras[extra] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
+
+
+def test_rubiks_runtime_is_exposed_by_sagelite_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-rubiks-runtime >=10.9,<10.10"
+
+    assert extras["rubiks"] == [requirement]
+    for extra in ("cu2", "cubex", "dikcube", "mcube", "optimal", "size222"):
+        assert extras[extra] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
