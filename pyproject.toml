@@ -157,7 +157,7 @@ dependencies = [
   'sagelite-lcalc-runtime >=10.9,<10.10',
   'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',
-  'sagelite-maxima-runtime >=10.9.post8,<10.10',
+  'sagelite-maxima-runtime >=10.9.post9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
@@ -393,7 +393,7 @@ full = [
   'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',
-  'sagelite-maxima-runtime >=10.9.post8,<10.10',
+  'sagelite-maxima-runtime >=10.9.post9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
   'sagelite-msolve-runtime >=10.9,<10.10',
@@ -665,7 +665,7 @@ matroid_database = ['matroid-database ==0.3']
 matroids = ['matroid-database ==0.3']
 mathics = ["Mathics3 >=10.0.1; python_version < '3.14'"]
 mathjax = ['sagelite-mathjax-runtime >=10.9,<10.10']
-maxima = ['sagelite-maxima-runtime >=10.9.post8,<10.10']
+maxima = ['sagelite-maxima-runtime >=10.9.post9,<10.10']
 meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
 mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
 mutation_class = ['sagelite-database-mutation-class >=10.9,<10.10']
@@ -778,7 +778,7 @@ runtime = [
   'sagelite-lie-runtime >=10.9,<10.10',
   'sagelite-lrslib-runtime >=10.9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',
-  'sagelite-maxima-runtime >=10.9.post8,<10.10',
+  'sagelite-maxima-runtime >=10.9.post9,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
   'sagelite-mwrank-runtime >=10.9,<10.10',
   'sagelite-msolve-runtime >=10.9,<10.10',

@@ -46,10 +46,10 @@ Exception raised:
     assert result.failed_examples == 1
     assert result.traceback_lines[-1].startswith("ImportError: Maxima library mode")
     assert report["fingerprint_counts"] == {"maxima-library-mode-missing": 1}
-    assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post8"
+    assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post9"
     assert (
         report["top_examples"]["optional-external"][0]["suggested_package"]
-        == "sagelite-maxima-runtime >=10.9.post8"
+        == "sagelite-maxima-runtime >=10.9.post9"
     )
 
 
@@ -109,5 +109,5 @@ Exception raised:
 
     assert result.fingerprint == "maxima-runtime-abi-mismatch"
     assert result.evidence == "Maxima runtime wheel is ABI-incompatible with the loaded ECL library"
-    assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post8"
+    assert result.suggested_package == "sagelite-maxima-runtime >=10.9.post9"
     assert report["fingerprint_counts"] == {"maxima-runtime-abi-mismatch": 1}
