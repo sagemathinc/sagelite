@@ -281,6 +281,109 @@ Exception raised:
     )
 
 
+def test_report_suggests_runtime_for_feature_executable_names(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/base.py", line 42, in sage.geometry.polyhedron.base
+Failed example:
+    MixedIntegerLinearProgram(solver='csdp')
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: csdp is not available.
+    Executable 'theta' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.base
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/rings/polynomial/groebner_fan.py", line 42, in sage.rings.polynomial.groebner_fan
+Failed example:
+    GroebnerFan(I).reduced_groebner_bases()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: gfan_bases is not available.
+    Executable 'gfan_bases' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.rings.polynomial.groebner_fan
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/four_ti_2.py", line 42, in sage.interfaces.four_ti_2
+Failed example:
+    four_ti_2.hilbert(...)
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: 4ti2-hilbert is not available.
+    Executable 'hilbert' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.four_ti_2
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/graphs/generators/basic.py", line 42, in sage.graphs.generators.basic
+Failed example:
+    graphs.nauty_geng("3")
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: nauty_geng is not available.
+    Executable 'geng' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.graphs.generators.basic
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/games/quantumino.py", line 42, in sage.games.quantumino
+Failed example:
+    solve("cu2")
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: cu2 is not available.
+    Executable 'cu2' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.games.quantumino
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/triangulation/base.pyx", line 42, in sage.geometry.triangulation.base
+Failed example:
+    PointConfiguration([(0,0), (1,0), (0,1)]).placing_triangulation()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: topcom_points2placingtriang is not available.
+    Executable 'points2placingtriang' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.triangulation.base
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+
+    assert (
+        results["sage.geometry.polyhedron.base"].suggested_package
+        == "sagelite-csdp-runtime"
+    )
+    assert (
+        results["sage.rings.polynomial.groebner_fan"].suggested_package
+        == "sagelite-gfan-runtime"
+    )
+    assert (
+        results["sage.interfaces.four_ti_2"].suggested_package
+        == "sagelite-4ti2-runtime"
+    )
+    assert (
+        results["sage.graphs.generators.basic"].suggested_package
+        == "sagelite-nauty-runtime"
+    )
+    assert (
+        results["sage.games.quantumino"].suggested_package
+        == "sagelite-rubiks-runtime"
+    )
+    assert (
+        results["sage.geometry.triangulation.base"].suggested_package
+        == "sagelite-topcom-runtime"
+    )
+
+
 def test_report_suggests_runtime_for_named_missing_database(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
