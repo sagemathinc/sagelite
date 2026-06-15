@@ -77,3 +77,48 @@ def test_selftest_stops_after_pari_runtime_packaging_failure(monkeypatch):
 
     assert selftest.main() == 1
     assert calls == ["installed package requirements", "PARI runtime packaging"]
+
+
+def test_selftest_runs_pari_conversion_before_broader_checks(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "PARI runtime conversion"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    assert selftest.main() == 1
+    assert calls == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+    ]
+
+
+def test_selftest_pari_conversion_uses_labeled_subprocess_probe(monkeypatch):
+    selftest = _load_selftest()
+    probes = []
+
+    def run_subprocess_probe(script, description="runtime probe", timeout=30):
+        probes.append((script, description, timeout))
+        return "5"
+
+    monkeypatch.setattr(selftest, "_run_subprocess_probe", run_subprocess_probe)
+
+    assert selftest._check_pari_runtime_roundtrip() == "5"
+    assert probes == [(selftest._PARI_RUNTIME_PROBE, "PARI runtime probe", 30)]
+
+
+def test_subprocess_probe_reports_probe_description(tmp_path):
+    selftest = _load_selftest()
+    script = tmp_path / "fail.py"
+    script.write_text(
+        "import sys; print('out'); print('err', file=sys.stderr); sys.exit(7)"
+    )
+
+    with pytest.raises(RuntimeError, match="PARI runtime probe exited with status 7"):
+        selftest._run_subprocess_probe(
+            f"exec({script.read_text()!r})", "PARI runtime probe"
+        )

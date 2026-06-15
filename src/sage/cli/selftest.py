@@ -101,6 +101,24 @@ def _check_single_pari_runtime():
     return "cypari2 does not carry a private PARI runtime"
 
 
+_PARI_RUNTIME_PROBE = """
+from sage.arith.misc import primitive_root
+
+print(primitive_root(389, check=False))
+"""
+
+
+def _check_pari_runtime_roundtrip():
+    """
+    Exercise the Sage Integer to cypari2 conversion in a subprocess.
+
+    Mixed PARI runtimes can segfault during this conversion.  Keep the probe
+    isolated so ``sagelite-selftest`` reports the packaging problem instead of
+    dying later in a broader smoke test such as modular symbols.
+    """
+    return _run_subprocess_probe(_PARI_RUNTIME_PROBE, "PARI runtime probe")
+
+
 def _check_factor():
     from sage.all import factor
 
@@ -389,7 +407,9 @@ def _tail(file, limit: int = 4096) -> str:
     return file.read().decode("utf-8", "replace")
 
 
-def _run_subprocess_probe(script: str, timeout: int = 30) -> str:
+def _run_subprocess_probe(
+    script: str, description: str = "runtime probe", timeout: int = 30
+) -> str:
     with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
         process = subprocess.Popen(
             [sys.executable, "-c", script],
@@ -402,14 +422,14 @@ def _run_subprocess_probe(script: str, timeout: int = 30) -> str:
             process.kill()
             process.wait()
             raise RuntimeError(
-                "Maxima runtime probe timed out.\n"
+                f"{description} timed out.\n"
                 f"Last stdout:\n{_tail(stdout)}\n"
                 f"Last stderr:\n{_tail(stderr)}"
             ) from err
 
         if returncode != 0:
             raise RuntimeError(
-                f"Maxima runtime probe exited with status {returncode}.\n"
+                f"{description} exited with status {returncode}.\n"
                 f"Last stdout:\n{_tail(stdout)}\n"
                 f"Last stderr:\n{_tail(stderr)}"
             )
@@ -424,7 +444,7 @@ def _check_maxima_runtime():
     except ImportError:
         return "not installed"
 
-    return _run_subprocess_probe(_MAXIMA_RUNTIME_PROBE)
+    return _run_subprocess_probe(_MAXIMA_RUNTIME_PROBE, "Maxima runtime probe")
 
 
 
@@ -877,6 +897,8 @@ def main() -> int:
     """
     ok = _run_check("installed package requirements", _check_installed_requirements)
     if not _run_check("PARI runtime packaging", _check_single_pari_runtime):
+        return 1
+    if not _run_check("PARI runtime conversion", _check_pari_runtime_roundtrip):
         return 1
 
     checks = [
