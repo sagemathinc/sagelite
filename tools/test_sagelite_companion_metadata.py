@@ -1058,6 +1058,20 @@ def test_packaged_gap_companions_are_declared_as_sage_features():
         assert f'GapPackage("{package}", spkg=' in source
 
 
+def test_packaged_gap_companions_are_exercised_by_selftest():
+    selftest = (ROOT / "src" / "sage" / "cli" / "selftest.py").read_text()
+
+    assert "GAP_PACKAGE_COMPANIONS = [" in selftest
+    assert "def _check_gap_package_runtime(" in selftest
+
+    for package in GAP_PACKAGE_EXTRA_REQUIREMENTS:
+        module_name = f"sagelite_gap_package_{package}"
+        if package == "gapdoc":
+            assert '"GAPDoc package runtime", _check_gapdoc_runtime' in selftest
+        else:
+            assert f'("{package}", "{module_name}",' in selftest
+
+
 def test_lrslib_runtime_is_exposed_by_lrs_extra():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

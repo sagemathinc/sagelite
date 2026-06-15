@@ -241,6 +241,45 @@ def _check_companion_feature(
     return f"{description} available"
 
 
+GAP_PACKAGE_COMPANIONS = [
+    ("atlasrep", "sagelite_gap_package_atlasrep", "AtlasRep"),
+    ("ctbllib", "sagelite_gap_package_ctbllib", "CTblLib"),
+    ("design", "sagelite_gap_package_design", "Design"),
+    ("grape", "sagelite_gap_package_grape", "GRAPE"),
+    ("guava", "sagelite_gap_package_guava", "GUAVA"),
+    ("hap", "sagelite_gap_package_hap", "HAP"),
+    ("polenta", "sagelite_gap_package_polenta", "Polenta"),
+    ("polycyclic", "sagelite_gap_package_polycyclic", "Polycyclic"),
+    ("primgrp", "sagelite_gap_package_primgrp", "PrimGrp"),
+    ("qpa", "sagelite_gap_package_qpa", "QPA"),
+    ("quagroup", "sagelite_gap_package_quagroup", "QuaGroup"),
+    ("repsn", "sagelite_gap_package_repsn", "Repsn"),
+    ("smallgrp", "sagelite_gap_package_smallgrp", "SmallGrp"),
+    ("tomlib", "sagelite_gap_package_tomlib", "TomLib"),
+    ("transgrp", "sagelite_gap_package_transgrp", "TransGrp"),
+]
+
+
+def _check_gap_package_runtime(
+    package: str,
+    module_name: str,
+    display_name: str,
+):
+    try:
+        importlib.import_module(module_name)
+    except ImportError:
+        return "not installed"
+
+    from sage.features.gap import GapPackage
+
+    feature = GapPackage(package, spkg=f"gap_package_{package}").is_present()
+    if not bool(feature):
+        raise RuntimeError(
+            f"GAP package {display_name} is not available: {feature.reason}"
+        )
+    return f"GAP package {display_name} available"
+
+
 def _check_cddlib_runtime():
     try:
         import sagelite_cddlib  # noqa: F401
@@ -1361,6 +1400,17 @@ def main(argv: list[str] | None = None) -> int:
         ("benzene graph generator runtime", _check_benzene_runtime),
         ("ECL executable runtime", _check_ecl_runtime),
         ("GAPDoc package runtime", _check_gapdoc_runtime),
+        *[
+            (
+                f"GAP {display_name} package runtime",
+                lambda package=package,
+                module_name=module_name,
+                display_name=display_name: _check_gap_package_runtime(
+                    package, module_name, display_name
+                ),
+            )
+            for package, module_name, display_name in GAP_PACKAGE_COMPANIONS
+        ],
         ("GAP3 executable runtime", _check_gap3_runtime),
         ("FriCAS executable runtime", _check_fricas_runtime),
         ("Frobby executable runtime", _check_frobby_runtime),
