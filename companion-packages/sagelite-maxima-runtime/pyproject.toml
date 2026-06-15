@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sagelite-maxima-runtime"
-version = "10.9.post9"
+version = "10.9.post10"
 description = "Optional Maxima runtime companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"
