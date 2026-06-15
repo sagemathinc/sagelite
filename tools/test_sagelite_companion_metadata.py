@@ -543,6 +543,20 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-pari-data >=10.9,<10.10",
 }
 
+DATA_COMPANION_EXTRA_ALIASES = {
+    "cremona_ellcurve": "sagelite-database-cremona-ellcurve >=10.9,<10.10",
+    "database_polytopes": "sagelite-database-polytopes >=10.9,<10.10",
+    "database_polytopes_4d": "sagelite-database-polytopes-4d >=10.9,<10.10",
+    "jones_numfield": "sagelite-database-jones-numfield >=10.9,<10.10",
+    "mutation_class": "sagelite-database-mutation-class >=10.9,<10.10",
+    "odlyzko_zeta": "sagelite-database-odlyzko-zeta >=10.9,<10.10",
+    "pari_data": "sagelite-pari-data >=10.9,<10.10",
+    "polytopes_4d": "sagelite-database-polytopes-4d >=10.9,<10.10",
+    "stein_watkins": "sagelite-database-stein-watkins >=10.9,<10.10",
+    "stein_watkins_mini": "sagelite-database-stein-watkins-mini >=10.9,<10.10",
+    "symbolic_data": "sagelite-database-symbolic-data >=10.9,<10.10",
+}
+
 BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-4ti2-runtime >=10.9,<10.10",
     "sagelite-benzene-runtime >=10.9,<10.10",
@@ -917,6 +931,16 @@ def test_base_sagelite_installs_standard_data_companion_wheels():
     dependencies = set(pyproject["project"]["dependencies"])
 
     assert BASE_SAGELITE_DATA_DEPENDENCIES <= dependencies
+
+
+def test_data_companion_wheels_are_exposed_by_upstream_style_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+
+    for extra, requirement in DATA_COMPANION_EXTRA_ALIASES.items():
+        assert extras[extra] == [requirement]
 
 
 def test_base_sagelite_installs_standard_runtime_companion_wheels():
