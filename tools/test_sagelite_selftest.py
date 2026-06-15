@@ -111,6 +111,47 @@ def test_selftest_pari_conversion_uses_labeled_subprocess_probe(monkeypatch):
     assert probes == [(selftest._PARI_RUNTIME_PROBE, "PARI runtime probe", 30)]
 
 
+def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "Maxima library runtime"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    assert selftest.main() == 1
+    assert calls == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+    ]
+
+
+def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "symbolic integration"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+    monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
+
+    assert selftest.main() == 1
+    assert calls[:5] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "import sage.all",
+    ]
+    assert calls.index("Maxima library runtime") < calls.index("symbolic integration")
+
+
 def test_subprocess_probe_reports_probe_description(tmp_path):
     selftest = _load_selftest()
     script = tmp_path / "fail.py"

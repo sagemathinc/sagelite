@@ -1069,6 +1069,8 @@ def main() -> int:
         return 1
     if not _run_check("PARI runtime conversion", _check_pari_runtime_roundtrip):
         return 1
+    if not _run_check("Maxima library runtime", _check_maxima_runtime):
+        return 1
 
     checks = [
         ("import sage.all", _check_import_sage_all),
@@ -1110,7 +1112,6 @@ def main() -> int:
         ("LattE executable runtime", _check_latte_runtime),
         ("lcalc executable runtime", _check_lcalc_runtime),
         ("lrslib executable runtime", _check_lrslib_runtime),
-        ("Maxima library runtime", _check_maxima_runtime),
         ("Kenzo ECL runtime", _check_kenzo_runtime),
         ("MeatAxe table runtime", _check_meataxe_runtime),
         ("nauty executable runtime", _check_nauty_runtime),
