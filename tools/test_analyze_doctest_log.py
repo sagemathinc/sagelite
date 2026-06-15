@@ -177,6 +177,110 @@ Exception raised:
     )
 
 
+def test_report_suggests_runtime_for_topcom_executable(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/triangulation/point_configuration.py", line 42, in sage.geometry.triangulation.point_configuration
+Failed example:
+    PointConfiguration([(0,0), (1,0), (0,1)]).triangulations()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: topcom_points2allfinetriangs is not available.
+    Executable 'points2allfinetriangs' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.triangulation.point_configuration
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.geometry.triangulation.point_configuration"]
+
+    assert result.fingerprint == "missing-executable"
+    assert result.suggested_package == "sagelite-topcom-runtime"
+    assert (
+        report["top_examples"]["optional-external"][0]["suggested_package"]
+        == "sagelite-topcom-runtime"
+    )
+
+
+def test_report_suggests_runtime_for_alternate_executable_names(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/graphs/graph_plot.py", line 42, in sage.graphs.graph_plot
+Failed example:
+    g.graphplot(layout='acyclic')
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: neato is not available.
+    Executable 'neato' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.graphs.graph_plot
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/plot/animate.py", line 42, in sage.plot.animate
+Failed example:
+    animate([]).gif()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: magick is not available.
+    Executable 'convert' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.plot.animate
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/lattice_polytope.py", line 42, in sage.geometry.lattice_polytope
+Failed example:
+    LatticePolytope(...).points()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: palp_poly is not available.
+    Executable 'poly.x' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.lattice_polytope
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/plot/plot.py", line 42, in sage.plot.plot
+Failed example:
+    plot(sin(x)).save('/tmp/a.gif')
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: magick is not available.
+    Executable 'magick' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.plot.plot
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+
+    assert (
+        results["sage.graphs.graph_plot"].suggested_package
+        == "sagelite-graphviz-runtime"
+    )
+    assert (
+        results["sage.plot.animate"].suggested_package
+        == "sagelite-imagemagick-runtime"
+    )
+    assert (
+        results["sage.geometry.lattice_polytope"].suggested_package
+        == "sagelite-palp-runtime"
+    )
+    assert (
+        results["sage.plot.plot"].suggested_package
+        == "sagelite-imagemagick-runtime"
+    )
+
+
 def test_report_suggests_runtime_for_named_missing_database(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
