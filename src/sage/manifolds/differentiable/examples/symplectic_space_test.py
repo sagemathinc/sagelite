@@ -7,9 +7,17 @@ from sage.manifolds.differentiable.examples.symplectic_space import (
 from sage.manifolds.differentiable.symplectic_form import SymplecticForm
 
 
+def require_maxima_lib():
+    try:
+        import sage.interfaces.maxima_lib  # noqa: F401
+    except ImportError as err:
+        pytest.skip(f"requires Maxima library mode ({err})")
+
+
 class TestR2VectorSpace:
     @pytest.fixture
     def M(self):
+        require_maxima_lib()
         return StandardSymplecticSpace(2, 'R2', symplectic_name='omega')
 
     @pytest.fixture
@@ -26,6 +34,7 @@ class TestR2VectorSpace:
 class TestR4VectorSpace:
     @pytest.fixture
     def M(self):
+        require_maxima_lib()
         return StandardSymplecticSpace(4, 'R4', symplectic_name='omega')
 
     @pytest.fixture

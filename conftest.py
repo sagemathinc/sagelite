@@ -280,13 +280,17 @@ def pytest_addoption(parser):
     # Add a command line option to run doctests
     # (we don't use the built-in --doctest-modules option because then doctests are collected twice)
     group = parser.getgroup("collect")
-    group.addoption(
-        "--doctest",
-        action="store_true",
-        default=False,
-        help="Run doctests in all .py modules",
-        dest="doctest",
-    )
+    try:
+        group.addoption(
+            "--doctest",
+            action="store_true",
+            default=False,
+            help="Run doctests in all .py modules",
+            dest="doctest",
+        )
+    except ValueError as err:
+        if "--doctest" not in str(err) or "already added" not in str(err):
+            raise
 
 
 # Monkey patch exception printing to replace the full qualified name of the exception by its short name

@@ -1,4 +1,20 @@
+from importlib.metadata import PackageNotFoundError, version
+from importlib.util import find_spec
+
 import pytest
+
+
+if find_spec("sagelite_gap_runtime") is None:
+    try:
+        version("sagelite")
+    except PackageNotFoundError:
+        pass
+    else:
+        pytest.skip(
+            "libgap stress tests require the sagelite GAP runtime companion wheel",
+            allow_module_level=True,
+        )
+
 from sage.libs.gap.libgap import libgap
 
 

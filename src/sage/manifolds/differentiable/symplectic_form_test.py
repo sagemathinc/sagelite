@@ -13,6 +13,13 @@ from sage.manifolds.manifold import Manifold
 from sage.symbolic.function_factory import function
 
 
+def require_maxima_lib():
+    try:
+        import sage.interfaces.maxima_lib  # noqa: F401
+    except ImportError as err:
+        pytest.skip(f"requires Maxima library mode ({err})")
+
+
 class TestGenericSymplecticForm:
     @pytest.fixture
     def omega(self):
@@ -58,6 +65,7 @@ class TestCoherenceOfFormulas:
 
     @pytest.fixture(params=['R2', 'S2'])
     def M(self, request: FixtureRequest):
+        require_maxima_lib()
         if request.param == 'R2':
             return StandardSymplecticSpace(2, 'R2', symplectic_name='omega')
         if request.param == 'S2':
@@ -166,6 +174,7 @@ def generic_scalar_field(M: DifferentiableManifold, name: str) -> DiffScalarFiel
 class TestR2VectorSpace:
     @pytest.fixture
     def M(self):
+        require_maxima_lib()
         return StandardSymplecticSpace(2, 'R2', symplectic_name='omega')
 
     @pytest.fixture
