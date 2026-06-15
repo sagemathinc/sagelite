@@ -529,6 +529,29 @@ The workflows use `SAGEMATH_PYPI_API_TOKEN` and `pypa/gh-action-pypi-publish`
 for upload. This keeps ordinary pushes and release artifact generation separate
 from publishing.
 
+### Staged GitHub Pages wheel index
+
+Before publishing the full companion-wheel set to PyPI, release managers can
+stage built wheels on the repository's `gh-pages` branch as a PEP 503-style
+simple index.
+
+Run the release workflow and the companion package workflow with
+`publish_to_github_pages` enabled. The two workflows update the same staged
+index incrementally, so the release workflow can contribute the core and native
+runtime wheels while the companion package workflow contributes package-data
+and Python companion wheels.
+
+After GitHub Pages is configured to serve the `gh-pages` branch, testers can
+install with:
+
+```bash
+python -m pip install --extra-index-url https://OWNER.github.io/REPOSITORY/simple "sagelite[full]"
+```
+
+The `Test staged Sagelite wheel index` workflow installs from this index and
+runs `sagelite-selftest` followed by an operator-provided installed-wheel test
+command.
+
 For large companion wheels, especially GAP-related packages, artifact size
 should be monitored. When a package approaches PyPI file-size limits, prefer
 splitting the payload into smaller semantically meaningful wheels rather than

@@ -26,6 +26,11 @@ on:
         required: false
         default: false
         type: boolean
+      publish_to_github_pages:
+        description: "Publish built wheels to the gh-pages simple index"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -2046,6 +2051,12 @@ jobs:
           name: ${{ matrix.name }}-dist
           path: dist/*
 
+      - uses: actions/upload-artifact@v4
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_to_github_pages }}
+        with:
+          name: ${{ matrix.name }}-pages-wheel
+          path: dist/*.whl
+
   publish:
     needs: build
     runs-on: ubuntu-latest
@@ -2072,3 +2083,26 @@ jobs:
           packages-dir: dist/
           skip-existing: true
           verbose: true
+
+  publish_wheel_index:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_to_github_pages }}
+    permissions:
+      contents: write
+    concurrency:
+      group: sagelite-wheel-index
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*-pages-wheel"
+          path: wheel-artifacts
+          merge-multiple: true
+
+      - name: Publish staged wheel index
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash .github/workflows/publish-sagelite-wheel-index.sh wheel-artifacts pages
