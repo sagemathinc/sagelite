@@ -5,10 +5,12 @@ Small runtime self-test for sagelite installations.
 from __future__ import annotations
 
 import importlib.metadata as importlib_metadata
+import importlib.util
 import sys
 import subprocess
 import tempfile
 import traceback
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from packaging.requirements import Requirement
@@ -67,6 +69,33 @@ def _check_installed_requirements(distribution_name: str = "sagelite"):
         )
 
     return "installed requirement versions satisfy metadata"
+
+
+def _check_single_pari_runtime():
+    """
+    Reject installed wheels that can load two different PARI runtimes.
+
+    A prebuilt ``cypari2`` wheel can carry its own ``cypari2.libs/libpari*``.
+    Loading that beside the PARI library used by Sage extension modules has
+    caused installed-wheel doctests to segfault.  Release builds vendor a
+    source-built cypari2 package that shares sagelite's repaired PARI runtime.
+    """
+    spec = importlib.util.find_spec("cypari2")
+    if spec is None or spec.origin is None:
+        return "cypari2 not importable"
+
+    package_dir = Path(spec.origin).parent
+    private_lib_dir = package_dir.parent / "cypari2.libs"
+    private_pari = sorted(private_lib_dir.glob("libpari*"))
+    if private_pari:
+        libraries = ", ".join(path.name for path in private_pari)
+        raise RuntimeError(
+            "cypari2 is installed with a private PARI runtime "
+            f"({libraries}). Rebuild the sagelite wheel with source-built "
+            "cypari2 so Sage and cypari2 share the same repaired libpari."
+        )
+
+    return "cypari2 does not carry a private PARI runtime"
 
 
 def _check_factor():
@@ -786,8 +815,11 @@ def main() -> int:
     """
     Run a quick smoke test of the installed sagelite runtime.
     """
+    ok = _run_check("installed package requirements", _check_installed_requirements)
+    if not _run_check("PARI runtime packaging", _check_single_pari_runtime):
+        return 1
+
     checks = [
-        ("installed package requirements", _check_installed_requirements),
         ("import sage.all", _check_import_sage_all),
         ("integer factorization", _check_factor),
         ("symbolic integration", _check_symbolic_integration),
@@ -837,7 +869,6 @@ def main() -> int:
         ("Stein-Watkins full database runtime", _check_database_stein_watkins),
     ]
 
-    ok = True
     for name, check in checks:
         ok = _run_check(name, check) and ok
 
