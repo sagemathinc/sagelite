@@ -1404,12 +1404,14 @@ def test_pari_data_wheel_payload_is_reflected_in_external_host_requires():
 def test_pari_data_workflows_build_complete_payload():
     companion_workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
     companion_text = companion_workflow.read_text()
+    smoke_test = ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    smoke_test_text = smoke_test.read_text()
     release_workflow = ROOT / ".github" / "workflows" / "release.yml"
     release_text = release_workflow.read_text()
 
     assert "SAGELITE_PARI_NFTABLES_TARBALL" in companion_text
     assert "download pari_nftables" in companion_text
-    assert 'os.path.join(data_dir, "nftables")' in companion_text
+    assert 'os.path.join(data_dir, "nftables")' in smoke_test_text
 
     for spkg in (
         "pari_elldata",
@@ -3549,15 +3551,16 @@ def test_companion_workflow_marks_maxima_system_ecl_builds_explicit():
 
 
 def test_companion_workflow_smoke_tests_maxima_library_mode_with_system_ecl():
-    workflow = ROOT / ".github" / "workflows" / "companion-packages.yml"
-    workflow_text = workflow.read_text()
-    maxima_start = workflow_text.index(
-        'if "${{ matrix.name }}" == "sagelite-maxima-runtime":'
+    smoke_test = ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    smoke_test_text = smoke_test.read_text()
+    maxima_start = smoke_test_text.index(
+        'if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-maxima-runtime":'
     )
-    maxima_end = workflow_text.index(
-        'if "${{ matrix.name }}" == "sagelite-nauty-runtime":', maxima_start
+    maxima_end = smoke_test_text.index(
+        'if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-nauty-runtime":',
+        maxima_start,
     )
-    maxima_block = workflow_text[maxima_start:maxima_end]
+    maxima_block = smoke_test_text[maxima_start:maxima_end]
     ecl_start = maxima_block.index('ecl = shutil.which("ecl")')
     ecl_block = maxima_block[ecl_start:]
 
