@@ -17,7 +17,6 @@ import os
 from sage.env import RUBIKS_BINS_PREFIX
 
 from . import Executable
-from . import FeatureNotPresentError
 from .join_feature import JoinFeature
 
 
@@ -46,20 +45,15 @@ class RubiksExecutable(Executable):
         through the optional ``sagelite-rubiks-runtime`` companion package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_rubiks.runtime import executable_path
         except ImportError:
-            raise original_error
+            return super().absolute_filename()
 
         executable = executable_path(self._rubiks_name)
         if executable.is_file() and os.access(executable, os.X_OK):
             return os.fspath(executable)
 
-        raise original_error
+        return super().absolute_filename()
 
 
 class cu2(RubiksExecutable):

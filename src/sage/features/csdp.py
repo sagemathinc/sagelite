@@ -18,7 +18,7 @@ import os
 import re
 import subprocess
 
-from . import Executable, FeatureNotPresentError, FeatureTestResult
+from . import Executable, FeatureTestResult
 
 
 class CSDP(Executable):
@@ -52,20 +52,15 @@ class CSDP(Executable):
         ``sagelite-csdp-runtime`` companion package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_csdp.runtime import executable_path
         except ImportError:
-            raise original_error
+            return super().absolute_filename()
 
         executable = executable_path()
         if executable.is_file() and os.access(executable, os.X_OK):
             return os.fspath(executable)
 
-        raise original_error
+        return super().absolute_filename()
 
     def is_functional(self):
         r"""

@@ -290,10 +290,11 @@ def _check_cddlib_runtime():
 
     executables = {}
     for program in ("cddexec", "cddexec_gmp"):
-        feature = CddExecutable(program).is_present()
-        if not bool(feature):
+        feature = CddExecutable(program)
+        presence = feature.is_present()
+        if not bool(presence):
             raise RuntimeError(
-                f"cddlib executable {program!r} is not available: {feature.reason}"
+                f"cddlib executable {program!r} is not available: {presence.reason}"
             )
         executables[program] = feature.absolute_filename()
     return (

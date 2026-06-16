@@ -264,8 +264,29 @@ else
   singular_proj = subproject('singular')
   singular_factory = singular_proj.get_variable('factory_dep')
 endif
-# Cannot be found via pkg-config
-ntl = cc.find_library('ntl', required: not is_windows, disabler: true)
+ntl_include_dir = ''
+ntl_lib_dir = ''
+if get_option('SAGE_LOCAL') != ''
+  candidate_ntl_include = join_paths(get_option('SAGE_LOCAL'), 'include')
+  candidate_ntl_lib = join_paths(get_option('SAGE_LOCAL'), 'lib')
+  if fs.exists(join_paths(candidate_ntl_include, 'NTL', 'config.h')) and fs.exists(candidate_ntl_lib)
+    ntl_include_dir = candidate_ntl_include
+    ntl_lib_dir = candidate_ntl_lib
+  endif
+endif
+ntl = disabler()
+if ntl_lib_dir != '' and cpp.has_header('NTL/config.h', args: ['-I' + ntl_include_dir], required: false)
+  ntl = cpp.find_library(
+    'ntl',
+    dirs: [ntl_lib_dir],
+    required: false,
+    disabler: true,
+  )
+endif
+if not ntl.found()
+  # Cannot be found via pkg-config
+  ntl = cc.find_library('ntl', required: not is_windows, disabler: true)
+endif
 
 boost_cpp17_compatible = false
 boost = dependency(

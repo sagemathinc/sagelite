@@ -4,7 +4,7 @@ Feature for testing the presence of ``giac``
 
 import os
 
-from . import Executable, FeatureNotPresentError, FeatureTestResult
+from . import Executable, FeatureTestResult
 
 
 class Giac(Executable):
@@ -37,20 +37,15 @@ class Giac(Executable):
         ``sagelite-giac-runtime`` companion package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_giac.runtime import giac_command
         except ImportError:
-            raise original_error
+            return super().absolute_filename()
 
         executable = giac_command()
         if executable.is_file() and os.access(executable, os.X_OK):
             return os.fspath(executable)
 
-        raise original_error
+        return super().absolute_filename()
 
 
 def all_features():

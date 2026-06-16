@@ -11,8 +11,9 @@ Feature for testing the presence of ``dvipng``
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 
+import os
+
 from . import Executable
-from . import FeatureNotPresentError
 
 
 class dvipng(Executable):
@@ -45,18 +46,15 @@ class dvipng(Executable):
         ``sagelite-dvipng-runtime`` companion package.
         """
         try:
+            from sagelite_dvipng.runtime import executable_path
+        except ImportError:
             return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            try:
-                from sagelite_dvipng.runtime import executable_path
-            except ImportError:
-                raise error
 
         executable = executable_path()
-        if executable.is_file():
+        if executable.is_file() and os.access(executable, os.X_OK):
             return str(executable)
 
-        raise error
+        return super().absolute_filename()
 
 
 def all_features():

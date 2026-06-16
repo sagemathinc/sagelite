@@ -2,9 +2,31 @@ r"""
 Feature for testing the presence of ``info``, from GNU Info
 """
 
+import importlib.util
 import os
+import sys
+from pathlib import Path
 
 from . import Executable, FeatureNotPresentError
+
+
+def _runtime_module():
+    """
+    Return the optional ``sagelite_info.runtime`` module from ``sys.path``.
+    """
+    for entry in sys.path:
+        runtime_path = Path(entry, "sagelite_info", "runtime.py")
+        if not runtime_path.is_file():
+            continue
+        spec = importlib.util.spec_from_file_location(
+            "_sage_info_runtime", runtime_path
+        )
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    return None
 
 
 class Info(Executable):
@@ -41,12 +63,11 @@ class Info(Executable):
         except FeatureNotPresentError as error:
             original_error = error
 
-        try:
-            from sagelite_info.runtime import executable_path
-        except ImportError:
+        runtime = _runtime_module()
+        if runtime is None:
             raise original_error
 
-        executable = executable_path()
+        executable = runtime.executable_path()
         if executable.is_file() and os.access(executable, os.X_OK):
             return os.fspath(executable)
 

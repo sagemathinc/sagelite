@@ -19,9 +19,18 @@ if not fs.exists(datadir / 'cremona')
 endif
 # Kenzo cannot yet be provided by the system, so we always use the SAGE_LOCAL path for now.
 conf_data.set('SAGE_KENZO_FAS', '\'${prefix}\'/lib/ecl/kenzo.fas')
-# It can be found, so we don't have to set anything here:
-conf_data.set('NTL_INCDIR', '')
-conf_data.set('NTL_LIBDIR', '')
+ntl_include_dir = ''
+ntl_lib_dir = ''
+if get_option('SAGE_LOCAL') != ''
+  candidate_ntl_include = join_paths(get_option('SAGE_LOCAL'), 'include')
+  candidate_ntl_lib = join_paths(get_option('SAGE_LOCAL'), 'lib')
+  if fs.exists(join_paths(candidate_ntl_include, 'NTL', 'config.h')) and fs.exists(candidate_ntl_lib)
+    ntl_include_dir = candidate_ntl_include
+    ntl_lib_dir = candidate_ntl_lib
+  endif
+endif
+conf_data.set('NTL_INCDIR', ntl_include_dir)
+conf_data.set('NTL_LIBDIR', ntl_lib_dir)
 ecl_config = find_program('ecl-config', required: false)
 if ecl_config.found()
   conf_data.set('SAGE_ECL_CONFIG', ecl_config.full_path())

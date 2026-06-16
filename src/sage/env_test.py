@@ -553,7 +553,25 @@ def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
         lambda module_name, attr_name: str(companion),
     )
 
-    assert env._gap_root_paths().split(";") == [str(configured), str(companion)]
+    assert env._gap_root_paths().split(";") == [str(configured)]
+
+
+def test_gap_root_paths_prefers_valid_configured_core_over_companion(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "configured")
+    companion = _gap_root(tmp_path, "companion")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion),
+    )
+
+    assert env._gap_root_paths().split(";") == [str(configured)]
 
 
 def test_gap_root_paths_appends_registered_package_roots(monkeypatch, tmp_path):

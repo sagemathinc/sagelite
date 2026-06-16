@@ -418,8 +418,8 @@ def _append_gap_root(core_roots: list[str], package_roots: list[str], root: str)
 
 def _gap_root_paths() -> str:
     """
-    Return GAP root paths, preferring an explicitly configured or companion
-    package GAP runtime.
+    Return GAP root paths, preferring an explicitly configured runtime and
+    falling back to the companion package runtime.
 
     Binary ``sagelite`` wheels bundle ``libgap`` but not the optional GAP
     runtime tree.  The tree can be supplied by setting ``GAP_ROOT_PATHS`` or
@@ -434,23 +434,26 @@ def _gap_root_paths() -> str:
     for root in configured.split(";"):
         _append_gap_root(core_roots, package_roots, root)
 
-    companion = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_root_paths")
-    if companion:
-        for root in companion.split(";"):
-            _append_gap_root(core_roots, package_roots, root)
-
-    for root in _registered_gap_root_paths():
-        _append_gap_root(core_roots, package_roots, root)
-
-    for root in _sagelite_gap_package_root_paths():
-        _append_gap_root(core_roots, package_roots, root)
-
     bundled = join(SAGE_EXTCODE, "gap_root")
     if bundled:
         _append_gap_root(core_roots, package_roots, bundled)
 
     configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
     for root in configured.split(";"):
+        _append_gap_root(core_roots, package_roots, root)
+
+    if not core_roots:
+        companion = _optional_runtime_value(
+            "sagelite_gap_runtime.runtime", "gap_root_paths"
+        )
+        if companion:
+            for root in companion.split(";"):
+                _append_gap_root(core_roots, package_roots, root)
+
+    for root in _registered_gap_root_paths():
+        _append_gap_root(core_roots, package_roots, root)
+
+    for root in _sagelite_gap_package_root_paths():
         _append_gap_root(core_roots, package_roots, root)
 
     if core_roots:

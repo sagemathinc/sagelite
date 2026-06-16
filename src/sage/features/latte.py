@@ -16,6 +16,9 @@ Features for testing the presence of ``latte_int``
 # ****************************************************************************
 
 import os
+import sys
+from importlib import util as importlib_util
+from pathlib import Path
 
 from . import Executable, FeatureNotPresentError
 from .join_feature import JoinFeature
@@ -25,17 +28,35 @@ from sage.env import LATTE_BINS_PREFIX, join
 LATTE_URL = "https://www.math.ucdavis.edu/~latte/software.php"
 
 
+def _sagelite_latte_runtime():
+    """
+    Return the optional ``sagelite_latte.runtime`` module from ``sys.path``.
+    """
+    for entry in sys.path:
+        runtime_path = Path(entry, "sagelite_latte", "runtime.py")
+        if not runtime_path.is_file():
+            continue
+        spec = importlib_util.spec_from_file_location(
+            "_sage_latte_runtime", runtime_path
+        )
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib_util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    return None
+
+
 def _sagelite_latte_executable(
         program: str, original_error: FeatureNotPresentError) -> str:
     """
     Return a LattE executable from the optional sagelite companion package.
     """
-    try:
-        from sagelite_latte.runtime import executable_path
-    except ImportError:
+    runtime = _sagelite_latte_runtime()
+    if runtime is None:
         raise original_error
 
-    executable = executable_path(program)
+    executable = runtime.executable_path(program)
     if executable.is_file() and os.access(executable, os.X_OK):
         return os.fspath(executable)
 
@@ -68,9 +89,9 @@ class Latte_count(Executable):
         optional ``sagelite-latte-runtime`` companion package.
         """
         try:
+            return _sagelite_latte_executable("count", FeatureNotPresentError(self))
+        except FeatureNotPresentError:
             return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            return _sagelite_latte_executable("count", error)
 
 
 class Latte_integrate(Executable):
@@ -99,9 +120,11 @@ class Latte_integrate(Executable):
         optional ``sagelite-latte-runtime`` companion package.
         """
         try:
+            return _sagelite_latte_executable(
+                "integrate", FeatureNotPresentError(self)
+            )
+        except FeatureNotPresentError:
             return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            return _sagelite_latte_executable("integrate", error)
 
 
 class Latte(JoinFeature):

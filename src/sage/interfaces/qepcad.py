@@ -608,6 +608,8 @@ import os
 import re
 import shlex
 import sys
+from importlib import util as importlib_util
+from pathlib import Path
 
 import pexpect
 
@@ -626,9 +628,22 @@ def _qepcad_runtime():
     """
     Return the optional sagelite QEPCAD runtime module, if usable.
     """
-    try:
-        from sagelite_qepcad import runtime
-    except ImportError:
+    runtime = None
+    for entry in sys.path:
+        runtime_path = Path(entry, "sagelite_qepcad", "runtime.py")
+        if not runtime_path.is_file():
+            continue
+        spec = importlib_util.spec_from_file_location(
+            "_sage_qepcad_runtime", runtime_path
+        )
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib_util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        runtime = module
+        break
+
+    if runtime is None:
         return None
 
     try:

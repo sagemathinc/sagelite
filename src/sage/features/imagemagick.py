@@ -72,9 +72,9 @@ class Magick(Executable):
         ``sagelite-imagemagick-runtime`` companion package.
         """
         try:
+            return _companion_executable(self.executable, FeatureNotPresentError(self))
+        except FeatureNotPresentError:
             return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            return _companion_executable(self.executable, error)
 
     def is_functional(self):
         r"""

@@ -13,7 +13,7 @@ Feature for testing the presence of ``lcalc``
 
 import os
 
-from . import Executable, FeatureNotPresentError
+from . import Executable
 
 
 class Lcalc(Executable):
@@ -52,20 +52,15 @@ class Lcalc(Executable):
         ``sagelite-lcalc-runtime`` companion package.
         """
         try:
-            return super().absolute_filename()
-        except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
             from sagelite_lcalc.runtime import lcalc_command
         except ImportError:
-            raise original_error
+            return super().absolute_filename()
 
         executable = lcalc_command()
         if executable.is_file() and os.access(executable, os.X_OK):
             return os.fspath(executable)
 
-        raise original_error
+        return super().absolute_filename()
 
 
 def all_features():

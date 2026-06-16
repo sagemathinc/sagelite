@@ -187,3 +187,29 @@ def test_glucose_runtime_rejects_missing_companion_executable(monkeypatch):
 
     with pytest.raises(RuntimeError, match="glucose-syrup"):
         selftest._check_glucose_runtime()
+
+
+def test_cddlib_runtime_uses_feature_absolute_filename(monkeypatch):
+    class FakeCddExecutable:
+        def __init__(self, program):
+            self.program = program
+
+        def is_present(self):
+            return FakeFeatureResult(True)
+
+        def absolute_filename(self):
+            return f"/tmp/{self.program}"
+
+    fake_cddlib = types.ModuleType("sage.features.cddlib")
+    fake_cddlib.CddExecutable = FakeCddExecutable
+    monkeypatch.setitem(sys.modules, "sage.features.cddlib", fake_cddlib)
+    monkeypatch.setattr(
+        selftest.importlib,
+        "import_module",
+        lambda name: object() if name == "sagelite_cddlib" else None,
+    )
+
+    assert (
+        selftest._check_cddlib_runtime()
+        == "cddexec=/tmp/cddexec, cddexec_gmp=/tmp/cddexec_gmp"
+    )
