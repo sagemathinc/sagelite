@@ -28,6 +28,8 @@ else
   git -C "${pages_dir}" remote add origin "${remote}"
 fi
 
+git -C "${pages_dir}" rm -r --ignore-unmatch . >/dev/null 2>&1 || true
+find "${pages_dir}" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
 mkdir -p "${pages_dir}/wheels"
 max_github_blob_size=$((100 * 1024 * 1024))
 skipped_large_wheels=0
