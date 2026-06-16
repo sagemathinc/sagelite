@@ -29,7 +29,27 @@ else
 fi
 
 mkdir -p "${pages_dir}/wheels"
-find "${artifact_root}" -type f -name '*.whl' -exec cp -f {} "${pages_dir}/wheels/" \;
+max_github_blob_size=$((100 * 1024 * 1024))
+skipped_large_wheels=0
+while IFS= read -r -d '' wheel; do
+  wheel_size="$(stat -c '%s' "${wheel}")"
+  if [ "${wheel_size}" -gt "${max_github_blob_size}" ]; then
+    echo "Skipping $(basename "${wheel}") (${wheel_size} bytes): exceeds GitHub's 100 MiB file limit" >&2
+    skipped_large_wheels=$((skipped_large_wheels + 1))
+    continue
+  fi
+  cp -f "${wheel}" "${pages_dir}/wheels/"
+done < <(find "${artifact_root}" -type f -name '*.whl' -print0)
+
+published_wheel_count="$(find "${pages_dir}/wheels" -type f -name '*.whl' | wc -l)"
+if [ "${published_wheel_count}" -eq 0 ]; then
+  echo "No publishable wheel artifacts found under ${artifact_root}" >&2
+  exit 1
+fi
+if [ "${skipped_large_wheels}" -gt 0 ]; then
+  echo "Skipped ${skipped_large_wheels} oversized wheel artifact(s)" >&2
+fi
+rm -rf "${pages_dir}/simple"
 python3 tools/build-sagelite-wheel-index.py "${pages_dir}/wheels" --output "${pages_dir}/simple"
 touch "${pages_dir}/.nojekyll"
 repo_owner="${GITHUB_REPOSITORY%%/*}"
