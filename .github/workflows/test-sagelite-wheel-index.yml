@@ -25,13 +25,15 @@ on:
       test_command:
         description: "Command to run after sagelite-selftest"
         required: false
-        default: "test-venv/bin/python -m pytest --pyargs sage -q"
+        default: "test-venv/bin/python tools/run-installed-wheel-doctests.py --output-dir .local-build-logs --label staged-index"
         type: string
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python_version }}
@@ -69,3 +71,11 @@ jobs:
           if [ -n "${TEST_COMMAND}" ]; then
             eval "${TEST_COMMAND}"
           fi
+
+      - name: Upload installed-wheel doctest artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staged-index-installed-wheel-doctests-py${{ inputs.python_version }}
+          path: .local-build-logs/*
+          if-no-files-found: ignore

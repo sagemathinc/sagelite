@@ -61,6 +61,27 @@ python3 tools/analyze-doctest-log.py \
   --md-out /tmp/doctest-analysis.md
 ```
 
+## Run Installed-Wheel Doctests
+
+This command runs `python -m sage.doctest --installed` in the active
+installed-wheel environment, captures the raw doctest log and stats JSON, and
+then immediately reduces them with `tools/analyze-doctest-log.py`.
+
+Example:
+
+```bash
+test-venv/bin/python tools/run-installed-wheel-doctests.py \
+  --output-dir .local-build-logs \
+  --label staged-index
+```
+
+This writes four artifacts per run:
+
+- the raw doctest log
+- the doctest stats JSON
+- the reduced analysis JSON
+- the reduced Markdown summary
+
 ## Update Version Number
 
 Increments the version number in the project. This command is useful when releasing a new version of the project.
