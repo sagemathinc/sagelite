@@ -4,7 +4,9 @@ from sage.numerical.backends.generic_backend import GenericBackend
 from sage.numerical.mip import MixedIntegerLinearProgram
 
 
-@pytest.importorskip("pyscipopt")
+pytest.importorskip("pyscipopt")
+
+
 class TestSCIPBackend(GenericBackendTests):
 
     @pytest.fixture

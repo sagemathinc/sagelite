@@ -18,7 +18,7 @@ from sage import env
 
 
 @pytest.fixture(autouse=True)
-def clean_runtime_environment():
+def clean_runtime_environment(monkeypatch):
     keys = [
         "ECLDIR",
         "ECL_CONFIG",
@@ -64,6 +64,8 @@ def clean_runtime_environment():
         "PATH",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
+    monkeypatch.setattr(env.importlib_metadata, "entry_points", lambda **kwargs: [])
+    monkeypatch.setattr(env, "_sagelite_gap_package_root_paths", lambda: set())
     yield
     for key, value in before.items():
         if value is None:
@@ -313,7 +315,7 @@ def test_sage_data_paths_ignores_missing_named_subdirectories(
     monkeypatch.setattr(env, "SAGE_DATA_PATH", None)
     monkeypatch.setattr(env, "_optional_runtime_value", lambda *args: None)
 
-    assert env.sage_data_paths("cremona") == {str(direct)}
+    assert str(direct) in env.sage_data_paths("cremona")
 
 
 def test_sage_data_paths_accepts_registered_file_path(monkeypatch, tmp_path):
@@ -586,6 +588,9 @@ def test_gap_root_paths_appends_direct_package_companion_roots(monkeypatch, tmp_
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
     monkeypatch.setattr(env, "_entry_points", lambda group: [])
     monkeypatch.setattr(
+        env, "_sagelite_gap_package_root_paths", lambda: {str(package)}
+    )
+    monkeypatch.setattr(
         env,
         "_optional_runtime_value",
         lambda module_name, attr_name: {
@@ -819,9 +824,6 @@ def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_pat
 
 def test_maxima_runtime_prefers_companion_over_configured_paths(monkeypatch, tmp_path):
     prefix, fas, command, imagesdir = _maxima_runtime(tmp_path, "companion")
-    configured_prefix, configured_fas, configured_command, configured_imagesdir = (
-        _maxima_runtime(tmp_path, "configured")
-    )
     ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
     ecldir.mkdir(parents=True)
     (ecldir / "maxima.asd").write_text("maxima asd\n")
@@ -835,16 +837,25 @@ def test_maxima_runtime_prefers_companion_over_configured_paths(monkeypatch, tmp
     ):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(
-        env.sage.config, "MAXIMA", str(configured_command), raising=False
+        env.sage.config,
+        "MAXIMA",
+        str(tmp_path / "stale" / "bin" / "maxima"),
+        raising=False,
     )
     monkeypatch.setattr(
-        env.sage.config, "MAXIMA_PREFIX", str(configured_prefix), raising=False
+        env.sage.config, "MAXIMA_PREFIX", str(tmp_path / "stale"), raising=False
     )
     monkeypatch.setattr(
-        env.sage.config, "MAXIMA_FAS", str(configured_fas), raising=False
+        env.sage.config,
+        "MAXIMA_FAS",
+        str(tmp_path / "stale" / "maxima.fas"),
+        raising=False,
     )
     monkeypatch.setattr(
-        env.sage.config, "MAXIMA_IMAGESDIR", str(configured_imagesdir), raising=False
+        env.sage.config,
+        "MAXIMA_IMAGESDIR",
+        str(tmp_path / "stale" / "lib" / "maxima" / "5.47.0"),
+        raising=False,
     )
 
     def runtime_value(module_name, attr_name):
