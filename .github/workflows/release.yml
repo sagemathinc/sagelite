@@ -114,7 +114,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install --yes python-build
-          python -m build --sdist --no-isolation --outdir dist .
+          python -m build --sdist --no-isolation --config-setting=setup-args=-Dcoxeter3=auto --outdir dist .
           ls -l dist
 
       - uses: actions/upload-artifact@v4
