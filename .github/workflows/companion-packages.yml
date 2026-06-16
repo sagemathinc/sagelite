@@ -741,8 +741,22 @@ jobs:
           fi
           if [ "${{ matrix.name }}" = "sagelite-database-sloane" ]; then
             mkdir -p "$RUNNER_TEMP/sloane"
-            curl -L --retry 3 --output "$RUNNER_TEMP/sloane/stripped.gz" https://oeis.org/stripped.gz
-            curl -L --retry 3 --output "$RUNNER_TEMP/sloane/names.gz" https://oeis.org/names.gz
+            download_gzip() {
+              local url="$1"
+              local output="$2"
+              rm -f "$output"
+              curl --fail --location --retry 5 --retry-all-errors --retry-delay 5 \
+                --user-agent "sagelite-ci/1.0 (+https://github.com/sagemathinc/sagelite)" \
+                --header "Accept: application/gzip, application/octet-stream, */*" \
+                --output "$output" "$url"
+              if ! gzip -t "$output"; then
+                echo "Downloaded Sloane/OEIS payload is not gzip: $url" >&2
+                head -c 512 "$output" >&2 || true
+                exit 1
+              fi
+            }
+            download_gzip https://oeis.org/stripped.gz "$RUNNER_TEMP/sloane/stripped.gz"
+            download_gzip https://oeis.org/names.gz "$RUNNER_TEMP/sloane/names.gz"
             export SAGELITE_SLOANE_STRIPPED_GZ="$RUNNER_TEMP/sloane/stripped.gz"
             export SAGELITE_SLOANE_NAMES_GZ="$RUNNER_TEMP/sloane/names.gz"
           fi
