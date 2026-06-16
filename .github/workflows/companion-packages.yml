@@ -766,7 +766,8 @@ jobs:
             tar -xzf "$tarball" -C "$RUNNER_TEMP/stein-watkins"
             export SAGELITE_STEIN_WATKINS_DIR="$RUNNER_TEMP/stein-watkins/src/swdb"
           fi
-          python -m build "${{ matrix.path }}" --outdir dist
+          python -m build "${{ matrix.path }}" --wheel --outdir dist
+          python -m build "${{ matrix.path }}" --sdist --outdir dist
           ls -lh dist
 
       - name: Smoke test built wheel

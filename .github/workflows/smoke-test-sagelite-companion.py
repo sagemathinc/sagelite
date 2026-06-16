@@ -957,7 +957,7 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-singular-runtime":
     print("singular_default_dir=", default_dir)
     assert os.path.exists(os.path.join(root_dir, "share", "singular", "LIB", "standard.lib"))
     assert os.path.exists(os.path.join(default_dir, "LIB", "freegb.lib"))
-    assert os.path.exists(os.path.join(root_dir, "share", "factory", "gftables", "64"))
+    assert os.path.exists(os.path.join(default_dir, "factory", "gftables", "64"))
     assert any(
         "MOD/freealgebra.so" in os.path.join(path, filename)
         for path, _, filenames in os.walk(root_dir)
