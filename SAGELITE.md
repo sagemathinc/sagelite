@@ -557,6 +557,29 @@ should be monitored. When a package approaches PyPI file-size limits, prefer
 splitting the payload into smaller semantically meaningful wheels rather than
 requesting a larger limit as the first response.
 
+### Staged Cloudflare wheel index
+
+Cloudflare Pages can serve the small simple-index HTML, but wheels larger than
+the Pages per-file limit should be stored in Cloudflare R2. The release and
+companion package workflows support this split with `publish_to_cloudflare_pages`.
+
+Configure these GitHub Actions values before enabling that dispatch option:
+
+- secret `CLOUDFLARE_API_TOKEN`
+- secret `CLOUDFLARE_ACCOUNT_ID`
+- secret or variable `CLOUDFLARE_R2_BUCKET`
+- variable `CLOUDFLARE_PAGES_PROJECT`
+- variable `SAGELITE_WHEEL_BASE_URL`, for example
+  `https://static.example.org/sagelite/wheels`
+- optional variable `SAGELITE_R2_WHEEL_PREFIX`, defaulting to `wheels`
+- optional variable `SAGELITE_SIMPLE_INDEX_URL`, defaulting to
+  `https://CLOUDFLARE_PAGES_PROJECT.pages.dev/simple`
+
+The Cloudflare publisher uploads wheels to
+`CLOUDFLARE_R2_BUCKET/SAGELITE_R2_WHEEL_PREFIX/`, generates a PEP 503-style
+index whose wheel links point at `SAGELITE_WHEEL_BASE_URL`, and deploys that
+index to the configured Pages project.
+
 ## Long-Term Scope
 
 It is plausible for this approach to cover almost all redistributable,

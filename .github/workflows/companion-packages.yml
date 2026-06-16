@@ -31,6 +31,11 @@ on:
         required: false
         default: false
         type: boolean
+      publish_to_cloudflare_pages:
+        description: "Publish built wheels to Cloudflare R2 and a Pages simple index"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -787,7 +792,7 @@ jobs:
           path: dist/*
 
       - uses: actions/upload-artifact@v4
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_to_github_pages }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.publish_to_github_pages || inputs.publish_to_cloudflare_pages) }}
         with:
           name: ${{ matrix.name }}-pages-wheel
           path: dist/*.whl
@@ -841,3 +846,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash .github/workflows/publish-sagelite-wheel-index.sh wheel-artifacts pages
+
+  publish_cloudflare_index:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.publish_to_cloudflare_pages }}
+    permissions:
+      contents: read
+    concurrency:
+      group: sagelite-cloudflare-wheel-index
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*-pages-wheel"
+          path: wheel-artifacts
+          merge-multiple: true
+
+      - name: Publish Cloudflare staged wheel index
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_R2_BUCKET: ${{ secrets.CLOUDFLARE_R2_BUCKET || vars.CLOUDFLARE_R2_BUCKET }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          SAGELITE_R2_WHEEL_PREFIX: ${{ vars.SAGELITE_R2_WHEEL_PREFIX }}
+          SAGELITE_WHEEL_BASE_URL: ${{ vars.SAGELITE_WHEEL_BASE_URL }}
+          SAGELITE_SIMPLE_INDEX_URL: ${{ vars.SAGELITE_SIMPLE_INDEX_URL }}
+        run: bash .github/workflows/publish-sagelite-cloudflare-index.sh wheel-artifacts cloudflare-pages

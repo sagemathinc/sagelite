@@ -7,7 +7,9 @@ import argparse
 import hashlib
 import html
 import re
+import shutil
 from pathlib import Path
+from urllib.parse import quote
 
 
 NORMALIZE_RE = re.compile(r"[-_.]+")
@@ -61,7 +63,16 @@ def write_html(path: Path, title: str, links: list[tuple[str, str]]) -> None:
     )
 
 
-def build_index(wheels_dir: Path, output_dir: Path) -> dict[str, list[Path]]:
+def wheel_href(wheel: Path, wheel_base_url: str | None) -> str:
+    filename = quote(wheel.name)
+    if wheel_base_url:
+        return f"{wheel_base_url.rstrip('/')}/{filename}#sha256={sha256(wheel)}"
+    return f"../../wheels/{filename}#sha256={sha256(wheel)}"
+
+
+def build_index(
+    wheels_dir: Path, output_dir: Path, wheel_base_url: str | None = None
+) -> dict[str, list[Path]]:
     wheels = sorted(wheels_dir.glob("*.whl"))
     if not wheels:
         raise SystemExit(f"no wheels found in {wheels_dir}")
@@ -70,6 +81,7 @@ def build_index(wheels_dir: Path, output_dir: Path) -> dict[str, list[Path]]:
     for wheel in wheels:
         projects.setdefault(project_name_from_wheel(wheel), []).append(wheel)
 
+    shutil.rmtree(output_dir, ignore_errors=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     write_html(
         output_dir / "index.html",
@@ -80,8 +92,7 @@ def build_index(wheels_dir: Path, output_dir: Path) -> dict[str, list[Path]]:
     for name, project_wheels in sorted(projects.items()):
         links = []
         for wheel in sorted(project_wheels):
-            href = f"../../wheels/{wheel.name}#sha256={sha256(wheel)}"
-            links.append((wheel.name, href))
+            links.append((wheel.name, wheel_href(wheel, wheel_base_url)))
         write_html(output_dir / name / "index.html", name, links)
 
     return projects
@@ -91,9 +102,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("wheels_dir", type=Path)
     parser.add_argument("--output", type=Path, default=Path("simple"))
+    parser.add_argument(
+        "--wheel-base-url",
+        help="External URL prefix for wheel files; defaults to ../.. relative links.",
+    )
     args = parser.parse_args()
 
-    projects = build_index(args.wheels_dir, args.output)
+    projects = build_index(args.wheels_dir, args.output, args.wheel_base_url)
     print(f"indexed {sum(len(wheels) for wheels in projects.values())} wheels")
     print(f"indexed {len(projects)} projects")
     return 0
