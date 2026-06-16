@@ -125,6 +125,7 @@ jobs:
             --config-setting=setup-args=-Drankwidth=auto \
             --config-setting=setup-args=-Dsirocco=auto \
             --config-setting=setup-args=-Dtdlib=auto \
+            --config-setting=setup-args=-Dbuild-docs=false \
             --outdir dist .
           ls -l dist
 
