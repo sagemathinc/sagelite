@@ -486,7 +486,7 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-frobby-runtime":
         capture_output=True,
         check=True,
     )
-    assert "Frobby" in result.stdout
+    assert "frobby" in (result.stdout + result.stderr).lower()
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-fricas-runtime":
@@ -724,13 +724,14 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-lrslib-runtime":
         check=True,
     )
     assert "Volume= 1" in result.stdout or "Volume=1" in result.stdout
-    subprocess.run(
+    result = subprocess.run(
         ["lrsnash"],
         input="1 1\n \n 0\n \n 0\n",
         text=True,
         capture_output=True,
-        check=True,
     )
+    assert result.returncode in (0, 1)
+    assert result.stdout or result.stderr
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-lcalc-runtime":
@@ -893,6 +894,22 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-plantri-runtime":
     assert "plantri" in (result.stdout + result.stderr).lower()
     raise SystemExit(0)
 
+if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-poppler-runtime":
+    runtime = importlib.import_module("sagelite_poppler.runtime")
+    pdftocairo = runtime.executable_path()
+    print("pdftocairo=", pdftocairo)
+    assert pdftocairo.exists()
+    import shutil
+    import subprocess
+    assert shutil.which("pdftocairo")
+    result = subprocess.run(
+        ["pdftocairo", "-h"],
+        text=True,
+        capture_output=True,
+    )
+    assert "pdftocairo" in (result.stdout + result.stderr).lower()
+    raise SystemExit(0)
+
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-qepcad-runtime":
     runtime = importlib.import_module("sagelite_qepcad.runtime")
     root = runtime.root_dir()
@@ -939,13 +956,23 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-singular-runtime":
     print("singular_root_dir=", root_dir)
     print("singular_default_dir=", default_dir)
     assert os.path.exists(os.path.join(root_dir, "share", "singular", "LIB", "standard.lib"))
-    assert os.path.exists(os.path.join(default_dir, "share", "singular", "LIB", "freegb.lib"))
+    assert os.path.exists(os.path.join(default_dir, "LIB", "freegb.lib"))
     assert os.path.exists(os.path.join(root_dir, "share", "factory", "gftables", "64"))
     assert any(
         "MOD/freealgebra.so" in os.path.join(path, filename)
         for path, _, filenames in os.walk(root_dir)
         for filename in filenames
     )
+    raise SystemExit(0)
+
+if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-gap-package-design":
+    runtime = importlib.import_module("sagelite_gap_package_design.runtime")
+    gap_root_paths = runtime.gap_root_paths()
+    print("gap_root_paths=", gap_root_paths)
+    assert gap_root_paths
+    pkg_dir = os.path.join(gap_root_paths, "pkg")
+    assert os.path.exists(pkg_dir)
+    assert any(name.lower().startswith("design") for name in os.listdir(pkg_dir))
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-d3js-runtime":

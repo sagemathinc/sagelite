@@ -114,7 +114,18 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install --yes python-build
-          python -m build --sdist --no-isolation --config-setting=setup-args=-Dcoxeter3=auto --outdir dist .
+          python -m build --sdist --no-isolation \
+            --config-setting=setup-args=-Dbliss=auto \
+            --config-setting=setup-args=-Dbrial=auto \
+            --config-setting=setup-args=-Dcoxeter3=auto \
+            --config-setting=setup-args=-Declib=auto \
+            --config-setting=setup-args=-Dlibbraiding=auto \
+            --config-setting=setup-args=-Dlibhomfly=auto \
+            --config-setting=setup-args=-Dmcqd=auto \
+            --config-setting=setup-args=-Drankwidth=auto \
+            --config-setting=setup-args=-Dsirocco=auto \
+            --config-setting=setup-args=-Dtdlib=auto \
+            --outdir dist .
           ls -l dist
 
       - uses: actions/upload-artifact@v4

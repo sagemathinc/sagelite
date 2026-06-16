@@ -640,7 +640,7 @@ jobs:
             tar -xzf "$tarball" -C "$RUNNER_TEMP/msolve-src"
             msolve_src="$(find "$RUNNER_TEMP/msolve-src" -maxdepth 2 -type f -name configure -printf '%h\n' | head -n 1)"
             (cd "$msolve_src" && ./configure --prefix="$RUNNER_TEMP/msolve-prefix")
-            make -C "$msolve_src" --parallel 2
+            make -C "$msolve_src" -j2
             make -C "$msolve_src" install
             export SAGELITE_MSOLVE_BINDIR="$RUNNER_TEMP/msolve-prefix/bin"
             export LD_LIBRARY_PATH="$RUNNER_TEMP/msolve-prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
@@ -821,7 +821,7 @@ jobs:
   publish_wheel_index:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_to_github_pages }}
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.publish_to_github_pages }}
     permissions:
       contents: write
     concurrency:
