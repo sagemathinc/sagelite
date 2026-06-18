@@ -541,19 +541,14 @@ BASE_SAGELITE_DATA_DEPENDENCIES = {
     "sagelite-cunningham-tables >=10.9,<10.10",
     "sagelite-d3js-runtime >=10.9,<10.10",
     "sagelite-threejs-runtime >=10.9,<10.10",
-    "sagelite-database-cremona-ellcurve >=10.9,<10.10",
     "sagelite-database-cremona-mini >=10.9.post1,<10.10",
     "sagelite-database-ellcurves >=10.9,<10.10",
-    "sagelite-fplll-data >=10.9,<10.10",
     "sagelite-database-graphs >=10.9,<10.10",
     "sagelite-database-jones-numfield >=10.9,<10.10",
     "sagelite-database-kohel >=10.9,<10.10",
     "sagelite-database-mutation-class >=10.9,<10.10",
     "sagelite-database-odlyzko-zeta >=10.9,<10.10",
     "sagelite-database-polytopes >=10.9,<10.10",
-    "sagelite-database-polytopes-4d >=10.9,<10.10",
-    "sagelite-database-sloane >=10.9,<10.10",
-    "sagelite-database-stein-watkins >=10.9,<10.10",
     "sagelite-database-stein-watkins-mini >=10.9,<10.10",
     "sagelite-database-symbolic-data >=10.9,<10.10",
     "sagelite-mathjax-runtime >=10.9,<10.10",
@@ -579,44 +574,20 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-benzene-runtime >=10.9,<10.10",
     "sagelite-buckygen-runtime >=10.9,<10.10",
     "sagelite-cddlib-runtime >=10.9,<10.10",
-    "sagelite-csdp-runtime >=10.9,<10.10",
     "sagelite-dvipng-runtime >=10.9,<10.10",
-    "sagelite-ecl-runtime >=10.9,<10.10",
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-flatter-runtime >=10.9,<10.10",
     "sagelite-frobby-runtime >=10.9,<10.10",
-    "sagelite-fricas-runtime >=10.9,<10.10",
-    "sagelite-gap3-runtime >=10.9.post1,<10.10",
-    "sagelite-gap-runtime >=10.9.post2,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
-    "sagelite-giac-runtime >=10.9,<10.10",
-    "sagelite-glucose-runtime >=10.9,<10.10",
     "sagelite-graphviz-runtime >=10.9.post1,<10.10",
-    "sagelite-imagemagick-runtime >=10.9,<10.10",
-    "sagelite-info-runtime >=10.9,<10.10",
-    "sagelite-jmol-runtime >=10.9,<10.10",
-    "sagelite-kenzo-runtime >=10.9,<10.10",
-    "sagelite-kissat-runtime >=10.9,<10.10",
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
-    "sagelite-lie-runtime >=10.9,<10.10",
-    "sagelite-lrslib-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post13,<10.10",
-    "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
-    "sagelite-msolve-runtime >=10.9,<10.10",
-    "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
     "sagelite-pdf2svg-runtime >=10.9,<10.10",
-    "sagelite-planarity-runtime >=10.9,<10.10",
-    "sagelite-plantri-runtime >=10.9,<10.10",
     "sagelite-poppler-runtime >=10.9,<10.10",
-    "sagelite-qepcad-runtime >=10.9,<10.10",
-    "sagelite-rubiks-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
     "sagelite-sirocco-runtime >=10.9,<10.10",
-    "sagelite-sympow-runtime >=10.9,<10.10",
-    "sagelite-tachyon-runtime >=10.9,<10.10",
     "sagelite-tides-runtime >=10.9,<10.10",
     "sagelite-topcom-runtime >=10.9,<10.10",
 }
@@ -757,12 +728,7 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     ],
 }
 
-DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES = {
-    requirement
-    for requirements in GAP_PACKAGE_EXTRA_REQUIREMENTS.values()
-    for requirement in requirements
-    if requirement.startswith("sagelite-gap-package-")
-}
+DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES: set[str] = set()
 
 
 def _pyproject(name: str) -> dict:
@@ -835,18 +801,18 @@ def test_generated_companion_egg_info_matches_pyproject_when_present():
             assert metadata["Version"] == project["version"], pkg_info
 
 
-def test_sagelite_default_dependencies_include_short_doctest_companions():
+def test_sagelite_default_dependencies_include_public_index_doctest_companions():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
 
     dependencies = set(pyproject["project"]["dependencies"])
 
-    assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in dependencies
     assert "sagelite-database-cremona-mini >=10.9.post1,<10.10" in dependencies
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
-    assert "sagelite-ecl-runtime >=10.9,<10.10" in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post13,<10.10" in dependencies
+    assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" not in dependencies
+    assert "sagelite-ecl-runtime >=10.9,<10.10" not in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post13,<10.10" not in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -980,16 +946,10 @@ def test_base_sagelite_companion_dependencies_are_contract_classified():
         for requirement in pyproject["project"]["dependencies"]
         if requirement.startswith("sagelite-")
     }
-    gap_package_dependencies = {
-        requirement
-        for requirements in GAP_PACKAGE_EXTRA_REQUIREMENTS.values()
-        for requirement in requirements
-        if requirement.startswith("sagelite-gap-package-")
-    }
     classified = (
         BASE_SAGELITE_DATA_DEPENDENCIES
         | BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES
-        | gap_package_dependencies
+        | DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES
     )
 
     assert dependencies == classified
@@ -1243,10 +1203,6 @@ def test_selftest_exercises_standard_feature_runtime_companions():
     }
 
     for package, (module_name, label, check_name) in expected.items():
-        assert any(
-            requirement.startswith(f"{package} ")
-            for requirement in BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES
-        )
         assert f'"{module_name}"' in selftest
         assert f'def {check_name}()' in selftest
         assert f'("{label}", {check_name})' in selftest
@@ -1316,14 +1272,15 @@ def test_release_workflow_requires_standard_native_meson_options():
         assert f"setup-args=-D{option}=enabled" in workflow_text
 
 
-def test_sagelite_wheel_build_requires_standard_native_meson_options():
+def test_sagelite_source_build_defaults_optional_native_meson_options_to_auto():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
 
     setup_args = set(pyproject["tool"]["meson-python"]["args"]["setup"])
 
+    assert "-Dbuild-docs=false" in setup_args
     for option in RELEASE_REQUIRED_MESON_OPTIONS:
-        assert f"-D{option}=enabled" in setup_args
+        assert f"-D{option}=auto" in setup_args
 
 
 def test_release_workflow_verifies_standard_native_extensions():
@@ -1518,13 +1475,13 @@ def test_fplll_data_wheel_is_exposed_by_sagelite_dependencies_and_runtime_extras
         pyproject = tomllib.load(handle)
 
     requirement = "sagelite-fplll-data >=10.9,<10.10"
-    assert requirement in pyproject["project"]["dependencies"]
+    assert requirement not in pyproject["project"]["dependencies"]
 
     extras = pyproject["project"]["optional-dependencies"]
     assert extras["fplll-data"] == [requirement]
     assert extras["fplll_data"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_info_runtime_wheel_declares_copied_runtime_files():
@@ -1559,8 +1516,8 @@ def test_info_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     requirement = "sagelite-info-runtime >=10.9,<10.10"
 
     assert extras["info"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_info_runtime_declares_console_script():
@@ -1579,8 +1536,8 @@ def test_ecl_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     requirement = "sagelite-ecl-runtime >=10.9,<10.10"
 
     assert extras["ecl"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_ecl_runtime_declares_console_scripts():
@@ -1748,10 +1705,10 @@ def test_cremona_ellcurve_database_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-database-cremona-ellcurve >=10.9,<10.10"
 
-    assert requirement in pyproject["project"]["dependencies"]
+    assert requirement not in pyproject["project"]["dependencies"]
     assert extras["cremona-ellcurve"] == [requirement]
-    assert requirement in extras["databases"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["databases"]
+    assert requirement not in extras["full"]
 
 
 def test_cremona_mini_database_registers_data_path():
@@ -1957,8 +1914,8 @@ def test_sloane_database_is_exposed_by_sagelite_extras():
     assert extras["sloane"] == [requirement]
     assert extras["sloane-database"] == [requirement]
     assert extras["database-sloane"] == [requirement]
-    assert requirement in extras["databases"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["databases"]
+    assert requirement not in extras["full"]
 
 
 def test_mutation_class_database_registers_data_path():
@@ -2406,8 +2363,8 @@ def test_gap_grape_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-grape"] == [gap_runtime, grape]
     assert extras["gap_package_grape"] == [gap_runtime, grape]
-    assert grape in extras["runtime"]
-    assert grape in extras["full"]
+    assert grape not in extras["runtime"]
+    assert grape not in extras["full"]
 
 
 def test_gap_atlasrep_package_registers_gap_root_path():
@@ -2434,8 +2391,8 @@ def test_gap_atlasrep_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-atlasrep"] == [gap_runtime, atlasrep]
     assert extras["gap_package_atlasrep"] == [gap_runtime, atlasrep]
-    assert atlasrep in extras["runtime"]
-    assert atlasrep in extras["full"]
+    assert atlasrep not in extras["runtime"]
+    assert atlasrep not in extras["full"]
 
 
 def test_gap_ctbllib_package_registers_gap_root_path():
@@ -2462,8 +2419,8 @@ def test_gap_ctbllib_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-ctbllib"] == [gap_runtime, ctbllib]
     assert extras["gap_package_ctbllib"] == [gap_runtime, ctbllib]
-    assert ctbllib in extras["runtime"]
-    assert ctbllib in extras["full"]
+    assert ctbllib not in extras["runtime"]
+    assert ctbllib not in extras["full"]
 
 
 def test_gap_design_package_registers_gap_root_path():
@@ -2490,8 +2447,8 @@ def test_gap_design_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-design"] == [gap_runtime, design]
     assert extras["gap_package_design"] == [gap_runtime, design]
-    assert design in extras["runtime"]
-    assert design in extras["full"]
+    assert design not in extras["runtime"]
+    assert design not in extras["full"]
 
 
 def test_gap_gapdoc_package_registers_gap_root_path():
@@ -2518,8 +2475,8 @@ def test_gap_gapdoc_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-gapdoc"] == [gap_runtime, gapdoc]
     assert extras["gap_package_gapdoc"] == [gap_runtime, gapdoc]
-    assert gapdoc in extras["runtime"]
-    assert gapdoc in extras["full"]
+    assert gapdoc not in extras["runtime"]
+    assert gapdoc not in extras["full"]
 
 
 def test_gap_guava_package_registers_gap_root_path():
@@ -2546,8 +2503,8 @@ def test_gap_guava_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-guava"] == [gap_runtime, guava]
     assert extras["gap_package_guava"] == [gap_runtime, guava]
-    assert guava in extras["runtime"]
-    assert guava in extras["full"]
+    assert guava not in extras["runtime"]
+    assert guava not in extras["full"]
 
 
 def test_gap_polycyclic_package_registers_gap_root_path():
@@ -2574,8 +2531,8 @@ def test_gap_polycyclic_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-polycyclic"] == [gap_runtime, polycyclic]
     assert extras["gap_package_polycyclic"] == [gap_runtime, polycyclic]
-    assert polycyclic in extras["runtime"]
-    assert polycyclic in extras["full"]
+    assert polycyclic not in extras["runtime"]
+    assert polycyclic not in extras["full"]
 
 
 def test_gap_primgrp_package_registers_gap_root_path():
@@ -2602,8 +2559,8 @@ def test_gap_primgrp_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-primgrp"] == [gap_runtime, primgrp]
     assert extras["gap_package_primgrp"] == [gap_runtime, primgrp]
-    assert primgrp in extras["runtime"]
-    assert primgrp in extras["full"]
+    assert primgrp not in extras["runtime"]
+    assert primgrp not in extras["full"]
 
 
 def test_gap_repsn_package_registers_gap_root_path():
@@ -2630,8 +2587,8 @@ def test_gap_repsn_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-repsn"] == [gap_runtime, repsn]
     assert extras["gap_package_repsn"] == [gap_runtime, repsn]
-    assert repsn in extras["runtime"]
-    assert repsn in extras["full"]
+    assert repsn not in extras["runtime"]
+    assert repsn not in extras["full"]
 
 
 def test_gap_smallgrp_package_registers_gap_root_path():
@@ -2658,8 +2615,8 @@ def test_gap_smallgrp_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-smallgrp"] == [gap_runtime, smallgrp]
     assert extras["gap_package_smallgrp"] == [gap_runtime, smallgrp]
-    assert smallgrp in extras["runtime"]
-    assert smallgrp in extras["full"]
+    assert smallgrp not in extras["runtime"]
+    assert smallgrp not in extras["full"]
 
 
 def test_gap_tomlib_package_registers_gap_root_path():
@@ -2686,8 +2643,8 @@ def test_gap_tomlib_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-tomlib"] == [gap_runtime, tomlib]
     assert extras["gap_package_tomlib"] == [gap_runtime, tomlib]
-    assert tomlib in extras["runtime"]
-    assert tomlib in extras["full"]
+    assert tomlib not in extras["runtime"]
+    assert tomlib not in extras["full"]
 
 
 def test_gap_transgrp_package_registers_gap_root_path():
@@ -2714,8 +2671,8 @@ def test_gap_transgrp_package_is_exposed_by_sagelite_extras():
 
     assert extras["gap-transgrp"] == [gap_runtime, transgrp]
     assert extras["gap_package_transgrp"] == [gap_runtime, transgrp]
-    assert transgrp in extras["runtime"]
-    assert transgrp in extras["full"]
+    assert transgrp not in extras["runtime"]
+    assert transgrp not in extras["full"]
 
 
 def test_gap_packages_extra_matches_available_gap_package_companions():
@@ -2848,8 +2805,8 @@ def test_fricas_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-fricas-runtime >=10.9,<10.10"
 
     assert extras["fricas"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_fricas_runtime_declares_console_script():
@@ -2878,8 +2835,8 @@ def test_sympow_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-sympow-runtime >=10.9,<10.10"
 
     assert extras["sympow"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_sympow_runtime_builds_datafiles_aware_wrapper():
@@ -2913,8 +2870,8 @@ def test_jmol_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-jmol-runtime >=10.9,<10.10"
 
     assert extras["jmol"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_cddlib_runtime_is_exposed_by_sagelite_extras():
@@ -2952,8 +2909,8 @@ def test_csdp_runtime_is_exposed_by_sagelite_extras():
 
     assert extras["csdp"] == [requirement]
     assert extras["theta"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_csdp_runtime_declares_console_scripts():
@@ -2973,8 +2930,8 @@ def test_glucose_runtime_is_exposed_by_sagelite_extras():
 
     assert extras["glucose"] == [requirement]
     assert extras["glucose-syrup"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_glucose_runtime_declares_console_scripts():
@@ -3006,8 +2963,8 @@ def test_imagemagick_runtime_is_exposed_by_sagelite_extras():
     assert extras["imagemagick"] == [requirement]
     assert extras["magick"] == [requirement]
     assert extras["convert"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_imagemagick_runtime_declares_console_scripts():
@@ -3027,8 +2984,8 @@ def test_kissat_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-kissat-runtime >=10.9,<10.10"
 
     assert extras["kissat"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_kissat_runtime_declares_console_script():
@@ -3067,8 +3024,8 @@ def test_planarity_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-planarity-runtime >=10.9,<10.10"
 
     assert extras["planarity"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_pdf2svg_runtime_is_exposed_by_sagelite_extras():
@@ -3128,8 +3085,8 @@ def test_lie_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-lie-runtime >=10.9,<10.10"
 
     assert extras["lie"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_latte_runtime_is_exposed_by_sagelite_extras():
@@ -3166,8 +3123,8 @@ def test_lrslib_runtime_is_exposed_by_sagelite_extras():
     assert extras["lrslib"] == [requirement]
     assert extras["lrs"] == [requirement]
     assert extras["lrsnash"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_mathjax_runtime_is_exposed_by_sagelite_extras():
@@ -3204,8 +3161,8 @@ def test_msolve_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-msolve-runtime >=10.9,<10.10"
 
     assert extras["msolve"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_msolve_runtime_declares_console_script():
@@ -3621,8 +3578,8 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-maxima-runtime >=10.9.post13,<10.10"
 
     assert extras["maxima"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():
@@ -3685,8 +3642,8 @@ def test_polytopes_4d_database_is_exposed_by_sagelite_extras():
 
     assert extras["polytopes-4d"] == [requirement]
     assert extras["database-polytopes-4d"] == [requirement]
-    assert requirement in extras["databases"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["databases"]
+    assert requirement not in extras["full"]
 
 
 def test_stein_watkins_database_registers_data_path():
@@ -3711,8 +3668,8 @@ def test_stein_watkins_database_is_exposed_by_dedicated_sagelite_extra():
     requirement = "sagelite-database-stein-watkins >=10.9,<10.10"
 
     assert extras["stein-watkins"] == [requirement]
-    assert requirement in extras["databases"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["databases"]
+    assert requirement not in extras["full"]
 
 
 def test_stein_watkins_mini_database_registers_data_path():
@@ -3834,8 +3791,8 @@ def test_nauty_runtime_is_exposed_by_sagelite_extras():
         "gentreeg",
     ):
         assert extras[extra] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_rubiks_runtime_is_exposed_by_sagelite_extras():
@@ -3848,8 +3805,8 @@ def test_rubiks_runtime_is_exposed_by_sagelite_extras():
     assert extras["rubiks"] == [requirement]
     for extra in ("cu2", "cubex", "dikcube", "mcube", "optimal", "size222"):
         assert extras[extra] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_topcom_runtime_wheel_declares_copied_runtime_data():
@@ -3872,8 +3829,8 @@ def test_tachyon_runtime_is_exposed_by_sagelite_extras():
     requirement = "sagelite-tachyon-runtime >=10.9,<10.10"
 
     assert extras["tachyon"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_tachyon_runtime_declares_console_script():
@@ -3902,10 +3859,10 @@ def test_plantri_runtime_is_exposed_by_sagelite_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-plantri-runtime >=10.9,<10.10"
 
-    assert requirement in pyproject["project"]["dependencies"]
+    assert requirement not in pyproject["project"]["dependencies"]
     assert extras["plantri"] == [requirement]
-    assert requirement in extras["runtime"]
-    assert requirement in extras["full"]
+    assert requirement not in extras["runtime"]
+    assert requirement not in extras["full"]
 
 
 def test_plantri_runtime_declares_console_script():

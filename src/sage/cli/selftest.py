@@ -211,7 +211,10 @@ def _check_eclib_mwrank():
 
 
 def _check_brial_pbori():
-    from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+    try:
+        from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
+    except ImportError:
+        return "not installed"
 
     ring = BooleanPolynomialRing(3, "x")
     x0, x1, x2 = ring.gens()
@@ -363,8 +366,11 @@ def _check_singular_runtime():
 
 
 def _check_libbraiding():
-    from sage.all import BraidGroup
-    from sage.libs.braiding import leftnormalform
+    try:
+        from sage.all import BraidGroup
+        from sage.libs.braiding import leftnormalform
+    except ImportError:
+        return "not installed"
 
     braid = BraidGroup(3)([1, 2, 1, -2])
     return leftnormalform(braid)
@@ -381,14 +387,26 @@ def _check_bliss_library():
     from sage.all import graphs
 
     graph = graphs.PetersenGraph()
-    canonical = graph.canonical_label(algorithm="bliss")
+    try:
+        canonical = graph.canonical_label(algorithm="bliss")
+    except ImportError:
+        return "not installed"
     return f"canonical Petersen graph has {canonical.num_verts()} vertices"
 
 
 def _check_coxeter3_library():
     from sage.combinat.root_system.coxeter_group import CoxeterGroup
 
-    group = CoxeterGroup(["A", 3], implementation="coxeter3")
+    try:
+        group = CoxeterGroup(["A", 3], implementation="coxeter3")
+    except ImportError:
+        return "not installed"
+    except Exception as error:
+        from sage.features import FeatureNotPresentError
+
+        if isinstance(error, FeatureNotPresentError):
+            return "not installed"
+        raise
     return f"A3 long element length {group.long_element().length()}"
 
 
@@ -396,7 +414,16 @@ def _check_mcqd_library():
     from sage.all import graphs
 
     graph = graphs.PetersenGraph()
-    cover_size = graph.vertex_cover(algorithm="mcqd", value_only=True)
+    try:
+        cover_size = graph.vertex_cover(algorithm="mcqd", value_only=True)
+    except ImportError:
+        return "not installed"
+    except Exception as error:
+        from sage.features import FeatureNotPresentError
+
+        if isinstance(error, FeatureNotPresentError):
+            return "not installed"
+        raise
     return f"Petersen vertex cover size {cover_size}"
 
 
@@ -404,7 +431,17 @@ def _check_tdlib_library():
     from sage.all import graphs
 
     graph = graphs.PetersenGraph()
-    return f"Petersen treewidth {graph.treewidth(algorithm='tdlib')}"
+    try:
+        treewidth = graph.treewidth(algorithm="tdlib")
+    except ImportError:
+        return "not installed"
+    except Exception as error:
+        from sage.features import FeatureNotPresentError
+
+        if isinstance(error, FeatureNotPresentError):
+            return "not installed"
+        raise
+    return f"Petersen treewidth {treewidth}"
 
 
 def _check_gapdoc_runtime():
@@ -922,11 +959,17 @@ def _check_palp_runtime():
 
 
 def _check_planarity_runtime():
+    try:
+        importlib.import_module("sagelite_planarity")
+    except ImportError:
+        return "not installed"
+
     from sage.features.planarity import Planarity
 
-    return _check_companion_feature(
-        "sagelite_planarity", Planarity, "planarity executable runtime"
-    )
+    feature = Planarity().is_present()
+    if not bool(feature):
+        raise RuntimeError(f"planarity executable runtime is not available: {feature.reason}")
+    return "planarity executable runtime available"
 
 
 def _check_qepcad_runtime():
@@ -1343,16 +1386,11 @@ def _optional_runtime_summary() -> None:
     print(f"  Singular executable: {'present' if singular else 'not found'}")
 
     try:
-        from sage.interfaces.maxima_lib import maxima_lib
-    except Exception:
+        import sagelite_maxima  # noqa: F401
+    except ImportError:
         print("  Maxima library mode: not available")
     else:
-        try:
-            maxima_lib.eval("1+1")
-        except Exception:
-            print("  Maxima library mode: not available")
-        else:
-            print("  Maxima library mode: present")
+        print("  Maxima library mode: present")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -1477,4 +1515,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit_code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)
