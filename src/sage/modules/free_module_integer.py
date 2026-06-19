@@ -58,6 +58,39 @@ def _lll_with_pari_fallback(basis, *args, **kwds):
         return basis.LLL(*args, algorithm='pari', **kwds)
 
 
+def _fpylll_missing_strategy_file(err):
+    """
+    Return whether ``err`` is fpylll failing to locate its strategy data.
+
+    EXAMPLES::
+
+        sage: from sage.modules.free_module_integer import _fpylll_missing_strategy_file
+        sage: _fpylll_missing_strategy_file(
+        ....:     FileNotFoundError('/project/local/share/fplll/strategies/default.json'))
+        True
+        sage: _fpylll_missing_strategy_file(FileNotFoundError('/tmp/other.json'))
+        False
+    """
+    return (isinstance(err, FileNotFoundError)
+            and 'strategies/default.json' in str(err))
+
+
+def _shortest_vector_pari(lattice):
+    """
+    Return a shortest vector in ``lattice`` using PARI.
+    """
+    if lattice._basis_is_LLL_reduced:
+        B = lattice.basis_matrix().change_ring(ZZ)
+        qf = lattice.gram_matrix()
+    else:
+        B = lattice.reduced_basis.LLL()
+        qf = B*B.transpose()
+
+    count, length, vectors = qf.__pari__().qfminim(m=1)
+    v = vectors.sage().columns()[0]
+    return v*B
+
+
 try:
     from sage.rings.number_field.number_field_element import OrderElement_absolute
 except ImportError:
@@ -599,20 +632,16 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             3.46410161513775
         """
         if algorithm == "pari":
-            if self._basis_is_LLL_reduced:
-                B = self.basis_matrix().change_ring(ZZ)
-                qf = self.gram_matrix()
-            else:
-                B = self.reduced_basis.LLL()
-                qf = B*B.transpose()
-
-            count, length, vectors = qf.__pari__().qfminim(m=1)
-            v = vectors.sage().columns()[0]
-            w = v*B
+            w = _shortest_vector_pari(self)
         elif algorithm == "fplll":
             from fpylll import IntegerMatrix, SVP
             L = IntegerMatrix.from_matrix(self.reduced_basis)
-            w = vector(ZZ, SVP.shortest_vector(L, *args, **kwds))
+            try:
+                w = vector(ZZ, SVP.shortest_vector(L, *args, **kwds))
+            except Exception as err:
+                if not _fpylll_missing_strategy_file(err):
+                    raise
+                w = _shortest_vector_pari(self)
 
         else:
             raise ValueError("algorithm '{}' unknown".format(algorithm))

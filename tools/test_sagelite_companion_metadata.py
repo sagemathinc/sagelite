@@ -3547,6 +3547,19 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text
 
 
+def test_linux_repair_validates_required_optional_native_extensions():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert "expected required optional native extensions" in repair_text
+    for prefix in ("sage/libs/braiding.", "sage/rings/polynomial/pbori/pbori."):
+        assert repr(prefix) in repair_text or f'"{prefix}"' in repair_text
+
+    assert "expected auditwheel-bundled runtime library" in repair_text
+    for library in ("libbraiding", "libbrial", "libbrial_groebner"):
+        assert repr(library) in repair_text or f'"{library}"' in repair_text
+
+
 def test_linux_repair_rejects_mixed_pari_runtimes():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()

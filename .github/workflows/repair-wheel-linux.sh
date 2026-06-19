@@ -1504,6 +1504,40 @@ ecl_extensions = [
 if not ecl_extensions:
     raise SystemExit("expected sage.libs.ecl extension in repaired sagelite wheel")
 
+required_extensions = [
+    "sage/libs/braiding.",
+    "sage/rings/polynomial/pbori/pbori.",
+]
+missing_extensions = [
+    prefix
+    for prefix in required_extensions
+    if not any(name.startswith(prefix) and name.endswith(".so") for name in names)
+]
+if missing_extensions:
+    raise SystemExit(
+        "expected required optional native extensions in repaired sagelite wheel; "
+        f"missing {missing_extensions}"
+    )
+
+required_libraries = [
+    "libbraiding",
+    "libbrial",
+    "libbrial_groebner",
+]
+for library in required_libraries:
+    bundled = [
+        name
+        for name in names
+        if name.startswith("sagelite.libs/")
+        and os.path.basename(name).startswith(library)
+        and ".so" in os.path.basename(name)
+    ]
+    if not bundled:
+        raise SystemExit(
+            "expected auditwheel-bundled runtime library for "
+            f"{library} in repaired sagelite wheel"
+        )
+
 bundled_ecl = sorted(
     name
     for name in names
