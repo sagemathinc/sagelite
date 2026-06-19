@@ -43,6 +43,29 @@ from sage.symbolic.constants import pi, e
 
 
 def _lll_with_pari_fallback(basis, *args, **kwds):
+    """
+    Run LLL, falling back to PARI for implicit fpylll reduction failures.
+
+    EXAMPLES::
+
+        sage: from sage.modules.free_module_integer import _lll_with_pari_fallback
+        sage: class FakeReductionError(Exception):
+        ....:     pass
+        sage: class FakeBasis:
+        ....:     calls = []
+        ....:     def LLL(self, *args, **kwds):
+        ....:         self.calls.append((args, kwds))
+        ....:         if kwds.get('algorithm') == 'pari':
+        ....:             return 'pari result'
+        ....:         raise FakeReductionError('infinite loop in babai')
+        sage: import sys
+        sage: from unittest.mock import patch
+        sage: fpylll_util = type(sys)('fpylll.util')
+        sage: fpylll_util.ReductionError = FakeReductionError
+        sage: with patch.dict(sys.modules, {'fpylll.util': fpylll_util}):
+        ....:     _lll_with_pari_fallback(FakeBasis(), delta=0.99)
+        'pari result'
+    """
     try:
         return basis.LLL(*args, **kwds)
     except Exception as err:
@@ -83,7 +106,7 @@ def _shortest_vector_pari(lattice):
         B = lattice.basis_matrix().change_ring(ZZ)
         qf = lattice.gram_matrix()
     else:
-        B = lattice.reduced_basis.LLL()
+        B = _lll_with_pari_fallback(lattice.reduced_basis)
         qf = B*B.transpose()
 
     count, length, vectors = qf.__pari__().qfminim(m=1)
@@ -672,7 +695,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             True
         """
         w = matrix(ZZ, w)
-        L = w.stack(self.reduced_basis).LLL()
+        L = _lll_with_pari_fallback(w.stack(self.reduced_basis))
         assert L[0] == 0
         self._reduced_basis = L.matrix_from_rows(range(1, L.nrows()))
 
