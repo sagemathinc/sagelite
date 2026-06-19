@@ -15,7 +15,10 @@ if find_spec("sagelite_gap_runtime") is None:
             allow_module_level=True,
         )
 
-from sage.libs.gap.libgap import libgap
+def _libgap():
+    from sage.libs.gap.libgap import libgap
+
+    return libgap
 
 
 def test_libgap_can_read_and_write_files(tmpfile):
@@ -25,6 +28,7 @@ def test_libgap_can_read_and_write_files(tmpfile):
 
     See :issue:`16502`, :issue:`15833`.
     """
+    libgap = _libgap()
     message = "Ceci n'est pas une groupe"
     libgap.PrintTo(tmpfile.name, message)
     with open(tmpfile.name) as f:
@@ -43,6 +47,7 @@ def test_gc_loop_1():
     iteration, the python variable is overwritten, meaning that python
     is free to garbage collect the object.
     """
+    libgap = _libgap()
     libgap.collect()
     for _ in range(10000):
         G = libgap.CyclicGroup(2)
@@ -64,6 +69,7 @@ def test_gc_loop_2():
     loop. The python reference from the final iteration lives on,
     so this generator should not be collected.
     """
+    libgap = _libgap()
     G = libgap.FreeGroup(2)
     a, b = G.GeneratorsOfGroup()
     two = libgap(2)
@@ -91,6 +97,7 @@ def test_gc_loop_3():
     created at each iteration, so this mainly serves to guarantee that
     the generators of the group are not garbage-collected.
     """
+    libgap = _libgap()
     G = libgap.FreeGroup(2)
     a, b = G.GeneratorsOfGroup()
     for _ in range(300000):
