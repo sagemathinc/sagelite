@@ -510,6 +510,33 @@ def build_report(results: dict[str, ModuleResult]) -> dict[str, Any]:
     category_counts = Counter(r.category for r in failed)
     fingerprint_counts = Counter(r.fingerprint for r in failed)
     subsystem_counts = Counter(r.module.split(".")[1] if "." in r.module else r.module for r in failed)
+    bucketed: dict[tuple[str, str, str], list[ModuleResult]] = defaultdict(list)
+    for result in failed:
+        bucketed[
+            (result.category, result.fingerprint, result.suggested_package)
+        ].append(result)
+    actionable_buckets = []
+    for (category, fingerprint, package), members in bucketed.items():
+        evidence = Counter(result.evidence for result in members if result.evidence)
+        actionable_buckets.append(
+            {
+                "category": category,
+                "fingerprint": fingerprint,
+                "suggested_package": package,
+                "count": len(members),
+                "failed_examples": sum(result.failed_examples for result in members),
+                "evidence": evidence.most_common(1)[0][0] if evidence else "",
+                "modules": sorted(result.module for result in members)[:25],
+            }
+        )
+    actionable_buckets.sort(
+        key=lambda bucket: (
+            -bucket["count"],
+            bucket["category"],
+            bucket["fingerprint"],
+            bucket["suggested_package"],
+        )
+    )
 
     top_examples: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for result in sorted(
@@ -546,6 +573,7 @@ def build_report(results: dict[str, ModuleResult]) -> dict[str, Any]:
         "category_counts": dict(category_counts.most_common()),
         "fingerprint_counts": dict(fingerprint_counts.most_common()),
         "subsystem_counts": dict(subsystem_counts.most_common(25)),
+        "actionable_buckets": actionable_buckets,
         "modules": [asdict(r) for r in sorted(failed, key=lambda r: r.module)],
         "top_examples": dict(top_examples),
     }
@@ -571,6 +599,25 @@ def render_markdown(report: dict[str, Any], log_path: Path, stats_path: Path | N
     lines.append("")
     for fingerprint, count in list(report["fingerprint_counts"].items())[:12]:
         lines.append(f"- `{fingerprint}`: {count}")
+    lines.append("")
+
+    lines.append("## Top Actionable Buckets")
+    lines.append("")
+    for bucket in report.get("actionable_buckets", [])[:12]:
+        suggested = ""
+        if bucket["suggested_package"]:
+            suggested = f" -> `{bucket['suggested_package']}`"
+        lines.append(
+            f"- `{bucket['category']}` / `{bucket['fingerprint']}`: "
+            f"{bucket['count']} modules{suggested}"
+        )
+        if bucket["evidence"]:
+            lines.append(f"  evidence: {bucket['evidence']}")
+        if bucket["modules"]:
+            lines.append(
+                "  modules: "
+                + ", ".join(f"`{module}`" for module in bucket["modules"][:5])
+            )
     lines.append("")
 
     lines.append("## Top Subsystems")

@@ -386,6 +386,70 @@ Exception raised:
     )
 
 
+def test_report_groups_failures_by_actionable_bucket(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/backend_cdd.py", line 42, in sage.geometry.polyhedron.backend_cdd
+Failed example:
+    polytopes.hypercube(3).Hrepresentation()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: cddexec_gmp is not available.
+    Executable 'cddexec_gmp' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.backend_cdd
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/backend_cdd_rdf.py", line 42, in sage.geometry.polyhedron.backend_cdd_rdf
+Failed example:
+    polytopes.simplex(3).Hrepresentation()
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: cddexec is not available.
+    Executable 'cddexec' not found on PATH.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.backend_cdd_rdf
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/rings/polynomial/kohel.py", line 42, in sage.rings.polynomial.kohel
+Failed example:
+    ClassicalModularPolynomialDatabase()[5]
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: database_kohel is not available.
+    'PolMod/Cls/pol.005.dbz' not found in any of ['/usr/share/kohel']
+**********************************************************************
+1 item had failures:
+   1 of   5 in sage.rings.polynomial.kohel
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    markdown = analyzer.render_markdown(report, log, None)
+
+    assert report["actionable_buckets"][0] == {
+        "category": "optional-external",
+        "fingerprint": "missing-executable",
+        "suggested_package": "sagelite-cddlib-runtime",
+        "count": 2,
+        "failed_examples": 2,
+        "evidence": "standalone executable not found",
+        "modules": [
+            "sage.geometry.polyhedron.backend_cdd",
+            "sage.geometry.polyhedron.backend_cdd_rdf",
+        ],
+    }
+    assert "## Top Actionable Buckets" in markdown
+    assert (
+        "- `optional-external` / `missing-executable`: "
+        "2 modules -> `sagelite-cddlib-runtime`"
+    ) in markdown
+
+
 def test_report_suggests_runtime_for_topcom_executable(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
