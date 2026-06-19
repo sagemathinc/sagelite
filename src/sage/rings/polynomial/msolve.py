@@ -34,6 +34,67 @@ from sage.rings.real_mpfi import RealIntervalField_class, RealIntervalField
 from sage.structure.sequence import Sequence
 
 
+_MSOLVE_DIAGNOSTIC_PREFIXES = (
+    "Restarting with another random linear form",
+)
+
+
+def _msolve_payload(output):
+    r"""
+    Return the Sage-readable payload from ``msolve`` stdout.
+
+    ``msolve`` may print diagnostic lines before the final data.  Sage only
+    consumes the list-like payload.
+
+    EXAMPLES::
+
+        sage: from sage.rings.polynomial.msolve import _msolve_payload
+        sage: _msolve_payload("Restarting with another random linear form\n[0, [1]]\n")
+        '[0, [1]]'
+        sage: _msolve_payload("\nstatus: retrying\n\n[foo, bar]\n")
+        '[foo, bar]'
+        sage: _msolve_payload("\n")
+        Traceback (most recent call last):
+        ...
+        NotImplementedError: unsupported msolve output format: no Sage-readable payload in raw msolve output: ''
+    """
+    payload_lines = []
+    found_payload = False
+    for raw_line in output.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if not found_payload:
+            if any(line.startswith(prefix) for prefix in _MSOLVE_DIAGNOSTIC_PREFIXES):
+                continue
+            if not line.startswith("["):
+                continue
+            found_payload = True
+        payload_lines.append(raw_line)
+
+    if payload_lines:
+        return "\n".join(payload_lines).strip()
+
+    raise NotImplementedError(
+        "unsupported msolve output format: no Sage-readable payload "
+        f"in raw msolve output: {output.strip()!r}"
+    )
+
+
+def _unsupported_msolve_output(output, data=None):
+    """
+    Return an exception for unsupported ``msolve`` output.
+    """
+    if data is None:
+        detail = "could not parse Sage-readable payload"
+    else:
+        detail = str(data)
+    return NotImplementedError(
+        f"unsupported msolve output format: {detail}; "
+        f"raw msolve output: {output.strip()!r}"
+    )
+
+
 def _run_msolve(ideal, options):
     r"""
     Internal utility function
@@ -110,7 +171,11 @@ def groebner_basis_degrevlex(ideal, proof=True):
 
     drlpolring = ideal.ring().change_ring(order='degrevlex')
     msolve_out = _run_msolve(ideal, ["-g", "2"])
-    gbasis = sage_eval(msolve_out[:-2], locals=drlpolring.gens_dict())
+    try:
+        gbasis = sage_eval(_msolve_payload(msolve_out),
+                           locals=drlpolring.gens_dict())
+    except Exception as err:
+        raise _unsupported_msolve_output(msolve_out) from err
     return Sequence(gbasis)
 
 
@@ -246,9 +311,9 @@ def variety(ideal, ring, *, proof=True):
     # Interpret output
 
     try:
-        data = sage_eval(msolve_out[:-2])
-    except SyntaxError:
-        raise NotImplementedError(f"unsupported msolve output format: {data}")
+        data = sage_eval(_msolve_payload(msolve_out))
+    except Exception as err:
+        raise _unsupported_msolve_output(msolve_out) from err
 
     dim = data[0]
     if dim == -1:
@@ -269,8 +334,7 @@ def variety(ideal, ring, *, proof=True):
         try:
             char, nvars, deg, vars, _, [one, [elim, den, param]] = data[1]
         except (IndexError, ValueError):
-            raise NotImplementedError(
-                f"unsupported msolve output format: {data}")
+            raise _unsupported_msolve_output(msolve_out, data)
         assert char == ideal.base_ring().characteristic()
         assert one.is_one()
         assert len(vars) == nvars
@@ -301,8 +365,7 @@ def variety(ideal, ring, *, proof=True):
     else:
 
         if len(data[1]) < 2 or len(data[1]) != data[1][0] + 1:
-            raise NotImplementedError(
-                f"unsupported msolve output format: {data}")
+            raise _unsupported_msolve_output(msolve_out, data)
         if isinstance(ring, (RealIntervalField_class, RealBallField)):
             to_out_ring = ring
         else:
