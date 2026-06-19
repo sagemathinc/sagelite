@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -29,7 +30,9 @@ def test_runner_uses_short_installed_doctest_defaults(monkeypatch, tmp_path):
         commands.append(command)
         assert env["PYTHONNOUSERSITE"] == "1"
         assert "PYTHONPATH" not in env
-        assert env["PATH"].split(os.pathsep)[0] == str(Path(sys.executable).parent)
+        assert env["PATH"].split(os.pathsep)[0] == str(
+            Path(sys.executable).resolve().parent
+        )
         if command[2] == "sage.doctest":
             log_path = Path(command[5])
             stats_path = Path(command[7])
@@ -213,3 +216,74 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     assert env["PATH"] == f"/scratch/install/bin{os.pathsep}/usr/bin"
     assert env["PYTHONNOUSERSITE"] == "1"
     assert "PYTHONPATH" not in env
+
+
+def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):
+    runner = _load_runner()
+    monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-060708")
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl").write_text(
+        "",
+        encoding="utf-8",
+    )
+    gap_wheel = wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl"
+    gap_wheel.write_text("", encoding="utf-8")
+    commands = []
+
+    def fake_run(command, check, text, env):
+        commands.append(command)
+        assert env["PYTHONNOUSERSITE"] == "1"
+        assert "PYTHONPATH" not in env
+        if command[1] == str(runner.MANIFEST):
+            Path(command[6]).write_text('{"schema": "manifest"}\n', encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0)
+        if command[2] == "sage.doctest":
+            Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
+            Path(command[7]).write_text("{}\n", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+
+    exit_code = runner.main(
+        [
+            "--output-dir",
+            str(tmp_path),
+            "--runtime-summary",
+            "--manifest-compiled-limit",
+            "2",
+            "--wheelhouse",
+            str(wheelhouse),
+            "--installed-wheel",
+            str(gap_wheel),
+        ]
+    )
+
+    assert exit_code == 0
+    assert commands[0] == [
+        sys.executable,
+        str(ROOT / "tools" / "sagelite_runtime_manifest.py"),
+        "collect",
+        "--label",
+        "short",
+        "--output",
+        str(tmp_path / "doctest-installed-short-20260616-060708.runtime-manifest.json"),
+        "--compiled-limit",
+        "2",
+    ]
+    assert commands[1][2] == "sage.doctest"
+
+    summary_path = (
+        tmp_path / "doctest-installed-short-20260616-060708.runtime-summary.json"
+    )
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["environment"]["PYTHONNOUSERSITE"] == "1"
+    assert summary["environment"]["PYTHONPATH_present"] is False
+    assert summary["runtime_manifest"]["created"] is True
+    assert summary["wheels"]["installed_wheels"] == [gap_wheel.name]
+    assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
+    assert summary["wheels"]["wheelhouse_files"][str(wheelhouse)] == [
+        "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl",
+        "sagelite_gap_runtime-10.9-py3-none-any.whl",
+    ]

@@ -6,6 +6,7 @@ Run an installed-wheel Sage doctest sweep and reduce it into triage artifacts.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shlex
@@ -18,6 +19,7 @@ from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parent
 ANALYZER = TOOLS_DIR / "analyze-doctest-log.py"
+MANIFEST = TOOLS_DIR / "sagelite_runtime_manifest.py"
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,8 @@ class ArtifactPaths:
     stats: Path
     analysis_json: Path
     analysis_md: Path
+    runtime_manifest: Path
+    runtime_summary: Path
 
 
 def _timestamp() -> str:
@@ -46,6 +50,8 @@ def make_artifact_paths(output_dir: Path, label: str) -> ArtifactPaths:
         stats=output_dir / f"{base}.json",
         analysis_json=output_dir / f"{base}.analysis.json",
         analysis_md=output_dir / f"{base}.analysis.md",
+        runtime_manifest=output_dir / f"{base}.runtime-manifest.json",
+        runtime_summary=output_dir / f"{base}.runtime-summary.json",
     )
 
 
@@ -99,6 +105,27 @@ def build_analyzer_command(
     return command
 
 
+def build_manifest_command(
+    python: str,
+    paths: ArtifactPaths,
+    *,
+    label: str,
+    compiled_limit: int | None,
+) -> list[str]:
+    command = [
+        python,
+        str(MANIFEST),
+        "collect",
+        "--label",
+        label,
+        "--output",
+        str(paths.runtime_manifest),
+    ]
+    if compiled_limit is not None:
+        command.extend(["--compiled-limit", str(compiled_limit)])
+    return command
+
+
 def build_clean_environment(python: str) -> dict[str, str]:
     env = os.environ.copy()
     python_bin = os.fspath(Path(python).resolve().parent)
@@ -107,6 +134,93 @@ def build_clean_environment(python: str) -> dict[str, str]:
     env["PYTHONNOUSERSITE"] = "1"
     env.pop("PYTHONPATH", None)
     return env
+
+
+def _path_head(env: dict[str, str], limit: int = 8) -> list[str]:
+    return [entry for entry in env.get("PATH", "").split(os.pathsep) if entry][:limit]
+
+
+def _runtime_summary(
+    args: argparse.Namespace,
+    paths: ArtifactPaths,
+    env: dict[str, str],
+    doctest_command: list[str],
+    manifest_command: list[str],
+    manifest_returncode: int,
+) -> dict[str, object]:
+    wheelhouse_paths = [str(path) for path in args.wheelhouse]
+    wheelhouse_files = {}
+    for path in args.wheelhouse:
+        if path.is_dir():
+            wheelhouse_files[str(path)] = sorted(
+                child.name for child in path.glob("*.whl")
+            )
+        else:
+            wheelhouse_files[str(path)] = None
+
+    installed_wheels = [Path(path).name for path in args.installed_wheel]
+    companion_packages = sorted(
+        {
+            re.sub(r"[-_.]+", "-", Path(path).name.split("-", 1)[0]).lower()
+            for path in args.installed_wheel
+            if Path(path).name.endswith(".whl")
+        }
+        - {"sagelite"}
+    )
+
+    return {
+        "schema": "sagelite-installed-doctest-runtime-summary-v1",
+        "python": str(Path(args.python).resolve()),
+        "cwd": os.getcwd(),
+        "environment": {
+            "PATH_head": _path_head(env),
+            "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
+            "PYTHONPATH_present": "PYTHONPATH" in env,
+            "LD_LIBRARY_PATH_present": "LD_LIBRARY_PATH" in env,
+        },
+        "artifacts": {
+            "log": str(paths.log),
+            "stats": str(paths.stats),
+            "analysis_json": str(paths.analysis_json),
+            "analysis_md": str(paths.analysis_md),
+            "runtime_manifest": str(paths.runtime_manifest),
+        },
+        "runtime_manifest": {
+            "command": manifest_command,
+            "returncode": manifest_returncode,
+            "path": str(paths.runtime_manifest),
+            "created": paths.runtime_manifest.is_file(),
+        },
+        "wheels": {
+            "wheelhouse_paths": wheelhouse_paths,
+            "wheelhouse_files": wheelhouse_files,
+            "installed_wheels": installed_wheels,
+            "companion_packages": companion_packages,
+        },
+        "doctest_command": doctest_command,
+    }
+
+
+def write_runtime_summary(
+    args: argparse.Namespace,
+    paths: ArtifactPaths,
+    env: dict[str, str],
+    doctest_command: list[str],
+    manifest_command: list[str],
+    manifest_returncode: int,
+) -> None:
+    summary = _runtime_summary(
+        args,
+        paths,
+        env,
+        doctest_command,
+        manifest_command,
+        manifest_returncode,
+    )
+    paths.runtime_summary.write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _run(command: list[str], env: dict[str, str]) -> subprocess.CompletedProcess[str]:
@@ -162,6 +276,31 @@ def _make_parser() -> argparse.ArgumentParser:
         help="omit --only-errors so successful modules are also printed",
     )
     parser.add_argument(
+        "--runtime-summary",
+        action="store_true",
+        help="write a sanitized environment summary and runtime manifest before doctesting",
+    )
+    parser.add_argument(
+        "--manifest-compiled-limit",
+        type=int,
+        default=None,
+        help="limit compiled-module probes when --runtime-summary collects a manifest",
+    )
+    parser.add_argument(
+        "--wheelhouse",
+        action="append",
+        type=Path,
+        default=[],
+        help="wheelhouse directory to record in --runtime-summary; may be repeated",
+    )
+    parser.add_argument(
+        "--installed-wheel",
+        action="append",
+        type=Path,
+        default=[],
+        help="wheel filename installed for this run to record in --runtime-summary; may be repeated",
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to python -m sage.doctest; prefix with --",
@@ -178,8 +317,28 @@ def main(argv: list[str] | None = None) -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     paths = make_artifact_paths(args.output_dir, label)
     env = build_clean_environment(args.python)
+    doctest_command = build_doctest_command(args, paths)
 
-    doctest = _run(build_doctest_command(args, paths), env)
+    if args.runtime_summary:
+        manifest_command = build_manifest_command(
+            args.python,
+            paths,
+            label=label,
+            compiled_limit=args.manifest_compiled_limit,
+        )
+        manifest = _run(manifest_command, env)
+        write_runtime_summary(
+            args,
+            paths,
+            env,
+            doctest_command,
+            manifest_command,
+            manifest.returncode,
+        )
+        print(f"runtime manifest: {paths.runtime_manifest}")
+        print(f"runtime summary: {paths.runtime_summary}")
+
+    doctest = _run(doctest_command, env)
 
     if not paths.log.is_file():
         raise RuntimeError(
@@ -202,6 +361,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"stats: missing ({paths.stats})")
     print(f"analysis json: {paths.analysis_json}")
     print(f"analysis md: {paths.analysis_md}")
+    if args.runtime_summary:
+        print(f"runtime manifest: {paths.runtime_manifest}")
+        print(f"runtime summary: {paths.runtime_summary}")
 
     if analyzer.returncode:
         return analyzer.returncode
