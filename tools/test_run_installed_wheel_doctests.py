@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -24,8 +25,11 @@ def test_runner_uses_short_installed_doctest_defaults(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-010203")
     commands = []
 
-    def fake_run(command, check, text):
+    def fake_run(command, check, text, env):
         commands.append(command)
+        assert env["PYTHONNOUSERSITE"] == "1"
+        assert "PYTHONPATH" not in env
+        assert env["PATH"].split(os.pathsep)[0] == str(Path(sys.executable).parent)
         if command[2] == "sage.doctest":
             log_path = Path(command[5])
             stats_path = Path(command[7])
@@ -75,7 +79,7 @@ def test_runner_passes_through_extra_doctest_args(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-020304")
     commands = []
 
-    def fake_run(command, check, text):
+    def fake_run(command, check, text, env):
         commands.append(command)
         if command[2] == "sage.doctest":
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
@@ -133,7 +137,7 @@ def test_runner_can_omit_short_flag_for_full_runs(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-030405")
     commands = []
 
-    def fake_run(command, check, text):
+    def fake_run(command, check, text, env):
         commands.append(command)
         if command[2] == "sage.doctest":
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
@@ -154,7 +158,7 @@ def test_runner_still_analyzes_logs_when_stats_file_is_missing(monkeypatch, tmp_
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-040506")
     commands = []
 
-    def fake_run(command, check, text):
+    def fake_run(command, check, text, env):
         commands.append(command)
         if command[2] == "sage.doctest":
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
@@ -183,7 +187,7 @@ def test_runner_prioritizes_analyzer_failure_exit_code(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-050607")
     calls = {"count": 0}
 
-    def fake_run(command, check, text):
+    def fake_run(command, check, text, env):
         calls["count"] += 1
         if calls["count"] == 1:
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
@@ -196,3 +200,16 @@ def test_runner_prioritizes_analyzer_failure_exit_code(monkeypatch, tmp_path):
     exit_code = runner.main(["--output-dir", str(tmp_path)])
 
     assert exit_code == 7
+
+
+def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
+    runner = _load_runner()
+    monkeypatch.setenv("PATH", "/usr/bin")
+    monkeypatch.setenv("PYTHONPATH", "/home/user/sage/src")
+    monkeypatch.delenv("PYTHONNOUSERSITE", raising=False)
+
+    env = runner.build_clean_environment("/scratch/install/bin/python")
+
+    assert env["PATH"] == f"/scratch/install/bin{os.pathsep}/usr/bin"
+    assert env["PYTHONNOUSERSITE"] == "1"
+    assert "PYTHONPATH" not in env

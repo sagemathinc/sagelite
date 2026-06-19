@@ -6,6 +6,7 @@ Run an installed-wheel Sage doctest sweep and reduce it into triage artifacts.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shlex
 import subprocess
@@ -98,9 +99,19 @@ def build_analyzer_command(
     return command
 
 
-def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
+def build_clean_environment(python: str) -> dict[str, str]:
+    env = os.environ.copy()
+    python_bin = os.fspath(Path(python).resolve().parent)
+    path = env.get("PATH", "")
+    env["PATH"] = python_bin if not path else f"{python_bin}{os.pathsep}{path}"
+    env["PYTHONNOUSERSITE"] = "1"
+    env.pop("PYTHONPATH", None)
+    return env
+
+
+def _run(command: list[str], env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     print(f"+ {' '.join(shlex.quote(part) for part in command)}", flush=True)
-    return subprocess.run(command, check=False, text=True)
+    return subprocess.run(command, check=False, text=True, env=env)
 
 
 def _make_parser() -> argparse.ArgumentParser:
@@ -166,8 +177,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     paths = make_artifact_paths(args.output_dir, label)
+    env = build_clean_environment(args.python)
 
-    doctest = _run(build_doctest_command(args, paths))
+    doctest = _run(build_doctest_command(args, paths), env)
 
     if not paths.log.is_file():
         raise RuntimeError(
@@ -179,7 +191,8 @@ def main(argv: list[str] | None = None) -> int:
             args.python,
             paths,
             include_stats=paths.stats.is_file(),
-        )
+        ),
+        env,
     )
 
     print(f"log: {paths.log}")
