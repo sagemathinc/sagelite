@@ -120,6 +120,60 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
 
     external_patterns = [
         (
+            "/usr/share/gap/pkg/guava",
+            "optional-external",
+            "gap-guava-program-missing",
+            "GUAVA package programs resolved to the host GAP tree",
+        ),
+        (
+            "wtdist",
+            "optional-external",
+            "gap-guava-program-missing",
+            "GUAVA package program is missing",
+        ),
+        (
+            "gap3 produced error output",
+            "optional-external",
+            "gap3-runtime-error",
+            "GAP3 runtime returned output that Sage could not parse as expected",
+        ),
+        (
+            "module error: don't know how to require sb-bsd-sockets",
+            "optional-external",
+            "maxima-lisp-module-missing",
+            "Maxima runtime is missing the Lisp socket module needed by help/example commands",
+        ),
+        (
+            "|unaryexport|",
+            "optional-external",
+            "fricas-runtime-error",
+            "FriCAS runtime is missing the UnaryExport conversion support expected by Sage",
+        ),
+        (
+            "undefined function: unaryexport",
+            "optional-external",
+            "fricas-runtime-error",
+            "FriCAS runtime is missing the UnaryExport conversion support expected by Sage",
+        ),
+        (
+            "fpylll.util.reductionerror: b'infinite loop in babai'",
+            "optional-external",
+            "fpylll-reduction-failure",
+            "fpylll failed during lattice reduction",
+        ),
+        (
+            "restarting with another random linear form",
+            "core-supported",
+            "msolve-parser-diagnostic",
+            "msolve emitted diagnostic output before the Sage-readable payload",
+        ),
+        (
+            "unsupported msolve output format",
+            "core-supported",
+            "msolve-parser-diagnostic",
+            "Sage could not parse msolve output",
+        ),
+        (
             "undefined symbol: festack_advance",
             "optional-external",
             "maxima-runtime-abi-mismatch",
@@ -397,6 +451,12 @@ def suggested_package(result: ModuleResult) -> str:
     return {
         "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post13",
         "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post13",
+        "maxima-lisp-module-missing": "sagelite-maxima-runtime",
+        "fricas-runtime-error": "sagelite-fricas-runtime",
+        "fpylll-reduction-failure": "sagelite-fplll-data or fpylll portability fix",
+        "gap3-runtime-error": "sagelite-gap3-runtime",
+        "gap-guava-program-missing": "sagelite-gap-package-guava",
+        "msolve-parser-diagnostic": "Sage msolve parser",
         "missing-cremona-db": "sagelite-database-cremona-mini",
         "missing-knotinfo-db": "database-knotinfo",
         "missing-database": "matching sagelite-database-* companion package",

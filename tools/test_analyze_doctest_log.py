@@ -759,3 +759,172 @@ Exception raised:
         results["sage.databases.conway"].suggested_package
         == "conway-polynomials"
     )
+
+
+def test_report_identifies_gap_guava_host_program_leak(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/coding/linear_code.py", line 1830, in sage.coding.linear_code.AbstractLinearCode.weight_distribution
+Failed example:
+    C.weight_distribution(algorithm='leon')   # optional - gap_package_guava
+Exception raised:
+    Traceback (most recent call last):
+    FileNotFoundError: [Errno 2] No such file or directory: '/usr/share/gap/pkg/guava//bin/wtdist'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.coding.linear_code.AbstractLinearCode.weight_distribution
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.coding.linear_code"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "gap-guava-program-missing"
+    assert result.suggested_package == "sagelite-gap-package-guava"
+    assert report["fingerprint_counts"] == {"gap-guava-program-missing": 1}
+
+
+def test_report_identifies_gap3_runtime_error(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/gap3.py", line 42, in sage.interfaces.gap3
+Failed example:
+    f([1,2,3])                                   # optional - gap3
+Exception raised:
+    Traceback (most recent call last):
+    RuntimeError: Gap3 produced error output
+    Error, List Element: <position> must be a positive integer
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.gap3
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.gap3"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "gap3-runtime-error"
+    assert result.suggested_package == "sagelite-gap3-runtime"
+
+
+def test_report_identifies_maxima_lisp_module_missing(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/maxima.py", line 42, in sage.interfaces.maxima
+Failed example:
+    maxima.help("gcd")
+Exception raised:
+    Traceback (most recent call last):
+    Module error: Don't know how to REQUIRE SB-BSD-SOCKETS.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.maxima
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.maxima"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "maxima-lisp-module-missing"
+    assert result.suggested_package == "sagelite-maxima-runtime"
+
+
+def test_report_identifies_fricas_unaryexport_runtime_error(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/fricas_translator.py", line 42, in sage.interfaces.fricas_translator
+Failed example:
+    fricas("sol.basis").sage()
+Exception raised:
+    Traceback (most recent call last):
+    RuntimeError: An error occurred when FriCAS evaluated 'sageprint(...)':
+       INTERNAL-SIMPLE-UNDEFINED-FUNCTION: Cell error on |UnaryExport|: Undefined function:
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.fricas_translator
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.fricas_translator"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "fricas-runtime-error"
+    assert result.suggested_package == "sagelite-fricas-runtime"
+
+
+def test_report_identifies_msolve_diagnostic_parser_failure(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/rings/polynomial/msolve.py", line 191, in sage.rings.polynomial.msolve.variety
+Failed example:
+    Ideal(x^2 - 1, y^2 - 1).variety(QQ, algorithm='msolve', proof=False)
+Exception raised:
+    Traceback (most recent call last):
+    File "<string>", line 2
+        Restarting with another random linear form
+    SyntaxError: invalid syntax
+    UnboundLocalError: cannot access local variable 'data' where it is not associated with a value
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.rings.polynomial.msolve.variety
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.rings.polynomial.msolve"]
+
+    assert result.category == "core-supported"
+    assert result.fingerprint == "msolve-parser-diagnostic"
+    assert result.suggested_package == "Sage msolve parser"
+
+
+def test_report_identifies_fpylll_reduction_failure(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/schemes/projective/projective_rational_point.py", line 42, in sage.schemes.projective.projective_rational_point
+Failed example:
+    sieve(X, 3)
+Exception raised:
+    Traceback (most recent call last):
+    RuntimeError: forked subprocess raised:
+    fpylll.util.ReductionError: b'infinite loop in babai'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.schemes.projective.projective_rational_point
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.schemes.projective.projective_rational_point"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "fpylll-reduction-failure"
+    assert result.suggested_package == "sagelite-fplll-data or fpylll portability fix"
