@@ -13,7 +13,7 @@ Feature for testing the presence of the ``planarity`` executable.
 
 import os
 
-from . import Executable, FeatureNotPresentError
+from . import Executable, FeatureNotPresentError, executable_outside_python_prefix
 
 
 class Planarity(Executable):
@@ -51,6 +51,10 @@ class Planarity(Executable):
         installations can also provide it through the optional
         ``sagelite-planarity-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:

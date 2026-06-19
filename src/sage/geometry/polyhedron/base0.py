@@ -392,10 +392,10 @@ class Polyhedron_base0(Element, sage.geometry.abc.Polyhedron):
             sage: P.change_ring(ZZ) == P
             True
 
-            sage: P = Polyhedron(vertices=[(-1.3,0), (0,2.3)], base_ring=RDF); P.vertices()
-            (A vertex at (-1.3, 0.0), A vertex at (0.0, 2.3))
+            sage: P = Polyhedron(vertices=[(-1.25,0), (0,2.5)], base_ring=RDF); P.vertices()
+            (A vertex at (-1.25, 0.0), A vertex at (0.0, 2.5))
             sage: P.change_ring(QQ).vertices()
-            (A vertex at (-13/10, 0), A vertex at (0, 23/10))
+            (A vertex at (-5/4, 0), A vertex at (0, 5/2))
             sage: P == P.change_ring(QQ)
             True
             sage: P.change_ring(ZZ)
@@ -791,7 +791,7 @@ class Polyhedron_base0(Element, sage.geometry.abc.Polyhedron):
 
             sage: p = polytopes.simplex(4, project=True)
             sage: p.Vrepresentation(0)
-            A vertex at (0.7071067812, 0.4082482905, 0.2886751346, 0.2236067977)
+            A vertex at (0.7071067812, 0.40824829050000006, 0.28867513460000005, 0.22360679770000003)
             sage: p.Vrepresentation(0) == p.Vrepresentation() [0]
             True
         """

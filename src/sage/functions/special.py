@@ -231,7 +231,7 @@ class SphericalHarmonic(BuiltinFunction):
     Note that this convention differs from the one in Maxima, as revealed by
     the sign difference for odd values of `m`::
 
-        sage: maxima.spherical_harmonic(1, 1, x, y).sage()                              # needs sage.symbolic
+        sage: maxima.spherical_harmonic(1, 1, x, y).sage()                              # long time, needs sage.symbolic
         1/2*sqrt(3/2)*e^(I*y)*sin(x)/sqrt(pi)
 
     It follows that, contrary to Maxima, SageMath uses the same sign convention
@@ -289,11 +289,11 @@ class SphericalHarmonic(BuiltinFunction):
             sage: # needs sage.symbolic
             sage: spherical_harmonic(1, 1, pi/3, pi/6).n()  # abs tol 1e-14
             -0.259120612103502 - 0.149603355150537*I
-            sage: maxima.spherical_harmonic(1, 1, pi/3, pi/6).n()  # abs tol 1e-14
+            sage: maxima.spherical_harmonic(1, 1, pi/3, pi/6).n()  # long time, abs tol 1e-14
             0.259120612103502 + 0.149603355150537*I
             sage: spherical_harmonic(1, -1, pi/3, pi/6).n()  # abs tol 1e-14
             0.259120612103502 - 0.149603355150537*I
-            sage: maxima.spherical_harmonic(1, -1, pi/3, pi/6).n()  # abs tol 1e-14
+            sage: maxima.spherical_harmonic(1, -1, pi/3, pi/6).n()  # long time, abs tol 1e-14
             -0.259120612103502 + 0.149603355150537*I
 
         Check that :issue:`33501` is fixed::
@@ -1043,7 +1043,7 @@ class EllipticKC(BuiltinFunction):
         correctly (see :issue:`7557`)::
 
             sage: t = jacobi_sn(1.2 + 2*I*elliptic_kc(1 - .5), .5)                      # needs sage.symbolic
-            sage: maxima(t)  # abs tol 1e-13                                            # needs sage.symbolic
+            sage: maxima(t)  # long time, abs tol 1e-13                                 # needs sage.symbolic
             0.88771548861928029 - 1.7301614091485560e-15*%i
             sage: t.n()  # abs tol 1e-13                                                # needs sage.symbolic
             0.887715488619280 - 1.73016140914856e-15*I

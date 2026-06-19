@@ -119,7 +119,7 @@ class Function_gamma(GinacFunction):
         convert back to Sage::
 
             sage: z = var('z')                                                          # needs sage.symbolic
-            sage: maxima(gamma1(z)).sage()                                              # needs sage.symbolic
+            sage: maxima(gamma1(z)).sage()                                              # long time, needs sage.symbolic
             gamma(z)
             sage: latex(gamma1(z))                                                      # needs sage.symbolic
             \Gamma\left(z\right)
@@ -530,7 +530,7 @@ class Function_gamma_inc_lower(BuiltinFunction):
 
             sage: gamma_inc_lower(x, x)._sympy_()                                       # needs sympy sage.symbolic
             lowergamma(x, x)
-            sage: maxima(gamma_inc_lower(x, x))                                         # needs sage.symbolic
+            sage: maxima(gamma_inc_lower(x, x))                                         # long time, needs sage.symbolic
             gamma_incomplete_lower(_SAGE_VAR_x,_SAGE_VAR_x)
 
         .. SEEALSO::

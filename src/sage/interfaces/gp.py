@@ -193,7 +193,8 @@ class Gp(ExtraTabCompletion, Expect):
                  server=None,
                  server_tmpdir=None,
                  init_list_length=1024,
-                 seed=None):
+                 seed=None,
+                 path=None):
         """
         Initialization of this PARI gp interpreter.
 
@@ -211,6 +212,9 @@ class Gp(ExtraTabCompletion, Expect):
           list of local variables.
         - ``seed`` -- integer (default random nonzero 31 bit integer); value of
           random seed
+        - ``path`` -- string (default: ``None``); directory from which the
+          child process is started. This is passed through to
+          :class:`~sage.interfaces.expect.Expect`.
 
         EXAMPLES::
 
@@ -230,6 +234,7 @@ class Gp(ExtraTabCompletion, Expect):
                         restart_on_ctrlc=False,
                         verbose_start=False,
                         logfile=logfile,
+                        path=path,
                         eval_using_file_cutoff=1024)
         self.__seq = 0
         self.__var_store_len = 0

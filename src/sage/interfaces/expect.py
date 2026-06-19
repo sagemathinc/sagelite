@@ -499,6 +499,9 @@ If this all works, you can then make calls like:
         # See Issue #12221 and #13859.
         pexpect_env = dict(os.environ)
         pexpect_env.update(self._env)
+        for key, value in self._env.items():
+            if value is None:
+                pexpect_env.pop(key, None)
         pexpect_env['TERM'] = "dumb"
         pexpect_del_vars = ['COLUMNS']
         for i in pexpect_del_vars:

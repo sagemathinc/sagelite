@@ -244,6 +244,13 @@ def _check_companion_feature(
     return f"{description} available"
 
 
+def _same_existing_path(left, right) -> bool:
+    try:
+        return os.path.samefile(left, right)
+    except (OSError, TypeError, ValueError):
+        return False
+
+
 GAP_PACKAGE_COMPANIONS = [
     ("atlasrep", "sagelite_gap_package_atlasrep", "AtlasRep"),
     ("ctbllib", "sagelite_gap_package_ctbllib", "CTblLib"),
@@ -274,9 +281,24 @@ def _check_gap_package_runtime(
         return "not installed"
 
     from sage.features.gap import GapPackage
+    from sage.env import GAP_ROOT_PATHS
+
+    try:
+        runtime = importlib.import_module(f"{module_name}.runtime")
+    except ImportError:
+        companion_roots = set()
+    else:
+        root_paths = getattr(runtime, "gap_root_paths", lambda: "")()
+        companion_roots = {path for path in root_paths.split(";") if path}
 
     feature = GapPackage(package, spkg=f"gap_package_{package}").is_present()
     if not bool(feature):
+        active_roots = {path for path in GAP_ROOT_PATHS.split(";") if path}
+        if companion_roots and not companion_roots.intersection(active_roots):
+            return (
+                f"GAP package {display_name} installed but not active with "
+                "the current GAP runtime"
+            )
         raise RuntimeError(
             f"GAP package {display_name} is not available: {feature.reason}"
         )
@@ -474,10 +496,8 @@ def _check_ecl_runtime():
     command = Path(runtime.ecl_config_command())
     if not command.is_file() or not os.access(command, os.X_OK):
         raise RuntimeError(f"ecl-config companion command is not executable: {command}")
-    if os.fspath(command) != ECL_CONFIG:
-        raise RuntimeError(
-            f"Sage is not using the ECL companion ecl-config: {ECL_CONFIG}"
-        )
+    if not _same_existing_path(command, ECL_CONFIG):
+        return f"Sage is using non-companion ECL runtime: {ECL_CONFIG}"
 
     ecldir = Path(runtime.ecl_dir())
     if not ecldir.is_dir():
@@ -675,8 +695,8 @@ def _check_sympow_runtime():
     command = Path(runtime.sympow_command())
     if not command.is_file() or not os.access(command, os.X_OK):
         raise RuntimeError(f"sympow companion command is not executable: {command}")
-    if os.fspath(command) != SYMPOW:
-        raise RuntimeError(f"Sage is not using the sympow companion runtime: {SYMPOW}")
+    if not _same_existing_path(command, SYMPOW):
+        return f"Sage is using non-companion sympow runtime: {SYMPOW}"
     return "sympow executable runtime available"
 
 
@@ -744,9 +764,17 @@ def _check_loaded_ecl_matches_maxima_runtime():
     except ImportError:
         return "not installed"
 
+    maxima_fas = Path(runtime.maxima_fas())
+    try:
+        from sage.env import MAXIMA_FAS
+
+        if MAXIMA_FAS and not os.path.samefile(MAXIMA_FAS, maxima_fas):
+            return "Sage is using a non-companion Maxima image"
+    except OSError:
+        pass
+
     importlib.import_module("sage.libs.ecl")
 
-    maxima_fas = Path(runtime.maxima_fas())
     try:
         requires_fe_stack = b"FEstack_advance" in maxima_fas.read_bytes()
     except OSError:
@@ -816,8 +844,22 @@ def _check_maxima_runtime():
 
 
 def _check_kenzo_runtime():
-    from sage.features.kenzo import Kenzo
+    try:
+        from sagelite_kenzo import runtime
+    except ImportError:
+        return "not installed"
 
+    from sage.env import KENZO_FAS
+
+    companion_fas = Path(runtime.kenzo_fas())
+    if not companion_fas.is_file():
+        raise RuntimeError(f"Kenzo companion FAS is not available: {companion_fas}")
+    if not KENZO_FAS:
+        return "Kenzo companion runtime is not active"
+    if not _same_existing_path(companion_fas, KENZO_FAS):
+        return f"Sage is using non-companion Kenzo runtime: {KENZO_FAS}"
+
+    from sage.features.kenzo import Kenzo
     return _check_companion_feature(
         "sagelite_kenzo", Kenzo, "Kenzo ECL runtime"
     )
@@ -1013,9 +1055,19 @@ def _check_tachyon_runtime():
     command = Path(runtime.executable_path())
     if not command.is_file() or not os.access(command, os.X_OK):
         raise RuntimeError(f"tachyon companion command is not executable: {command}")
-    if os.fspath(command) != TACHYON:
-        raise RuntimeError(f"Sage is not using the Tachyon companion runtime: {TACHYON}")
-    return "Tachyon executable runtime available"
+    if _same_existing_path(command, TACHYON):
+        return "Tachyon executable runtime available"
+
+    result = subprocess.run(
+        [TACHYON],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    output = result.stdout + result.stderr
+    if "tachyon" not in output.lower() or "modelfile" not in output.lower():
+        raise RuntimeError(f"Tachyon command is not usable: {TACHYON}")
+    return f"Sage is using non-companion Tachyon runtime: {TACHYON}"
 
 
 def _check_sirocco_runtime():

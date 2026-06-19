@@ -14,6 +14,7 @@ Symbolic Integration
 import os
 
 from sage.structure.element import Expression
+from sage.symbolic.constants import NotANumber
 from sage.symbolic.ring import SR
 from sage.symbolic.function import BuiltinFunction
 
@@ -62,6 +63,28 @@ def _handle_automatic_integration_error(integrator, err):
     """
     if integrator is external.maxima_integrator:
         raise err
+
+
+def _is_symbolic_nan(value):
+    """
+    Return whether ``value`` is Sage's symbolic ``NaN``.
+
+    Some integrators return ``NaN`` for removable endpoint singularities
+    instead of an unevaluated integral. Treating that as a failed automatic
+    result allows later integrators to try.
+
+    EXAMPLES::
+
+        sage: from sage.symbolic.integration.integral import _is_symbolic_nan
+        sage: _is_symbolic_nan(SR('NaN'))
+        True
+        sage: _is_symbolic_nan(1)
+        False
+    """
+    try:
+        return isinstance(value.pyobject(), NotANumber)
+    except (AttributeError, TypeError):
+        return False
 
 
 ######################################################
@@ -172,6 +195,8 @@ class IndefiniteIntegral(BuiltinFunction):
             except ValueError as err:
                 _handle_automatic_integration_error(integrator, err)
             else:
+                if _is_symbolic_nan(A):
+                    continue
                 if not hasattr(A, 'operator'):
                     return A
                 uneval = integral(SR.wild(0), x, hold=True)
@@ -295,6 +320,8 @@ class DefiniteIntegral(BuiltinFunction):
             except ValueError as err:
                 _handle_automatic_integration_error(integrator, err)
             else:
+                if _is_symbolic_nan(A):
+                    continue
                 if not hasattr(A, 'operator'):
                     return A
                 uneval = integral(SR.wild(0), x, a, b, hold=True)

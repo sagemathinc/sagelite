@@ -1,4 +1,4 @@
-# sage.doctest: needs sage.numerical.mip
+# sage.doctest: needs sage.numerical.mip, long time
 r"""
 A bijectionist's toolkit
 
@@ -159,7 +159,7 @@ following code is equivalent to ``tau = findstat(397)``::
     sage: bij.set_statistics((lambda a: a.size(), lambda b: b.number_of_nodes()-1))
     sage: from sage.combinat.cyclic_sieving_phenomenon import orbit_decomposition
     sage: bij.set_constant_blocks(orbit_decomposition(A, theta))
-    sage: list(bij.solutions_iterator())
+    sage: list(bij.solutions_iterator())                                      # long time
     []
 
 Next we demonstrate how to search for a bijection.  To do so, we identify `s`
@@ -2679,6 +2679,8 @@ class _BijectionistMILP:
                             m.freeTransform()
                     self.milp.remove_constraints(new_indices)
 
+                if not self._is_complete_solution(solution):
+                    return
                 self._add_solution(solution)
                 i += 1
                 assert i == len(self._solution_cache)
@@ -2724,6 +2726,24 @@ class _BijectionistMILP:
         self.milp.add_constraint(sum(active_vars) <= len(active_vars) - 1,
                                  name='veto')
         self._solution_cache.append(solution)
+
+    def _is_complete_solution(self, solution):
+        r"""
+        Return whether ``solution`` selects exactly one value for each block.
+
+        Some MILP backends can return a numerically marginal candidate even
+        though the model has equality constraints for the block variables.  Such
+        a candidate is not a bijectionist solution and must not be cached or
+        yielded.
+        """
+        for p in _disjoint_set_roots(self._bijectionist._P):
+            selected = [
+                z for z in self._bijectionist._possible_block_values[p]
+                if solution[p, z]
+            ]
+            if len(selected) != 1:
+                return False
+        return True
 
     def _is_solution(self, constraint, values):
         r"""

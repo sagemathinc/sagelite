@@ -217,7 +217,7 @@ class ProjectionFuncStereographic:
 
             sage: from sage.geometry.polyhedron.plot import ProjectionFuncStereographic
             sage: proj = ProjectionFuncStereographic([1.0,1.0])
-            sage: proj.__call__(vector([1,2]))
+            sage: proj.__call__(vector([1,2]))  # abs tol 1e-14
             (1.0000000000000002)
             sage: proj = ProjectionFuncStereographic([2.0,1.0])
             sage: proj.__call__(vector([1,2]))  # abs tol 1e-14
@@ -272,9 +272,9 @@ class ProjectionFuncSchlegel:
             (1.0, 1.0, 1.0)
             sage: proj.projection_point
             (0.0, -1.5, 0.0, 0.0)
-            sage: proj([-1,1,1,1])
+            sage: proj([-1,1,1,1])  # abs tol 1e-14
             (0.8, 1.2, 1.2)
-            sage: proj([1,1,1,1])
+            sage: proj([1,1,1,1])  # abs tol 1e-14
             (1.2, 1.2, 1.2)
             sage: proj([1,-1,1,1])
             (2.0, 2.0, 2.0)
@@ -594,7 +594,10 @@ class Projection(SageObject):
 
             sage: p = polytopes.simplex(4, project=True).projection()
             sage: p.coordinates_of([1])
-            [[-0.7071067812, 0.4082482905, 0.2886751346, 0.2236067977]]
+            [[-0.7071067812,
+              0.40824829050000006,
+              0.28867513460000005,
+              0.22360679770000003]]
         """
         return [self.transformed_coords[i] for i in coord_index_list]
 

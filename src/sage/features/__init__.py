@@ -68,10 +68,41 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from sage.env import SAGE_LOCAL, SAGE_ROOT, sage_data_paths
+
+
+def executable_outside_python_prefix(executable: str) -> str | None:
+    """
+    Return a command from ``PATH`` that is not installed in this Python prefix.
+
+    Installed ``sagelite`` companion wheels expose console-script wrappers in
+    the active virtual environment.  Feature tests use this helper when a
+    working system executable is preferable to a broken companion wrapper.
+    """
+    ignored = set()
+    for prefix in (sys.prefix, sys.exec_prefix):
+        if prefix:
+            ignored.add(Path(prefix, "bin").resolve())
+    if sys.executable:
+        ignored.add(Path(sys.executable).resolve().parent)
+
+    path_entries = []
+    for entry in os.environ.get("PATH", os.defpath).split(os.pathsep):
+        if not entry:
+            continue
+        try:
+            if Path(entry).resolve() in ignored:
+                continue
+        except OSError:
+            pass
+        path_entries.append(entry)
+    if not path_entries:
+        return None
+    return shutil.which(executable, path=os.pathsep.join(path_entries))
 
 
 class TrivialClasscallMetaClass(type):

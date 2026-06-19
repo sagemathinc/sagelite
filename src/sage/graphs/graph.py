@@ -4456,6 +4456,34 @@ class Graph(GenericGraph):
         for h in H:
             rs_dict[h] = [v for v in self if rs[h, v]]
 
+        failure = (
+            "This graph has no induced minor isomorphic to H !"
+            if induced
+            else "This graph has no minor isomorphic to H !"
+        )
+
+        seen_vertices = set()
+        for h, branch_set in rs_dict.items():
+            if not branch_set:
+                raise ValueError(failure)
+            if not self.subgraph(branch_set).is_connected():
+                raise ValueError(failure)
+            for v in branch_set:
+                if v in seen_vertices:
+                    raise ValueError(failure)
+                seen_vertices.add(v)
+
+        for h1, h2 in H.edge_iterator(labels=False):
+            if not any(self.has_edge(v1, v2)
+                       for v1 in rs_dict[h1] for v2 in rs_dict[h2]):
+                raise ValueError(failure)
+
+        if induced:
+            for h1, h2 in H.complement().edge_iterator(labels=False):
+                if any(self.has_edge(v1, v2)
+                       for v1 in rs_dict[h1] for v2 in rs_dict[h2]):
+                    raise ValueError(failure)
+
         return rs_dict
 
     # Convexity

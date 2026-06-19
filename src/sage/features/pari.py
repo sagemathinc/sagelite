@@ -51,7 +51,7 @@ class PariData(StaticFile):
 
         sage: from sage.features.pari import PariData
         sage: PariData("pari_galdata", "galdata")
-        Feature('pari_galdata')
+        Feature('pari_galdata': PARI data package galdata)
     """
 
     def __init__(self, name, directory):

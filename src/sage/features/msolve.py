@@ -22,6 +22,7 @@ import subprocess
 from . import Executable
 from . import FeatureNotPresentError
 from . import FeatureTestResult
+from . import executable_outside_python_prefix
 
 
 class msolve(Executable):
@@ -54,6 +55,10 @@ class msolve(Executable):
         installations can also provide it through the optional
         ``sagelite-msolve-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:
@@ -85,8 +90,8 @@ class msolve(Executable):
 #        if msolve_out.returncode != 0:
 #            return FeatureTestResult(self, False, reason="msolve -h returned "
 #                                f"nonzero exit status {msolve_out.returncode}")
-        if (msolve_out.stdout[:45] !=
-              b'\nmsolve library for polynomial system solving'):
+        output = msolve_out.stdout + msolve_out.stderr
+        if b'msolve library for polynomial system solving' not in output:
             return FeatureTestResult(self, False,
                                      reason="output of msolve -h not recognized")
         return FeatureTestResult(self, True)

@@ -126,7 +126,7 @@ class Function_erf(BuiltinFunction):
 
         sage: erf(3).n()                                                                # needs sage.symbolic
         0.999977909503001
-        sage: maxima.erf(3).n()                                                         # needs sage.symbolic
+        sage: maxima.erf(3).n()                                                         # long time, needs sage.symbolic
         0.999977909503001
         sage: 1 - pari(3).erfc()                                                        # needs sage.libs.pari
         0.999977909503001
@@ -156,8 +156,8 @@ class Function_erf(BuiltinFunction):
 
     Ensure conversion from maxima elements works::
 
-        sage: merf = maxima(erf(x)).sage().operator()                                   # needs sage.symbolic
-        sage: merf.parent() == erf.parent()                                             # needs sage.symbolic
+        sage: merf = maxima(erf(x)).sage().operator()                                   # long time, needs sage.symbolic
+        sage: merf.parent() == erf.parent()                                             # long time, needs sage.symbolic
         True
 
     Make sure we can dump and load it::
@@ -191,7 +191,7 @@ class Function_erf(BuiltinFunction):
 
         EXAMPLES::
 
-            sage: maxima(erf(2))                                                        # needs sage.symbolic
+            sage: maxima(erf(2))                                                        # long time, needs sage.symbolic
             erf(2)
             sage: erf(2)._sympy_()                                                      # needs sympy sage.symbolic
             erf(2)
@@ -327,7 +327,7 @@ class Function_erfi(BuiltinFunction):
 
         EXAMPLES::
 
-            sage: maxima(erfi(2))                                                       # needs sage.symbolic
+            sage: maxima(erfi(2))                                                       # long time, needs sage.symbolic
             erfi(2)
             sage: erfi(2)._sympy_()                                                     # needs sympy sage.symbolic
             erfi(2)
@@ -424,7 +424,7 @@ class Function_erfc(BuiltinFunction):
         r"""
         EXAMPLES::
 
-            sage: maxima(erfc(2))                                                       # needs sage.symbolic
+            sage: maxima(erfc(2))                                                       # long time, needs sage.symbolic
             erfc(2)
             sage: erfc(2)._sympy_()                                                     # needs sympy sage.symbolic
             erfc(2)
@@ -509,7 +509,7 @@ class Function_erfinv(BuiltinFunction):
 
             sage: erfinv(2)._sympy_()                                                   # needs sympy sage.symbolic
             erfinv(2)
-            sage: maxima(erfinv(2))                                                     # needs sage.symbolic
+            sage: maxima(erfinv(2))                                                     # long time, needs sage.symbolic
             inverse_erf(2)
 
         TESTS:

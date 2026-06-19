@@ -457,4 +457,18 @@ def has_homomorphism_to(G, H, core=False, solver=None, verbose=0,
         return False
 
     b = p.get_values(b, convert=bool, tolerance=integrality_tolerance)
-    return dict(x[0] for x in b.items() if x[1])
+    mapping = {}
+    preimage_sizes = {ug: 0 for ug in G}
+    for (ug, uh), assigned in b.items():
+        if assigned:
+            mapping[ug] = uh
+            preimage_sizes[ug] += 1
+
+    if any(size != 1 for size in preimage_sizes.values()):
+        return False
+
+    for ug, vg in G.edge_iterator(labels=False):
+        if mapping[ug] == mapping[vg] or not H.has_edge(mapping[ug], mapping[vg]):
+            return False
+
+    return mapping

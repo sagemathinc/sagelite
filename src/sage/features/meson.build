@@ -48,6 +48,7 @@ py.install_sources(
   'pari.py',
   'pdf2svg.py',
   'phitigra.py',
+  'planarity.py',
   'pkg_systems.py',
   'polymake.py',
   'poppler.py',

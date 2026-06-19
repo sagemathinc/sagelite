@@ -77,6 +77,7 @@ dependencies = [
   'jupyter-client',
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
+  'py >=1.11,<2',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',
   'matplotlib >=3.7.0',
@@ -261,6 +262,7 @@ extra = [
   'igraph',
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
+  'py >=1.11,<2',
   'ortools >=9.11',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.6',
@@ -285,6 +287,7 @@ full = [
   'igraph',
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
+  'py >=1.11,<2',
   'lrcalc ~=2.1; sys_platform != "win32"',
   'matroid-database ==0.3',
   "Mathics3 >=10.0.1; python_version < '3.14'",
@@ -584,7 +587,7 @@ kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
 kissat = ['sagelite-kissat-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel >=10.9,<10.10']
-khoca = ['khoca >=1.4']
+khoca = ['khoca >=1.4', 'py >=1.11,<2']
 latte = ['sagelite-latte-runtime >=10.9,<10.10']
 latte_int = ['sagelite-latte-runtime >=10.9,<10.10']
 lcalc = ['sagelite-lcalc-runtime >=10.9,<10.10']
@@ -664,6 +667,7 @@ runtime = [
   'igraph',
   'jupyter-jsmol >=2022.1.0',
   'khoca >=1.4',
+  'py >=1.11,<2',
   'lrcalc ~=2.1; sys_platform != "win32"',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'ortools >=9.11',

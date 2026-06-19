@@ -126,7 +126,11 @@ def _ecl_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
     ecldir = root / "lib" / "ecl-24.5.10"
     command.parent.mkdir(parents=True)
     ecldir.mkdir(parents=True)
-    command.write_text("#!/bin/sh\n")
+    (ecldir / "asdf.fas").write_text("asdf fas\n")
+    command.write_text(
+        f"#!/bin/sh\n"
+        f"if [ \"$1\" = \"--libs\" ]; then echo ' -L{root / 'lib'} -lecl'; fi\n"
+    )
     command.chmod(0o755)
     return command, ecldir
 
@@ -556,6 +560,27 @@ def test_gap_root_paths_prefers_environment(monkeypatch, tmp_path):
     assert env._gap_root_paths().split(";") == [str(configured)]
 
 
+def test_gap_root_paths_does_not_append_registered_package_roots_to_environment(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "configured")
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.setenv("GAP_ROOT_PATHS", str(configured))
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: package)],
+    )
+    monkeypatch.setattr(
+        env, "_sagelite_gap_package_root_paths", lambda: {str(package)}
+    )
+
+    assert env._gap_root_paths().split(";") == [str(configured)]
+
+
 def test_gap_root_paths_prefers_valid_configured_core_over_companion(
     monkeypatch, tmp_path
 ):
@@ -569,6 +594,27 @@ def test_gap_root_paths_prefers_valid_configured_core_over_companion(
         env,
         "_optional_runtime_value",
         lambda module_name, attr_name: str(companion),
+    )
+
+    assert env._gap_root_paths().split(";") == [str(configured)]
+
+
+def test_gap_root_paths_does_not_append_registered_package_roots_to_configured_core(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "configured")
+    package = _gap_package_root(tmp_path, "grape")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: package)],
+    )
+    monkeypatch.setattr(
+        env, "_sagelite_gap_package_root_paths", lambda: {str(package)}
     )
 
     assert env._gap_root_paths().split(";") == [str(configured)]
@@ -741,6 +787,31 @@ def test_gap_runtime_sets_pexpect_command(monkeypatch, tmp_path):
     assert env.os.environ["SAGE_GAP_COMMAND"] == str(command)
 
 
+def test_gap_runtime_does_not_mix_companion_command_with_configured_core(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "configured")
+    companion = _gap_root(tmp_path, "companion")
+    command = _gap_runtime_command(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_GAP_COMMAND", raising=False)
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_gap_runtime.runtime", "gap_command"): str(command),
+            ("sagelite_gap_runtime.runtime", "gap_root_paths"): str(companion),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert "SAGE_GAP_COMMAND" not in env.os.environ
+
+
 def test_gap_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
     existing = _gap_runtime_command(tmp_path, "existing")
     companion = _gap_runtime_command(tmp_path, "companion")
@@ -895,6 +966,66 @@ def test_maxima_runtime_prefers_companion_over_configured_paths(monkeypatch, tmp
     assert env.os.environ["MAXIMA_FAS"] == str(fas)
     assert env.os.environ["MAXIMA_IMAGESDIR"] == str(imagesdir)
     assert env.os.environ["ECLDIR"] == str(ecldir)
+
+
+def test_maxima_runtime_keeps_usable_configured_paths(monkeypatch, tmp_path):
+    companion_prefix, companion_fas, companion_command, companion_imagesdir = (
+        _maxima_runtime(tmp_path, "companion")
+    )
+    configured_prefix, configured_fas, configured_command, configured_imagesdir = (
+        _maxima_runtime(tmp_path, "configured")
+    )
+    companion_ecldir = tmp_path / "companion" / "lib" / "ecl-24.5.10"
+    companion_ecldir.mkdir(parents=True)
+    (companion_ecldir / "maxima.asd").write_text("companion maxima asd\n")
+    runtime_library_dir = tmp_path / "companion" / "lib" / "runtime"
+    runtime_library_dir.mkdir(parents=True)
+
+    for name in (
+        "MAXIMA",
+        "MAXIMA_PREFIX",
+        "MAXIMA_FAS",
+        "MAXIMA_IMAGESDIR",
+        "ECLDIR",
+        "MAXIMA_LAYOUT_AUTOTOOLS",
+        "LD_LIBRARY_PATH",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(env.sage.config, "MAXIMA", str(configured_command), raising=False)
+    monkeypatch.setattr(
+        env.sage.config, "MAXIMA_PREFIX", str(configured_prefix), raising=False
+    )
+    monkeypatch.setattr(env.sage.config, "MAXIMA_FAS", str(configured_fas), raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "MAXIMA_IMAGESDIR",
+        str(configured_imagesdir),
+        raising=False,
+    )
+
+    def runtime_value(module_name, attr_name):
+        values = {
+            ("sagelite_maxima.runtime", "maxima_command"): companion_command,
+            ("sagelite_maxima.runtime", "maxima_prefix"): companion_prefix,
+            ("sagelite_maxima.runtime", "maxima_fas"): companion_fas,
+            ("sagelite_maxima.runtime", "maxima_imagesdir"): companion_imagesdir,
+            ("sagelite_maxima.runtime", "ecl_dir"): companion_ecldir,
+            ("sagelite_maxima.runtime", "maxima_layout_autotools"): "true",
+            ("sagelite_maxima.runtime", "runtime_library_dir"): runtime_library_dir,
+        }
+        return values.get((module_name, attr_name))
+
+    monkeypatch.setattr(env, "_optional_runtime_value", runtime_value)
+
+    env._bootstrap_sagelite_maxima_runtime()
+
+    assert "MAXIMA" not in env.os.environ
+    assert "MAXIMA_PREFIX" not in env.os.environ
+    assert "MAXIMA_FAS" not in env.os.environ
+    assert "MAXIMA_IMAGESDIR" not in env.os.environ
+    assert "ECLDIR" not in env.os.environ
+    assert "MAXIMA_LAYOUT_AUTOTOOLS" not in env.os.environ
+    assert "LD_LIBRARY_PATH" not in env.os.environ
 
 
 def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
@@ -1052,6 +1183,37 @@ def test_kenzo_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     env._bootstrap_sagelite_kenzo_runtime()
 
     assert env.os.environ["KENZO_FAS"] == str(existing_fas)
+
+
+def test_kenzo_runtime_does_not_mix_companion_fas_with_system_ecl(
+    monkeypatch, tmp_path
+):
+    system_ecldir = tmp_path / "system" / "ecl"
+    companion_ecldir = tmp_path / "companion" / "ecl"
+    fas = _kenzo_runtime(tmp_path, "companion")
+    system_ecldir.mkdir(parents=True)
+    companion_ecldir.mkdir(parents=True)
+
+    monkeypatch.delenv("KENZO_FAS", raising=False)
+    monkeypatch.setenv("ECLDIR", str(system_ecldir))
+    monkeypatch.setattr(
+        env.sage.config,
+        "KENZO_FAS",
+        str(tmp_path / "stale-lib" / "ecl" / "kenzo.fas"),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_kenzo.runtime", "kenzo_fas"): fas,
+            ("sagelite_ecl.runtime", "ecl_dir"): companion_ecldir,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_kenzo_runtime()
+
+    assert "KENZO_FAS" not in env.os.environ
 
 
 def test_pari_data_runtime_uses_companion_when_environment_is_missing(monkeypatch, tmp_path):
@@ -1476,6 +1638,24 @@ def test_ecl_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     assert env.os.environ["ECLDIR"] == str(ecldir)
 
 
+def test_ecl_runtime_uses_configured_ecldir(monkeypatch, tmp_path):
+    command, ecldir = _ecl_runtime(tmp_path, "configured")
+
+    monkeypatch.delenv("ECL_CONFIG", raising=False)
+    monkeypatch.delenv("ECLDIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "ECL_CONFIG", str(command), raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: None,
+    )
+
+    env._bootstrap_sagelite_ecl_runtime()
+
+    assert "ECL_CONFIG" not in env.os.environ
+    assert env.os.environ["ECLDIR"] == str(ecldir)
+
+
 def test_ecl_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     command, ecldir = _ecl_runtime(tmp_path, "companion")
     existing_command, existing_ecldir = _ecl_runtime(tmp_path, "existing")
@@ -1733,6 +1913,8 @@ def test_latte_runtime_keeps_existing_environment(monkeypatch, tmp_path):
 
 def test_nauty_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     prefix = _runtime_bin_prefix(tmp_path, "companion", "geng")
+    (prefix / "genposetg").write_text("#!/bin/sh\n")
+    (prefix / "genposetg").chmod(0o755)
 
     monkeypatch.delenv("SAGE_NAUTY_BINS_PREFIX", raising=False)
     monkeypatch.setattr(
@@ -1748,10 +1930,71 @@ def test_nauty_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path
         if (module_name, attr_name) == ("sagelite_nauty.runtime", "bin_prefix")
         else None,
     )
+    monkeypatch.setattr(
+        env,
+        "_command_starts",
+        lambda path: str(path).startswith(str(prefix)),
+    )
 
     env._bootstrap_sagelite_nauty_runtime()
 
     assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == str(prefix) + env.os.sep
+
+
+def test_nauty_runtime_prefers_usable_system_prefix(monkeypatch, tmp_path):
+    companion = _runtime_bin_prefix(tmp_path, "companion", "geng")
+    (companion / "genposetg").write_text("#!/bin/sh\n")
+    (companion / "genposetg").chmod(0o755)
+
+    monkeypatch.delenv("SAGE_NAUTY_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "SAGE_NAUTY_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_nauty.runtime", "bin_prefix")
+        else None,
+    )
+    monkeypatch.setattr(
+        env,
+        "_command_starts",
+        lambda path: str(path).startswith("/usr/bin/nauty-"),
+    )
+
+    env._bootstrap_sagelite_nauty_runtime()
+
+    assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == "/usr/bin/nauty-"
+
+
+def test_nauty_runtime_ignores_broken_companion(monkeypatch, tmp_path):
+    prefix = _runtime_bin_prefix(tmp_path, "companion", "geng")
+    (prefix / "genposetg").write_text("#!/bin/sh\n")
+    (prefix / "genposetg").chmod(0o755)
+
+    monkeypatch.delenv("SAGE_NAUTY_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "SAGE_NAUTY_BINS_PREFIX",
+        str(tmp_path / "stale-bin") + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(prefix) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_nauty.runtime", "bin_prefix")
+        else None,
+    )
+    monkeypatch.setattr(env, "_command_starts", lambda path: False)
+
+    env._bootstrap_sagelite_nauty_runtime()
+
+    assert "SAGE_NAUTY_BINS_PREFIX" not in env.os.environ
 
 
 def test_nauty_runtime_keeps_existing_environment(monkeypatch, tmp_path):

@@ -42,6 +42,22 @@ from sage.functions.all import gamma
 from sage.symbolic.constants import pi, e
 
 
+def _lll_with_pari_fallback(basis, *args, **kwds):
+    try:
+        return basis.LLL(*args, **kwds)
+    except Exception as err:
+        implicit_algorithm = 'algorithm' not in kwds and len(args) < 3
+        if not implicit_algorithm:
+            raise
+        try:
+            from fpylll.util import ReductionError
+        except ImportError:
+            ReductionError = ()
+        if not isinstance(err, ReductionError):
+            raise
+        return basis.LLL(*args, algorithm='pari', **kwds)
+
+
 try:
     from sage.rings.number_field.number_field_element import OrderElement_absolute
 except ImportError:
@@ -301,7 +317,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
         self._basis_is_LLL_reduced = False
 
         if lll_reduce:
-            basis = matrix([v for v in basis.LLL() if v])
+            basis = matrix([v for v in _lll_with_pari_fallback(basis) if v])
             self._basis_is_LLL_reduced = True
 
         basis.set_immutable()
@@ -392,7 +408,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             True
         """
         basis = self.reduced_basis
-        basis = [v for v in basis.LLL(*args, **kwds) if v]
+        basis = [v for v in _lll_with_pari_fallback(basis, *args, **kwds) if v]
         basis = matrix(ZZ, len(basis), len(basis[0]), basis)
         basis.set_immutable()
 
@@ -878,7 +894,7 @@ class FreeModule_submodule_with_basis_integer(FreeModule_submodule_with_basis_pi
             L[-1, -1] = weight
 
             # The vector should be the last row but we iterate just in case
-            for v in reversed(L.LLL(delta=delta, *args, **kwargs).rows()):
+            for v in reversed(_lll_with_pari_fallback(L, *args, delta=delta, **kwargs).rows()):
                 if abs(v[-1]) == weight:
                     return t - v[:-1]*v[-1].sign()
             raise ValueError('No suitable vector found in basis.'

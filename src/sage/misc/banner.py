@@ -171,7 +171,7 @@ def version_dict():
         sage: old_version = banner.SAGE_VERSION
         sage: banner.SAGE_VERSION = '10.9.beta9.post1'
         sage: version_dict()
-        {'major': 10, 'minor': 9, 'tiny': 0, 'prerelease': True}
+        {'major': 10, 'minor': 9, 'prerelease': True, 'tiny': 0}
         sage: banner.SAGE_VERSION = old_version
     """
     v = SAGE_VERSION.split('.')

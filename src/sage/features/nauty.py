@@ -13,7 +13,7 @@ Features for testing the presence of nauty executables
 
 import os
 
-from sage.env import SAGE_NAUTY_BINS_PREFIX
+from sage.env import SAGE_NAUTY_BINS_PREFIX, _command_starts
 
 from . import Executable
 from .join_feature import JoinFeature
@@ -61,7 +61,11 @@ class NautyExecutable(Executable):
             pass
         else:
             executable = executable_path(self._sagelite_program)
-            if executable.is_file() and os.access(executable, os.X_OK):
+            if (
+                executable.is_file()
+                and os.access(executable, os.X_OK)
+                and _command_starts(os.fspath(executable))
+            ):
                 return os.fspath(executable)
 
         return super().absolute_filename()

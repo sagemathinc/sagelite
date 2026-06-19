@@ -37,6 +37,9 @@ cdef void gasman_callback() noexcept with gil
 
 cdef initialize()
 
+cpdef void gap_sig_on() noexcept
+cpdef void gap_sig_off() noexcept
+
 
 ############################################################################
 ### Evaluate string in GAP #################################################

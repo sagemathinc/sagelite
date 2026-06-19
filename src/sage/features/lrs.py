@@ -18,7 +18,12 @@ Feature for testing the presence of ``lrslib``
 import os
 import subprocess
 
-from . import Executable, FeatureNotPresentError, FeatureTestResult
+from . import (
+    Executable,
+    FeatureNotPresentError,
+    FeatureTestResult,
+    executable_outside_python_prefix,
+)
 from .join_feature import JoinFeature
 
 
@@ -68,6 +73,10 @@ class Lrs(Executable):
         installations can also provide it through the optional
         ``sagelite-lrslib-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:
@@ -140,6 +149,10 @@ class LrsNash(Executable):
         installations can also provide it through the optional
         ``sagelite-lrslib-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:

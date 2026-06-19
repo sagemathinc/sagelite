@@ -330,6 +330,7 @@ def get_matrix_class(R, nrows, ncols, sparse, implementation):
 
         if implementation == 'meataxe':
             if R.is_field() and R.order() < 256:
+                from sage.matrix.matrix_gfpn_dense import Matrix_gfpn_dense
                 return Matrix_gfpn_dense
             raise ValueError("'meataxe' matrix can only deal with finite fields of order < 256")
 

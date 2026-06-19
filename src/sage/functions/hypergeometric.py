@@ -15,7 +15,7 @@ EXAMPLES:
 Examples from :issue:`9908`::
 
     sage: # needs sage.symbolic
-    sage: maxima('integrate(bessel_j(2, x), x)').sage()
+    sage: maxima('integrate(bessel_j(2, x), x)').sage()                         # long time
     1/24*x^3*hypergeometric((3/2,), (5/2, 3), -1/4*x^2)
     sage: sum(((2*I)^x/(x^3 + 1)*(1/4)^x), x, 0, oo)
     hypergeometric((1, 1, -1/2*I*sqrt(3) - 1/2, 1/2*I*sqrt(3) - 1/2),...
@@ -121,7 +121,7 @@ Numeric evaluation::
 
 Conversions::
 
-    sage: maxima(hypergeometric([1, 1, 1], [3, 3, 3], x))                               # needs sage.symbolic
+    sage: maxima(hypergeometric([1, 1, 1], [3, 3, 3], x))                               # long time, needs sage.symbolic
     hypergeometric([1,1,1],[3,3,3],_SAGE_VAR_x)
     sage: hypergeometric((5,), (4,), 3)._sympy_()                                   # needs sympy sage.symbolic
     hyper((5,), (4,), 3)
@@ -130,9 +130,9 @@ Conversions::
 
 Arbitrary level of nesting for conversions::
 
-    sage: maxima(nest(lambda y: hypergeometric([y], [], x), 3, 1))                      # needs sage.symbolic
+    sage: maxima(nest(lambda y: hypergeometric([y], [], x), 3, 1))                      # long time, needs sage.symbolic
     1/(1-_SAGE_VAR_x)^(1/(1-_SAGE_VAR_x)^(1/(1-_SAGE_VAR_x)))
-    sage: maxima(nest(lambda y: hypergeometric([y], [3], x), 3, 1))._sage_()            # needs sage.symbolic
+    sage: maxima(nest(lambda y: hypergeometric([y], [3], x), 3, 1))._sage_()            # long time, needs sage.symbolic
     hypergeometric((hypergeometric((hypergeometric((1,), (3,), x),), (3,),...
     x),), (3,), x)
     sage: nest(lambda y: hypergeometric([y], [], x), 3, 1)._mathematica_init_()         # needs sage.symbolic
@@ -249,7 +249,7 @@ class Hypergeometric(BuiltinFunction):
 
         EXAMPLES::
 
-            sage: maxima(hypergeometric)                                                # needs sage.symbolic
+            sage: maxima(hypergeometric)                                                # long time, needs sage.symbolic
             hypergeometric
 
         TESTS::
@@ -975,7 +975,7 @@ class Hypergeometric_M(BuiltinFunction):
         r"""
         TESTS::
 
-            sage: maxima(hypergeometric_M(1,1,x))                                       # needs sage.symbolic
+            sage: maxima(hypergeometric_M(1,1,x))                                       # long time, needs sage.symbolic
             kummer_m(1,1,_SAGE_VAR_x)
             sage: latex(hypergeometric_M(1,1,x))                                        # needs sage.symbolic
             M\left(1, 1, x\right)
@@ -1090,7 +1090,7 @@ class Hypergeometric_U(BuiltinFunction):
         r"""
         TESTS::
 
-            sage: maxima(hypergeometric_U(1, 1, x))                                     # needs sage.symbolic
+            sage: maxima(hypergeometric_U(1, 1, x))                                     # long time, needs sage.symbolic
             kummer_u(1,1,_SAGE_VAR_x)
             sage: latex(hypergeometric_U(1, 1, x))                                      # needs sage.symbolic
             U\left(1, 1, x\right)

@@ -19,9 +19,7 @@ from cpython.object cimport Py_EQ, Py_NE, Py_LE, Py_GE, Py_LT, Py_GT
 from libc.stdlib cimport free
 
 from sage.libs.gap.gap_includes cimport *
-from sage.libs.gap.libgap import libgap
 from sage.libs.gap.util cimport *
-from sage.libs.gap.util import GAPError, gap_sig_on, gap_sig_off
 from sage.libs.gmp.mpz cimport *
 from sage.libs.gmp.pylong cimport mpz_get_pylong, mpz_set_pylong
 from sage.cpython.string cimport str_to_bytes, char_to_str
@@ -32,6 +30,17 @@ from sage.rings.real_double import RDF
 
 from sage.combinat.permutation import Permutation
 from sage.structure.coerce cimport coercion_model as cm
+
+
+def _libgap():
+    from sage.libs.gap.libgap import libgap
+    return libgap
+
+
+def _GAPError():
+    from sage.libs.gap.util import GAPError
+    return GAPError
+
 
 ############################################################################
 ### helper functions to construct lists and records ########################
@@ -50,6 +59,7 @@ cdef Obj make_gap_list(sage_list) except NULL:
     cdef Obj l
     cdef GapElement elem
     cdef int i
+    cdef object libgap = _libgap()
     try:
         GAP_Enter()
         l = GAP_NewPlist(0)
@@ -88,6 +98,7 @@ cdef Obj make_gap_matrix(sage_list, gap_ring) except NULL:
     cdef GapElement elem
     cdef GapElement one
     cdef int i
+    cdef object libgap = _libgap()
     if gap_ring is not None:
         one = <GapElement>gap_ring.One()
     else:
@@ -199,6 +210,7 @@ cdef Obj make_gap_record(sage_dict) except NULL:
     cdef Obj rec
     cdef GapElement val
     cdef UInt rnam
+    cdef object libgap = _libgap()
 
     data = [(str(key), libgap(value)) for key, value in sage_dict.items()]
 
@@ -510,6 +522,7 @@ cpdef _from_sage(elem):
     Currently just used for unpickling; equivalent to calling ``libgap(elem)``
     to convert a Sage object to a `GapElement` where possible.
     """
+    libgap = _libgap()
     if isinstance(elem, str):
         return libgap.eval(elem)
 
@@ -763,7 +776,7 @@ cdef class GapElement(RingElement):
         if isinstance(other, GapElement):
             c_other = <GapElement>other
         else:
-            c_other = <GapElement>libgap(other)
+            c_other = <GapElement>_libgap()(other)
 
         try:
             gap_sig_on()
@@ -870,8 +883,10 @@ cdef class GapElement(RingElement):
         try:
             proxy = make_GapElement_MethodProxy\
                 (self.parent(), gap_eval(name), self)
-        except GAPError:
-            raise AttributeError(f"'{name}' is not defined in GAP")
+        except Exception as err:
+            if isinstance(err, _GAPError()):
+                raise AttributeError(f"'{name}' is not defined in GAP")
+            raise
         if not proxy.is_function():
             raise AttributeError(f"'{name}' does not define a GAP function")
         return proxy

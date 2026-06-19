@@ -97,26 +97,93 @@ def _prepend_env_path(name: str, path: Optional[str]) -> None:
     os.environ[name] = path if not current else os.pathsep.join([path, current])
 
 
+def _same_existing_file(left, right) -> bool:
+    """
+    Return whether two existing paths resolve to the same filesystem entry.
+    """
+    try:
+        return os.path.samefile(left, right)
+    except (OSError, TypeError, ValueError):
+        return False
+
+
+def _command_starts(path: str, timeout: float = 5.0) -> bool:
+    """
+    Return whether an executable can be started.
+
+    This is used for optional binary-runtime companions where checking that a
+    file exists is not enough: an executable may be present but unusable because
+    its private shared libraries are not on the dynamic loader path.
+    """
+    try:
+        completed = subprocess.run(
+            [os.fspath(path)],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return completed.returncode != 127
+
+
 def _bootstrap_sagelite_maxima_runtime() -> None:
     """
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
 
     This is only used when the user has not already provided Maxima paths in
-    the environment.  Binary wheels can contain build-time Maxima paths that
-    either no longer exist after installation or still exist but belong to a
-    different runtime; those configured paths should not prevent an installed
-    companion runtime from being used.
+    the environment and the configured Maxima paths are not usable.  Binary
+    wheels can contain build-time Maxima paths that no longer exist after
+    installation; those stale paths should not prevent an installed companion
+    runtime from being used.  Usable configured paths are kept together because
+    Maxima's ECL image must match the ECL library used by sagelib.
     """
-    needs_prefix = not os.environ.get("MAXIMA_PREFIX")
-    needs_fas = not os.environ.get("MAXIMA_FAS")
-    needs_command = not os.environ.get("MAXIMA")
-    needs_ecldir = not _ecldir_contains_maxima(os.environ.get("ECLDIR"))
-    needs_layout = not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
-    needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR")
+    configured_prefix = getattr(sage.config, "MAXIMA_PREFIX", None)
+    configured_fas = getattr(sage.config, "MAXIMA_FAS", None)
+    configured_command = getattr(sage.config, "MAXIMA", None)
+    configured_imagesdir = getattr(sage.config, "MAXIMA_IMAGESDIR", None)
+
+    configured_prefix_usable = bool(
+        configured_prefix and os.path.isdir(os.fspath(configured_prefix))
+    )
+    configured_fas_usable = bool(
+        configured_fas and os.path.isfile(os.fspath(configured_fas))
+    )
+    configured_command_usable = bool(
+        configured_command
+        and os.path.isfile(os.fspath(configured_command))
+        and os.access(os.fspath(configured_command), os.X_OK)
+    )
+    configured_imagesdir_usable = bool(
+        configured_imagesdir and os.path.isdir(os.fspath(configured_imagesdir))
+    )
+    configured_runtime_usable = configured_command_usable or configured_fas_usable
+
+    needs_prefix = (
+        not configured_runtime_usable
+        and not os.environ.get("MAXIMA_PREFIX")
+        and not configured_prefix_usable
+    )
+    needs_fas = not os.environ.get("MAXIMA_FAS") and not configured_fas_usable
+    needs_command = not os.environ.get("MAXIMA") and not configured_command_usable
+    needs_ecldir = (
+        not configured_runtime_usable
+        and not _ecldir_contains_maxima(os.environ.get("ECLDIR"))
+    )
+    needs_layout = (
+        not configured_runtime_usable
+        and not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
+    )
+    needs_imagesdir = (
+        not configured_runtime_usable
+        and not os.environ.get("MAXIMA_IMAGESDIR")
+        and not configured_imagesdir_usable
+    )
     runtime_library_dir = _optional_runtime_value(
         "sagelite_maxima.runtime", "runtime_library_dir"
     )
-    _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
 
     if not (
         needs_prefix
@@ -127,6 +194,8 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         or needs_imagesdir
     ):
         return
+
+    _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
 
     prefix = fas = command = ecldir = layout = imagesdir = None
     if needs_prefix:
@@ -181,6 +250,15 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
     if not needs_fas:
         return
 
+    active_ecldir = os.environ.get("ECLDIR")
+    companion_ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
+    if (
+        active_ecldir
+        and companion_ecldir
+        and not _same_existing_file(active_ecldir, companion_ecldir)
+    ):
+        return
+
     fas = _optional_runtime_value("sagelite_kenzo.runtime", "kenzo_fas")
     if fas and os.path.isfile(fas):
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
@@ -193,6 +271,46 @@ def _ecldir_contains_maxima(ecldir: str | os.PathLike | None) -> bool:
     return bool(ecldir) and os.path.isfile(os.path.join(ecldir, "maxima.asd"))
 
 
+def _ecldir_from_ecl_config(ecl_config: str | os.PathLike | None) -> Optional[str]:
+    """
+    Return ECL's support directory as described by ``ecl-config``.
+    """
+    if not ecl_config:
+        return None
+    command = os.fspath(ecl_config)
+    if not (
+        os.path.isfile(command)
+        and os.access(command, os.X_OK)
+    ):
+        return None
+
+    try:
+        libs = subprocess.run(
+            [command, "--libs"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.split()
+    except Exception:
+        return None
+
+    for token in libs:
+        if not token.startswith("-L"):
+            continue
+        library_dir = Path(token[2:])
+        if not library_dir.is_dir():
+            continue
+        candidates = sorted(library_dir.glob("ecl-*"), reverse=True)
+        for candidate in candidates:
+            if (
+                (candidate / "asdf.fas").is_file()
+                or (candidate / "sockets.fas").is_file()
+                or (candidate / "sb-bsd-sockets.fas").is_file()
+            ):
+                return os.fspath(candidate)
+    return None
+
+
 def _bootstrap_sagelite_ecl_runtime() -> None:
     """
     Seed ECL runtime variables from an optional ``sagelite_ecl`` package.
@@ -203,13 +321,19 @@ def _bootstrap_sagelite_ecl_runtime() -> None:
     dependency of sagelib.
     """
     configured_command = getattr(sage.config, "ECL_CONFIG", None)
+    configured_command_usable = bool(
+        configured_command
+        and os.path.isfile(os.fspath(configured_command))
+        and os.access(os.fspath(configured_command), os.X_OK)
+    )
+    if not os.environ.get("ECLDIR"):
+        configured_ecldir = _ecldir_from_ecl_config(configured_command)
+        if configured_command_usable and configured_ecldir:
+            os.environ.setdefault("ECLDIR", configured_ecldir)
+
     needs_command = (
         not os.environ.get("ECL_CONFIG")
-        and not (
-            configured_command
-            and os.path.isfile(os.fspath(configured_command))
-            and os.access(os.fspath(configured_command), os.X_OK)
-        )
+        and not configured_command_usable
     )
     needs_ecldir = not os.environ.get("ECLDIR")
     if not (needs_command or needs_ecldir):
@@ -429,6 +553,9 @@ def _gap_root_paths() -> str:
     """
     core_roots = []
     package_roots = []
+    companion_core_roots = []
+    companion_package_roots = []
+    companion_core_used = False
 
     configured = os.environ.get("GAP_ROOT_PATHS") or ""
     for root in configured.split(";"):
@@ -448,13 +575,18 @@ def _gap_root_paths() -> str:
         )
         if companion:
             for root in companion.split(";"):
-                _append_gap_root(core_roots, package_roots, root)
+                _append_gap_root(companion_core_roots, companion_package_roots, root)
+            if companion_core_roots:
+                core_roots.extend(companion_core_roots)
+                package_roots.extend(companion_package_roots)
+                companion_core_used = True
 
-    for root in _registered_gap_root_paths():
-        _append_gap_root(core_roots, package_roots, root)
+    if companion_core_used:
+        for root in _registered_gap_root_paths():
+            _append_gap_root(core_roots, package_roots, root)
 
-    for root in _sagelite_gap_package_root_paths():
-        _append_gap_root(core_roots, package_roots, root)
+        for root in _sagelite_gap_package_root_paths():
+            _append_gap_root(core_roots, package_roots, root)
 
     if core_roots:
         return ";".join(core_roots + package_roots)
@@ -516,6 +648,17 @@ def _bootstrap_sagelite_gap_runtime() -> None:
         return
 
     command = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_command")
+    root_paths = _optional_runtime_value("sagelite_gap_runtime.runtime", "gap_root_paths")
+    companion_core_roots = []
+    if root_paths:
+        for root in root_paths.split(";"):
+            _append_gap_root(companion_core_roots, [], root)
+    active_roots = {
+        root for root in _gap_root_paths().split(";") if root
+    }
+    if companion_core_roots and not active_roots.intersection(companion_core_roots):
+        return
+
     if command and os.path.isfile(command) and os.access(command, os.X_OK):
         os.environ.setdefault("SAGE_GAP_COMMAND", os.fspath(command))
 
@@ -809,19 +952,30 @@ def _bootstrap_sagelite_nauty_runtime() -> None:
     executables.  The companion package supplies relocatable copies for
     installed wheels.
     """
+    def prefix_is_usable(prefix) -> bool:
+        if not prefix:
+            return False
+        prefix = os.fspath(prefix)
+        return all(
+            _command_starts(os.path.join(prefix, program))
+            for program in ("geng", "genposetg")
+        )
+
     configured = getattr(sage.config, "SAGE_NAUTY_BINS_PREFIX", None)
     needs_prefix = (
         not os.environ.get("SAGE_NAUTY_BINS_PREFIX")
-        and not (
-            configured
-            and os.path.isfile(os.path.join(os.fspath(configured), "geng"))
-        )
+        and not prefix_is_usable(configured)
     )
     if not needs_prefix:
         return
 
+    for prefix in ("/usr/bin/nauty-", "/usr/local/bin/nauty-"):
+        if prefix_is_usable(prefix):
+            os.environ.setdefault("SAGE_NAUTY_BINS_PREFIX", prefix)
+            return
+
     prefix = _optional_runtime_value("sagelite_nauty.runtime", "bin_prefix")
-    if prefix and os.path.isfile(os.path.join(prefix, "geng")):
+    if prefix_is_usable(prefix):
         os.environ.setdefault("SAGE_NAUTY_BINS_PREFIX", os.fspath(prefix))
 
 
@@ -1205,6 +1359,7 @@ _bootstrap_sagelite_maxima_runtime()
 MAXIMA = var("MAXIMA", "maxima")
 MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
+_bootstrap_sagelite_ecl_runtime()
 _bootstrap_sagelite_kenzo_runtime()
 KENZO_FAS = var("KENZO_FAS")
 _bootstrap_sagelite_nauty_runtime()
@@ -1235,7 +1390,6 @@ FOURTITWO_RAYS = var("FOURTITWO_RAYS")
 FOURTITWO_PPI = var("FOURTITWO_PPI")
 FOURTITWO_CIRCUITS = var("FOURTITWO_CIRCUITS")
 FOURTITWO_GROEBNER = var("FOURTITWO_GROEBNER")
-_bootstrap_sagelite_ecl_runtime()
 ECL_CONFIG = var("ECL_CONFIG", "ecl-config")
 ECL_CONFIG = var(
     "ECL_CONFIG",

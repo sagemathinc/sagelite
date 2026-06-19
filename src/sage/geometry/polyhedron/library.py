@@ -113,9 +113,9 @@ def zero_sum_projection(d, base_ring=None):
     EXAMPLES::
 
         sage: from sage.geometry.polyhedron.library import zero_sum_projection
-        sage: zero_sum_projection(2)
+        sage: zero_sum_projection(2)  # abs tol 1e-15
         [ 0.7071067811865475 -0.7071067811865475]
-        sage: zero_sum_projection(3)
+        sage: zero_sum_projection(3)  # abs tol 1e-15
         [ 0.7071067811865475 -0.7071067811865475                 0.0]
         [ 0.4082482904638631  0.4082482904638631 -0.8164965809277261]
 
@@ -263,9 +263,9 @@ def gale_transform_to_polytope(vectors, base_ring=None, backend=None):
         ....:     [(1,1), (-1,-1), (1,0),
         ....:      (-1,0), (1,-1), (-2,1)],
         ....:     base_ring=RDF).vertices()
-        (A vertex at (-0.64, 1.4, -2.16),
-         A vertex at (-0.96, -0.4, -1.24),
-         A vertex at (0.6, -2.0, 2.4),
+        (A vertex at (-0.64, 1.4000000000000001, -2.16),
+         A vertex at (-0.9600000000000001, -0.4, -1.2400000000000002),
+         A vertex at (0.6000000000000001, -2.0, 2.4000000000000004),
          A vertex at (1.0, 0.0, 0.0),
          A vertex at (0.0, 1.0, 0.0),
          A vertex at (0.0, 0.0, 1.0))

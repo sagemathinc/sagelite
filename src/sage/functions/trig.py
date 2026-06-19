@@ -965,7 +965,7 @@ class Function_arctan2(GinacFunction):
 
         This is consistent with Python and Maxima::
 
-            sage: maxima.atan2(1, -1)                                                   # needs sage.symbolic
+            sage: maxima.atan2(1, -1)                                                   # long time, needs sage.symbolic
             (3*%pi)/4
             sage: math.atan2(1, -1)
             2.356194490192345

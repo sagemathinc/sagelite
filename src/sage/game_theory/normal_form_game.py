@@ -1553,30 +1553,30 @@ class NormalFormGame(SageObject, MutableMapping):
             sage: A = matrix([[2, 1], [1, 3]])
             sage: cg = NormalFormGame([A])
             sage: ne = cg.obtain_nash(algorithm='lp', solver='glpk')
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: ne = cg.obtain_nash(algorithm='lp', solver='Coin')              # optional - sage_numerical_backends_coin
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]         # optional - sage_numerical_backends_coin
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]         # optional - sage_numerical_backends_coin
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: cg.obtain_nash(algorithm='lp', solver='PPL')
             [[(2/3, 1/3), (2/3, 1/3)]]
             sage: ne = cg.obtain_nash(algorithm='lp', solver='gambit')            # optional - gambit
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]         # optional - gambit
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]         # optional - gambit
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: A = matrix([[1, 2, 1], [1, 1, 2], [2, 1, 1]])
             sage: B = matrix([[2, 1, 2], [2, 2, 1], [1, 2, 2]])
             sage: cg = NormalFormGame([A, B])
             sage: ne = cg.obtain_nash(algorithm='lp', solver='glpk')
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]
-            [[[0.333333, 0.333333, 0.333333], [0.333333, 0.333333, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]
+            [[['0.333333', '0.333333', '0.333333'], ['0.333333', '0.333333', '0.333333']]]
             sage: ne = cg.obtain_nash(algorithm='lp', solver='Coin')              # optional - sage_numerical_backends_coin
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]         # optional - sage_numerical_backends_coin
-            [[[0.333333, 0.333333, 0.333333], [0.333333, 0.333333, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]         # optional - sage_numerical_backends_coin
+            [[['0.333333', '0.333333', '0.333333'], ['0.333333', '0.333333', '0.333333']]]
             sage: cg.obtain_nash(algorithm='lp', solver='PPL')
             [[(1/3, 1/3, 1/3), (1/3, 1/3, 1/3)]]
             sage: ne = cg.obtain_nash(algorithm='lp', solver='gambit')            # optional - gambit
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]         # optional - gambit
-            [[[0.333333, 0.333333, 0.333333], [0.333333, 0.333333, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]         # optional - gambit
+            [[['0.333333', '0.333333', '0.333333'], ['0.333333', '0.333333', '0.333333']]]
             sage: A = matrix([[160, 205, 44],
             ....:             [175, 180, 45],
             ....:             [201, 204, 50],
@@ -1847,14 +1847,14 @@ class NormalFormGame(SageObject, MutableMapping):
             sage: A = matrix([[2, 1], [1, 3]])
             sage: g = NormalFormGame([A])
             sage: ne = g._solve_LP()
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: ne = g._solve_LP('gambit')  # optional - gambit
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]  # optional - gambit
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]  # optional - gambit
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: ne = g._solve_LP('Coin')  # optional - sage_numerical_backends_coin
-            sage: [[[round(el, 6) for el in v] for v in eq] for eq in ne]  # optional - sage_numerical_backends_coin
-            [[[0.666667, 0.333333], [0.666667, 0.333333]]]
+            sage: [[[format(float(el), '.6f') for el in v] for v in eq] for eq in ne]  # optional - sage_numerical_backends_coin
+            [[['0.666667', '0.333333'], ['0.666667', '0.333333']]]
             sage: g._solve_LP('PPL')
             [[(2/3, 1/3), (2/3, 1/3)]]
 

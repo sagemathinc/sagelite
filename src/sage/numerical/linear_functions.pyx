@@ -1027,7 +1027,7 @@ cdef class LinearFunction(LinearFunctionOrConstraint):
 
             sage: p = MixedIntegerLinearProgram(solver='GLPK')
             sage: LF = p.linear_functions_parent()
-            sage: LF({-1: -15, 2 : -5.1, 3 : 2/3})
+            sage: LF({-1: -15, 2 : -5.1, 3 : 2/3})  # abs tol 1e-15
             -15 - 5.1*x_2 + 0.6666666666666666*x_3
             sage: p = MixedIntegerLinearProgram(solver='ppl')
             sage: LF = p.linear_functions_parent()

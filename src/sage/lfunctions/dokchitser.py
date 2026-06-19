@@ -281,8 +281,9 @@ class Dokchitser(SageObject):
     @classmethod
     def _teardown_gp(cls, instance=None):
         cls.__n_instances -= 1
-        if cls.__n_instances == 0:
+        if cls.__n_instances == 0 and cls.__gp is not None:
             cls.__gp.quit()
+            cls.__gp = None
         elif instance is not None:
             # Clean up all global variables created by this instance
             for varname in cls.__globals:

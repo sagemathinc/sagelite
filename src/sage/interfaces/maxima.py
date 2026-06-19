@@ -587,7 +587,11 @@ class Maxima(MaximaAbstract, Expect):
         # See trac # 6818.
         init_code.append('nolabels : true')
 
-        env = {}
+        env = dict(os.environ)
+        # ``sage.env`` may set ECLDIR for Sage's in-process ECL runtime.
+        # The standalone maxima-sage executable uses its own ECL image and can
+        # fail to load support modules if that value leaks into the child.
+        env['ECLDIR'] = None
         if MAXIMA_PREFIX:
             env['MAXIMA_PREFIX'] = MAXIMA_PREFIX
 

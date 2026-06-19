@@ -160,8 +160,7 @@ def khoca_raw_data(link, ring, red_typ=True, **kwds):
         {(0, 0, 0): 1, (2, 0, 0): 1, (4, 2, 0): 1, (6, 2, 0): 1}
         sage: khoca_raw_data(L2, ZZ, reduced=True)
         {(1, 0, 0): 1, (5, 2, 0): 1}
-        sage: b3 = B2((1,1,1))
-        sage: K3 = Link(b3)
+        sage: K3 = Knot([[1,5,2,4], [5,3,6,2], [3,1,4,6]])
         sage: khoca_raw_data(K3, ZZ, code='pd') == khoca_raw_data(K3, ZZ, code='braid')
         True
         sage: khoca_raw_data(L2, ZZ, equivariant=3)

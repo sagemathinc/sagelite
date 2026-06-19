@@ -370,7 +370,7 @@ class Graphics(WithEqualityById, SageObject):
         - ``font_variant`` -- (default: ``'normal'``) string, one of
           ``'normal'``, ``'small-caps'``
 
-        - ``font_weight`` -- (default: ``'medium'``) string, one of
+        - ``font_weight`` -- (default: ``'normal'``) string, one of
           ``'black'``, ``'extra bold'``, ``'bold'``, ``'semibold'``,
           ``'medium'``, ``'normal'``, ``'light'``
 
@@ -1441,7 +1441,7 @@ class Graphics(WithEqualityById, SageObject):
                       'columnspacing': None,
                       'fancybox': False, 'font_family': 'sans-serif',
                       'font_size': 'medium', 'font_style': 'normal',
-                      'font_variant': 'normal', 'font_weight': 'medium',
+                      'font_variant': 'normal', 'font_weight': 'normal',
                       'handlelength': 0.05, 'handletextpad': 0.5,
                       'labelspacing': 0.02, 'loc': 'best',
                       'markerscale': 0.6, 'ncol': 1, 'numpoints': 2,
@@ -2850,7 +2850,7 @@ class Graphics(WithEqualityById, SageObject):
                 family=lopts.pop('font_family', 'sans-serif'),
                 size=lopts.pop('font_size', 'medium'),
                 style=lopts.pop('font_style', 'normal'),
-                weight=lopts.pop('font_weight', 'medium'),
+                weight=lopts.pop('font_weight', 'normal'),
                 variant=lopts.pop('font_variant', 'normal'))
             color = lopts.pop('back_color', 'white')
             if 'loc' in lopts:

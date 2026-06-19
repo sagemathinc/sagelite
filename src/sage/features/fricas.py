@@ -13,7 +13,12 @@ Features for testing the presence of ``fricas``
 
 import os
 import subprocess
-from . import Executable, FeatureNotPresentError, FeatureTestResult
+from . import (
+    Executable,
+    FeatureNotPresentError,
+    FeatureTestResult,
+    executable_outside_python_prefix,
+)
 from packaging.version import Version
 
 
@@ -49,6 +54,10 @@ class FriCAS(Executable):
         installations can also provide it through the optional
         ``sagelite-fricas-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:

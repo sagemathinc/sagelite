@@ -55,6 +55,8 @@ class SageKernel(IPythonKernel):
 
         EXAMPLES::
 
+            sage: import os
+            sage: _ = os.environ.setdefault('PYDEVD_DISABLE_FILE_VALIDATION', '1')
             sage: from sage.repl.ipython_kernel.kernel import SageKernel
             sage: SageKernel.__new__(SageKernel)
             <sage.repl.ipython_kernel.kernel.SageKernel object at 0x...>

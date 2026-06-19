@@ -19,7 +19,12 @@ checked in this module.
 
 import os
 
-from . import Executable, FeatureNotPresentError, FeatureTestResult
+from . import (
+    Executable,
+    FeatureNotPresentError,
+    FeatureTestResult,
+    executable_outside_python_prefix,
+)
 from .join_feature import JoinFeature
 
 
@@ -71,6 +76,10 @@ class Magick(Executable):
         Wheel installations can also provide it through the optional
         ``sagelite-imagemagick-runtime`` companion package.
         """
+        system_executable = executable_outside_python_prefix(self.executable)
+        if system_executable:
+            return system_executable
+
         try:
             return _companion_executable(self.executable, FeatureNotPresentError(self))
         except FeatureNotPresentError:

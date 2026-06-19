@@ -279,7 +279,12 @@ class ToricIdeal(MPolynomialIdeal):
 
         if '_ker' in self.__dict__:
             return self._ker
-        self._ker = self.A().right_kernel(basis='LLL')
+        try:
+            self._ker = self.A().right_kernel(basis='LLL')
+        except Exception as err:
+            if err.__class__.__name__ != 'ReductionError':
+                raise
+            self._ker = self.A().right_kernel()
         return self._ker
 
     def nvariables(self):

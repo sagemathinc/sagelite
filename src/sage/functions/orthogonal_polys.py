@@ -680,9 +680,9 @@ class Func_chebyshev_T(ChebyshevFunction):
             x
             sage: chebyshev_T(x, x)._sympy_()                                           # needs sympy
             chebyshevt(x, x)
-            sage: maxima(chebyshev_T(1, x, hold=True))
+            sage: maxima(chebyshev_T(1, x, hold=True))                                  # long time
             _SAGE_VAR_x
-            sage: maxima(chebyshev_T(n, chebyshev_T(n, x)))
+            sage: maxima(chebyshev_T(n, chebyshev_T(n, x)))                             # long time
             chebyshev_t(_SAGE_VAR_n,chebyshev_t(_SAGE_VAR_n,_SAGE_VAR_x))
         """
         ChebyshevFunction.__init__(self, 'chebyshev_T', nargs=2,
@@ -999,9 +999,9 @@ class Func_chebyshev_U(ChebyshevFunction):
             2*x
             sage: chebyshev_U(x, x)._sympy_()                                           # needs sympy
             chebyshevu(x, x)
-            sage: maxima(chebyshev_U(2,x, hold=True))
+            sage: maxima(chebyshev_U(2,x, hold=True))                                   # long time
             3*(...-...(8*(1-_SAGE_VAR_x))/3)+(4*(1-_SAGE_VAR_x)^2)/3+1)
-            sage: maxima(chebyshev_U(n,x, hold=True))
+            sage: maxima(chebyshev_U(n,x, hold=True))                                   # long time
             chebyshev_u(_SAGE_VAR_n,_SAGE_VAR_x)
         """
         ChebyshevFunction.__init__(self, 'chebyshev_U', nargs=2,
@@ -1369,7 +1369,7 @@ class Func_legendre_Q(BuiltinFunction):
 
             sage: loads(dumps(legendre_Q))
             legendre_Q
-            sage: maxima(legendre_Q(20, x, hold=True))._sage_().coefficient(x, 10)      # needs sage.symbolic
+            sage: maxima(legendre_Q(20, x, hold=True))._sage_().coefficient(x, 10)      # long time, needs sage.symbolic
             -29113619535/131072*log(-(x + 1)/(x - 1))
         """
         BuiltinFunction.__init__(self, "legendre_Q", nargs=2, latex_name=r"Q",
@@ -1699,7 +1699,7 @@ class Func_assoc_legendre_P(BuiltinFunction):
 
             sage: loads(dumps(gen_legendre_P))
             gen_legendre_P
-            sage: maxima(gen_legendre_P(20, 6, x, hold=True))._sage_().expand().coefficient(x,10)   # needs sage.symbolic
+            sage: maxima(gen_legendre_P(20, 6, x, hold=True))._sage_().expand().coefficient(x,10)   # long time, needs sage.symbolic
             2508866163428625/128
 
         TESTS::
@@ -1916,7 +1916,7 @@ class Func_assoc_legendre_Q(BuiltinFunction):
 
             sage: loads(dumps(gen_legendre_Q))
             gen_legendre_Q
-            sage: maxima(gen_legendre_Q(2, 1, 3, hold=True))._sage_().simplify_full()   # needs sage.symbolic
+            sage: maxima(gen_legendre_Q(2, 1, 3, hold=True))._sage_().simplify_full()   # long time, needs sage.symbolic
             1/4*sqrt(2)*(36*pi - 36*I*log(2) + 25*I)
         """
         BuiltinFunction.__init__(self, "gen_legendre_Q", nargs=3, latex_name=r"Q",
@@ -2402,9 +2402,9 @@ class Func_laguerre(OrthogonalFunction):
             sage: n, x = var('n,x')
             sage: laguerre(x, x)._sympy_()                                              # needs sympy
             laguerre(x, x)
-            sage: maxima(laguerre(1, x, hold=True))
+            sage: maxima(laguerre(1, x, hold=True))                                    # long time
             1-_SAGE_VAR_x
-            sage: maxima(laguerre(n, laguerre(n, x)))
+            sage: maxima(laguerre(n, laguerre(n, x)))                                  # long time
             laguerre(_SAGE_VAR_n,laguerre(_SAGE_VAR_n,_SAGE_VAR_x))
 
         TESTS::
@@ -2557,9 +2557,9 @@ class Func_gen_laguerre(OrthogonalFunction):
             sage: a, n, x = var('a, n, x')
             sage: gen_laguerre(x, x, x)._sympy_()                                       # needs sympy
             assoc_laguerre(x, x, x)
-            sage: maxima(gen_laguerre(1, 2, x, hold=True))
+            sage: maxima(gen_laguerre(1, 2, x, hold=True))                             # long time
             3*(1-_SAGE_VAR_x/3)
-            sage: maxima(gen_laguerre(n, a, gen_laguerre(n, a, x)))
+            sage: maxima(gen_laguerre(n, a, gen_laguerre(n, a, x)))                    # long time
             gen_laguerre(_SAGE_VAR_n,_SAGE_VAR_a,gen_laguerre(_SAGE_VAR_n,_SAGE_VAR_a,_SAGE_VAR_x))
 
         TESTS::

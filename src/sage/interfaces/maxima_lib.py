@@ -117,6 +117,11 @@ import os
 import sage.rings.real_double
 import sage.symbolic.expression
 import sage.symbolic.integration.integral
+import sage.functions.error
+import sage.functions.gamma
+import sage.functions.hypergeometric
+import sage.functions.log
+import sage.functions.other
 from sage.env import MAXIMA_FAS, MAXIMA_PREFIX, _optional_runtime_value
 from sage.interfaces.maxima_abstract import (
     MaximaAbstract,
@@ -164,6 +169,53 @@ def _maxima_library_prefix_from_install_root(maxima_prefix: str | None) -> str:
     return sorted(candidates)[-1] if candidates else ""
 
 
+def _maxima_library_prefix_from_fas(maxima_fas: str | None) -> str:
+    """
+    Return a matching versioned Maxima library tree for ``maxima_fas``.
+    """
+    if not maxima_fas or not os.path.isfile(maxima_fas):
+        return ""
+
+    for fas_path in (os.fspath(maxima_fas), os.path.realpath(maxima_fas)):
+        current = os.path.abspath(os.path.dirname(fas_path))
+        while True:
+            if os.path.basename(current) == "lib":
+                prefix = _maxima_library_prefix_from_install_root(
+                    os.path.dirname(current)
+                )
+                if prefix:
+                    return prefix
+
+            parent = os.path.dirname(current)
+            if parent == current:
+                break
+            current = parent
+
+    return ""
+
+
+def _same_existing_file(left: str | None, right: str | None) -> bool:
+    """
+    Return whether two paths point at the same existing file.
+    """
+    if not left or not right:
+        return False
+    try:
+        return os.path.samefile(left, right)
+    except OSError:
+        return os.path.realpath(os.fspath(left)) == os.path.realpath(os.fspath(right))
+
+
+def _companion_maxima_fas() -> str:
+    """
+    Return a usable Maxima FAS from the optional companion runtime, if present.
+    """
+    companion_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    if companion_fas and os.path.isfile(companion_fas):
+        return os.fspath(companion_fas)
+    return ""
+
+
 def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
     """
     Return usable Maxima library-mode paths.
@@ -172,11 +224,19 @@ def _configured_maxima_paths(maxima_fas: str | None, maxima_prefix: str | None):
     after installation.  If that happens and the optional sagelite Maxima
     companion package is installed, use its relocatable runtime paths directly.
     """
+    companion_fas = _companion_maxima_fas()
+    using_companion_fas = False
     if not maxima_fas or not os.path.isfile(maxima_fas):
-        maxima_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+        maxima_fas = companion_fas
+        using_companion_fas = bool(maxima_fas)
+    elif companion_fas and _same_existing_file(maxima_fas, companion_fas):
+        using_companion_fas = True
+
     if not _maxima_library_prefix_is_usable(maxima_prefix):
         maxima_prefix = _maxima_library_prefix_from_install_root(maxima_prefix)
-    if not maxima_prefix:
+    if not maxima_prefix and maxima_fas:
+        maxima_prefix = _maxima_library_prefix_from_fas(maxima_fas)
+    if not maxima_prefix and using_companion_fas:
         maxima_prefix = _optional_runtime_value(
             "sagelite_maxima.runtime", "maxima_library_path"
         )
@@ -217,7 +277,7 @@ def _ecldir_contains_maxima(ecldir: str | os.PathLike | None) -> bool:
     return bool(ecldir) and os.path.isfile(os.path.join(ecldir, "maxima.asd"))
 
 
-def _configure_companion_maxima_runtime_environment() -> None:
+def _configure_companion_maxima_runtime_environment(maxima_fas: str | None) -> None:
     """
     Seed environment variables needed by a bundled Maxima/ECL runtime.
 
@@ -225,6 +285,10 @@ def _configure_companion_maxima_runtime_environment() -> None:
     these before exec.  Library mode runs inside the Python process, so it has
     to do the same work before loading ``maxima.fas`` into ECL.
     """
+    companion_fas = _companion_maxima_fas()
+    if not companion_fas or not _same_existing_file(maxima_fas, companion_fas):
+        return
+
     runtime_library_dir = _optional_runtime_value(
         "sagelite_maxima.runtime", "runtime_library_dir"
     )
@@ -246,30 +310,51 @@ def _configure_companion_maxima_runtime_environment() -> None:
 
 def _publish_maxima_library_prefix(maxima_prefix: str | None) -> None:
     """
-    Publish ``maxima_prefix`` only when no install root is already configured.
+    Publish an install-root ``maxima_prefix`` only when none is configured.
 
     The sagelite Maxima companion uses Maxima's autotools layout, where
     ``MAXIMA_PREFIX`` is the install root.  Sage's library-mode search paths
-    use the versioned library directory instead.  Keep an existing environment
-    value so Maxima's own ``set-pathnames`` logic can still see the install
-    root supplied by the companion package.
+    normally use the versioned library directory instead; do not publish those
+    as ``MAXIMA_PREFIX`` because Maxima's own ``set-pathnames`` expects an
+    install root.
     """
-    if maxima_prefix and not os.environ.get("MAXIMA_PREFIX"):
+    if (
+        maxima_prefix
+        and not os.environ.get("MAXIMA_PREFIX")
+        and not _maxima_library_prefix_is_usable(maxima_prefix)
+    ):
         os.environ["MAXIMA_PREFIX"] = os.fspath(maxima_prefix)
 
 
-def _companion_maxima_fas() -> str:
+def _lisp_string(value: str | os.PathLike) -> str:
     """
-    Return a usable Maxima FAS from the optional companion runtime, if present.
+    Return ``value`` escaped as a Common Lisp string literal body.
     """
-    companion_fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
-    if companion_fas and os.path.isfile(companion_fas):
-        return os.fspath(companion_fas)
-    return ""
+    return os.fspath(value).replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _load_ecl_support_file(name: str) -> None:
+    """
+    Load an ECL support FAS from ``ECLDIR`` when it is present.
+    """
+    ecldir = os.environ.get("ECLDIR")
+    if not ecldir:
+        return
+    path = os.path.join(ecldir, name)
+    if os.path.isfile(path):
+        ecl_eval(f'(load "{_lisp_string(path)}")')
+
+
+def _load_maxima_ecl_prerequisites() -> None:
+    """
+    Load ECL support modules that packaged Maxima may require.
+    """
+    _load_ecl_support_file("sockets.fas")
+    _load_ecl_support_file("sb-bsd-sockets.fas")
 
 
 MAXIMA_FAS, MAXIMA_PREFIX = _configured_maxima_paths(MAXIMA_FAS, MAXIMA_PREFIX)
-_configure_companion_maxima_runtime_environment()
+_configure_companion_maxima_runtime_environment(MAXIMA_FAS)
 
 
 def _require_maxima():
@@ -281,6 +366,7 @@ def _require_maxima():
     feature checks can treat the module as absent instead of crashing.
     """
     try:
+        _load_maxima_ecl_prerequisites()
         if MAXIMA_FAS:
             try:
                 ecl_eval("(require 'maxima \"{}\")".format(MAXIMA_FAS))
@@ -288,6 +374,7 @@ def _require_maxima():
                 companion_fas = _companion_maxima_fas()
                 if not companion_fas or companion_fas == MAXIMA_FAS:
                     raise
+                _configure_companion_maxima_runtime_environment(companion_fas)
                 ecl_eval("(require 'maxima \"{}\")".format(companion_fas))
         else:
             try:
@@ -296,6 +383,7 @@ def _require_maxima():
                 companion_fas = _companion_maxima_fas()
                 if not companion_fas:
                     raise
+                _configure_companion_maxima_runtime_environment(companion_fas)
                 ecl_eval("(require 'maxima \"{}\")".format(companion_fas))
     except RuntimeError as err:
         detail = str(err).splitlines()[0]
@@ -309,15 +397,15 @@ def _require_maxima():
 ecl_eval("(setf *load-verbose* NIL)")
 _require_maxima()
 ecl_eval("(in-package :maxima)")
-ecl_eval("(set-locale-subdir)")
+ecl_eval("(when (fboundp 'set-locale-subdir) (set-locale-subdir))")
 
 _publish_maxima_library_prefix(MAXIMA_PREFIX)
 
 # This workaround has to happen before any call to (set-pathnames).
 # To be safe please do not call anything other than
-# (set-locale-subdir) before this block.
+# (set-locale-subdir), when available, before this block.
 try:
-    ecl_eval("(set-pathnames)")
+    ecl_eval("(when (fboundp 'set-pathnames) (set-pathnames))")
 except RuntimeError:
     # Recover from :issue:`26968` by creating `*maxima-objdir*` here.
     # This cannot be done before calling `(set-pathnames)` since
@@ -332,7 +420,7 @@ except RuntimeError:
     # Call `(set-pathnames)` again to complete its job.
     ecl_eval("(set-pathnames)")
 
-ecl_eval("(initialize-runtime-globals)")
+ecl_eval("(when (fboundp 'initialize-runtime-globals) (initialize-runtime-globals))")
 ecl_eval("(setq $nolabels t))")
 ecl_eval("(defun add-lineinfo (x) x)")
 ecl_eval(r"(defun tex-derivative (x l r) (tex (if $derivabbrev (tex-dabbrev x) (tex-d x '\\partial)) l r lop rop ))")

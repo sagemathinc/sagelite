@@ -171,7 +171,7 @@ class Function_exp(GinacFunction):
 
             sage: loads(dumps(exp))
             exp
-            sage: maxima(exp(x))._sage_()                                               # needs sage.symbolic
+            sage: maxima(exp(x))._sage_()                                               # long time, needs sage.symbolic
             e^x
         """
         GinacFunction.__init__(self, "exp", latex_name=r"\exp",
@@ -252,7 +252,7 @@ class Function_log1(GinacFunction):
 
             sage: loads(dumps(ln))
             log
-            sage: maxima(ln(x))._sage_()                                                # needs sage.symbolic
+            sage: maxima(ln(x))._sage_()                                                # long time, needs sage.symbolic
             log(x)
         """
         GinacFunction.__init__(self, 'log', latex_name=r'\log',
@@ -374,11 +374,11 @@ class Function_polylog(GinacFunction):
 
         Check if :issue:`8459` is fixed::
 
-            sage: t = maxima(polylog(5,x)).sage(); t                                    # needs sage.symbolic
+            sage: t = maxima(polylog(5,x)).sage(); t                                    # long time, needs sage.symbolic
             polylog(5, x)
-            sage: t.operator() == polylog                                               # needs sage.symbolic
+            sage: t.operator() == polylog                                               # long time, needs sage.symbolic
             True
-            sage: t.subs(x=.5).n()                                                      # needs sage.symbolic
+            sage: t.subs(x=.5).n()                                                      # long time, needs sage.symbolic
             0.50840057924226...
 
         Check if :issue:`18386` is fixed::
@@ -1278,7 +1278,7 @@ class _Function_swap_harmonic(BuiltinFunction):
     EXAMPLES::
 
         sage: # needs sage.symbolic
-        sage: maxima(harmonic_number(x, 2))  # maxima expect interface
+        sage: maxima(harmonic_number(x, 2))  # long time, maxima expect interface
         gen_harmonic_number(2,_SAGE_VAR_x)
         sage: from sage.calculus.calculus import symbolic_expression_from_maxima_string as sefms
         sage: sefms('gen_harmonic_number(3,x)')
