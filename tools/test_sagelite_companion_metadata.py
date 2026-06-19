@@ -2481,6 +2481,9 @@ def test_gap_gapdoc_package_is_exposed_by_sagelite_extras():
 
 def test_gap_guava_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-guava")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-gap-package-guava" / "setup.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
         "guava": "sagelite_gap_package_guava.runtime:gap_root_paths",
@@ -2491,6 +2494,17 @@ def test_gap_guava_package_registers_gap_root_path():
     ] == [
         "data/gaproot/pkg/**/*",
     ]
+    assert "GUAVA_PROGRAM_NAMES = (\"wtdist\",)" in setup_py
+    assert "SAGELITE_GAP_GUAVA_PROGRAM_DIR" in setup_py
+    assert "_copy_guava_programs(source, target)" in setup_py
+
+
+def test_gap_guava_smoke_test_requires_wtdist_program():
+    smoke_test = ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    smoke_text = smoke_test.read_text()
+
+    assert 'os.path.join(guava_dirs[0], "bin", "wtdist")' in smoke_text
+    assert "os.X_OK" in smoke_text
 
 
 def test_gap_guava_package_is_exposed_by_sagelite_extras():

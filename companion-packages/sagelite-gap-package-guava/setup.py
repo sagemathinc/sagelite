@@ -14,6 +14,7 @@ except ImportError:  # pragma: no cover - wheel is a build requirement
 
 
 GAP_PACKAGE_PREFIXES = ("guava", "sonata")
+GUAVA_PROGRAM_NAMES = ("wtdist",)
 
 
 def _split_roots(value: str | None) -> list[Path]:
@@ -56,6 +57,44 @@ def _candidate_package_dirs() -> list[Path]:
     return dirs
 
 
+def _candidate_guava_program_dirs(package_dir: Path) -> list[Path]:
+    dirs = []
+    for variable in (
+        "SAGELITE_GAP_GUAVA_PROGRAM_DIR",
+        "SAGELITE_GAP_PACKAGE_GUAVA_PROGRAM_DIR",
+    ):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+
+    package_bin = package_dir / "bin"
+    dirs.append(package_bin)
+    if package_bin.is_dir():
+        dirs.extend(path for path in package_bin.iterdir() if path.is_dir())
+
+    for pattern in (
+        "/usr/libexec/*/gap/pkg/guava/bin",
+        "/usr/lib/gap/pkg/guava/bin/*",
+    ):
+        dirs.extend(Path("/").glob(pattern.removeprefix("/")))
+    return dirs
+
+
+def _find_guava_program_dir(package_dir: Path) -> Path:
+    for program_dir in _candidate_guava_program_dirs(package_dir):
+        if all((program_dir / name).is_file() for name in GUAVA_PROGRAM_NAMES):
+            return program_dir.resolve()
+
+    searched = "\n  ".join(
+        os.fspath(path) for path in _candidate_guava_program_dirs(package_dir)
+    )
+    raise RuntimeError(
+        "could not find GUAVA package programs containing wtdist. "
+        "Install/build the GUAVA package programs or set "
+        "SAGELITE_GAP_GUAVA_PROGRAM_DIR.\n"
+        f"Searched:\n  {searched}"
+    )
+
+
 def _find_gap_package_dir(prefix: str) -> Path:
     for package_dir in _candidate_package_dirs():
         if (
@@ -84,6 +123,26 @@ def _ignore_gap_package_files(directory: str, names: list[str]) -> set[str]:
     return ignored
 
 
+def _copy_guava_programs(source_package_dir: Path, target_package_dir: Path) -> None:
+    program_dir = _find_guava_program_dir(source_package_dir)
+    target_bin = target_package_dir / "bin"
+    shutil.copytree(
+        program_dir,
+        target_bin,
+        dirs_exist_ok=True,
+        ignore_dangling_symlinks=True,
+    )
+    for name in GUAVA_PROGRAM_NAMES:
+        source = program_dir / name
+        target = target_bin / name
+        if not target.exists() and source.exists():
+            shutil.copy2(source.resolve(), target)
+        if target.exists():
+            target.chmod(target.stat().st_mode | 0o111)
+        if not target.is_file() or not os.access(target, os.X_OK):
+            raise RuntimeError(f"GUAVA package program is not executable: {target}")
+
+
 class build_py(_build_py):
     def run(self):
         package_root = (
@@ -97,12 +156,15 @@ class build_py(_build_py):
         package_root.mkdir(parents=True, exist_ok=True)
         for prefix in GAP_PACKAGE_PREFIXES:
             source = _find_gap_package_dir(prefix)
+            target = package_root / source.name
             shutil.copytree(
                 source,
-                package_root / source.name,
+                target,
                 ignore=_ignore_gap_package_files,
                 ignore_dangling_symlinks=True,
             )
+            if prefix == "guava":
+                _copy_guava_programs(source, target)
         super().run()
 
 

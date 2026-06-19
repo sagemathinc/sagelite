@@ -113,6 +113,13 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-gap-package-guava":
         for name in os.listdir(os.path.join(roots[0], "pkg"))
         if name.lower().startswith("sonata")
     )
+    guava_dirs = [
+        os.path.join(roots[0], "pkg", name)
+        for name in os.listdir(os.path.join(roots[0], "pkg"))
+        if name.lower().startswith("guava")
+    ]
+    assert guava_dirs
+    assert os.access(os.path.join(guava_dirs[0], "bin", "wtdist"), os.X_OK)
     assert any(ep.name == "guava" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
     raise SystemExit(0)
 
