@@ -1505,7 +1505,20 @@ if not ecl_extensions:
     raise SystemExit("expected sage.libs.ecl extension in repaired sagelite wheel")
 
 required_extensions = [
+    "sage/graphs/bliss.",
+    "sage/graphs/cliquer.",
+    "sage/graphs/graph_decompositions/rankwidth.",
+    "sage/graphs/graph_decompositions/tdlib.",
+    "sage/graphs/mcqd.",
     "sage/libs/braiding.",
+    "sage/libs/coxeter3/coxeter.",
+    "sage/libs/eclib/mwrank.",
+    "sage/libs/eclib/newforms.",
+    "sage/libs/homfly.",
+    "sage/libs/symmetrica/symmetrica.",
+    "sage/numerical/backends/glpk_backend.",
+    "sage/numerical/backends/glpk_exact_backend.",
+    "sage/numerical/backends/glpk_graph_backend.",
     "sage/rings/polynomial/pbori/pbori.",
 ]
 missing_extensions = [
@@ -1523,6 +1536,8 @@ required_libraries = [
     "libbraiding",
     "libbrial",
     "libbrial_groebner",
+    "libcoxeter3",
+    "libhomfly",
 ]
 for library in required_libraries:
     bundled = [

@@ -3552,11 +3552,17 @@ def test_linux_repair_validates_required_optional_native_extensions():
     repair_text = repair_script.read_text()
 
     assert "expected required optional native extensions" in repair_text
-    for prefix in ("sage/libs/braiding.", "sage/rings/polynomial/pbori/pbori."):
+    for prefix in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES:
         assert repr(prefix) in repair_text or f'"{prefix}"' in repair_text
 
     assert "expected auditwheel-bundled runtime library" in repair_text
-    for library in ("libbraiding", "libbrial", "libbrial_groebner"):
+    for library in (
+        "libbraiding",
+        "libbrial",
+        "libbrial_groebner",
+        "libcoxeter3",
+        "libhomfly",
+    ):
         assert repr(library) in repair_text or f'"{library}"' in repair_text
 
 
