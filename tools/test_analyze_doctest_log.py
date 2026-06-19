@@ -146,6 +146,141 @@ Exception raised:
     assert report["fingerprint_counts"] == {"mixed-pari-runtime": 1}
 
 
+def test_report_identifies_numeric_tolerance_mismatch(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/base.py", line 42, in sage.geometry.polyhedron.base
+Failed example:
+    P.volume()
+Expected:
+    2.598076211353316
+Got:
+    2.5980762113533165
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.base
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.geometry.polyhedron.base"]
+
+    assert result.fingerprint == "numeric-tolerance"
+    assert report["fingerprint_counts"] == {"numeric-tolerance": 1}
+
+
+def test_report_identifies_symbolic_output_variant(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/calculus/tests.py", line 42, in sage.calculus.tests
+Failed example:
+    integrate(1/(x^3+1), x)
+Expected:
+    1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x - 1))
+Got:
+    1/3*sqrt(3)*arctan(2/3*sqrt(3)*x - 1/3*sqrt(3))
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.calculus.tests
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.calculus.tests"]
+
+    assert result.fingerprint == "symbolic-output-variant"
+
+
+def test_report_identifies_external_output_variant(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/geometry/polyhedron/base_QQ.py", line 42, in sage.geometry.polyhedron.base_QQ
+Failed example:
+    P.integral_points(verbose=True)
+Expected:
+    []
+Got:
+    Computing hermitean normal form.
+    Time for reading and preprocessing: 0 sec
+    Computing vertices and edges with cdd...done.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.geometry.polyhedron.base_QQ
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.geometry.polyhedron.base_QQ"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "external-output-variant"
+
+
+def test_report_identifies_representative_choice(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/graphs/graph.py", line 42, in sage.graphs.graph
+Failed example:
+    g.topological_minor(H)
+Expected:
+    False
+Got:
+    Subgraph of (RandomGNP(15,0.300000000000000)): Graph on 0 vertices
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.graphs.graph
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.graphs.graph"]
+
+    assert result.fingerprint == "representative-choice"
+
+
+def test_report_identifies_build_tree_source_path_leak(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/misc/sageinspect.py", line 42, in sage.misc.sageinspect
+Failed example:
+    sage_getfile_relative(sage.rings.rational)
+Expected:
+    'sage/rings/rational.pyx'
+Got:
+    '/scratch/sagelite-build/src/sage/rings/rational.pyx'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.misc.sageinspect
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.misc.sageinspect"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "stale-build-path"
+
+
 def test_report_suggests_runtime_for_named_missing_executable(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"

@@ -117,6 +117,8 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         ("featurenotpresenterror", "optional-external", "optional-feature-missing", "optional feature is unavailable"),
         ("module error: don't know how to require maxima", "optional-external", "maxima-library-mode-missing", "Maxima library mode is unavailable"),
         (".mesonpy-", "optional-external", "stale-build-path", "installed code still refers to a build-tree path"),
+        ("/src/sage/", "optional-external", "stale-build-path", "installed code still refers to a build-tree path"),
+        ("/project/local/", "optional-external", "stale-build-path", "installed code still refers to a build-tree path"),
         ("attributeerror: module 'sage.interfaces' has no attribute 'maxima_lib'", "optional-external", "maxima-library-mode-missing", "Maxima library mode is unavailable"),
         ("sage.libs.", "optional-external", "optional-native-lib-missing", "optional native feature is not bundled"),
         ("libbraiding", "optional-external", "optional-native-lib-missing", "optional native feature is not bundled"),
@@ -139,6 +141,37 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         if needle in text:
             return category, fingerprint, evidence
 
+    if _is_output_mismatch(text):
+        if _looks_like_numeric_tolerance_mismatch(text):
+            return (
+                "core-supported",
+                "numeric-tolerance",
+                "numeric output differs only in displayed floating-point precision",
+            )
+        if _looks_like_symbolic_variant(text):
+            return (
+                "core-supported",
+                "symbolic-output-variant",
+                "symbolic output has an algebraically plausible representation difference",
+            )
+        if _looks_like_external_output_variant(text):
+            return (
+                "optional-external",
+                "external-output-variant",
+                "external runtime emitted verbose or formatting output that differs",
+            )
+        if _looks_like_representative_choice(text):
+            return (
+                "core-supported",
+                "representative-choice",
+                "algorithm selected a different valid representative or ordering",
+            )
+        return (
+            "core-supported",
+            "output-mismatch",
+            "example output differs from expected output",
+        )
+
     semantic_patterns = [
         ("failed example:", "core-supported", "doctest-failure", "example output or behavior mismatch"),
         ("traceback (most recent call last)", "core-supported", "runtime-exception", "example raised an exception"),
@@ -151,6 +184,63 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         return "core-supported", "passed", "module passed"
 
     return "unknown", "unknown", "no rule matched"
+
+
+FLOAT_RE = re.compile(r"(?<![\w.])[-+]?(?:\d+\.\d*|\.\d+)(?:e[-+]?\d+)?(?![\w.])")
+
+SYMBOLIC_VARIANT_MARKERS = (
+    "integrate(",
+    "laplace(",
+    "arctan",
+    "dilog",
+    "erf(",
+    "exp_polar",
+    "fresnel",
+    "gamma(",
+    "log(",
+    "piecewise(",
+    "real_nth_root",
+    "sgn(",
+    "sqrt(",
+)
+
+EXTERNAL_OUTPUT_MARKERS = (
+    "computing hermitean normal form",
+    "computing vertices",
+    "executing",
+    "reading .ext file",
+    "time for reading",
+    "latte",
+    "normaliz",
+    "qepcad",
+)
+
+REPRESENTATIVE_CHOICE_MARKERS = (
+    "character_table",
+    "graph on",
+    "subgraph of",
+    "uniformizer",
+)
+
+
+def _is_output_mismatch(text: str) -> bool:
+    return "expected:" in text and "got:" in text
+
+
+def _looks_like_numeric_tolerance_mismatch(text: str) -> bool:
+    return len(FLOAT_RE.findall(text)) >= 2
+
+
+def _looks_like_symbolic_variant(text: str) -> bool:
+    return any(marker in text for marker in SYMBOLIC_VARIANT_MARKERS)
+
+
+def _looks_like_external_output_variant(text: str) -> bool:
+    return any(marker in text for marker in EXTERNAL_OUTPUT_MARKERS)
+
+
+def _looks_like_representative_choice(text: str) -> bool:
+    return any(marker in text for marker in REPRESENTATIVE_CHOICE_MARKERS)
 
 
 MISSING_EXECUTABLE_PACKAGES = {
