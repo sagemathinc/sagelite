@@ -1335,6 +1335,17 @@ def sage_getfile_relative(obj):
         'sage/symbolic/expression.pyx'
         sage: sage_getfile_relative(range)
         ''
+
+    Installed wheels can carry Cython embedded-position metadata from the
+    build tree even when the ``.pyx`` files are not installed.  For Sage
+    objects, keep the namespace-relative path rather than leaking the build
+    prefix::
+
+        sage: import types
+        sage: module = types.ModuleType('sage.example')
+        sage: module.__doc__ = 'File: /scratch/build/src/sage/example.pyx (starting at line 1)'
+        sage: sage_getfile_relative(module)
+        'sage/example.pyx'
     """
     filename = sage_getfile(obj)
     if not filename:
@@ -1356,6 +1367,23 @@ def sage_getfile_relative(obj):
     for directory in directories():
         if commonprefix([filename, directory]) == directory:
             return os.path.join('sage', relpath(filename, directory))
+
+    def obj_is_in_sage_namespace():
+        if inspect.ismodule(obj):
+            module_name = getattr(obj, '__name__', None)
+        else:
+            module_name = getattr(obj, '__module__', None)
+        if not module_name and hasattr(obj, '__class__'):
+            module_name = getattr(obj.__class__, '__module__', None)
+        return module_name == 'sage' or (
+            isinstance(module_name, str) and module_name.startswith('sage.')
+        )
+
+    if obj_is_in_sage_namespace():
+        parts = normpath(filename).split(os.sep)
+        if 'sage' in parts:
+            index = len(parts) - 1 - parts[::-1].index('sage')
+            return os.path.join(*parts[index:])
 
     return filename
 
