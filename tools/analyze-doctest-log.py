@@ -82,6 +82,19 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
     ):
         return "performance-only", "timeout", "module exceeded doctest time limit"
 
+    if result.failed_examples == 0 and "warning: slow doctest:" in text:
+        return "performance-only", "slow-doctest", "example exceeded the long-doctest warning threshold"
+
+    if (
+        result.failed_examples == 0
+        and "referenced here was set only in doctest marked" in text
+    ):
+        return (
+            "core-supported",
+            "doctest-dependency-warning",
+            "doctest depends on a variable set only by a skipped feature-tagged example",
+        )
+
     if "runtimeerror in doctesting framework" in text or result.status == "framework_error":
         return "framework", "doctest-framework", "doctest harness failed before normal example evaluation"
 
@@ -444,6 +457,12 @@ def parse_log(log_path: Path) -> dict[str, ModuleResult]:
             if stripped == "Failed example:":
                 current.failed_examples += 1
                 current.status = "failed"
+                capture_traceback = True
+                continue
+
+            if stripped.startswith("Warning:"):
+                current.status = "failed"
+                current.traceback_lines.append(stripped)
                 capture_traceback = True
                 continue
 

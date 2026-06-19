@@ -281,6 +281,80 @@ Got:
     assert result.fingerprint == "stale-build-path"
 
 
+def test_report_identifies_slow_doctest_warning(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/functions/log.py", line 42, in sage.functions.log
+Warning: slow doctest:
+    integrate(cos(log(cos(x))), x, 0, pi/4)
+Test ran for 41.67s cpu, 67.59s wall
+Check ran for 0.00s cpu, 0.00s wall
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.functions.log"]
+
+    assert result.category == "performance-only"
+    assert result.fingerprint == "slow-doctest"
+    assert result.traceback_lines[0] == "Warning: slow doctest:"
+    assert report["fingerprint_counts"] == {"slow-doctest": 1}
+
+
+def test_report_identifies_doctest_dependency_warning(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/matrix/matrix2.pyx", line 17195, in sage.matrix.matrix2.Matrix._echelon_form_PID
+Warning: Variable 'OL' referenced here was set only in doctest marked '# needs sage.rings.number_field'
+    m = matrix(OL, 0, 0, []); r,s,p = m._echelon_form_PID()
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.matrix.matrix2"]
+
+    assert result.category == "core-supported"
+    assert result.fingerprint == "doctest-dependency-warning"
+
+
+def test_warning_does_not_override_failed_example(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/symbolic/expression.pyx", line 42, in sage.symbolic.expression
+Warning: slow doctest:
+    integral((1+v^2/c^2)^3/(1-v^2/c^2)^(3/2), v)
+Test ran for 5.47s cpu, 5.53s wall
+Check ran for 0.00s cpu, 0.00s wall
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/symbolic/expression.pyx", line 57, in sage.symbolic.expression
+Failed example:
+    integral(x^n, x)
+Expected:
+    x^(n + 1)/(n + 1)
+Got:
+    cases(((n != -1, x^(n + 1)/(n + 1)), (1, log(x))))
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.symbolic.expression"]
+
+    assert result.failed_examples == 1
+    assert result.fingerprint == "symbolic-output-variant"
+
+
 def test_report_suggests_runtime_for_named_missing_executable(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
