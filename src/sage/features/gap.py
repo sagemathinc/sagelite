@@ -11,9 +11,29 @@ Features for testing the presence of the SageMath interfaces to ``gap`` and of G
 #                  https://www.gnu.org/licenses/
 # *****************************************************************************
 
+import os
+
 from . import Feature, FeatureTestResult, PythonModule
 from .join_feature import JoinFeature
 from .sagemath import sage__libs__gap
+
+
+_GAP_PACKAGE_REQUIRED_PROGRAMS = {
+    "guava": ("wtdist",),
+}
+
+
+def _gap_directory_path(directory):
+    """
+    Return a filesystem path for a GAP directory object.
+    """
+    filename = getattr(directory, "Filename", None)
+    if filename is not None:
+        directory = filename("")
+    sage = getattr(directory, "sage", None)
+    if sage is not None:
+        return os.fspath(sage())
+    return os.fspath(directory)
 
 
 class GapPackage(Feature):
@@ -68,6 +88,40 @@ class GapPackage(Feature):
         presence = libgap.eval(command)
 
         if presence:
+            required_programs = _GAP_PACKAGE_REQUIRED_PROGRAMS.get(self.package.lower())
+            if required_programs:
+                try:
+                    program_dirs = libgap.DirectoriesPackagePrograms(self.package)
+                except Exception as exc:
+                    return FeatureTestResult(
+                        self,
+                        False,
+                        reason=(
+                            "could not inspect GAP package program directories "
+                            f"for {self.package}: {exc}"
+                        ),
+                    )
+
+                missing = []
+                for program in required_programs:
+                    found = False
+                    for directory in program_dirs:
+                        path = os.path.join(_gap_directory_path(directory), program)
+                        if os.path.isfile(path) and os.access(path, os.X_OK):
+                            found = True
+                            break
+                    if not found:
+                        missing.append(program)
+
+                if missing:
+                    return FeatureTestResult(
+                        self,
+                        False,
+                        reason=(
+                            f"GAP package {self.package} is missing required "
+                            "programs: " + ", ".join(missing)
+                        ),
+                    )
             return FeatureTestResult(self, True,
                     reason="`{command}` evaluated to `{presence}` in GAP.".format(command=command, presence=presence))
         return FeatureTestResult(self, False,
