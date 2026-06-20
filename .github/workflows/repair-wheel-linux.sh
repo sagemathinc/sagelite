@@ -1598,6 +1598,49 @@ if len(bundled_pari) != 1:
 
 print(f"verified repaired sagelite PARI runtime: {os.path.basename(bundled_pari[0])}")
 PY
+
+  local repaired_site
+  repaired_site="$tmpdir/repaired-sagelite-site"
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install \
+    --no-deps \
+    --target "$repaired_site" \
+    "$repaired_sagelite_wheel"
+  (
+    cd "$tmpdir"
+    PYTHONNOUSERSITE=1 \
+    PYTHONPATH="$repaired_site" \
+      "$python_bin" - "$native_catalog" <<'PY'
+import importlib
+import importlib.util
+import sys
+
+catalog_path = sys.argv[1]
+spec = importlib.util.spec_from_file_location(
+    "sagelite_native_wheel_catalog", catalog_path
+)
+catalog_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(catalog_module)
+catalog = catalog_module.catalog()
+
+failed = []
+for module_name in catalog["required_native_import_modules"]:
+    try:
+        importlib.import_module(module_name)
+    except Exception as exc:  # noqa: BLE001 - report every broken import together
+        failed.append(f"{module_name}: {type(exc).__name__}: {exc}")
+
+if failed:
+    raise SystemExit(
+        "expected repaired sagelite native modules to import; failures:\n"
+        + "\n".join(f"  {failure}" for failure in failed)
+    )
+
+print(
+    "verified repaired sagelite native module imports: "
+    f"{len(catalog['required_native_import_modules'])}"
+)
+PY
+  )
 }
 
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then

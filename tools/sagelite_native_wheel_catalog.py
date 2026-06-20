@@ -56,12 +56,33 @@ REQUIRED_NATIVE_LIBRARY_PREFIXES = [
     "libsirocco",
 ]
 
+REQUIRED_NATIVE_IMPORT_MODULES = [
+    "sage.graphs.bliss",
+    "sage.graphs.cliquer",
+    "sage.graphs.graph_decompositions.rankwidth",
+    "sage.graphs.graph_decompositions.tdlib",
+    "sage.graphs.mcqd",
+    "sage.libs.braiding",
+    "sage.libs.coxeter3.coxeter",
+    "sage.libs.eclib.mwrank",
+    "sage.libs.eclib.newforms",
+    "sage.libs.homfly",
+    "sage.libs.meataxe",
+    "sage.libs.sirocco",
+    "sage.libs.symmetrica.symmetrica",
+    "sage.numerical.backends.glpk_backend",
+    "sage.numerical.backends.glpk_exact_backend",
+    "sage.numerical.backends.glpk_graph_backend",
+    "sage.rings.polynomial.pbori.pbori",
+]
+
 
 def catalog() -> dict[str, list[str]]:
     return {
         "required_meson_options": REQUIRED_MESON_OPTIONS,
         "required_native_extension_prefixes": REQUIRED_NATIVE_EXTENSION_PREFIXES,
         "required_native_library_prefixes": REQUIRED_NATIVE_LIBRARY_PREFIXES,
+        "required_native_import_modules": REQUIRED_NATIVE_IMPORT_MODULES,
     }
 
 
