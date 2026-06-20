@@ -85,7 +85,7 @@ def test_selftest_accepts_cypari_without_private_pari_runtime(
     )
 
 
-def test_selftest_stops_after_pari_runtime_packaging_failure(monkeypatch):
+def test_selftest_continues_after_pari_runtime_packaging_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []
 
@@ -96,7 +96,14 @@ def test_selftest_stops_after_pari_runtime_packaging_failure(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls == ["installed package requirements", "PARI runtime packaging"]
+    assert calls[:3] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+    ]
+    assert "Maxima library runtime" in calls
+    assert "required native imports" in calls
+    assert "import sage.all" in calls
 
 
 def test_selftest_help_does_not_run_runtime_checks(monkeypatch, capsys):
@@ -125,7 +132,13 @@ def test_selftest_main_accepts_explicit_empty_argv(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls == ["installed package requirements", "PARI runtime packaging"]
+    assert calls[:3] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+    ]
+    assert "required native imports" in calls
+    assert "import sage.all" in calls
 
 
 def test_selftest_runs_pari_conversion_before_broader_checks(monkeypatch):
@@ -139,11 +152,13 @@ def test_selftest_runs_pari_conversion_before_broader_checks(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls == [
+    assert calls[:4] == [
         "installed package requirements",
         "PARI runtime packaging",
         "PARI runtime conversion",
+        "Maxima library runtime",
     ]
+    assert calls.index("PARI runtime conversion") < calls.index("import sage.all")
 
 
 def test_selftest_pari_conversion_uses_labeled_subprocess_probe(monkeypatch):
@@ -284,7 +299,7 @@ def test_selftest_accepts_maxima_fas_with_matching_loaded_ecl(
     )
 
 
-def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
+def test_selftest_continues_after_maxima_runtime_packaging_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []
 
@@ -295,12 +310,15 @@ def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls == [
+    assert calls[:6] == [
         "installed package requirements",
         "PARI runtime packaging",
         "PARI runtime conversion",
         "Maxima library runtime",
+        "required native imports",
+        "import sage.all",
     ]
+    assert "symbolic integration" in calls
 
 
 def test_selftest_rejects_required_native_import_failures(monkeypatch):
@@ -347,7 +365,7 @@ def test_selftest_native_import_fallback_matches_catalog():
     )
 
 
-def test_selftest_stops_after_required_native_import_failure(monkeypatch):
+def test_selftest_continues_after_required_native_import_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []
 
@@ -358,13 +376,15 @@ def test_selftest_stops_after_required_native_import_failure(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls == [
+    assert calls[:6] == [
         "installed package requirements",
         "PARI runtime packaging",
         "PARI runtime conversion",
         "Maxima library runtime",
         "required native imports",
+        "import sage.all",
     ]
+    assert "symbolic integration" in calls
 
 
 def test_selftest_maxima_probe_exercises_runtime_parity_checks():

@@ -1526,15 +1526,18 @@ def _optional_runtime_summary() -> None:
     print()
     print("optional runtimes:")
 
-    from sage.features.singular import Singular
-
-    singular = Singular().is_present()
-    print(f"  Singular executable: {'present' if singular else 'not found'}")
+    try:
+        from sage.features.singular import Singular
+    except Exception as error:  # noqa: BLE001 - keep summary best-effort
+        print(f"  Singular executable: unavailable ({error})")
+    else:
+        singular = Singular().is_present()
+        print(f"  Singular executable: {'present' if singular else 'not found'}")
 
     try:
         import sagelite_maxima  # noqa: F401
-    except ImportError:
-        print("  Maxima library mode: not available")
+    except Exception as error:  # noqa: BLE001 - keep summary best-effort
+        print(f"  Maxima library mode: not available ({error})")
     else:
         print("  Maxima library mode: present")
 
@@ -1552,17 +1555,12 @@ def main(argv: list[str] | None = None) -> int:
     """
     _parse_args(argv)
 
-    ok = _run_check("installed package requirements", _check_installed_requirements)
-    if not _run_check("PARI runtime packaging", _check_single_pari_runtime):
-        return 1
-    if not _run_check("PARI runtime conversion", _check_pari_runtime_roundtrip):
-        return 1
-    if not _run_check("Maxima library runtime", _check_maxima_runtime):
-        return 1
-    if not _run_check("required native imports", _check_required_native_imports):
-        return 1
-
     checks = [
+        ("installed package requirements", _check_installed_requirements),
+        ("PARI runtime packaging", _check_single_pari_runtime),
+        ("PARI runtime conversion", _check_pari_runtime_roundtrip),
+        ("Maxima library runtime", _check_maxima_runtime),
+        ("required native imports", _check_required_native_imports),
         ("import sage.all", _check_import_sage_all),
         ("integer factorization", _check_factor),
         ("symbolic integration", _check_symbolic_integration),
@@ -1655,6 +1653,7 @@ def main(argv: list[str] | None = None) -> int:
         ("Stein-Watkins full database runtime", _check_database_stein_watkins),
     ]
 
+    ok = True
     for name, check in checks:
         ok = _run_check(name, check) and ok
 
