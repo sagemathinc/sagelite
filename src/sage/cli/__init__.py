@@ -9,6 +9,22 @@ import sys
 from sage.cli.options import CliOptions
 
 
+_ADVANCED_HELP = """\
+SageMath command line options:
+
+  --advanced        print this advanced help message
+  --python         run the Python interpreter used by this Sage installation
+  --python3        run the Python interpreter used by this Sage installation
+  --sh             run a system shell with the Sage environment
+  --ecl, --lisp    run the ECL Lisp interpreter
+  --cleaner        run the Sage cleaner. (source-tree only)
+
+Some source-tree developer options are unavailable in pip-installed sagelite.
+In a full Sage source checkout, run the source-tree sage launcher for options
+such as --root, --grep, or the Sage cleaner.
+"""
+
+
 def _ecl_command() -> str:
     try:
         from sagelite_ecl.runtime import ecl_command
@@ -21,10 +37,29 @@ def _ecl_command() -> str:
     return "ecl"
 
 
+def _shell_command() -> str:
+    return os.environ.get("SHELL") or "/bin/sh"
+
+
+def _python_command() -> str:
+    return sys.executable
+
+
+def _print_advanced_help() -> int:
+    print(_ADVANCED_HELP, end="")
+    return 0
+
+
 def main() -> int:
     input_args = sys.argv[1:]
     if input_args and input_args[0] in ("-ecl", "--ecl", "-lisp", "--lisp"):
         return subprocess.call([_ecl_command(), *input_args[1:]])
+    if input_args and input_args[0] == "--sh":
+        return subprocess.call([_shell_command(), *input_args[1:]])
+    if input_args and input_args[0] in ("--python", "--python3"):
+        return subprocess.call([_python_command(), *input_args[1:]])
+    if input_args and input_args[0] == "--advanced":
+        return _print_advanced_help()
 
     from sage.cli.eval_cmd import EvalCmd
     from sage.cli.interactive_shell_cmd import InteractiveShellCmd

@@ -23,7 +23,7 @@ class EvalCmd:
             "-c",
             "--command",
             nargs="?",
-            help="execute the given command as sage code",
+            help="evaluate cmd as sage code",
         )
 
     def __init__(self, options: CliOptions):

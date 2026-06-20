@@ -53,3 +53,52 @@ def test_main_dispatches_lisp_option_to_ecl(monkeypatch, tmp_path):
 
     assert main() == 17
     assert calls == [[os.fspath(tmp_path / "ecl"), "--version"]]
+
+
+def test_main_dispatches_sh_option_to_shell(monkeypatch, tmp_path):
+    calls = []
+
+    monkeypatch.setattr(sys, "argv", ["sage", "--sh", "-c", "exit 42"])
+    monkeypatch.setattr("sage.cli._shell_command", lambda: os.fspath(tmp_path / "sh"))
+    monkeypatch.setattr(
+        subprocess,
+        "call",
+        lambda command: calls.append(command) or 42,
+    )
+
+    assert main() == 42
+    assert calls == [[os.fspath(tmp_path / "sh"), "-c", "exit 42"]]
+
+
+def test_main_dispatches_python_options_to_current_interpreter(monkeypatch, tmp_path):
+    calls = []
+
+    monkeypatch.setattr(
+        "sage.cli._python_command",
+        lambda: os.fspath(tmp_path / "python"),
+    )
+    monkeypatch.setattr(
+        subprocess,
+        "call",
+        lambda command: calls.append(command) or 0,
+    )
+
+    monkeypatch.setattr(sys, "argv", ["sage", "--python", "-c", "print(1)"])
+    assert main() == 0
+    monkeypatch.setattr(sys, "argv", ["sage", "--python3", "-V"])
+    assert main() == 0
+
+    assert calls == [
+        [os.fspath(tmp_path / "python"), "-c", "print(1)"],
+        [os.fspath(tmp_path / "python"), "-V"],
+    ]
+
+
+def test_main_prints_installed_advanced_help(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["sage", "--advanced"])
+
+    assert main() == 0
+    output = capsys.readouterr().out
+    assert "run the Python interpreter used by this Sage installation" in output
+    assert "run a system shell with the Sage environment" in output
+    assert "run the Sage cleaner." in output
