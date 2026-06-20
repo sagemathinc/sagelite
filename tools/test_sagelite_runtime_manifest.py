@@ -4,6 +4,7 @@ import importlib.util
 import os
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 
@@ -69,6 +70,40 @@ def test_split_gap_roots_accepts_gap_semicolon_separator():
     assert manifest._split_gap_roots(os.pathsep.join(["/a", "/b"])) == ["/a", "/b"]
 
 
+def test_collect_fplll_details_records_sage_resolved_strategy(monkeypatch, tmp_path):
+    manifest = _load_manifest()
+    companion_strategy = tmp_path / "strategies" / "default.json"
+    companion_strategy.parent.mkdir()
+    companion_strategy.write_text("[]", encoding="utf-8")
+
+    runtime = types.ModuleType("sagelite_fplll_data.runtime")
+    runtime.default_strategy = lambda: companion_strategy
+    fpylll = types.ModuleType("fpylll")
+    fpylll.__version__ = "0.6.4"
+    config = types.ModuleType("fpylll.config")
+    config.default_strategy_path = "/project/local/share/fplll/strategies"
+    config.default_strategy = "/project/local/share/fplll/strategies/default.json"
+    sage_env = types.ModuleType("sage.env")
+    sage_env._fplll_default_strategy_file = lambda path, strategy: str(
+        companion_strategy
+    )
+
+    monkeypatch.setitem(sys.modules, "sagelite_fplll_data.runtime", runtime)
+    monkeypatch.setitem(sys.modules, "fpylll", fpylll)
+    monkeypatch.setitem(sys.modules, "fpylll.config", config)
+    monkeypatch.setitem(sys.modules, "sage.env", sage_env)
+
+    details = manifest.collect_fplll_details()
+
+    assert details["companion_default_strategy"] == str(companion_strategy)
+    assert details["companion_default_strategy_exists"] is True
+    assert details["fpylll_config_default_strategy_path"] == (
+        "/project/local/share/fplll/strategies"
+    )
+    assert details["sage_resolved_default_strategy"] == str(companion_strategy)
+    assert details["sage_resolved_default_strategy_exists"] is True
+
+
 def test_compare_manifests_surfaces_parity_buckets():
     manifest = _load_manifest()
     reference = {
@@ -121,8 +156,12 @@ def test_compare_manifests_surfaces_parity_buckets():
             "FRICAS_INITFILE": "/sage/local/lib/fricas/fricas.input",
         },
         "fplll": {
+            "companion_default_strategy": "/sage/local/share/fplll/strategies/default.json",
+            "companion_default_strategy_exists": True,
             "fpylll_version": "0.6.4",
             "fpylll_config_default_strategy": "/sage/local/share/fplll/strategies/default.json",
+            "sage_resolved_default_strategy": "/sage/local/share/fplll/strategies/default.json",
+            "sage_resolved_default_strategy_exists": True,
         },
     }
     candidate = {
@@ -186,8 +225,12 @@ def test_compare_manifests_surfaces_parity_buckets():
             "FRICAS_INITFILE": None,
         },
         "fplll": {
+            "companion_default_strategy": None,
+            "companion_default_strategy_exists": False,
             "fpylll_version": "0.6.4",
             "fpylll_config_default_strategy": "/project/local/share/fplll/strategies/default.json",
+            "sage_resolved_default_strategy": "/project/local/share/fplll/strategies/default.json",
+            "sage_resolved_default_strategy_exists": False,
         },
     }
 
@@ -226,6 +269,10 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert diff["fplll_differences"]["fpylll_config_default_strategy"] == {
         "reference": "/sage/local/share/fplll/strategies/default.json",
         "candidate": "/project/local/share/fplll/strategies/default.json",
+    }
+    assert diff["fplll_differences"]["sage_resolved_default_strategy_exists"] == {
+        "reference": True,
+        "candidate": False,
     }
 
     markdown = manifest.render_diff_markdown(diff)

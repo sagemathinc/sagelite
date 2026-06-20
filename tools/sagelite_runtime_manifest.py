@@ -516,11 +516,41 @@ def collect_fplll_details() -> dict[str, Any]:
         if os.environ.get(key) is not None
     }
     try:
+        runtime = importlib.import_module("sagelite_fplll_data.runtime")
+        companion_strategy = _safe_call(
+            "sagelite_fplll_data.runtime.default_strategy",
+            runtime.default_strategy,
+        )
+        if isinstance(companion_strategy, (str, os.PathLike)):
+            companion_strategy = os.fspath(companion_strategy)
+        details["companion_default_strategy"] = companion_strategy
+        details["companion_default_strategy_exists"] = (
+            os.path.isfile(companion_strategy)
+            if isinstance(companion_strategy, str)
+            else False
+        )
+    except Exception as exc:  # noqa: BLE001
+        details["companion_error"] = f"{type(exc).__name__}: {exc}"
+    try:
         fpylll = importlib.import_module("fpylll")
         config = importlib.import_module("fpylll.config")
         details["fpylll_version"] = getattr(fpylll, "__version__", None)
         for key in ["default_strategy", "default_strategy_path"]:
             details[f"fpylll_config_{key}"] = getattr(config, key, None)
+        try:
+            sage_env = importlib.import_module("sage.env")
+            resolved_strategy = sage_env._fplll_default_strategy_file(
+                getattr(config, "default_strategy_path", ""),
+                getattr(config, "default_strategy", "default.json"),
+            )
+            details["sage_resolved_default_strategy"] = resolved_strategy
+            details["sage_resolved_default_strategy_exists"] = os.path.isfile(
+                resolved_strategy
+            )
+        except Exception as exc:  # noqa: BLE001
+            details["sage_resolved_default_strategy_error"] = (
+                f"{type(exc).__name__}: {exc}"
+            )
     except Exception as exc:  # noqa: BLE001
         details["fpylll_error"] = f"{type(exc).__name__}: {exc}"
     return details
@@ -752,9 +782,13 @@ RUNTIME_SECTION_COMPARE_KEYS = {
     "fplll": [
         "SAGE_FPLLL_DEFAULT_STRATEGY",
         "FPLLL_DEFAULT_STRATEGY",
+        "companion_default_strategy",
+        "companion_default_strategy_exists",
         "fpylll_version",
         "fpylll_config_default_strategy",
         "fpylll_config_default_strategy_path",
+        "sage_resolved_default_strategy",
+        "sage_resolved_default_strategy_exists",
     ],
 }
 
