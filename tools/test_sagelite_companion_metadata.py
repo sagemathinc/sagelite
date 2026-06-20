@@ -2535,6 +2535,11 @@ def test_gap_guava_smoke_test_requires_wtdist_program():
 
     assert 'os.path.join(guava_dirs[0], "bin", "wtdist")' in smoke_text
     assert "os.X_OK" in smoke_text
+    assert 'libgap.LoadPackage("guava")' in smoke_text
+    assert 'libgap.DirectoriesPackagePrograms("guava")' in smoke_text
+    assert "weight_distribution(" in smoke_text
+    assert 'algorithm="leon"' in smoke_text
+    assert "skipping Sage GUAVA smoke: sage.all is not installed" in smoke_text
 
 
 def test_gap_guava_package_is_exposed_by_sagelite_extras():

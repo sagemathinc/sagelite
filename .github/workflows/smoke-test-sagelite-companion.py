@@ -1,8 +1,29 @@
 import importlib
 import importlib.metadata as metadata
+import importlib.util
 import os
 import shutil
 import sqlite3
+
+
+def run_optional_sage_guava_smoke():
+    if importlib.util.find_spec("sage.all") is None:
+        print("skipping Sage GUAVA smoke: sage.all is not installed")
+        return
+
+    from sage.all import GF, codes
+    from sage.libs.gap.libgap import libgap
+
+    loaded = libgap.LoadPackage("guava")
+    assert str(loaded).lower() == "true", loaded
+    program_dirs = libgap.DirectoriesPackagePrograms("guava")
+    print("guava_program_dirs=", program_dirs)
+
+    distribution = codes.HammingCode(GF(2), 3).weight_distribution(
+        algorithm="leon"
+    )
+    assert distribution == [1, 0, 0, 7, 7, 0, 0, 1]
+
 
 module = importlib.import_module(os.environ["SAGELITE_COMPANION_IMPORT_NAME"])
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-cunningham-tables":
@@ -121,6 +142,7 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-gap-package-guava":
     assert guava_dirs
     assert os.access(os.path.join(guava_dirs[0], "bin", "wtdist"), os.X_OK)
     assert any(ep.name == "guava" for ep in metadata.entry_points(group="sagemath.gap_root_paths"))
+    run_optional_sage_guava_smoke()
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-gap-package-hap":
