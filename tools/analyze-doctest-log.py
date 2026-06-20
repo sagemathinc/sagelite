@@ -191,6 +191,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         ("libbraiding", "optional-external", "optional-native-lib-missing", "optional native feature is not bundled"),
         ("libhomfly", "optional-external", "optional-native-lib-missing", "optional native feature is not bundled"),
         ("leftnormalform failed", "optional-external", "optional-native-lib-missing", "optional native feature is not bundled"),
+        (
+            "/share/doc/sage",
+            "optional-data",
+            "missing-doc-source",
+            "Sage documentation source tree is not available in the installed runtime",
+        ),
     ]
     for needle, category, fingerprint, evidence in external_patterns:
         if needle in text:
@@ -209,6 +215,30 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             return category, fingerprint, evidence
 
     if _is_output_mismatch(text):
+        if _looks_like_installed_sage_cli_gap(text):
+            return (
+                "packaging-runtime",
+                "installed-sage-cli-incomplete",
+                "installed sage console script does not implement self-contained Sage CLI options",
+            )
+        if _looks_like_gap_interrupt_variant(text):
+            return (
+                "optional-external",
+                "gap-interrupt-behavior",
+                "GAP interrupt handling differs from the self-contained runtime",
+            )
+        if _looks_like_external_path_variant(text):
+            return (
+                "optional-external",
+                "external-path-output-variant",
+                "external runtime path output differs only by installed companion location",
+            )
+        if _looks_like_color_precision_variant(text):
+            return (
+                "core-supported",
+                "color-output-variant",
+                "color conversion output differs only in adjacent hex-channel rounding",
+            )
         if _looks_like_numeric_tolerance_mismatch(text):
             return (
                 "core-supported",
@@ -287,7 +317,25 @@ REPRESENTATIVE_CHOICE_MARKERS = (
     "graph on",
     "subgraph of",
     "uniformizer",
+    "tv.components()",
+    "tv._components_intersection()",
+    "designs.steiner_triple_system",
 )
+
+EXTERNAL_PATH_MARKERS = (
+    "gp.get_default('datadir')",
+    "sagelite_pari_data/data/pari",
+    "site-packages/sagelite_",
+)
+
+INSTALLED_SAGE_CLI_MARKERS = (
+    "unrecognized arguments: --python",
+    "unrecognized arguments: --python3",
+    "unrecognized arguments: --cython",
+    "unrecognized arguments: --mwrank",
+)
+
+HEX_COLOR_RE = re.compile(r"#[0-9a-f]{6}")
 
 
 def _is_output_mismatch(text: str) -> bool:
@@ -296,6 +344,27 @@ def _is_output_mismatch(text: str) -> bool:
 
 def _looks_like_numeric_tolerance_mismatch(text: str) -> bool:
     return len(FLOAT_RE.findall(text)) >= 2
+
+
+def _looks_like_color_precision_variant(text: str) -> bool:
+    return (
+        len(HEX_COLOR_RE.findall(text)) >= 2
+        and ("#0065ff" in text or "#0066ff" in text)
+    )
+
+
+def _looks_like_installed_sage_cli_gap(text: str) -> bool:
+    return "usage: sage" in text and any(
+        marker in text for marker in INSTALLED_SAGE_CLI_MARKERS
+    )
+
+
+def _looks_like_gap_interrupt_variant(text: str) -> bool:
+    return "gap.interrupt()" in text and "expected:" in text and "got:" in text
+
+
+def _looks_like_external_path_variant(text: str) -> bool:
+    return any(marker in text for marker in EXTERNAL_PATH_MARKERS)
 
 
 def _looks_like_symbolic_variant(text: str) -> bool:
@@ -454,10 +523,14 @@ def suggested_package(result: ModuleResult) -> str:
         "maxima-lisp-module-missing": "sagelite-maxima-runtime",
         "fricas-runtime-error": "sagelite-fricas-runtime",
         "fpylll-reduction-failure": "sagelite-fplll-data or fpylll portability fix",
+        "external-path-output-variant": "companion runtime path normalization",
         "gap3-runtime-error": "sagelite-gap3-runtime",
+        "gap-interrupt-behavior": "sagelite-gap-runtime",
         "gap-guava-program-missing": "sagelite-gap-package-guava",
+        "installed-sage-cli-incomplete": "sagelite console script parity",
         "msolve-parser-diagnostic": "Sage msolve parser",
         "missing-cremona-db": "sagelite-database-cremona-mini",
+        "missing-doc-source": "Sage documentation source/runtime package",
         "missing-knotinfo-db": "database-knotinfo",
         "missing-database": "matching sagelite-database-* companion package",
         "missing-executable": "matching sagelite-*-runtime companion package",

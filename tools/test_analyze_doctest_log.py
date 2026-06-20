@@ -254,6 +254,171 @@ Got:
     assert result.fingerprint == "representative-choice"
 
 
+def test_report_identifies_tropical_ordering_representative_choice(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/rings/semirings/tropical_variety.py", line 42, in sage.rings.semirings.tropical_variety
+Failed example:
+    tv._components_intersection()
+Expected:
+    {3: [((t1, t1, t1), {0 <= t1}), ((t1, 2*t1, 2*t1), {t1 <= 0})]}
+Got:
+    {3: [((t1, 2*t1, 2*t1), {t1 <= 0}), ((t1, t1, t1), {0 <= t1})]}
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.rings.semirings.tropical_variety
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.rings.semirings.tropical_variety"]
+
+    assert result.fingerprint == "representative-choice"
+
+
+def test_report_identifies_color_hex_precision_variant(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/graphs/graph_coloring.py", line 42, in sage.graphs.graph_coloring
+Failed example:
+    sorted(d)
+Expected:
+    ['#0066ff', '#00ff66']
+Got:
+    ['#0065ff', '#00ff66']
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.graphs.graph_coloring
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.graphs.graph_coloring"]
+
+    assert result.category == "core-supported"
+    assert result.fingerprint == "color-output-variant"
+
+
+def test_report_identifies_gap_interrupt_behavior(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/gap.py", line 42, in sage.interfaces.gap
+Failed example:
+    gap('"finished computation"'); gap.interrupt(); gap('"ok"')
+Expected:
+    finished computation
+    True
+    ok
+Got:
+    finished computation
+    False
+    ok
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.gap
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.gap"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "gap-interrupt-behavior"
+    assert result.suggested_package == "sagelite-gap-runtime"
+
+
+def test_report_identifies_external_path_output_variant(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/gp.py", line 42, in sage.interfaces.gp
+Failed example:
+    gp.get_default('datadir')
+Expected:
+    '.../share/pari'
+Got:
+    '/venv/lib/python3.12/site-packages/sagelite_pari_data/data/pari'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.gp
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.gp"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "external-path-output-variant"
+
+
+def test_report_identifies_installed_sage_cli_option_gap(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/tests/cmdline.py", line 42, in sage.tests.cmdline
+Failed example:
+    err
+Expected:
+    ''
+Got:
+    'usage: sage [-h] [-v] [-q] [--simple-prompt] [-V] [-n [{jupyter,jupyterlab}]]\\n            [-c [COMMAND]]\\n            [file ...]\\nsage: error: unrecognized arguments: --python\\n'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.tests.cmdline
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.tests.cmdline"]
+
+    assert result.category == "packaging-runtime"
+    assert result.fingerprint == "installed-sage-cli-incomplete"
+
+
+def test_report_identifies_missing_doc_source(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage_docbuild/builders.py", line 42, in sage_docbuild.builders
+Failed example:
+    documents = get_all_documents(Path(SAGE_DOC_SRC))
+Exception raised:
+    Traceback (most recent call last):
+    FileNotFoundError: [Errno 2] No such file or directory: '/venv/share/doc/sage'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage_docbuild.builders
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage_docbuild.builders"]
+
+    assert result.category == "optional-data"
+    assert result.fingerprint == "missing-doc-source"
+
+
 def test_report_identifies_build_tree_source_path_leak(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
