@@ -65,6 +65,16 @@ def _lll_with_pari_fallback(basis, *args, **kwds):
         sage: with patch.dict(sys.modules, {'fpylll.util': fpylll_util}):
         ....:     _lll_with_pari_fallback(FakeBasis(), delta=0.99)
         'pari result'
+        sage: class OtherFpylllError(FakeReductionError):
+        ....:     pass
+        sage: class FailingBasis(FakeBasis):
+        ....:     def LLL(self, *args, **kwds):
+        ....:         raise OtherFpylllError('not a portability failure')
+        sage: with patch.dict(sys.modules, {'fpylll.util': fpylll_util}):
+        ....:     _lll_with_pari_fallback(FailingBasis(), delta=0.99)
+        Traceback (most recent call last):
+        ...
+        OtherFpylllError: not a portability failure
     """
     try:
         return basis.LLL(*args, **kwds)
@@ -78,7 +88,25 @@ def _lll_with_pari_fallback(basis, *args, **kwds):
             ReductionError = ()
         if not isinstance(err, ReductionError):
             raise
+        if not _fpylll_portability_reduction_failure(err):
+            raise
         return basis.LLL(*args, algorithm='pari', **kwds)
+
+
+def _fpylll_portability_reduction_failure(err):
+    """
+    Return whether ``err`` is a known fpylll portability failure.
+
+    EXAMPLES::
+
+        sage: from sage.modules.free_module_integer import (
+        ....:     _fpylll_portability_reduction_failure)
+        sage: _fpylll_portability_reduction_failure(RuntimeError("infinite loop in babai"))
+        True
+        sage: _fpylll_portability_reduction_failure(RuntimeError("other reduction failure"))
+        False
+    """
+    return "infinite loop in babai" in str(err).lower()
 
 
 def _fpylll_missing_strategy_file(err):
