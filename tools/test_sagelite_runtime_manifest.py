@@ -35,8 +35,24 @@ def test_collect_executables_records_path_and_version_probe(monkeypatch):
     result = manifest.collect_executables(["gap"])
 
     assert result["gap"]["path"] == "/venv/bin/gap"
+    assert result["gap"]["host_path"] is False
     assert result["gap"]["attempts"][0]["stdout"] == "tool 1.2"
     assert commands == [["/venv/bin/gap", "--version"]]
+
+
+def test_collect_executables_marks_host_system_paths(monkeypatch):
+    manifest = _load_manifest()
+    monkeypatch.setattr(manifest.shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(
+        manifest,
+        "_version_probe",
+        lambda path: {"attempts": [{"command": [path, "--version"]}]},
+    )
+
+    result = manifest.collect_executables(["maxima"])
+
+    assert result["maxima"]["path"] == "/usr/bin/maxima"
+    assert result["maxima"]["host_path"] is True
 
 
 def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):
@@ -148,7 +164,7 @@ def test_compare_manifests_surfaces_parity_buckets():
                 {"name": "sage.libs.coxeter3", "present": True},
             ]
         },
-        "executables": {"gap": {"path": "/sage/local/bin/gap"}},
+        "executables": {"gap": {"path": "/sage/local/bin/gap", "host_path": False}},
         "gap": {
             "sage_env_gap_roots": ["/sage/local/lib/gap"],
             "gap_package_programs": {
@@ -204,7 +220,7 @@ def test_compare_manifests_surfaces_parity_buckets():
                 {"name": "sage.libs.coxeter3", "present": True},
             ]
         },
-        "executables": {"gap": {"path": "/usr/bin/gap"}},
+        "executables": {"gap": {"path": "/usr/bin/gap", "host_path": True}},
         "compiled_modules": [
             {
                 "sage_relative_path": "sage/libs/example.so",
@@ -269,6 +285,9 @@ def test_compare_manifests_surfaces_parity_buckets():
     }
     assert diff["feature_differences"]["gap_package_guava"]["candidate_reason"] == "wtdist missing"
     assert diff["executable_differences"]["gap"]["candidate"] == "/usr/bin/gap"
+    assert diff["candidate_executable_host_leaks"] == [
+        {"name": "gap", "path": "/usr/bin/gap"}
+    ]
     assert diff["candidate_dependency_leaks"][0]["module"] == "sage/libs/example.so"
     assert "sage.rings.rational" in diff["candidate_source_path_leaks"]
     assert diff["gap_package_program_differences"]["guava"][
@@ -302,6 +321,7 @@ def test_compare_manifests_surfaces_parity_buckets():
     }
 
     markdown = manifest.render_diff_markdown(diff)
+    assert "### Candidate executable host path leaks" in markdown
     assert "### Maxima runtime differences" in markdown
     assert "### FriCAS runtime differences" in markdown
     assert "### FPLLL runtime differences" in markdown

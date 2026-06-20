@@ -102,6 +102,15 @@ PLATFORM_LIBRARY_RE = re.compile(
     r"^/(?:lib|lib64|usr/lib|usr/lib64)(?:/|$)|^linux-vdso\\.so"
 )
 
+HOST_EXECUTABLE_PREFIXES = (
+    "/bin/",
+    "/sbin/",
+    "/usr/bin/",
+    "/usr/sbin/",
+    "/usr/local/bin/",
+    "/usr/local/sbin/",
+)
+
 
 @dataclass(frozen=True)
 class ProbeResult:
@@ -340,7 +349,10 @@ def collect_executables(names: list[str]) -> dict[str, Any]:
     data = {}
     for name in names:
         path = shutil.which(name)
-        entry: dict[str, Any] = {"path": path}
+        entry: dict[str, Any] = {
+            "path": path,
+            "host_path": _is_host_executable_path(path),
+        }
         if path:
             entry.update(_version_probe(path))
         data[name] = entry
@@ -743,6 +755,21 @@ def _dependency_leaks(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     return leaks
 
 
+def _is_host_executable_path(path: str | None) -> bool:
+    if not path:
+        return False
+    return path.startswith(HOST_EXECUTABLE_PREFIXES)
+
+
+def _candidate_executable_host_leaks(candidate: dict[str, Any]) -> list[dict[str, str]]:
+    leaks = []
+    for name, details in sorted(candidate.get("executables", {}).items()):
+        path = details.get("path") if isinstance(details, dict) else None
+        if _is_host_executable_path(path):
+            leaks.append({"name": name, "path": path})
+    return leaks
+
+
 def _gap_package_program_map(manifest: dict[str, Any]) -> dict[str, Any]:
     return manifest.get("gap", {}).get("gap_package_programs", {})
 
@@ -914,6 +941,9 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
         "feature_collection_errors": feature_collection_errors,
         "feature_differences": feature_differences,
         "executable_differences": executable_differences,
+        "candidate_executable_host_leaks": _candidate_executable_host_leaks(
+            candidate
+        ),
         "candidate_dependency_leaks": _dependency_leaks(candidate),
         "candidate_source_path_leaks": source_path_leaks,
         "gap_package_program_differences": _gap_package_program_differences(
@@ -966,6 +996,10 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
         ("Feature collection issues", diff.get("feature_collection_errors", {})),
         ("Feature presence differences", diff.get("feature_differences", {})),
         ("Executable path differences", diff.get("executable_differences", {})),
+        (
+            "Candidate executable host path leaks",
+            diff.get("candidate_executable_host_leaks", []),
+        ),
         ("Candidate dependency leaks", diff.get("candidate_dependency_leaks", [])),
         ("Candidate source path leaks", diff.get("candidate_source_path_leaks", {})),
         (
