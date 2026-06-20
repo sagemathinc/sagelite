@@ -712,6 +712,53 @@ def test_qepcad_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     assert feature.absolute_filename() == os.fspath(executable)
 
 
+def test_qepcad_interface_command_uses_sagelite_companion(monkeypatch, tmp_path):
+    package = tmp_path / "sagelite_qepcad"
+    root = package / "data" / "root"
+    executable = root / "bin" / "qepcad"
+    help_file = root / "share" / "qepcad" / "qepcad.help"
+    qepcadrc = root / "etc" / "default.qepcadrc"
+    executable.parent.mkdir(parents=True)
+    help_file.parent.mkdir(parents=True)
+    qepcadrc.parent.mkdir(parents=True)
+    package.mkdir(exist_ok=True)
+    (package / "__init__.py").write_text("")
+    (package / "runtime.py").write_text(
+        "from pathlib import Path\n\n"
+        "def root_dir():\n"
+        "    return Path(__file__).resolve().parent / 'data' / 'root'\n\n"
+        "def executable_path():\n"
+        "    return root_dir() / 'bin' / 'qepcad'\n\n"
+        "def help_path():\n"
+        "    return root_dir() / 'share' / 'qepcad' / 'qepcad.help'\n\n"
+        "def default_qepcadrc_path():\n"
+        "    return root_dir() / 'etc' / 'default.qepcadrc'\n"
+    )
+    executable.write_text("#!/bin/sh\n")
+    executable.chmod(0o755)
+    help_file.write_text("d-setting\n")
+    qepcadrc.write_text("")
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    sys.modules.pop("sage.interfaces.qepcad", None)
+    qepcad_interface = _load_source_module(
+        "src/sage/interfaces/qepcad.py", "sage.interfaces.qepcad"
+    )
+
+    assert qepcad_interface._qepcad_root() == os.fspath(root)
+    assert qepcad_interface._qepcad_executable() == os.fspath(executable)
+    assert qepcad_interface._qepcad_help_path() == os.fspath(help_file)
+    assert qepcad_interface._qepcad_default_qepcadrc_path() == os.fspath(qepcadrc)
+    quoted_root = qepcad_interface.shlex.quote(os.fspath(root))
+    quoted_executable = qepcad_interface.shlex.quote(os.fspath(executable))
+    assert qepcad_interface._qepcad_cmd() == (
+        f"env qe={quoted_root} {quoted_executable} "
+    )
+    assert qepcad_interface._qepcad_cmd(memcells=8000000) == (
+        f"env qe={quoted_root} {quoted_executable} +N8000000"
+    )
+
+
 def test_palp_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     executable = _write_fake_runtime(
         tmp_path, "sagelite_palp", "poly-4d.x", "executable_path"
