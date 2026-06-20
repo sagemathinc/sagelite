@@ -581,6 +581,56 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert "### Candidate smoke test failures" in markdown
 
 
+def test_compare_manifests_ignores_installed_site_package_source_locations():
+    manifest = _load_manifest()
+    candidate = {
+        "python": {
+            "prefix": "/scratch/sagelite-r2-work/install",
+            "exec_prefix": "/scratch/sagelite-r2-work/install",
+        },
+        "source_inspection": {
+            "sage.rings.rational": {
+                "file": (
+                    "/scratch/sagelite-r2-work/install/lib/python3.12/"
+                    "site-packages/sage/rings/rational.cpython-312-x86_64-linux-gnu.so"
+                ),
+                "inspect_getsourcefile": (
+                    "/scratch/sagelite-r2-work/install/lib/python3.12/"
+                    "site-packages/sage/rings/rational.pyx"
+                ),
+                "sage_getfile_relative": "sage/rings/rational.pyx",
+            }
+        }
+    }
+
+    diff = manifest.compare_manifests({}, candidate)
+
+    assert diff["candidate_source_path_leaks"] == {}
+
+
+def test_compare_manifests_reports_build_tree_source_metadata():
+    manifest = _load_manifest()
+    candidate = {
+        "python": {
+            "prefix": "/scratch/sagelite-r2-work/install",
+            "exec_prefix": "/scratch/sagelite-r2-work/install",
+        },
+        "source_inspection": {
+            "sage.rings.rational": {
+                "file": (
+                    "/scratch/sagelite-r2-work/install/lib/python3.12/"
+                    "site-packages/sage/rings/rational.cpython-312-x86_64-linux-gnu.so"
+                ),
+                "sage_getfile_relative": "/scratch/build/src/sage/rings/rational.pyx",
+            }
+        }
+    }
+
+    diff = manifest.compare_manifests({}, candidate)
+
+    assert diff["candidate_source_path_leaks"] == candidate["source_inspection"]
+
+
 def test_compare_manifests_reports_feature_collection_errors_without_null_diffs():
     manifest = _load_manifest()
     reference = {

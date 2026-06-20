@@ -284,6 +284,39 @@ def _path_is_under(path: Path, root: Path) -> bool:
     return path == root or root in path.parents
 
 
+SOURCE_INSPECTION_LEAK_FIELDS = (
+    "inspect_getsourcefile",
+    "sage_getfile_relative",
+    "sage_getfile_relative_error",
+)
+
+
+def _source_inspection_path_leak(entry: object, allowed_roots: list[Path]) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    values = [entry.get(field) for field in SOURCE_INSPECTION_LEAK_FIELDS]
+    if "error" in entry:
+        values.append(entry.get("error"))
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        if not any(
+            marker in value
+            for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
+        ):
+            continue
+        try:
+            resolved = Path(value).resolve()
+        except OSError:
+            resolved = None
+        if resolved is not None and any(
+            _path_is_under(resolved, root) for root in allowed_roots
+        ):
+            continue
+        return True
+    return False
+
+
 def _manifest_runtime_leak_summary(path: Path) -> dict[str, object]:
     if not path.is_file():
         return {"available": False, "reason": "manifest not created"}
@@ -314,13 +347,19 @@ def _manifest_runtime_leak_summary(path: Path) -> dict[str, object]:
                 }
             )
 
+    python = manifest.get("python", {})
+    python_roots = []
+    if isinstance(python, dict):
+        python_roots = [
+            Path(value).resolve()
+            for value in [python.get("prefix"), python.get("exec_prefix")]
+            if value
+        ]
+
     source_path_leaks = {
         name: entry
         for name, entry in manifest.get("source_inspection", {}).items()
-        if any(
-            marker in str(entry)
-            for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
-        )
+        if _source_inspection_path_leak(entry, python_roots)
     }
 
     gap_host_paths = []
@@ -349,18 +388,12 @@ def _manifest_runtime_leak_summary(path: Path) -> dict[str, object]:
     )
 
     python_path_leaks = []
-    python = manifest.get("python", {})
     if isinstance(python, dict):
-        prefixes = [
-            Path(value).resolve()
-            for value in [python.get("prefix"), python.get("exec_prefix")]
-            if value
-        ]
         for entry in python.get("path", []):
             if not isinstance(entry, str):
                 continue
             resolved = Path(entry).resolve()
-            if any(_path_is_under(resolved, prefix) for prefix in prefixes):
+            if any(_path_is_under(resolved, root) for root in python_roots):
                 continue
             if any(marker in entry for marker in ["/project/", "/tmp/", ".mesonpy-"]):
                 python_path_leaks.append(entry)

@@ -368,6 +368,17 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                             }
                         ],
                         "source_inspection": {
+                            "sage.rings.integer": {
+                                "file": (
+                                    "/tmp/sagelite-install/lib/python3.12/"
+                                    "site-packages/sage/rings/integer.cpython-312-x86_64-linux-gnu.so"
+                                ),
+                                "inspect_getsourcefile": (
+                                    "/tmp/sagelite-install/lib/python3.12/"
+                                    "site-packages/sage/rings/integer.pyx"
+                                ),
+                                "sage_getfile_relative": "sage/rings/integer.pyx",
+                            },
                             "sage.rings.rational": {
                                 "sage_getfile_relative": "/scratch/build/src/sage/rings/rational.pyx"
                             }

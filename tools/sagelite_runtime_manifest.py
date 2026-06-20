@@ -829,6 +829,50 @@ def collect_source_inspection(modules: list[str]) -> dict[str, Any]:
     return data
 
 
+SOURCE_INSPECTION_LEAK_FIELDS = (
+    "inspect_getsourcefile",
+    "sage_getfile_relative",
+    "sage_getfile_relative_error",
+)
+
+
+def _source_inspection_path_leak(entry: Any, allowed_roots: list[Path]) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    values = [entry.get(field) for field in SOURCE_INSPECTION_LEAK_FIELDS]
+    if "error" in entry:
+        values.append(entry.get("error"))
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        if not any(
+            marker in value
+            for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
+        ):
+            continue
+        try:
+            resolved = Path(value).resolve()
+        except OSError:
+            resolved = None
+        if resolved is not None and any(
+            _path_is_under(resolved, root) for root in allowed_roots
+        ):
+            continue
+        return True
+    return False
+
+
+def _manifest_python_roots(manifest: dict[str, Any]) -> list[Path]:
+    python = manifest.get("python", {})
+    if not isinstance(python, dict):
+        return []
+    return [
+        Path(value).resolve()
+        for value in [python.get("prefix"), python.get("exec_prefix")]
+        if isinstance(value, str) and value
+    ]
+
+
 def _load_native_catalog() -> dict[str, list[str]]:
     catalog_path = TOOLS_DIR / "sagelite_native_wheel_catalog.py"
     try:
@@ -1204,13 +1248,11 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
                 "candidate": cand.get("path"),
             }
 
+    allowed_source_roots = _manifest_python_roots(candidate)
     source_path_leaks = {
         name: entry
         for name, entry in candidate.get("source_inspection", {}).items()
-        if any(
-            marker in str(entry)
-            for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
-        )
+        if _source_inspection_path_leak(entry, allowed_source_roots)
     }
 
     return {
