@@ -55,6 +55,7 @@ REQUIRED_NATIVE_LIBRARY_PREFIXES = [
     "libbrial_groebner",
     "libcliquer",
     "libcoxeter3",
+    "libec-",
     "libhomfly",
     "libmtx",
     "libntl",

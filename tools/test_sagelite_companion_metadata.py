@@ -1330,6 +1330,8 @@ def test_release_workflow_verifies_standard_native_libraries():
     assert "libbrial_groebner" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libec-" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libec" not in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libbliss" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcliquer" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
@@ -3711,6 +3713,8 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "libbrial_groebner" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libec-" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libec" not in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libbliss" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcliquer" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
