@@ -213,6 +213,33 @@ def test_collect_runtime_smoke_tests_can_be_disabled():
     }
 
 
+def test_collect_runtime_smoke_tests_checks_guava_wtdist_and_leon(monkeypatch):
+    manifest = _load_manifest()
+    probes = []
+
+    monkeypatch.setattr(
+        manifest,
+        "collect_required_native_import_smokes",
+        lambda timeout: {"modules": {}},
+    )
+
+    def fake_python_probe(code, timeout):
+        probes.append((code, timeout))
+        return {"returncode": 0, "stdout": "", "stderr": "", "error": None}
+
+    monkeypatch.setattr(manifest, "_run_python_probe", fake_python_probe)
+
+    result = manifest.collect_runtime_smoke_tests(7.0)
+
+    gap_code, gap_timeout = probes[0]
+    assert gap_timeout == 7.0
+    assert 'DirectoriesPackagePrograms("guava")' in gap_code
+    assert 'path / "wtdist"' in gap_code
+    assert 'weight_distribution(algorithm="leon")' in gap_code
+    assert "wtdist_executable" in gap_code
+    assert result["gap_guava"]["returncode"] == 0
+
+
 def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):
     manifest = _load_manifest()
     package = tmp_path / "gaproot" / "pkg" / "guava-3.17"

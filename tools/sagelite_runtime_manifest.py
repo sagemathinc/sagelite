@@ -885,10 +885,29 @@ def collect_runtime_smoke_tests(timeout: float | None = 10.0) -> dict[str, Any]:
         "required_native_imports": collect_required_native_import_smokes(timeout),
         "gap_guava": _run_python_probe(
             """
+import os
+from pathlib import Path
 from sage.libs.gap.libgap import libgap
+from sage.coding.linear_code import LinearCode
+from sage.matrix.constructor import matrix
+from sage.rings.finite_rings.finite_field_constructor import GF
 loaded = libgap.LoadPackage("guava")
 program_dirs = libgap.eval('DirectoriesPackagePrograms("guava")')
-print({"loaded": bool(loaded), "program_dirs": str(program_dirs)})
+program_dir_paths = [Path(str(path).strip('"')) for path in program_dirs]
+wtdist_paths = [path / "wtdist" for path in program_dir_paths]
+wtdist_executable = any(path.is_file() and os.access(path, os.X_OK) for path in wtdist_paths)
+code = LinearCode(matrix(GF(2), [[1, 0, 1], [0, 1, 1]]))
+weight_distribution = code.weight_distribution(algorithm="leon")
+result = {
+    "loaded": bool(loaded),
+    "program_dirs": str(program_dirs),
+    "wtdist_paths": [str(path) for path in wtdist_paths],
+    "wtdist_executable": wtdist_executable,
+    "weight_distribution": weight_distribution,
+}
+print(result)
+if not loaded or not wtdist_executable or weight_distribution != [1, 0, 3, 0]:
+    raise SystemExit(1)
 """,
             timeout,
         ),
