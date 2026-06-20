@@ -175,6 +175,72 @@ def _check_pari_runtime_roundtrip():
     return _run_subprocess_probe(_PARI_RUNTIME_PROBE, "PARI runtime probe")
 
 
+_FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES = [
+    "sage.graphs.bliss",
+    "sage.graphs.cliquer",
+    "sage.graphs.graph_decompositions.rankwidth",
+    "sage.graphs.graph_decompositions.tdlib",
+    "sage.graphs.mcqd",
+    "sage.graphs.planarity",
+    "sage.libs.braiding",
+    "sage.libs.coxeter3.coxeter",
+    "sage.libs.eclib.mwrank",
+    "sage.libs.eclib.newforms",
+    "sage.libs.homfly",
+    "sage.libs.meataxe",
+    "sage.libs.ntl.error",
+    "sage.libs.sirocco",
+    "sage.libs.symmetrica.symmetrica",
+    "sage.numerical.backends.glpk_backend",
+    "sage.numerical.backends.glpk_exact_backend",
+    "sage.numerical.backends.glpk_graph_backend",
+    "sage.rings.polynomial.pbori.pbori",
+]
+
+
+def _required_native_import_modules() -> list[str]:
+    """
+    Return the native import surface expected from Linux sagelite wheels.
+
+    Source checkouts keep the authoritative release catalog in ``tools/``.
+    Installed wheels do not ship that helper, so keep a synchronized fallback
+    list in this self-test.
+    """
+    for parent in Path(__file__).resolve().parents:
+        catalog_path = parent / "tools" / "sagelite_native_wheel_catalog.py"
+        if not catalog_path.is_file():
+            continue
+
+        spec = importlib.util.spec_from_file_location(
+            "sagelite_native_wheel_catalog", catalog_path
+        )
+        if spec is None or spec.loader is None:
+            break
+        catalog_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(catalog_module)
+        return list(catalog_module.catalog()["required_native_import_modules"])
+
+    return list(_FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES)
+
+
+def _check_required_native_imports():
+    failures = []
+    modules = _required_native_import_modules()
+    for module_name in modules:
+        try:
+            importlib.import_module(module_name)
+        except Exception as exc:  # noqa: BLE001 - report all broken imports together
+            failures.append(f"{module_name}: {type(exc).__name__}: {exc}")
+
+    if failures:
+        raise RuntimeError(
+            "required sagelite native modules failed to import:\n  "
+            + "\n  ".join(failures)
+        )
+
+    return f"{len(modules)} required native modules import"
+
+
 def _check_factor():
     from sage.all import factor
 
@@ -1492,6 +1558,8 @@ def main(argv: list[str] | None = None) -> int:
     if not _run_check("PARI runtime conversion", _check_pari_runtime_roundtrip):
         return 1
     if not _run_check("Maxima library runtime", _check_maxima_runtime):
+        return 1
+    if not _run_check("required native imports", _check_required_native_imports):
         return 1
 
     checks = [

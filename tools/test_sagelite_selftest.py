@@ -31,6 +31,16 @@ def _load_selftest():
     return module
 
 
+def _load_native_catalog():
+    path = ROOT / "tools" / "sagelite_native_wheel_catalog.py"
+    spec = importlib.util.spec_from_file_location("sagelite_native_wheel_catalog", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_selftest_rejects_private_cypari_pari_runtime(monkeypatch, tmp_path):
     selftest = _load_selftest()
     package_dir = tmp_path / "site-packages" / "cypari2"
@@ -293,6 +303,70 @@ def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
     ]
 
 
+def test_selftest_rejects_required_native_import_failures(monkeypatch):
+    selftest = _load_selftest()
+
+    def import_module(name):
+        if name == "broken.module":
+            raise ImportError("libbroken.so: cannot open shared object file")
+        return object()
+
+    monkeypatch.setattr(
+        selftest,
+        "_required_native_import_modules",
+        lambda: ["ok.module", "broken.module"],
+    )
+    monkeypatch.setattr(selftest.importlib, "import_module", import_module)
+
+    with pytest.raises(RuntimeError, match="required sagelite native modules"):
+        selftest._check_required_native_imports()
+
+
+def test_selftest_accepts_required_native_imports(monkeypatch):
+    selftest = _load_selftest()
+
+    monkeypatch.setattr(
+        selftest,
+        "_required_native_import_modules",
+        lambda: ["ok.module", "other.module"],
+    )
+    monkeypatch.setattr(selftest.importlib, "import_module", lambda name: object())
+
+    assert (
+        selftest._check_required_native_imports()
+        == "2 required native modules import"
+    )
+
+
+def test_selftest_native_import_fallback_matches_catalog():
+    selftest = _load_selftest()
+    catalog = _load_native_catalog()
+
+    assert selftest._FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES == (
+        catalog.REQUIRED_NATIVE_IMPORT_MODULES
+    )
+
+
+def test_selftest_stops_after_required_native_import_failure(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "required native imports"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    assert selftest.main([]) == 1
+    assert calls == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "required native imports",
+    ]
+
+
 def test_selftest_maxima_probe_exercises_runtime_parity_checks():
     selftest = _load_selftest()
     probe = selftest._MAXIMA_RUNTIME_PROBE
@@ -322,6 +396,14 @@ def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
         "PARI runtime packaging",
         "PARI runtime conversion",
         "Maxima library runtime",
+        "required native imports",
+    ]
+    assert calls[:6] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "required native imports",
         "import sage.all",
     ]
     assert calls.index("Maxima library runtime") < calls.index("symbolic integration")
