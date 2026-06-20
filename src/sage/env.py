@@ -433,6 +433,11 @@ def _fplll_default_strategy_file(default_strategy_path, default_strategy) -> str
     ``BKZ.DEFAULT_STRATEGY``.  When that file is stale, prefer the optional
     ``sagelite-fplll-data`` companion package.
     """
+    for variable in ("SAGE_FPLLL_DEFAULT_STRATEGY", "FPLLL_DEFAULT_STRATEGY"):
+        override = os.environ.get(variable)
+        if override and os.path.isfile(override):
+            return override
+
     strategy = os.path.normpath(
         os.path.join(
             os.fsdecode(default_strategy_path),
@@ -449,6 +454,41 @@ def _fplll_default_strategy_file(default_strategy_path, default_strategy) -> str
         return bundled_strategy
 
     return strategy
+
+
+def _bootstrap_sagelite_fplll_data_runtime() -> None:
+    """
+    Seed FPLLL strategy data from an optional companion package.
+
+    Binary ``fpylll`` wheels can expose an absolute build-prefix strategy path.
+    When that path is stale, update both the process environment and fpylll's
+    Python-level defaults so direct fpylll users see the relocatable companion
+    strategy data.
+    """
+    try:
+        from fpylll import BKZ
+        import fpylll.config as fpylll_config
+    except ImportError:
+        return
+
+    default_strategy = (
+        getattr(fpylll_config, "default_strategy", None) or "default.json"
+    )
+    default_strategy_path = getattr(fpylll_config, "default_strategy_path", "")
+    strategy = _fplll_default_strategy_file(default_strategy_path, default_strategy)
+    if not os.path.isfile(strategy):
+        return
+
+    strategy_dir = os.path.dirname(strategy)
+    os.environ.setdefault("SAGE_FPLLL_DEFAULT_STRATEGY", strategy)
+    os.environ.setdefault("FPLLL_DEFAULT_STRATEGY", strategy)
+
+    strategy_bytes = os.fsencode(strategy)
+    strategy_dir_bytes = os.fsencode(strategy_dir)
+    fpylll_config.default_strategy = strategy_bytes
+    fpylll_config.default_strategy_path = strategy_dir_bytes
+    BKZ.DEFAULT_STRATEGY = strategy_bytes
+    BKZ.DEFAULT_STRATEGY_PATH = strategy_dir_bytes
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:
@@ -1364,6 +1404,7 @@ SAGE_PKG_CONFIG_PATH = var("SAGE_PKG_CONFIG_PATH")
 SAGE_DATA_PATH = var("SAGE_DATA_PATH")
 _bootstrap_sagelite_pari_data_runtime()
 GP_DATA_DIR = var("GP_DATA_DIR")
+_bootstrap_sagelite_fplll_data_runtime()
 
 # database directories, the default is to search in SAGE_DATA_PATH
 CREMONA_LARGE_DATA_DIR = var(
