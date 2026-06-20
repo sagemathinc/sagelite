@@ -629,12 +629,9 @@ def _gap_root_paths() -> str:
     companion_core_roots = []
     companion_package_roots = []
 
-    configured = os.environ.get("GAP_ROOT_PATHS") or ""
-    for root in configured.split(";"):
+    env_configured = os.environ.get("GAP_ROOT_PATHS") or ""
+    for root in env_configured.split(";"):
         _append_gap_root(env_core_roots, env_package_roots, root)
-
-    if env_core_roots:
-        return _gap_root_path_string(env_core_roots, env_package_roots)
 
     bundled = join(SAGE_EXTCODE, "gap_root")
     if bundled:
@@ -643,8 +640,8 @@ def _gap_root_paths() -> str:
     if bundled_core_roots:
         return _gap_root_path_string(bundled_core_roots, bundled_package_roots)
 
-    configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
-    for root in configured.split(";"):
+    config_configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
+    for root in config_configured.split(";"):
         _append_gap_root(config_core_roots, config_package_roots, root)
 
     companion = _optional_runtime_value(
@@ -654,10 +651,20 @@ def _gap_root_paths() -> str:
         for root in companion.split(";"):
             _append_gap_root(companion_core_roots, companion_package_roots, root)
 
+    env_is_host_system = env_core_roots and all(
+        _is_host_system_gap_root(root) for root in env_core_roots
+    )
     config_is_host_system = config_core_roots and all(
         _is_host_system_gap_root(root) for root in config_core_roots
     )
-    if companion_core_roots and (not config_core_roots or config_is_host_system):
+    use_companion_roots = companion_core_roots and (
+        not env_core_roots
+        or env_is_host_system
+    ) and (
+        not config_core_roots
+        or config_is_host_system
+    )
+    if use_companion_roots:
         for root in _registered_gap_root_paths():
             _append_gap_root(companion_core_roots, companion_package_roots, root)
 
@@ -665,6 +672,9 @@ def _gap_root_paths() -> str:
             _append_gap_root(companion_core_roots, companion_package_roots, root)
 
         return _gap_root_path_string(companion_core_roots, companion_package_roots)
+
+    if env_core_roots:
+        return _gap_root_path_string(env_core_roots, env_package_roots)
 
     return _gap_root_path_string(config_core_roots, config_package_roots)
 
