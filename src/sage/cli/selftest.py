@@ -336,6 +336,35 @@ GAP_PACKAGE_COMPANIONS = [
 ]
 
 
+_GAP_GUAVA_RUNTIME_PROBE = """
+import os
+from pathlib import Path
+
+from sage.coding.linear_code import LinearCode
+from sage.libs.gap.libgap import libgap
+from sage.matrix.constructor import matrix
+from sage.rings.finite_rings.finite_field_constructor import GF
+
+loaded = libgap.LoadPackage("guava")
+program_dirs = libgap.DirectoriesPackagePrograms("guava")
+program_dir_paths = [Path(str(path).strip('"')) for path in program_dirs]
+wtdist_paths = [path / "wtdist" for path in program_dir_paths]
+wtdist_executable = any(
+    path.is_file() and os.access(path, os.X_OK) for path in wtdist_paths
+)
+code = LinearCode(matrix(GF(2), [[1, 0, 1], [0, 1, 1]]))
+weight_distribution = code.weight_distribution(algorithm="leon")
+if not loaded or not wtdist_executable or weight_distribution != [1, 0, 3, 0]:
+    raise RuntimeError(
+        "GUAVA Leon runtime is not usable: "
+        f"loaded={bool(loaded)!r}, "
+        f"wtdist_paths={[str(path) for path in wtdist_paths]!r}, "
+        f"weight_distribution={weight_distribution!r}"
+    )
+print("GUAVA Leon weight distribution available")
+"""
+
+
 def _check_gap_package_runtime(
     package: str,
     module_name: str,
@@ -369,6 +398,15 @@ def _check_gap_package_runtime(
             f"GAP package {display_name} is not available: {feature.reason}"
         )
     return f"GAP package {display_name} available"
+
+
+def _check_gap_guava_leon_runtime():
+    package_status = _check_gap_package_runtime(
+        "guava", "sagelite_gap_package_guava", "GUAVA"
+    )
+    if package_status == "not installed":
+        return package_status
+    return _run_subprocess_probe(_GAP_GUAVA_RUNTIME_PROBE, "GAP GUAVA Leon probe")
 
 
 def _check_cddlib_runtime():
@@ -1596,6 +1634,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             for package, module_name, display_name in GAP_PACKAGE_COMPANIONS
         ],
+        ("GAP GUAVA Leon runtime", _check_gap_guava_leon_runtime),
         ("GAP3 executable runtime", _check_gap3_runtime),
         ("FriCAS executable runtime", _check_fricas_runtime),
         ("Frobby executable runtime", _check_frobby_runtime),

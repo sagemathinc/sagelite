@@ -429,6 +429,84 @@ def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
     assert calls.index("Maxima library runtime") < calls.index("symbolic integration")
 
 
+def test_selftest_gap_guava_probe_exercises_wtdist_and_leon():
+    selftest = _load_selftest()
+    probe = selftest._GAP_GUAVA_RUNTIME_PROBE
+
+    assert 'libgap.LoadPackage("guava")' in probe
+    assert 'libgap.DirectoriesPackagePrograms("guava")' in probe
+    assert 'path / "wtdist"' in probe
+    assert 'weight_distribution(algorithm="leon")' in probe
+    assert "GUAVA Leon runtime is not usable" in probe
+
+
+def test_selftest_gap_guava_leon_skips_without_companion(monkeypatch):
+    selftest = _load_selftest()
+    probes = []
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_gap_package_runtime",
+        lambda package, module_name, display_name: "not installed",
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_run_subprocess_probe",
+        lambda script, description: probes.append((script, description)),
+    )
+
+    assert selftest._check_gap_guava_leon_runtime() == "not installed"
+    assert probes == []
+
+
+def test_selftest_gap_guava_leon_runs_isolated_probe(monkeypatch):
+    selftest = _load_selftest()
+    probes = []
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_gap_package_runtime",
+        lambda package, module_name, display_name: "GAP package GUAVA available",
+    )
+
+    def run_subprocess_probe(script, description="runtime probe", timeout=30):
+        probes.append((script, description, timeout))
+        return "GUAVA Leon weight distribution available"
+
+    monkeypatch.setattr(selftest, "_run_subprocess_probe", run_subprocess_probe)
+
+    assert (
+        selftest._check_gap_guava_leon_runtime()
+        == "GUAVA Leon weight distribution available"
+    )
+    assert probes == [
+        (
+            selftest._GAP_GUAVA_RUNTIME_PROBE,
+            "GAP GUAVA Leon probe",
+            30,
+        )
+    ]
+
+
+def test_selftest_runs_gap_guava_leon_after_gap_package_checks(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return True
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+    monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
+
+    assert selftest.main([]) == 0
+    assert "GAP GUAVA package runtime" in calls
+    assert "GAP GUAVA Leon runtime" in calls
+    assert calls.index("GAP GUAVA package runtime") < calls.index(
+        "GAP GUAVA Leon runtime"
+    )
+
+
 def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
     selftest = _load_selftest()
     calls = []
