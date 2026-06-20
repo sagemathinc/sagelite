@@ -53,6 +53,8 @@ def _msolve_payload(output):
         '[0, [1]]'
         sage: _msolve_payload("\nstatus: retrying\n\n[foo, bar]\n")
         '[foo, bar]'
+        sage: _msolve_payload("[0,\n [[1]]]\nRestarting with another random linear form\n")
+        '[0,\n [[1]]]'
         sage: _msolve_payload("\n")
         Traceback (most recent call last):
         ...
@@ -60,6 +62,7 @@ def _msolve_payload(output):
     """
     payload_lines = []
     found_payload = False
+    bracket_depth = 0
     for raw_line in output.splitlines():
         line = raw_line.strip()
         if not line:
@@ -71,6 +74,9 @@ def _msolve_payload(output):
                 continue
             found_payload = True
         payload_lines.append(raw_line)
+        bracket_depth += raw_line.count("[") - raw_line.count("]")
+        if bracket_depth <= 0:
+            break
 
     if payload_lines:
         return "\n".join(payload_lines).strip()
