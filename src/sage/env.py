@@ -679,6 +679,34 @@ def _bootstrap_sagelite_gap3_runtime() -> None:
         os.environ.setdefault("SAGE_GAP3_COMMAND", os.fspath(command))
 
 
+def _bootstrap_sagelite_fricas_runtime() -> None:
+    """
+    Seed FriCAS runtime variables from an optional companion package.
+
+    Sage's FriCAS interface is pexpect-based and normally discovers ``fricas``
+    on ``PATH``.  Installed ``sagelite`` environments should prefer the
+    matching ``sagelite-fricas-runtime`` companion over host executables unless
+    the user has explicitly selected a FriCAS command.
+    """
+    if os.environ.get("FRICAS") or os.environ.get("FRICAS_COMMAND"):
+        return
+
+    command = _optional_runtime_value("sagelite_fricas.runtime", "executable_path")
+    if not (command and os.path.isfile(command) and os.access(command, os.X_OK)):
+        return
+
+    os.environ.setdefault("FRICAS", os.fspath(command))
+    os.environ.setdefault("FRICAS_COMMAND", os.fspath(command))
+
+    prefix = _optional_runtime_value("sagelite_fricas.runtime", "fricas_prefix")
+    if prefix and os.path.isdir(prefix):
+        os.environ.setdefault("FRICAS_PREFIX", os.fspath(prefix))
+
+    initfile = _optional_runtime_value("sagelite_fricas.runtime", "initfile_path")
+    if initfile and os.path.isfile(initfile):
+        os.environ.setdefault("FRICAS_INITFILE", os.fspath(initfile))
+
+
 def _bootstrap_sagelite_ecm_runtime() -> None:
     """
     Seed ``SAGE_ECMBIN`` from an optional ``sagelite_ecm`` package.
@@ -1424,6 +1452,7 @@ _bootstrap_sagelite_gap_runtime()
 SAGE_GAP_COMMAND = var('SAGE_GAP_COMMAND', None)
 _bootstrap_sagelite_gap3_runtime()
 SAGE_GAP3_COMMAND = var("SAGE_GAP3_COMMAND", "gap3")
+_bootstrap_sagelite_fricas_runtime()
 
 # The semicolon-separated search path for GAP packages. It is passed
 # directly to GAP via the -l flag.

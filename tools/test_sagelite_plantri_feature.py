@@ -565,6 +565,47 @@ def test_fricas_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     assert feature.absolute_filename() == os.fspath(executable)
 
 
+def test_fricas_executable_prefers_companion_over_host_path(monkeypatch, tmp_path):
+    executable = _write_fake_runtime(
+        tmp_path, "sagelite_fricas", "fricas", "executable_path"
+    )
+    system = tmp_path / "system" / "fricas"
+    system.parent.mkdir()
+    system.write_text("#!/bin/sh\n")
+    system.chmod(0o755)
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", os.fspath(system.parent))
+    monkeypatch.delenv("FRICAS", raising=False)
+    monkeypatch.delenv("FRICAS_COMMAND", raising=False)
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_fricas", None)
+    sys.modules.pop("sagelite_fricas.runtime", None)
+
+    feature = FriCAS()
+
+    assert feature.absolute_filename() == os.fspath(executable)
+
+
+def test_fricas_executable_keeps_explicit_environment(monkeypatch, tmp_path):
+    _write_fake_runtime(tmp_path, "sagelite_fricas", "fricas", "executable_path")
+    explicit = tmp_path / "explicit" / "fricas"
+    explicit.parent.mkdir()
+    explicit.write_text("#!/bin/sh\n")
+    explicit.chmod(0o755)
+
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.setenv("FRICAS_COMMAND", os.fspath(explicit))
+    monkeypatch.setattr(sage.features, "SAGE_LOCAL", None)
+    sys.modules.pop("sagelite_fricas", None)
+    sys.modules.pop("sagelite_fricas.runtime", None)
+
+    feature = FriCAS()
+
+    assert feature.absolute_filename() == os.fspath(explicit)
+
+
 def test_planarity_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     executable = _write_fake_runtime(
         tmp_path, "sagelite_planarity", "planarity", "executable_path"

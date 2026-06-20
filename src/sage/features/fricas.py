@@ -51,9 +51,28 @@ class FriCAS(Executable):
         Return the FriCAS executable path.
 
         Normal Sage installations find ``fricas`` on ``PATH``. Wheel
-        installations can also provide it through the optional
-        ``sagelite-fricas-runtime`` companion package.
+        installations prefer an explicit ``FRICAS``/``FRICAS_COMMAND`` value or
+        the optional ``sagelite-fricas-runtime`` companion package before
+        falling back to host-system executables.
         """
+        for variable in ("FRICAS_COMMAND", "FRICAS"):
+            executable = os.environ.get(variable)
+            if (
+                executable
+                and os.path.isfile(executable)
+                and os.access(executable, os.X_OK)
+            ):
+                return os.fspath(executable)
+
+        try:
+            from sagelite_fricas.runtime import executable_path
+        except ImportError:
+            pass
+        else:
+            executable = executable_path()
+            if executable.is_file() and os.access(executable, os.X_OK):
+                return os.fspath(executable)
+
         system_executable = executable_outside_python_prefix(self.executable)
         if system_executable:
             return system_executable
@@ -61,18 +80,7 @@ class FriCAS(Executable):
         try:
             return super().absolute_filename()
         except FeatureNotPresentError as error:
-            original_error = error
-
-        try:
-            from sagelite_fricas.runtime import executable_path
-        except ImportError:
-            raise original_error
-
-        executable = executable_path()
-        if executable.is_file() and os.access(executable, os.X_OK):
-            return os.fspath(executable)
-
-        raise original_error
+            raise error
 
     def get_version(self):
         r"""

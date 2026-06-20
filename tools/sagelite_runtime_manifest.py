@@ -75,6 +75,7 @@ SAGE_ENV_KEYS = [
     "FRICAS",
     "FRICAS_COMMAND",
     "FRICAS_INITFILE",
+    "FRICAS_PREFIX",
     "ALDORROOT",
     "SAGE_FPLLL_DEFAULT_STRATEGY",
     "FPLLL_DEFAULT_STRATEGY",
@@ -482,12 +483,27 @@ def collect_maxima_details() -> dict[str, Any]:
 def collect_fricas_details() -> dict[str, Any]:
     details = {
         key: os.environ.get(key)
-        for key in ["FRICAS", "FRICAS_COMMAND", "FRICAS_INITFILE", "ALDORROOT", "ECLDIR"]
+        for key in [
+            "FRICAS",
+            "FRICAS_COMMAND",
+            "FRICAS_INITFILE",
+            "FRICAS_PREFIX",
+            "ALDORROOT",
+            "ECLDIR",
+        ]
         if os.environ.get(key) is not None
     }
     details["executable"] = shutil.which(
         os.environ.get("FRICAS_COMMAND") or os.environ.get("FRICAS") or "fricas"
     )
+    try:
+        runtime = importlib.import_module("sagelite_fricas.runtime")
+        for attr in ["fricas_prefix", "library_dir", "share_dir", "initfile_path"]:
+            details[f"companion_{attr}"] = _safe_call(
+                f"sagelite_fricas.runtime.{attr}", getattr(runtime, attr)
+            )
+    except Exception as exc:  # noqa: BLE001
+        details["companion_error"] = f"{type(exc).__name__}: {exc}"
     if details.get("executable"):
         details["version_probe"] = _version_probe(details["executable"])
     return details
@@ -725,6 +741,11 @@ RUNTIME_SECTION_COMPARE_KEYS = {
         "FRICAS",
         "FRICAS_COMMAND",
         "FRICAS_INITFILE",
+        "FRICAS_PREFIX",
+        "companion_fricas_prefix",
+        "companion_library_dir",
+        "companion_share_dir",
+        "companion_initfile_path",
         "ALDORROOT",
         "ECLDIR",
     ],

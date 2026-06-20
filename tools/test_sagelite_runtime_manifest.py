@@ -117,6 +117,7 @@ def test_compare_manifests_surfaces_parity_buckets():
         },
         "fricas": {
             "executable": "/sage/local/bin/fricas",
+            "FRICAS_PREFIX": "/sage/local",
             "FRICAS_INITFILE": "/sage/local/lib/fricas/fricas.input",
         },
         "fplll": {
@@ -181,6 +182,7 @@ def test_compare_manifests_surfaces_parity_buckets():
         },
         "fricas": {
             "executable": "/usr/bin/fricas",
+            "FRICAS_PREFIX": "/usr",
             "FRICAS_INITFILE": None,
         },
         "fplll": {
@@ -216,6 +218,10 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert diff["fricas_differences"]["FRICAS_INITFILE"] == {
         "reference": "/sage/local/lib/fricas/fricas.input",
         "candidate": None,
+    }
+    assert diff["fricas_differences"]["FRICAS_PREFIX"] == {
+        "reference": "/sage/local",
+        "candidate": "/usr",
     }
     assert diff["fplll_differences"]["fpylll_config_default_strategy"] == {
         "reference": "/sage/local/share/fplll/strategies/default.json",

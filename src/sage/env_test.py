@@ -31,6 +31,10 @@ def clean_runtime_environment(monkeypatch):
         "FOURTITWO_QSOLVE",
         "FOURTITWO_RAYS",
         "FOURTITWO_ZSOLVE",
+        "FRICAS",
+        "FRICAS_COMMAND",
+        "FRICAS_INITFILE",
+        "FRICAS_PREFIX",
         "GAP_ROOT_PATHS",
         "GFAN_BINS_PREFIX",
         "GP_DATA_DIR",
@@ -213,6 +217,18 @@ def _gap_runtime_command(tmp_path: Path, name: str) -> Path:
     command.write_text("#!/bin/sh\n")
     command.chmod(0o755)
     return command
+
+
+def _fricas_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
+    prefix = tmp_path / name
+    command = prefix / "bin" / "fricas"
+    initfile = prefix / "lib" / "fricas" / "fricas.input"
+    command.parent.mkdir(parents=True)
+    initfile.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    initfile.write_text("-- FriCAS init\n")
+    return prefix, command, initfile
 
 
 def _runtime_bin_prefix(tmp_path: Path, name: str, program: str) -> Path:
@@ -861,6 +877,55 @@ def test_gap3_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
     env._bootstrap_sagelite_gap3_runtime()
 
     assert env.os.environ["SAGE_GAP3_COMMAND"] == str(existing)
+
+
+def test_fricas_runtime_uses_companion(monkeypatch, tmp_path):
+    prefix, command, initfile = _fricas_runtime(tmp_path, "companion")
+
+    for name in ("FRICAS", "FRICAS_COMMAND", "FRICAS_PREFIX", "FRICAS_INITFILE"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_fricas.runtime", "executable_path"): str(command),
+            ("sagelite_fricas.runtime", "fricas_prefix"): str(prefix),
+            ("sagelite_fricas.runtime", "initfile_path"): str(initfile),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_fricas_runtime()
+
+    assert env.os.environ["FRICAS"] == str(command)
+    assert env.os.environ["FRICAS_COMMAND"] == str(command)
+    assert env.os.environ["FRICAS_PREFIX"] == str(prefix)
+    assert env.os.environ["FRICAS_INITFILE"] == str(initfile)
+
+
+def test_fricas_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    existing = _runtime_executable(tmp_path, "existing", "fricas")
+    prefix, command, initfile = _fricas_runtime(tmp_path, "companion")
+
+    monkeypatch.setenv("FRICAS", str(existing))
+    monkeypatch.delenv("FRICAS_COMMAND", raising=False)
+    monkeypatch.delenv("FRICAS_PREFIX", raising=False)
+    monkeypatch.delenv("FRICAS_INITFILE", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_fricas.runtime", "executable_path"): str(command),
+            ("sagelite_fricas.runtime", "fricas_prefix"): str(prefix),
+            ("sagelite_fricas.runtime", "initfile_path"): str(initfile),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_fricas_runtime()
+
+    assert env.os.environ["FRICAS"] == str(existing)
+    assert "FRICAS_COMMAND" not in env.os.environ
+    assert "FRICAS_PREFIX" not in env.os.environ
+    assert "FRICAS_INITFILE" not in env.os.environ
 
 
 def test_maxima_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
