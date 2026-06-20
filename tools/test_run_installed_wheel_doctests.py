@@ -236,7 +236,26 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         assert env["PYTHONNOUSERSITE"] == "1"
         assert "PYTHONPATH" not in env
         if command[1] == str(runner.MANIFEST):
-            Path(command[6]).write_text('{"schema": "manifest"}\n', encoding="utf-8")
+            Path(command[6]).write_text(
+                json.dumps(
+                    {
+                        "schema": "manifest",
+                        "features": {
+                            "features": [
+                                {"name": "gap", "present": True},
+                                {"name": "gap_package_guava", "present": False},
+                                {
+                                    "name": "fricas",
+                                    "present": None,
+                                    "exception": "RuntimeError: probe failed",
+                                },
+                            ]
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
             return subprocess.CompletedProcess(command, 0)
         if command[2] == "sage.doctest":
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
@@ -281,6 +300,15 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
     assert summary["environment"]["PYTHONNOUSERSITE"] == "1"
     assert summary["environment"]["PYTHONPATH_present"] is False
     assert summary["runtime_manifest"]["created"] is True
+    assert summary["features"]["counts"] == {
+        "absent": 1,
+        "errored": 1,
+        "present": 1,
+        "unknown": 0,
+    }
+    assert summary["features"]["present"] == ["gap"]
+    assert summary["features"]["absent"] == ["gap_package_guava"]
+    assert summary["features"]["errored"] == ["fricas"]
     assert summary["wheels"]["installed_wheels"] == [gap_wheel.name]
     assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
     assert summary["wheels"]["wheelhouse_files"][str(wheelhouse)] == [

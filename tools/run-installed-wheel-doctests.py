@@ -140,6 +140,55 @@ def _path_head(env: dict[str, str], limit: int = 8) -> list[str]:
     return [entry for entry in env.get("PATH", "").split(os.pathsep) if entry][:limit]
 
 
+def _manifest_feature_summary(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        return {"available": False, "reason": "manifest not created"}
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad manifests
+        return {
+            "available": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+
+    features = manifest.get("features", {}).get("features", [])
+    if not isinstance(features, list):
+        return {
+            "available": False,
+            "reason": "manifest features section has unexpected shape",
+        }
+
+    groups = {
+        "present": [],
+        "absent": [],
+        "unknown": [],
+        "errored": [],
+    }
+    for feature in features:
+        if not isinstance(feature, dict):
+            continue
+        name = feature.get("name")
+        if not name:
+            continue
+        if feature.get("exception"):
+            groups["errored"].append(name)
+        elif feature.get("present") is True:
+            groups["present"].append(name)
+        elif feature.get("present") is False:
+            groups["absent"].append(name)
+        else:
+            groups["unknown"].append(name)
+
+    for names in groups.values():
+        names.sort()
+
+    return {
+        "available": True,
+        "counts": {name: len(values) for name, values in groups.items()},
+        **groups,
+    }
+
+
 def _runtime_summary(
     args: argparse.Namespace,
     paths: ArtifactPaths,
@@ -191,6 +240,7 @@ def _runtime_summary(
             "path": str(paths.runtime_manifest),
             "created": paths.runtime_manifest.is_file(),
         },
+        "features": _manifest_feature_summary(paths.runtime_manifest),
         "wheels": {
             "wheelhouse_paths": wheelhouse_paths,
             "wheelhouse_files": wheelhouse_files,
