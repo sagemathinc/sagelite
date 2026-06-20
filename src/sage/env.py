@@ -540,6 +540,34 @@ def _append_gap_root(core_roots: list[str], package_roots: list[str], root: str)
         package_roots.append(root)
 
 
+def _is_host_system_gap_root(root: str) -> bool:
+    """
+    Return whether ``root`` is one of the host-system GAP roots.
+
+    Binary sagelite wheels can carry a ``sage.config.GAP_ROOT_PATHS`` value
+    discovered on the build host.  Those roots are useful as a final fallback
+    for source builds, but installed wheels with a companion GAP runtime should
+    not prefer them over the wheel-provided runtime tree.
+    """
+    root = os.path.realpath(root)
+    return root.startswith(
+        (
+            "/usr/lib/gap",
+            "/usr/libexec/gap",
+            "/usr/libexec/x86_64-linux-gnu/gap",
+            "/usr/local/lib/gap",
+            "/usr/local/share/gap",
+            "/usr/share/gap",
+        )
+    )
+
+
+def _gap_root_path_string(core_roots: list[str], package_roots: list[str]) -> str:
+    if core_roots:
+        return ";".join(core_roots + package_roots)
+    return ""
+
+
 def _gap_root_paths() -> str:
     """
     Return GAP root paths, preferring an explicitly configured runtime and
@@ -551,47 +579,53 @@ def _gap_root_paths() -> str:
     GAP package companion wheels can append package-only roots through the
     ``sagemath.gap_root_paths`` entry point group.
     """
-    core_roots = []
-    package_roots = []
+    env_core_roots = []
+    env_package_roots = []
+    bundled_core_roots = []
+    bundled_package_roots = []
+    config_core_roots = []
+    config_package_roots = []
     companion_core_roots = []
     companion_package_roots = []
-    companion_core_used = False
 
     configured = os.environ.get("GAP_ROOT_PATHS") or ""
     for root in configured.split(";"):
-        _append_gap_root(core_roots, package_roots, root)
+        _append_gap_root(env_core_roots, env_package_roots, root)
+
+    if env_core_roots:
+        return _gap_root_path_string(env_core_roots, env_package_roots)
 
     bundled = join(SAGE_EXTCODE, "gap_root")
     if bundled:
-        _append_gap_root(core_roots, package_roots, bundled)
+        _append_gap_root(bundled_core_roots, bundled_package_roots, bundled)
+
+    if bundled_core_roots:
+        return _gap_root_path_string(bundled_core_roots, bundled_package_roots)
 
     configured = getattr(sage.config, "GAP_ROOT_PATHS", "")
     for root in configured.split(";"):
-        _append_gap_root(core_roots, package_roots, root)
+        _append_gap_root(config_core_roots, config_package_roots, root)
 
-    if not core_roots:
-        companion = _optional_runtime_value(
-            "sagelite_gap_runtime.runtime", "gap_root_paths"
-        )
-        if companion:
-            for root in companion.split(";"):
-                _append_gap_root(companion_core_roots, companion_package_roots, root)
-            if companion_core_roots:
-                core_roots.extend(companion_core_roots)
-                package_roots.extend(companion_package_roots)
-                companion_core_used = True
+    companion = _optional_runtime_value(
+        "sagelite_gap_runtime.runtime", "gap_root_paths"
+    )
+    if companion:
+        for root in companion.split(";"):
+            _append_gap_root(companion_core_roots, companion_package_roots, root)
 
-    if companion_core_used:
+    config_is_host_system = config_core_roots and all(
+        _is_host_system_gap_root(root) for root in config_core_roots
+    )
+    if companion_core_roots and (not config_core_roots or config_is_host_system):
         for root in _registered_gap_root_paths():
-            _append_gap_root(core_roots, package_roots, root)
+            _append_gap_root(companion_core_roots, companion_package_roots, root)
 
         for root in _sagelite_gap_package_root_paths():
-            _append_gap_root(core_roots, package_roots, root)
+            _append_gap_root(companion_core_roots, companion_package_roots, root)
 
-    if core_roots:
-        return ";".join(core_roots + package_roots)
+        return _gap_root_path_string(companion_core_roots, companion_package_roots)
 
-    return ""
+    return _gap_root_path_string(config_core_roots, config_package_roots)
 
 
 def _sagelite_gap_package_root_paths() -> set[str]:

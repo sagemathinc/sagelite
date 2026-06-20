@@ -636,6 +636,37 @@ def test_gap_root_paths_does_not_append_registered_package_roots_to_configured_c
     assert env._gap_root_paths().split(";") == [str(configured)]
 
 
+def test_gap_root_paths_prefers_companion_over_host_system_config(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "host-configured")
+    companion = _gap_root(tmp_path, "companion")
+    package = _gap_package_root(tmp_path, "guava", package="guava")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_is_host_system_gap_root",
+        lambda root: root == str(configured),
+    )
+    monkeypatch.setattr(
+        env.importlib_metadata,
+        "entry_points",
+        lambda **kwargs: [_EntryPoint(lambda: package)],
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion)
+        if (module_name, attr_name) == ("sagelite_gap_runtime.runtime", "gap_root_paths")
+        else None,
+    )
+
+    assert env._gap_root_paths().split(";") == [str(companion), str(package)]
+
+
 def test_gap_root_paths_appends_registered_package_roots(monkeypatch, tmp_path):
     core = _gap_root(tmp_path, "core")
     package = _gap_package_root(tmp_path, "grape")
