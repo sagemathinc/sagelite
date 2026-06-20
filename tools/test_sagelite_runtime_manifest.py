@@ -104,6 +104,32 @@ def test_collect_fplll_details_records_sage_resolved_strategy(monkeypatch, tmp_p
     assert details["sage_resolved_default_strategy_exists"] is True
 
 
+def test_ldd_marks_not_found_dependencies_outside_policy(monkeypatch, tmp_path):
+    manifest = _load_manifest()
+    extension = tmp_path / "sage" / "libs" / "missing_dep.so"
+    extension.parent.mkdir(parents=True)
+    extension.write_bytes(b"")
+
+    ldd_stdout = """
+        linux-vdso.so.1 (0x00007ffd00000000)
+        libmissing.so.0 => not found
+        libpython3.12.so.1.0 => /venv/lib/libpython3.12.so.1.0 (0x00007f0000000000)
+    """
+
+    def fake_run_probe(command, timeout=5.0):  # noqa: ARG001
+        if command[0] == "ldd":
+            return manifest.ProbeResult(command, 0, ldd_stdout, "")
+        return manifest.ProbeResult(command, 0, "", "")
+
+    monkeypatch.setattr(manifest, "_run_probe", fake_run_probe)
+
+    ldd = manifest._ldd(extension)
+    missing = ldd["dependencies"][1]
+
+    assert missing == {"name": "libmissing.so.0", "path": "not found"}
+    assert manifest._is_allowed_dependency(missing["path"], [Path("/venv")]) is False
+
+
 def test_compare_manifests_surfaces_parity_buckets():
     manifest = _load_manifest()
     reference = {

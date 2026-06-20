@@ -563,7 +563,11 @@ def _ldd(path: Path) -> dict[str, Any]:
         line = line.strip()
         if "=>" in line:
             name, remainder = line.split("=>", 1)
-            resolved = remainder.strip().split(" ", 1)[0]
+            remainder = remainder.strip()
+            if remainder.startswith("not found"):
+                resolved = "not found"
+            else:
+                resolved = remainder.split(" ", 1)[0]
             dependencies.append({"name": name.strip(), "path": resolved})
         elif line:
             dependencies.append({"name": line.split(" ", 1)[0], "path": None})
@@ -591,7 +595,7 @@ def _dynamic_tags(path: Path) -> dict[str, Any]:
 
 
 def _is_allowed_dependency(path: str | None, allowed_roots: list[Path]) -> bool:
-    if not path or path in {"not", "statically"}:
+    if not path or path == "statically":
         return True
     if path == "not found":
         return False
