@@ -189,6 +189,40 @@ def _manifest_feature_summary(path: Path) -> dict[str, object]:
     }
 
 
+def _analysis_summary(
+    path: Path,
+    *,
+    analyzer_returncode: int | None,
+    limit: int = 12,
+) -> dict[str, object]:
+    summary: dict[str, object] = {
+        "returncode": analyzer_returncode,
+        "path": str(path),
+        "created": path.is_file(),
+    }
+    if not path.is_file():
+        summary["available"] = False
+        summary["reason"] = "analysis not created"
+        return summary
+    try:
+        analysis = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad analysis
+        summary["available"] = False
+        summary["reason"] = f"{type(exc).__name__}: {exc}"
+        return summary
+
+    summary.update(
+        {
+            "available": True,
+            "totals": analysis.get("totals", {}),
+            "category_counts": analysis.get("category_counts", {}),
+            "fingerprint_counts": analysis.get("fingerprint_counts", {}),
+            "top_actionable_buckets": analysis.get("actionable_buckets", [])[:limit],
+        }
+    )
+    return summary
+
+
 def _runtime_summary(
     args: argparse.Namespace,
     paths: ArtifactPaths,
@@ -196,6 +230,8 @@ def _runtime_summary(
     doctest_command: list[str],
     manifest_command: list[str],
     manifest_returncode: int,
+    analyzer_command: list[str] | None = None,
+    analyzer_returncode: int | None = None,
 ) -> dict[str, object]:
     wheelhouse_paths = [str(path) for path in args.wheelhouse]
     wheelhouse_files = {}
@@ -241,6 +277,13 @@ def _runtime_summary(
             "created": paths.runtime_manifest.is_file(),
         },
         "features": _manifest_feature_summary(paths.runtime_manifest),
+        "analysis": {
+            "command": analyzer_command or [],
+            **_analysis_summary(
+                paths.analysis_json,
+                analyzer_returncode=analyzer_returncode,
+            ),
+        },
         "wheels": {
             "wheelhouse_paths": wheelhouse_paths,
             "wheelhouse_files": wheelhouse_files,
@@ -258,6 +301,8 @@ def write_runtime_summary(
     doctest_command: list[str],
     manifest_command: list[str],
     manifest_returncode: int,
+    analyzer_command: list[str] | None = None,
+    analyzer_returncode: int | None = None,
 ) -> None:
     summary = _runtime_summary(
         args,
@@ -266,6 +311,8 @@ def write_runtime_summary(
         doctest_command,
         manifest_command,
         manifest_returncode,
+        analyzer_command,
+        analyzer_returncode,
     )
     paths.runtime_summary.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
@@ -395,14 +442,24 @@ def main(argv: list[str] | None = None) -> int:
             f"installed-wheel doctest run did not create the expected log file: {paths.log}"
         )
 
-    analyzer = _run(
-        build_analyzer_command(
-            args.python,
-            paths,
-            include_stats=paths.stats.is_file(),
-        ),
-        env,
+    analyzer_command = build_analyzer_command(
+        args.python,
+        paths,
+        include_stats=paths.stats.is_file(),
     )
+    analyzer = _run(analyzer_command, env)
+
+    if args.runtime_summary:
+        write_runtime_summary(
+            args,
+            paths,
+            env,
+            doctest_command,
+            manifest_command,
+            manifest.returncode,
+            analyzer_command,
+            analyzer.returncode,
+        )
 
     print(f"log: {paths.log}")
     if paths.stats.is_file():

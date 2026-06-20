@@ -82,6 +82,11 @@ This writes four artifacts per run:
 - the reduced analysis JSON
 - the reduced Markdown summary
 
+Pass `--runtime-summary` to also write a runtime manifest and a JSON runtime
+summary. After analysis completes, the runtime summary includes the analyzer's
+category counts, fingerprint counts, and top actionable buckets so validation
+runs can be triaged without opening the full log first.
+
 ## Update Version Number
 
 Increments the version number in the project. This command is useful when releasing a new version of the project.

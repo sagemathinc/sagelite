@@ -261,6 +261,33 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
             Path(command[7]).write_text("{}\n", encoding="utf-8")
             return subprocess.CompletedProcess(command, 0)
+        if command[1] == str(runner.ANALYZER):
+            Path(command[5]).write_text(
+                json.dumps(
+                    {
+                        "totals": {"modules_failed": 2, "modules_seen": 10},
+                        "category_counts": {"optional-external": 2},
+                        "fingerprint_counts": {"missing-executable": 2},
+                        "actionable_buckets": [
+                            {
+                                "category": "optional-external",
+                                "fingerprint": "missing-executable",
+                                "suggested_package": "sagelite-cddlib-runtime",
+                                "count": 2,
+                                "failed_examples": 2,
+                                "evidence": "standalone executable not found",
+                                "modules": [
+                                    "sage.geometry.polyhedron.backend_cdd",
+                                    "sage.geometry.polyhedron.backend_cdd_rdf",
+                                ],
+                            }
+                        ],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            return subprocess.CompletedProcess(command, 0)
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(runner.subprocess, "run", fake_run)
@@ -309,6 +336,24 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
     assert summary["features"]["present"] == ["gap"]
     assert summary["features"]["absent"] == ["gap_package_guava"]
     assert summary["features"]["errored"] == ["fricas"]
+    assert summary["analysis"]["created"] is True
+    assert summary["analysis"]["available"] is True
+    assert summary["analysis"]["totals"] == {"modules_failed": 2, "modules_seen": 10}
+    assert summary["analysis"]["fingerprint_counts"] == {"missing-executable": 2}
+    assert summary["analysis"]["top_actionable_buckets"] == [
+        {
+            "category": "optional-external",
+            "fingerprint": "missing-executable",
+            "suggested_package": "sagelite-cddlib-runtime",
+            "count": 2,
+            "failed_examples": 2,
+            "evidence": "standalone executable not found",
+            "modules": [
+                "sage.geometry.polyhedron.backend_cdd",
+                "sage.geometry.polyhedron.backend_cdd_rdf",
+            ],
+        }
+    ]
     assert summary["wheels"]["installed_wheels"] == [gap_wheel.name]
     assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
     assert summary["wheels"]["wheelhouse_files"][str(wheelhouse)] == [
