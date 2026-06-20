@@ -66,6 +66,10 @@ python3 tools/analyze-doctest-log.py \
 This command runs `python -m sage.doctest --installed` in the active
 installed-wheel environment, captures the raw doctest log and stats JSON, and
 then immediately reduces them with `tools/analyze-doctest-log.py`.
+The runner prepends the selected interpreter's `bin` directory to `PATH`, sets
+`PYTHONNOUSERSITE=1`, and removes inherited `PYTHONPATH` and `LD_LIBRARY_PATH`
+so installed-wheel validation does not depend on source-tree imports or manual
+library-path adjustments.
 
 Example:
 
