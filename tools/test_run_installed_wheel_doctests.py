@@ -213,14 +213,38 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     monkeypatch.setenv("PATH", "/usr/bin")
     monkeypatch.setenv("PYTHONPATH", "/home/user/sage/src")
     monkeypatch.setenv("LD_LIBRARY_PATH", "/project/local/lib")
+    monkeypatch.setenv("SAGE_LOCAL", "/home/user/sage/local")
+    monkeypatch.setenv("SAGE_NAUTY_BINS_PREFIX", "/scratch/old-install/bin")
+    monkeypatch.setenv("SAGELITE_MAXIMA_BINDIR", "/scratch/old-maxima/bin")
+    monkeypatch.setenv("MAXIMA", "/home/user/sage/.mesonpy-old/maxima")
+    monkeypatch.setenv("MAXIMA_PREFIX", "/home/user/sage/.mesonpy-old")
+    monkeypatch.setenv("GAP_ROOT_PATHS", "/usr/share/gap")
+    monkeypatch.setenv("FRICAS_COMMAND", "/usr/bin/fricas")
+    monkeypatch.setenv("ALDORROOT", "/usr/lib/aldor")
+    monkeypatch.setenv(
+        "FPLLL_DEFAULT_STRATEGY",
+        "/project/local/share/fplll/default.json",
+    )
     monkeypatch.delenv("PYTHONNOUSERSITE", raising=False)
 
     env = runner.build_clean_environment("/scratch/install/bin/python")
 
     assert env["PATH"] == f"/scratch/install/bin{os.pathsep}/usr/bin"
     assert env["PYTHONNOUSERSITE"] == "1"
-    assert "PYTHONPATH" not in env
-    assert "LD_LIBRARY_PATH" not in env
+    for key in [
+        "PYTHONPATH",
+        "LD_LIBRARY_PATH",
+        "SAGE_LOCAL",
+        "SAGE_NAUTY_BINS_PREFIX",
+        "SAGELITE_MAXIMA_BINDIR",
+        "MAXIMA",
+        "MAXIMA_PREFIX",
+        "GAP_ROOT_PATHS",
+        "FRICAS_COMMAND",
+        "ALDORROOT",
+        "FPLLL_DEFAULT_STRATEGY",
+    ]:
+        assert key not in env
 
 
 def test_manual_companion_packages_parse_hyphenated_wheel_names():

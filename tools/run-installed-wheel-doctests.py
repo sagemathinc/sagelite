@@ -25,6 +25,22 @@ ANALYZER = TOOLS_DIR / "analyze-doctest-log.py"
 MANIFEST = TOOLS_DIR / "sagelite_runtime_manifest.py"
 
 
+RUNTIME_ENV_PREFIXES_TO_REMOVE = (
+    "SAGE_",
+    "SAGELITE_",
+    "MAXIMA_",
+    "FRICAS",
+    "ALDOR",
+    "FPLLL",
+)
+RUNTIME_ENV_KEYS_TO_REMOVE = {
+    "GAP_ROOT_PATHS",
+    "LD_LIBRARY_PATH",
+    "MAXIMA",
+    "PYTHONPATH",
+}
+
+
 @dataclass(frozen=True)
 class ArtifactPaths:
     base: str
@@ -134,9 +150,12 @@ def build_clean_environment(python: str) -> dict[str, str]:
     python_bin = os.fspath(Path(python).resolve().parent)
     path = env.get("PATH", "")
     env["PATH"] = python_bin if not path else f"{python_bin}{os.pathsep}{path}"
+    for key in list(env):
+        if key in RUNTIME_ENV_KEYS_TO_REMOVE or key.startswith(
+            RUNTIME_ENV_PREFIXES_TO_REMOVE
+        ):
+            env.pop(key, None)
     env["PYTHONNOUSERSITE"] = "1"
-    env.pop("PYTHONPATH", None)
-    env.pop("LD_LIBRARY_PATH", None)
     return env
 
 

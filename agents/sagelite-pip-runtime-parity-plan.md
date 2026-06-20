@@ -40,6 +40,8 @@ acceptable output variants, tolerances, or ordering differences.
     `/scratch/sagelite-r2-work/current-validation/sagelite-runtime-manifest-codex-current.json`
   - Fresh raw-wheel baseline:
     `/scratch/sagelite-r2-work/validation-raw-baseline-20260620-154330/README.md`
+  - Scheduled raw-wheel validation:
+    `/scratch/sagelite-r2-work/validation-scheduled-20260620-103219/README.md`
 
 Known facts from the latest investigation:
 
@@ -81,6 +83,14 @@ Known facts from the latest investigation:
   now treats `sage/libs/ntl/error.`, `libntl`, and `sage.libs.ntl.error` as
   required repaired-wheel surface area so manylinux repair validation catches
   this before companion runtime work.
+- A scheduled raw-wheel validation on 2026-06-20 reached manifest collection
+  but `sage.cli.selftest` stopped at the PARI packaging check because cypari2
+  was installed with a private auditwheel PARI runtime. The manifest recorded
+  required native import failures for missing or unresolved repaired-wheel
+  libraries and also showed inherited host runtime variables. The installed
+  doctest runner now strips inherited Sage, Sagelite, Maxima, GAP, FriCAS,
+  Aldor, and fplll runtime environment variables before collecting manifests
+  or running doctests.
 
 ## Reality status
 
@@ -96,6 +106,8 @@ Approximate status as of 2026-06-20:
   implemented; compiled-module source-path leakage and GAP host leakage remain.
 - Phase 5, installed test runner and triage: substantially implemented; the
   next full run should use `--runtime-summary` so the report is self-contained.
+  The runner now sanitizes inherited runtime variables in addition to `PATH`,
+  `PYTHONNOUSERSITE`, `PYTHONPATH`, and `LD_LIBRARY_PATH`.
 - Phase 6, doctest robustness: mostly intentionally deferred.
 - Phase 7, final clean install validation: not achieved.
 
