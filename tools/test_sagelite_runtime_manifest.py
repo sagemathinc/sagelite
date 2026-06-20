@@ -110,6 +110,19 @@ def test_compare_manifests_surfaces_parity_buckets():
                 }
             },
         },
+        "maxima": {
+            "executable": "/sage/local/bin/maxima",
+            "MAXIMA_PREFIX": "/sage/local",
+            "sage_env_MAXIMA_FAS": "/sage/local/lib/ecl/maxima.fas",
+        },
+        "fricas": {
+            "executable": "/sage/local/bin/fricas",
+            "FRICAS_INITFILE": "/sage/local/lib/fricas/fricas.input",
+        },
+        "fplll": {
+            "fpylll_version": "0.6.4",
+            "fpylll_config_default_strategy": "/sage/local/share/fplll/strategies/default.json",
+        },
     }
     candidate = {
         "label": "pip",
@@ -161,6 +174,19 @@ def test_compare_manifests_surfaces_parity_buckets():
                 }
             },
         },
+        "maxima": {
+            "executable": "/usr/bin/maxima",
+            "MAXIMA_PREFIX": "/usr",
+            "sage_env_MAXIMA_FAS": None,
+        },
+        "fricas": {
+            "executable": "/usr/bin/fricas",
+            "FRICAS_INITFILE": None,
+        },
+        "fplll": {
+            "fpylll_version": "0.6.4",
+            "fpylll_config_default_strategy": "/project/local/share/fplll/strategies/default.json",
+        },
     }
 
     diff = manifest.compare_manifests(reference, candidate)
@@ -179,6 +205,27 @@ def test_compare_manifests_surfaces_parity_buckets():
     ] is False
     assert "/usr/share/gap" in diff["candidate_gap_host_leaks"]
     assert "/usr/share/gap/pkg/guava" in diff["candidate_gap_host_leaks"]
+    assert diff["maxima_differences"]["executable"] == {
+        "reference": "/sage/local/bin/maxima",
+        "candidate": "/usr/bin/maxima",
+    }
+    assert diff["maxima_differences"]["sage_env_MAXIMA_FAS"] == {
+        "reference": "/sage/local/lib/ecl/maxima.fas",
+        "candidate": None,
+    }
+    assert diff["fricas_differences"]["FRICAS_INITFILE"] == {
+        "reference": "/sage/local/lib/fricas/fricas.input",
+        "candidate": None,
+    }
+    assert diff["fplll_differences"]["fpylll_config_default_strategy"] == {
+        "reference": "/sage/local/share/fplll/strategies/default.json",
+        "candidate": "/project/local/share/fplll/strategies/default.json",
+    }
+
+    markdown = manifest.render_diff_markdown(diff)
+    assert "### Maxima runtime differences" in markdown
+    assert "### FriCAS runtime differences" in markdown
+    assert "### FPLLL runtime differences" in markdown
 
 
 def test_cli_compare_writes_json_and_markdown(tmp_path):

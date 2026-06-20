@@ -707,6 +707,54 @@ def _gap_package_program_differences(
     return differences
 
 
+RUNTIME_SECTION_COMPARE_KEYS = {
+    "maxima": [
+        "executable",
+        "MAXIMA",
+        "MAXIMA_PREFIX",
+        "MAXIMA_USERDIR",
+        "MAXIMA_FAS",
+        "MAXIMA_IMAGESDIR",
+        "MAXIMA_LAYOUT_AUTOTOOLS",
+        "ECLDIR",
+        "sage_env_MAXIMA_FAS",
+        "sage_env_MAXIMA_PREFIX",
+    ],
+    "fricas": [
+        "executable",
+        "FRICAS",
+        "FRICAS_COMMAND",
+        "FRICAS_INITFILE",
+        "ALDORROOT",
+        "ECLDIR",
+    ],
+    "fplll": [
+        "SAGE_FPLLL_DEFAULT_STRATEGY",
+        "FPLLL_DEFAULT_STRATEGY",
+        "fpylll_version",
+        "fpylll_config_default_strategy",
+        "fpylll_config_default_strategy_path",
+    ],
+}
+
+
+def _runtime_section_differences(
+    reference: dict[str, Any], candidate: dict[str, Any], section: str
+) -> dict[str, Any]:
+    ref_section = reference.get(section, {})
+    cand_section = candidate.get(section, {})
+    differences = {}
+    for key in RUNTIME_SECTION_COMPARE_KEYS[section]:
+        ref_value = ref_section.get(key)
+        cand_value = cand_section.get(key)
+        if ref_value != cand_value:
+            differences[key] = {
+                "reference": ref_value,
+                "candidate": cand_value,
+            }
+    return differences
+
+
 def _is_gap_host_path(path: str | None) -> bool:
     if not path:
         return False
@@ -791,6 +839,15 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
             reference, candidate
         ),
         "candidate_gap_host_leaks": _candidate_gap_host_leaks(candidate),
+        "maxima_differences": _runtime_section_differences(
+            reference, candidate, "maxima"
+        ),
+        "fricas_differences": _runtime_section_differences(
+            reference, candidate, "fricas"
+        ),
+        "fplll_differences": _runtime_section_differences(
+            reference, candidate, "fplll"
+        ),
         "gap": {
             "reference_roots": reference.get("gap", {}).get("sage_env_gap_roots"),
             "candidate_roots": candidate.get("gap", {}).get("sage_env_gap_roots"),
@@ -834,6 +891,9 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
             diff.get("gap_package_program_differences", {}),
         ),
         ("Candidate GAP host path leaks", diff.get("candidate_gap_host_leaks", [])),
+        ("Maxima runtime differences", diff.get("maxima_differences", {})),
+        ("FriCAS runtime differences", diff.get("fricas_differences", {})),
+        ("FPLLL runtime differences", diff.get("fplll_differences", {})),
     ]
     for title, payload in buckets:
         count = len(payload)
