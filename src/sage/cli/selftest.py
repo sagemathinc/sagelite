@@ -727,13 +727,19 @@ from sage.cli.selftest import _check_loaded_ecl_matches_maxima_runtime
 
 _check_loaded_ecl_matches_maxima_runtime()
 
-from sage.all import RR, var
-from sage.interfaces.maxima_lib import maxima_lib
+from sage.all import RR, cos, sin, var
+from sage.interfaces.maxima_lib import maxima, maxima_lib
 
 value = maxima_lib.eval("1+1")
+if "-- Function: gcd" not in str(maxima.help("gcd")):
+    raise RuntimeError("Maxima help is not available")
+if "a[n]:=n*a[n-1]" not in str(maxima.example("arrays")):
+    raise RuntimeError("Maxima examples are not available")
 x = var("x", domain=RR)
 if x.conjugate() != x:
     raise RuntimeError("Maxima-backed symbolic assumptions are not available")
+if maxima_lib.sr_integral(sin(x), x)._sage_() != -cos(x):
+    raise RuntimeError("Maxima library-mode integration is not available")
 print(value)
 """
 

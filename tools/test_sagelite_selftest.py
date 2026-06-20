@@ -3,12 +3,22 @@ from __future__ import annotations
 import importlib.machinery
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _stub_sage_env(monkeypatch, maxima_fas=""):
+    sage = types.ModuleType("sage")
+    sage.__path__ = []
+    env = types.ModuleType("sage.env")
+    env.MAXIMA_FAS = maxima_fas
+    monkeypatch.setitem(sys.modules, "sage", sage)
+    monkeypatch.setitem(sys.modules, "sage.env", env)
 
 
 def _load_selftest():
@@ -224,6 +234,7 @@ def test_selftest_rejects_maxima_fas_with_mismatched_loaded_ecl(
     monkeypatch.setattr(selftest.importlib, "import_module", import_module)
     monkeypatch.setattr(selftest, "_loaded_libecl_paths", lambda: [loaded_libecl])
     monkeypatch.setattr(selftest, "_library_exports_symbol", lambda path, symbol: False)
+    _stub_sage_env(monkeypatch, str(maxima_fas))
 
     with pytest.raises(RuntimeError, match="requires FEstack_advance"):
         selftest._check_loaded_ecl_matches_maxima_runtime()
@@ -255,6 +266,7 @@ def test_selftest_accepts_maxima_fas_with_matching_loaded_ecl(
     monkeypatch.setattr(selftest.importlib, "import_module", import_module)
     monkeypatch.setattr(selftest, "_loaded_libecl_paths", lambda: [loaded_libecl])
     monkeypatch.setattr(selftest, "_library_exports_symbol", lambda path, symbol: True)
+    _stub_sage_env(monkeypatch, str(maxima_fas))
 
     assert (
         selftest._check_loaded_ecl_matches_maxima_runtime()
@@ -279,6 +291,18 @@ def test_selftest_stops_after_maxima_runtime_packaging_failure(monkeypatch):
         "PARI runtime conversion",
         "Maxima library runtime",
     ]
+
+
+def test_selftest_maxima_probe_exercises_runtime_parity_checks():
+    selftest = _load_selftest()
+    probe = selftest._MAXIMA_RUNTIME_PROBE
+
+    assert 'maxima.help("gcd")' in probe
+    assert 'maxima.example("arrays")' in probe
+    assert "maxima_lib.sr_integral(sin(x), x)._sage_()" in probe
+    assert "Maxima help is not available" in probe
+    assert "Maxima examples are not available" in probe
+    assert "Maxima library-mode integration is not available" in probe
 
 
 def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
