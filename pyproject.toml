@@ -155,6 +155,36 @@ requires-python = ">=3.12, <3.15"
 urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
+all-needed-extras = [
+  'sagelite-csdp-runtime >=10.9,<10.10',
+  'sagelite-database-cremona-ellcurve >=10.9,<10.10',
+  'sagelite-database-polytopes-4d >=10.9,<10.10',
+  'sagelite-database-sloane >=10.9,<10.10',
+  'sagelite-database-stein-watkins >=10.9,<10.10',
+  'sagelite-ecl-runtime >=10.9,<10.10',
+  'sagelite-fricas-runtime >=10.9,<10.10',
+  'sagelite-gap-runtime >=10.9.post2,<10.10',
+  'sagelite-gap3-runtime >=10.9.post1,<10.10',
+  'sagelite-giac-runtime >=10.9,<10.10',
+  'sagelite-glucose-runtime >=10.9,<10.10',
+  'sagelite-imagemagick-runtime >=10.9,<10.10',
+  'sagelite-info-runtime >=10.9,<10.10',
+  'sagelite-jmol-runtime >=10.9,<10.10',
+  'sagelite-kenzo-runtime >=10.9,<10.10',
+  'sagelite-kissat-runtime >=10.9,<10.10',
+  'sagelite-lie-runtime >=10.9,<10.10',
+  'sagelite-lrslib-runtime >=10.9,<10.10',
+  'sagelite-maxima-runtime >=10.9.post13,<10.10',
+  'sagelite-meataxe-runtime >=10.9,<10.10',
+  'sagelite-msolve-runtime >=10.9,<10.10',
+  'sagelite-nauty-runtime >=10.9,<10.10',
+  'sagelite-planarity-runtime >=10.9,<10.10',
+  'sagelite-plantri-runtime >=10.9,<10.10',
+  'sagelite-qepcad-runtime >=10.9,<10.10',
+  'sagelite-rubiks-runtime >=10.9,<10.10',
+  'sagelite-sympow-runtime >=10.9,<10.10',
+  'sagelite-tachyon-runtime >=10.9,<10.10',
+]
 R = ['rpy2 >=3.3']
 rpy2 = ['rpy2 >=3.3']
 buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']

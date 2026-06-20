@@ -3765,6 +3765,23 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
     assert extras["maxima"] == [requirement]
     assert requirement not in extras["runtime"]
     assert requirement not in extras["full"]
+    assert requirement in extras["all-needed-extras"]
+
+
+def test_all_needed_extras_match_installed_validation_plan():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    validation_requirements = set(extras["all-needed-extras"])
+
+    assert "sagelite-maxima-runtime >=10.9.post13,<10.10" in validation_requirements
+    assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
+    assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
+    assert "sagelite-msolve-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-database-stein-watkins >=10.9,<10.10" in validation_requirements
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():
