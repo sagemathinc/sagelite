@@ -133,6 +133,7 @@ def build_clean_environment(python: str) -> dict[str, str]:
     env["PATH"] = python_bin if not path else f"{python_bin}{os.pathsep}{path}"
     env["PYTHONNOUSERSITE"] = "1"
     env.pop("PYTHONPATH", None)
+    env.pop("LD_LIBRARY_PATH", None)
     return env
 
 

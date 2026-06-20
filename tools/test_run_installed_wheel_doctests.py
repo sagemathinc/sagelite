@@ -24,12 +24,14 @@ def _load_runner():
 def test_runner_uses_short_installed_doctest_defaults(monkeypatch, tmp_path):
     runner = _load_runner()
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-010203")
+    monkeypatch.setenv("LD_LIBRARY_PATH", "/project/local/lib")
     commands = []
 
     def fake_run(command, check, text, env):
         commands.append(command)
         assert env["PYTHONNOUSERSITE"] == "1"
         assert "PYTHONPATH" not in env
+        assert "LD_LIBRARY_PATH" not in env
         assert env["PATH"].split(os.pathsep)[0] == str(
             Path(sys.executable).resolve().parent
         )
@@ -209,6 +211,7 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     runner = _load_runner()
     monkeypatch.setenv("PATH", "/usr/bin")
     monkeypatch.setenv("PYTHONPATH", "/home/user/sage/src")
+    monkeypatch.setenv("LD_LIBRARY_PATH", "/project/local/lib")
     monkeypatch.delenv("PYTHONNOUSERSITE", raising=False)
 
     env = runner.build_clean_environment("/scratch/install/bin/python")
@@ -216,6 +219,7 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     assert env["PATH"] == f"/scratch/install/bin{os.pathsep}/usr/bin"
     assert env["PYTHONNOUSERSITE"] == "1"
     assert "PYTHONPATH" not in env
+    assert "LD_LIBRARY_PATH" not in env
 
 
 def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):
