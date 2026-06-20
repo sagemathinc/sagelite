@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import importlib.metadata
+import importlib.util
 import inspect
 import json
 import os
@@ -27,6 +28,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+
+TOOLS_DIR = Path(__file__).resolve().parent
 
 DEFAULT_EXECUTABLES = [
     "4ti2",
@@ -216,6 +219,17 @@ def _run_probe(command: list[str], timeout: float = 5.0) -> ProbeResult:
         completed.stdout.strip(),
         completed.stderr.strip(),
     )
+
+
+def _run_python_probe(code: str, timeout: float) -> dict[str, Any]:
+    result = _run_probe([sys.executable, "-c", code], timeout=timeout)
+    return {
+        "command": result.command,
+        "returncode": result.returncode,
+        "stdout": _short_text(result.stdout),
+        "stderr": _short_text(result.stderr),
+        "error": result.error,
+    }
 
 
 def _short_text(text: str, limit: int = 4000) -> str:
@@ -815,6 +829,89 @@ def collect_source_inspection(modules: list[str]) -> dict[str, Any]:
     return data
 
 
+def _load_native_catalog() -> dict[str, list[str]]:
+    catalog_path = TOOLS_DIR / "sagelite_native_wheel_catalog.py"
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "sagelite_native_wheel_catalog", catalog_path
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot load spec for {catalog_path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.catalog()
+    except Exception as exc:  # noqa: BLE001 - manifest should report the issue
+        return {"error": [f"{type(exc).__name__}: {exc}"]}
+
+
+def collect_required_native_import_smokes(timeout: float) -> dict[str, Any]:
+    catalog = _load_native_catalog()
+    if "error" in catalog:
+        return {"catalog_error": catalog["error"][0], "modules": {}}
+
+    results = {}
+    for module_name in catalog["required_native_import_modules"]:
+        code = f"""
+import importlib
+import json
+module = importlib.import_module({module_name!r})
+print(json.dumps({{
+    "module": {module_name!r},
+    "file": getattr(module, "__file__", None),
+    "package": getattr(module, "__package__", None),
+}}))
+"""
+        probe = _run_python_probe(code, timeout)
+        entry: dict[str, Any] = {
+            "present": probe["returncode"] == 0,
+            "returncode": probe["returncode"],
+            "stderr": probe["stderr"],
+            "error": probe["error"],
+        }
+        if probe["stdout"]:
+            try:
+                entry.update(json.loads(probe["stdout"].splitlines()[-1]))
+            except json.JSONDecodeError:
+                entry["stdout"] = probe["stdout"]
+        results[module_name] = entry
+    return {"modules": results}
+
+
+def collect_runtime_smoke_tests(timeout: float | None = 10.0) -> dict[str, Any]:
+    if not timeout:
+        return {"skipped": "smoke timeout disabled"}
+
+    smoke_tests = {
+        "required_native_imports": collect_required_native_import_smokes(timeout),
+        "gap_guava": _run_python_probe(
+            """
+from sage.libs.gap.libgap import libgap
+loaded = libgap.LoadPackage("guava")
+program_dirs = libgap.eval('DirectoriesPackagePrograms("guava")')
+print({"loaded": bool(loaded), "program_dirs": str(program_dirs)})
+""",
+            timeout,
+        ),
+        "maxima_help": _run_python_probe(
+            """
+from sage.interfaces.maxima import maxima
+text = maxima.help("gcd")
+print(str(text)[:200])
+""",
+            timeout,
+        ),
+        "fricas_factor_sage": _run_python_probe(
+            """
+from sage.interfaces.fricas import fricas
+value = fricas("factor(x^2-1)").sage()
+print(value)
+""",
+            timeout,
+        ),
+    }
+    return smoke_tests
+
+
 def collect_manifest(args: argparse.Namespace) -> dict[str, Any]:
     executables = args.executable or collect_default_executables()
     return {
@@ -831,6 +928,7 @@ def collect_manifest(args: argparse.Namespace) -> dict[str, Any]:
         "fplll": collect_fplll_details(),
         "compiled_modules": collect_compiled_modules(args.compiled_limit),
         "source_inspection": collect_source_inspection(args.inspect_module),
+        "smoke_tests": collect_runtime_smoke_tests(args.smoke_timeout),
     }
 
 
@@ -1005,6 +1103,21 @@ def _runtime_section_differences(
     return differences
 
 
+def _smoke_failures(manifest: dict[str, Any]) -> dict[str, Any]:
+    smoke_tests = manifest.get("smoke_tests", {})
+    failures = {}
+    native = smoke_tests.get("required_native_imports", {})
+    for module_name, result in native.get("modules", {}).items():
+        if not result.get("present"):
+            failures[f"required_native_imports.{module_name}"] = result
+    for name, result in smoke_tests.items():
+        if name == "required_native_imports":
+            continue
+        if isinstance(result, dict) and result.get("returncode") not in (None, 0):
+            failures[name] = result
+    return failures
+
+
 def _is_gap_host_path(path: str | None) -> bool:
     if not path:
         return False
@@ -1115,6 +1228,7 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
         "fplll_differences": _runtime_section_differences(
             reference, candidate, "fplll"
         ),
+        "candidate_smoke_failures": _smoke_failures(candidate),
         "gap": {
             "reference_roots": reference.get("gap", {}).get("sage_env_gap_roots"),
             "candidate_roots": candidate.get("gap", {}).get("sage_env_gap_roots"),
@@ -1167,6 +1281,7 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
         ("Maxima runtime differences", diff.get("maxima_differences", {})),
         ("FriCAS runtime differences", diff.get("fricas_differences", {})),
         ("FPLLL runtime differences", diff.get("fplll_differences", {})),
+        ("Candidate smoke test failures", diff.get("candidate_smoke_failures", {})),
     ]
     for title, payload in buckets:
         count = len(payload)
@@ -1230,6 +1345,12 @@ def _make_parser() -> argparse.ArgumentParser:
         type=float,
         default=10.0,
         help="seconds allowed for each Sage feature probe; use 0 to disable",
+    )
+    collect.add_argument(
+        "--smoke-timeout",
+        type=float,
+        default=10.0,
+        help="seconds allowed for each runtime smoke probe; use 0 to skip",
     )
 
     compare = subparsers.add_parser("compare", help="compare two manifests")

@@ -127,6 +127,7 @@ def test_collect_manifest_uses_discovered_default_executables(monkeypatch):
     monkeypatch.setattr(manifest, "collect_fplll_details", lambda: {})
     monkeypatch.setattr(manifest, "collect_compiled_modules", lambda limit: [])
     monkeypatch.setattr(manifest, "collect_source_inspection", lambda modules: {})
+    monkeypatch.setattr(manifest, "collect_runtime_smoke_tests", lambda timeout: {})
 
     def fake_collect_executables(names):
         seen["names"] = names
@@ -141,11 +142,75 @@ def test_collect_manifest_uses_discovered_default_executables(monkeypatch):
             feature_timeout=0,
             compiled_limit=0,
             inspect_module=[],
+            smoke_timeout=0,
         )
     )
 
     assert seen["names"] == ["gap", "points2alltriangs"]
     assert sorted(result["executables"]) == ["gap", "points2alltriangs"]
+
+
+def test_collect_required_native_import_smokes_runs_imports_out_of_process(monkeypatch):
+    manifest = _load_manifest()
+    commands = []
+
+    monkeypatch.setattr(
+        manifest,
+        "_load_native_catalog",
+        lambda: {
+            "required_native_import_modules": [
+                "sage.libs.coxeter3.coxeter",
+                "sage.libs.braiding",
+            ]
+        },
+    )
+
+    def fake_python_probe(code, timeout):
+        commands.append((code, timeout))
+        if "sage.libs.braiding" in code:
+            return {
+                "returncode": 1,
+                "stdout": "",
+                "stderr": "ImportError: libbraiding.so not found",
+                "error": None,
+            }
+        return {
+            "returncode": 0,
+            "stdout": manifest.json.dumps(
+                {
+                    "module": "sage.libs.coxeter3.coxeter",
+                    "file": "/venv/lib/python3.12/site-packages/sage/libs/coxeter3/coxeter.so",
+                    "package": "sage.libs.coxeter3",
+                }
+            ),
+            "stderr": "",
+            "error": None,
+        }
+
+    monkeypatch.setattr(manifest, "_run_python_probe", fake_python_probe)
+
+    result = manifest.collect_required_native_import_smokes(3.5)
+
+    assert len(commands) == 2
+    assert commands[0][1] == 3.5
+    assert result["modules"]["sage.libs.coxeter3.coxeter"]["present"] is True
+    assert result["modules"]["sage.libs.coxeter3.coxeter"]["file"].endswith(
+        "coxeter.so"
+    )
+    assert result["modules"]["sage.libs.braiding"] == {
+        "present": False,
+        "returncode": 1,
+        "stderr": "ImportError: libbraiding.so not found",
+        "error": None,
+    }
+
+
+def test_collect_runtime_smoke_tests_can_be_disabled():
+    manifest = _load_manifest()
+
+    assert manifest.collect_runtime_smoke_tests(0) == {
+        "skipped": "smoke timeout disabled"
+    }
 
 
 def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):
@@ -329,6 +394,14 @@ def test_compare_manifests_surfaces_parity_buckets():
             "sage_resolved_default_strategy": "/sage/local/share/fplll/strategies/default.json",
             "sage_resolved_default_strategy_exists": True,
         },
+        "smoke_tests": {
+            "required_native_imports": {
+                "modules": {
+                    "sage.libs.coxeter3.coxeter": {"present": True},
+                }
+            },
+            "maxima_help": {"returncode": 0},
+        },
     }
     candidate = {
         "label": "pip",
@@ -403,6 +476,22 @@ def test_compare_manifests_surfaces_parity_buckets():
             "sage_resolved_default_strategy": "/project/local/share/fplll/strategies/default.json",
             "sage_resolved_default_strategy_exists": False,
         },
+        "smoke_tests": {
+            "required_native_imports": {
+                "modules": {
+                    "sage.libs.coxeter3.coxeter": {"present": True},
+                    "sage.libs.braiding": {
+                        "present": False,
+                        "returncode": 1,
+                        "stderr": "ImportError: libbraiding.so not found",
+                    },
+                }
+            },
+            "maxima_help": {
+                "returncode": 1,
+                "stderr": "Module error: Don't know how to REQUIRE SB-BSD-SOCKETS",
+            },
+        },
     }
 
     diff = manifest.compare_manifests(reference, candidate)
@@ -451,6 +540,10 @@ def test_compare_manifests_surfaces_parity_buckets():
         "reference": True,
         "candidate": False,
     }
+    assert "required_native_imports.sage.libs.braiding" in diff[
+        "candidate_smoke_failures"
+    ]
+    assert diff["candidate_smoke_failures"]["maxima_help"]["returncode"] == 1
 
     markdown = manifest.render_diff_markdown(diff)
     assert "### Candidate executable host path leaks" in markdown
@@ -458,6 +551,7 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert "### Maxima runtime differences" in markdown
     assert "### FriCAS runtime differences" in markdown
     assert "### FPLLL runtime differences" in markdown
+    assert "### Candidate smoke test failures" in markdown
 
 
 def test_compare_manifests_reports_feature_collection_errors_without_null_diffs():
@@ -500,6 +594,7 @@ def test_cli_compare_writes_json_and_markdown(tmp_path):
         "packages": [],
         "features": {"features": []},
         "executables": {},
+        "smoke_tests": {},
     }
     candidate = {
         "label": "candidate",
@@ -507,6 +602,7 @@ def test_cli_compare_writes_json_and_markdown(tmp_path):
         "packages": [],
         "features": {"features": []},
         "executables": {},
+        "smoke_tests": {},
     }
     ref_path = tmp_path / "ref.json"
     cand_path = tmp_path / "cand.json"
