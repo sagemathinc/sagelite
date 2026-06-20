@@ -285,15 +285,45 @@ def _wheel_distribution_name(path: Path) -> str | None:
 
 
 def _manual_companion_packages(args: argparse.Namespace) -> list[str]:
+    return _companion_packages_from_wheels(args.installed_wheel)
+
+
+def _companion_packages_from_wheels(wheels: list[Path]) -> list[str]:
     return sorted(
         {
             name
-            for path in args.installed_wheel
+            for path in wheels
             for name in [_wheel_distribution_name(Path(path))]
             if name is not None
         }
         - {"sagelite"}
     )
+
+
+def _wheelhouse_sagelite_wheels(paths: list[Path]) -> list[Path]:
+    wheels = []
+    seen = set()
+    for wheelhouse in paths:
+        if not wheelhouse.is_dir():
+            continue
+        for wheel in sorted(wheelhouse.glob("*.whl")):
+            distribution = _wheel_distribution_name(wheel)
+            if distribution is None:
+                continue
+            if distribution != "sagelite" and not distribution.startswith("sagelite-"):
+                continue
+            resolved = wheel.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            wheels.append(wheel)
+    return wheels
+
+
+def _recorded_installed_wheels(args: argparse.Namespace) -> tuple[list[str], bool]:
+    if args.installed_wheel:
+        return [Path(path).name for path in args.installed_wheel], False
+    return [path.name for path in _wheelhouse_sagelite_wheels(args.wheelhouse)], True
 
 
 def _manifest_sagelite_packages(path: Path) -> dict[str, object]:
@@ -396,10 +426,16 @@ def _runtime_summary(
         else:
             wheelhouse_files[str(path)] = None
 
-    installed_wheels = [Path(path).name for path in args.installed_wheel]
+    installed_wheels, installed_wheels_inferred = _recorded_installed_wheels(args)
     manifest_packages = _manifest_sagelite_packages(paths.runtime_manifest)
+    inferred_companion_packages = (
+        _companion_packages_from_wheels(_wheelhouse_sagelite_wheels(args.wheelhouse))
+        if installed_wheels_inferred
+        else []
+    )
     companion_packages = sorted(
         set(_manual_companion_packages(args))
+        | set(inferred_companion_packages)
         | set(manifest_packages.get("companion_packages", []))
     )
 
@@ -439,6 +475,7 @@ def _runtime_summary(
             "wheelhouse_paths": wheelhouse_paths,
             "wheelhouse_files": wheelhouse_files,
             "installed_wheels": installed_wheels,
+            "installed_wheels_inferred_from_wheelhouse": installed_wheels_inferred,
             "installed_sagelite_packages": manifest_packages,
             "companion_packages": companion_packages,
         },

@@ -240,6 +240,46 @@ def test_manual_companion_packages_parse_hyphenated_wheel_names():
     ]
 
 
+def test_runner_infers_sagelite_wheels_from_wheelhouse_when_not_recorded(tmp_path):
+    runner = _load_runner()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl").write_text(
+        "",
+        encoding="utf-8",
+    )
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text(
+        "",
+        encoding="utf-8",
+    )
+    (wheelhouse / "numpy-2.2.0-cp312-cp312-linux_x86_64.whl").write_text(
+        "",
+        encoding="utf-8",
+    )
+
+    args = argparse.Namespace(
+        python=sys.executable,
+        wheelhouse=[wheelhouse],
+        installed_wheel=[],
+    )
+    paths = runner.make_artifact_paths(tmp_path, "summary")
+    summary = runner._runtime_summary(
+        args,
+        paths,
+        runner.build_clean_environment(sys.executable),
+        ["python", "-m", "sage.doctest"],
+        ["python", "manifest"],
+        0,
+    )
+
+    assert summary["wheels"]["installed_wheels"] == [
+        "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl",
+        "sagelite_gap_runtime-10.9-py3-none-any.whl",
+    ]
+    assert summary["wheels"]["installed_wheels_inferred_from_wheelhouse"] is True
+    assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
+
+
 def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):
     runner = _load_runner()
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-060708")
@@ -429,6 +469,7 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         }
     ]
     assert summary["wheels"]["installed_wheels"] == [gap_wheel.name]
+    assert summary["wheels"]["installed_wheels_inferred_from_wheelhouse"] is False
     assert summary["wheels"]["companion_packages"] == [
         "sagelite-gap-runtime",
         "sagelite-maxima-runtime",
