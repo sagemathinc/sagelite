@@ -150,6 +150,80 @@ def test_collect_manifest_uses_discovered_default_executables(monkeypatch):
     assert sorted(result["executables"]) == ["gap", "points2alltriangs"]
 
 
+def test_collect_features_checks_presence_out_of_process(monkeypatch):
+    manifest = _load_manifest()
+    probes = []
+
+    class FakeFeature:
+        name = "maxima"
+        spkg = "maxima"
+
+        def _spkg_type(self):
+            return "standard"
+
+        def joined_features(self):
+            return []
+
+        def is_present(self):
+            raise AssertionError("presence should be checked in a subprocess")
+
+    features_module = types.SimpleNamespace(all_features=lambda: [FakeFeature()])
+    monkeypatch.setattr(
+        manifest.importlib,
+        "import_module",
+        lambda name: features_module
+        if name == "sage.features.all"
+        else importlib.import_module(name),
+    )
+
+    def fake_feature_presence_probe(name, timeout):
+        probes.append((name, timeout))
+        return {
+            "present": True,
+            "reason": "found maxima",
+            "resolution": None,
+            "probe_returncode": 0,
+        }
+
+    monkeypatch.setattr(
+        manifest, "_feature_presence_probe", fake_feature_presence_probe
+    )
+
+    result = manifest.collect_features(2.5)
+
+    assert probes == [("maxima", 2.5)]
+    assert result["features"][0]["present"] is True
+    assert result["features"][0]["reason"] == "found maxima"
+
+
+def test_feature_presence_probe_records_subprocess_failures(monkeypatch):
+    manifest = _load_manifest()
+
+    monkeypatch.setattr(
+        manifest,
+        "_run_python_probe",
+        lambda code, timeout: {
+            "returncode": 134,
+            "stdout": "",
+            "stderr": "Internal or unrecoverable error in ECL",
+            "error": None,
+        },
+    )
+
+    result = manifest._feature_presence_probe("maxima", 4)
+
+    assert result == {
+        "probe_returncode": 134,
+        "probe_stderr": "Internal or unrecoverable error in ECL",
+        "probe_error": None,
+        "present": None,
+        "exception": (
+            "FeatureProbeError: feature presence subprocess failed "
+            "with return code 134"
+        ),
+    }
+
+
 def test_collect_required_native_import_smokes_runs_imports_out_of_process(monkeypatch):
     manifest = _load_manifest()
     commands = []

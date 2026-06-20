@@ -18,7 +18,6 @@ import json
 import os
 import platform
 import re
-import signal
 import shutil
 import site
 import subprocess
@@ -221,7 +220,7 @@ def _run_probe(command: list[str], timeout: float = 5.0) -> ProbeResult:
     )
 
 
-def _run_python_probe(code: str, timeout: float) -> dict[str, Any]:
+def _run_python_probe(code: str, timeout: float | None) -> dict[str, Any]:
     result = _run_probe([sys.executable, "-c", code], timeout=timeout)
     return {
         "command": result.command,
@@ -388,25 +387,57 @@ def collect_sage_environment() -> dict[str, Any]:
     return data
 
 
-class _FeatureTimeout(RuntimeError):
-    pass
+def _feature_presence_probe(name: str, timeout: float | None) -> dict[str, Any]:
+    code = f"""
+import json
+from sage.features.all import all_features
 
+for feature in sorted(all_features(), key=lambda item: item.name):
+    if feature.name != {name!r}:
+        continue
+    present = feature.is_present()
+    print(json.dumps({{
+        "present": bool(present),
+        "reason": getattr(present, "reason", None),
+        "resolution": getattr(present, "resolution", None),
+    }}))
+    break
+else:
+    raise RuntimeError("feature not found: {name}")
+"""
+    probe = _run_python_probe(code, timeout)
+    entry: dict[str, Any] = {
+        "probe_returncode": probe["returncode"],
+        "probe_stderr": probe["stderr"],
+        "probe_error": probe["error"],
+    }
+    if probe["returncode"] != 0:
+        entry.update(
+            {
+                "present": None,
+                "exception": (
+                    "FeatureProbeError: feature presence subprocess failed "
+                    f"with return code {probe['returncode']}"
+                ),
+            }
+        )
+        if probe["stdout"]:
+            entry["probe_stdout"] = probe["stdout"]
+        return entry
 
-def _feature_timeout_handler(signum, frame):  # noqa: ARG001
-    raise _FeatureTimeout("feature probe timed out")
-
-
-def _feature_is_present(feature, timeout: float | None) -> Any:
-    if not timeout:
-        return feature.is_present()
-    old_handler = signal.getsignal(signal.SIGALRM)
     try:
-        signal.signal(signal.SIGALRM, _feature_timeout_handler)
-        signal.setitimer(signal.ITIMER_REAL, timeout)
-        return feature.is_present()
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, old_handler)
+        payload = json.loads(probe["stdout"].splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as exc:
+        entry.update(
+            {
+                "present": None,
+                "exception": f"FeatureProbeError: invalid probe output: {exc}",
+                "probe_stdout": probe["stdout"],
+            }
+        )
+        return entry
+    entry.update(payload)
+    return entry
 
 
 def collect_features(timeout: float | None = 10.0) -> dict[str, Any]:
@@ -429,22 +460,7 @@ def collect_features(timeout: float | None = 10.0) -> dict[str, Any]:
             "type": _safe_call("feature type", feature._spkg_type),
             "joined_features": [joined.name for joined in feature.joined_features()],
         }
-        try:
-            present = _feature_is_present(feature, timeout)
-            entry.update(
-                {
-                    "present": bool(present),
-                    "reason": getattr(present, "reason", None),
-                    "resolution": getattr(present, "resolution", None),
-                }
-            )
-        except Exception as exc:  # noqa: BLE001
-            entry.update(
-                {
-                    "present": None,
-                    "exception": f"{type(exc).__name__}: {exc}",
-                }
-            )
+        entry.update(_feature_presence_probe(feature.name, timeout))
         results.append(entry)
     return {"features": results}
 
