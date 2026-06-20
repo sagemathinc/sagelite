@@ -1487,12 +1487,31 @@ verify_repaired_sagelite_wheel() {
     exit 1
   fi
 
-  "$python_bin" - "$repaired_sagelite_wheel" <<'PY'
+  local native_catalog
+  native_catalog="/project/tools/sagelite_native_wheel_catalog.py"
+  if [ ! -f "$native_catalog" ]; then
+    native_catalog="$(pwd)/tools/sagelite_native_wheel_catalog.py"
+  fi
+  if [ ! -f "$native_catalog" ]; then
+    echo "native wheel catalog not found: $native_catalog" >&2
+    exit 1
+  fi
+
+  "$python_bin" - "$repaired_sagelite_wheel" "$native_catalog" <<'PY'
+import importlib.util
 import os
 import sys
 import zipfile
 
 wheel_path = sys.argv[1]
+catalog_path = sys.argv[2]
+spec = importlib.util.spec_from_file_location(
+    "sagelite_native_wheel_catalog", catalog_path
+)
+catalog_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(catalog_module)
+catalog = catalog_module.catalog()
+
 with zipfile.ZipFile(wheel_path) as wheel:
     names = wheel.namelist()
 
@@ -1504,28 +1523,9 @@ ecl_extensions = [
 if not ecl_extensions:
     raise SystemExit("expected sage.libs.ecl extension in repaired sagelite wheel")
 
-required_extensions = [
-    "sage/graphs/bliss.",
-    "sage/graphs/cliquer.",
-    "sage/graphs/graph_decompositions/rankwidth.",
-    "sage/graphs/graph_decompositions/tdlib.",
-    "sage/graphs/mcqd.",
-    "sage/libs/braiding.",
-    "sage/libs/coxeter3/coxeter.",
-    "sage/libs/eclib/mwrank.",
-    "sage/libs/eclib/newforms.",
-    "sage/libs/homfly.",
-    "sage/libs/meataxe.",
-    "sage/libs/sirocco.",
-    "sage/libs/symmetrica/symmetrica.",
-    "sage/numerical/backends/glpk_backend.",
-    "sage/numerical/backends/glpk_exact_backend.",
-    "sage/numerical/backends/glpk_graph_backend.",
-    "sage/rings/polynomial/pbori/pbori.",
-]
 missing_extensions = [
     prefix
-    for prefix in required_extensions
+    for prefix in catalog["required_native_extension_prefixes"]
     if not any(name.startswith(prefix) and name.endswith(".so") for name in names)
 ]
 if missing_extensions:
@@ -1534,16 +1534,7 @@ if missing_extensions:
         f"missing {missing_extensions}"
     )
 
-required_libraries = [
-    "libbraiding",
-    "libbrial",
-    "libbrial_groebner",
-    "libcoxeter3",
-    "libhomfly",
-    "libmtx",
-    "libsirocco",
-]
-for library in required_libraries:
+for library in catalog["required_native_library_prefixes"]:
     bundled = [
         name
         for name in names

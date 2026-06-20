@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import email.parser
+import importlib.util
+import json
 import os
 import sys
 import tomllib
@@ -12,6 +14,35 @@ from packaging.version import Version
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_native_catalog():
+    path = ROOT / "tools" / "sagelite_native_wheel_catalog.py"
+    spec = importlib.util.spec_from_file_location("sagelite_native_wheel_catalog", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+NATIVE_WHEEL_CATALOG = _load_native_catalog()
+
+
+def test_native_wheel_catalog_exports_stable_json(capsys):
+    assert NATIVE_WHEEL_CATALOG.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload == {
+        "required_meson_options": RELEASE_REQUIRED_MESON_OPTIONS,
+        "required_native_extension_prefixes": RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES,
+        "required_native_library_prefixes": RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES,
+    }
+    assert "coxeter3" in payload["required_meson_options"]
+    assert "sage/libs/coxeter3/coxeter." in (
+        payload["required_native_extension_prefixes"]
+    )
+    assert "libcoxeter3" in payload["required_native_library_prefixes"]
 
 
 RUNTIME_PACKAGE_DATA = {
@@ -629,49 +660,15 @@ PUBLISHABLE_STATIC_RUNTIME_PACKAGES = {
     "sagelite-threejs-runtime",
 }
 
-RELEASE_REQUIRED_MESON_OPTIONS = {
-    "bliss",
-    "brial",
-    "coxeter3",
-    "eclib",
-    "libbraiding",
-    "libhomfly",
-    "meataxe",
-    "mcqd",
-    "rankwidth",
-    "sirocco",
-    "tdlib",
-}
-
-RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
-    "sage/graphs/bliss.",
-    "sage/graphs/cliquer.",
-    "sage/graphs/graph_decompositions/tdlib.",
-    "sage/graphs/graph_decompositions/rankwidth.",
-    "sage/graphs/mcqd.",
-    "sage/libs/braiding.",
-    "sage/libs/coxeter3/coxeter.",
-    "sage/libs/eclib/mwrank.",
-    "sage/libs/eclib/newforms.",
-    "sage/libs/homfly.",
-    "sage/libs/meataxe.",
-    "sage/libs/sirocco.",
-    "sage/libs/symmetrica/symmetrica.",
-    "sage/numerical/backends/glpk_backend.",
-    "sage/numerical/backends/glpk_exact_backend.",
-    "sage/numerical/backends/glpk_graph_backend.",
-    "sage/rings/polynomial/pbori/pbori.",
-}
-
-RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES = {
-    "libbraiding",
-    "libbrial",
-    "libbrial_groebner",
-    "libcoxeter3",
-    "libhomfly",
-    "libmtx",
-    "libsirocco",
-}
+RELEASE_REQUIRED_MESON_OPTIONS = (
+    NATIVE_WHEEL_CATALOG.REQUIRED_MESON_OPTIONS
+)
+RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = (
+    NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_EXTENSION_PREFIXES
+)
+RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES = (
+    NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_LIBRARY_PREFIXES
+)
 
 
 GAP_PACKAGE_EXTRA_REQUIREMENTS = {
@@ -1300,8 +1297,15 @@ def test_release_workflow_verifies_standard_native_extensions():
     workflow = ROOT / ".github" / "workflows" / "release.yml"
     workflow_text = workflow.read_text()
 
-    for prefix in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES:
-        assert repr(prefix) in workflow_text or f'"{prefix}"' in workflow_text
+    assert "tools/sagelite_native_wheel_catalog.py" in workflow_text
+    assert 'catalog["required_native_extension_prefixes"]' in workflow_text
+    assert "Missing required native extensions" in workflow_text
+    assert "sage/libs/coxeter3/coxeter." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/libs/braiding." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/libs/homfly." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/rings/polynomial/pbori/pbori." in (
+        RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    )
 
 
 def test_release_workflow_verifies_standard_native_libraries():
@@ -1309,8 +1313,12 @@ def test_release_workflow_verifies_standard_native_libraries():
     workflow_text = workflow.read_text()
 
     assert "Missing required bundled native libraries" in workflow_text
-    for prefix in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES:
-        assert repr(prefix) in workflow_text or f'"{prefix}"' in workflow_text
+    assert 'catalog["required_native_library_prefixes"]' in workflow_text
+    assert "libbrial" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbrial_groebner" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():
@@ -3587,13 +3595,23 @@ def test_linux_repair_validates_required_optional_native_extensions():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()
 
+    assert "sagelite_native_wheel_catalog.py" in repair_text
+    assert 'catalog["required_native_extension_prefixes"]' in repair_text
     assert "expected required optional native extensions" in repair_text
-    for prefix in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES:
-        assert repr(prefix) in repair_text or f'"{prefix}"' in repair_text
+    assert "sage/libs/coxeter3/coxeter." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/libs/braiding." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/libs/homfly." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/rings/polynomial/pbori/pbori." in (
+        RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    )
 
     assert "expected auditwheel-bundled runtime library" in repair_text
-    for library in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES:
-        assert repr(library) in repair_text or f'"{library}"' in repair_text
+    assert 'catalog["required_native_library_prefixes"]' in repair_text
+    assert "libbrial" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbrial_groebner" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
 
 def test_linux_repair_rejects_mixed_pari_runtimes():

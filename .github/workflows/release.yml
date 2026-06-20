@@ -735,40 +735,29 @@ jobs:
       - name: Verify required native extensions are packaged
         run: |
           "${{ steps.python.outputs.python-path }}" - <<'PY'
+          import importlib.util
           import sys
           import zipfile
           from pathlib import Path
 
+          catalog_path = Path("tools/sagelite_native_wheel_catalog.py")
+          spec = importlib.util.spec_from_file_location(
+              "sagelite_native_wheel_catalog", catalog_path
+          )
+          catalog_module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(catalog_module)
+          catalog = catalog_module.catalog()
+
           wheels = sorted(Path("wheelhouse").glob("sagelite-*.whl"))
           if len(wheels) != 1:
               raise SystemExit(f"expected one sagelite wheel, found {len(wheels)}: {wheels}")
-
-          required = [
-              "sage/graphs/bliss.",
-              "sage/graphs/cliquer.",
-              "sage/graphs/graph_decompositions/tdlib.",
-              "sage/graphs/graph_decompositions/rankwidth.",
-              "sage/graphs/mcqd.",
-              "sage/libs/coxeter3/coxeter.",
-              "sage/libs/braiding.",
-              "sage/libs/eclib/mwrank.",
-              "sage/libs/eclib/newforms.",
-              "sage/libs/homfly.",
-              "sage/libs/meataxe.",
-              "sage/libs/sirocco.",
-              "sage/libs/symmetrica/symmetrica.",
-              "sage/numerical/backends/glpk_backend.",
-              "sage/numerical/backends/glpk_exact_backend.",
-              "sage/numerical/backends/glpk_graph_backend.",
-              "sage/rings/polynomial/pbori/pbori.",
-          ]
 
           with zipfile.ZipFile(wheels[0]) as wheel:
               names = wheel.namelist()
 
           missing = [
               prefix
-              for prefix in required
+              for prefix in catalog["required_native_extension_prefixes"]
               if not any(name.startswith(prefix) and name.endswith(".so") for name in names)
           ]
           if missing:
@@ -777,18 +766,9 @@ jobs:
                   print(f"  {prefix}*.so", file=sys.stderr)
               raise SystemExit(1)
 
-          required_libraries = [
-              "libbraiding",
-              "libbrial",
-              "libbrial_groebner",
-              "libcoxeter3",
-              "libhomfly",
-              "libmtx",
-              "libsirocco",
-          ]
           missing_libraries = [
               library
-              for library in required_libraries
+              for library in catalog["required_native_library_prefixes"]
               if not any(
                   name.startswith("sagelite.libs/")
                   and Path(name).name.startswith(library)
