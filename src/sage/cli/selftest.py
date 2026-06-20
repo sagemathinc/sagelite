@@ -563,12 +563,34 @@ def _check_benzene_runtime():
     )
 
 
+_FRICAS_RUNTIME_PROBE = """
+from sage.all import PolynomialRing, QQ
+from sage.interfaces.fricas import fricas
+
+R = PolynomialRing(QQ, "x")
+x = R.gen()
+factorization = fricas(x**2 - 1).factor().sage()
+if factorization.prod() != x**2 - 1:
+    raise RuntimeError(f"unexpected FriCAS factorization conversion: {factorization!r}")
+
+fricas("sol := solve([x^2 - 1], [x])")
+basis = fricas("sol.basis").sage()
+if len(basis) != 1:
+    raise RuntimeError(f"unexpected FriCAS solution basis conversion: {basis!r}")
+
+print("FriCAS conversions available")
+"""
+
+
 def _check_fricas_runtime():
     from sage.features.fricas import FriCAS
 
-    return _check_companion_feature(
+    feature_status = _check_companion_feature(
         "sagelite_fricas", FriCAS, "FriCAS executable runtime"
     )
+    if feature_status == "not installed":
+        return feature_status
+    return _run_subprocess_probe(_FRICAS_RUNTIME_PROBE, "FriCAS runtime probe")
 
 
 def _check_frobby_runtime():

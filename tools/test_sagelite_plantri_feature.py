@@ -391,6 +391,48 @@ def test_sagelite_selftest_checks_maxima_symbolic_domain(monkeypatch):
     assert "x.conjugate() != x" in calls[0]
 
 
+def test_sagelite_selftest_skips_absent_fricas_companion(monkeypatch):
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_companion_feature",
+        lambda *args, **kwargs: "not installed",
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_run_subprocess_probe",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("FriCAS probe should not run without companion")
+        ),
+    )
+
+    assert selftest._check_fricas_runtime() == "not installed"
+
+
+def test_sagelite_selftest_checks_fricas_conversion_runtime(monkeypatch):
+    calls = []
+
+    selftest = _load_source_module("src/sage/cli/selftest.py", "sage.cli.selftest")
+    monkeypatch.setattr(
+        selftest,
+        "_check_companion_feature",
+        lambda *args, **kwargs: "FriCAS executable runtime available",
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_run_subprocess_probe",
+        lambda script, *args, **kwargs: calls.append(script)
+        or "FriCAS conversions available",
+    )
+
+    assert selftest._check_fricas_runtime() == "FriCAS conversions available"
+    assert len(calls) == 1
+    assert "fricas(x**2 - 1).factor().sage()" in calls[0]
+    assert "factorization.prod() != x**2 - 1" in calls[0]
+    assert 'fricas("sol.basis").sage()' in calls[0]
+
+
 def test_sagelite_selftest_checks_packaged_native_extensions(monkeypatch):
     calls = []
 
