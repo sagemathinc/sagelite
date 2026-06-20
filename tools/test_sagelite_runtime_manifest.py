@@ -21,6 +21,24 @@ def _load_manifest():
     return module
 
 
+def test_collect_platform_tags_records_packaging_sys_tags(monkeypatch):
+    manifest = _load_manifest()
+    tags_module = types.ModuleType("packaging.tags")
+    tags_module.sys_tags = lambda: iter(
+        ["cp312-cp312-manylinux_2_28_x86_64", "py3-none-any"]
+    )
+
+    monkeypatch.setattr(manifest.sysconfig, "get_platform", lambda: "linux-x86_64")
+    monkeypatch.setattr(manifest.importlib, "import_module", lambda name: tags_module)
+
+    tags = manifest.collect_platform_tags()
+
+    assert tags == {
+        "sysconfig_platform": "linux-x86_64",
+        "tags": ["cp312-cp312-manylinux_2_28_x86_64", "py3-none-any"],
+    }
+
+
 def test_collect_executables_records_path_and_version_probe(monkeypatch):
     manifest = _load_manifest()
     monkeypatch.setattr(manifest.shutil, "which", lambda name: f"/venv/bin/{name}")

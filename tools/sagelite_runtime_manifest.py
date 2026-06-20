@@ -209,7 +209,25 @@ def collect_python_info() -> dict[str, Any]:
             "ext_suffix": sysconfig.get_config_var("EXT_SUFFIX"),
             "multiarch": sysconfig.get_config_var("MULTIARCH"),
         },
+        "platform_tags": collect_platform_tags(),
     }
+
+
+def collect_platform_tags(limit: int = 50) -> dict[str, Any]:
+    tags: dict[str, Any] = {
+        "sysconfig_platform": sysconfig.get_platform(),
+        "tags": [],
+    }
+    try:
+        packaging_tags = importlib.import_module("packaging.tags")
+        tags["tags"] = [
+            str(tag)
+            for index, tag in enumerate(packaging_tags.sys_tags())
+            if index < limit
+        ]
+    except Exception as exc:  # noqa: BLE001 - packaging may be unavailable
+        tags["error"] = f"{type(exc).__name__}: {exc}"
+    return tags
 
 
 def collect_installed_packages() -> list[dict[str, str | None]]:
