@@ -196,6 +196,14 @@ def test_collect_features_checks_presence_out_of_process(monkeypatch):
     assert result["features"][0]["reason"] == "found maxima"
 
 
+def test_collect_features_can_be_disabled():
+    manifest = _load_manifest()
+
+    assert manifest.collect_features(0) == {
+        "skipped": "feature collection disabled"
+    }
+
+
 def test_feature_presence_probe_records_subprocess_failures(monkeypatch):
     manifest = _load_manifest()
 
@@ -312,6 +320,50 @@ def test_collect_runtime_smoke_tests_checks_guava_wtdist_and_leon(monkeypatch):
     assert 'weight_distribution(algorithm="leon")' in gap_code
     assert "wtdist_executable" in gap_code
     assert result["gap_guava"]["returncode"] == 0
+
+
+def test_collect_runtime_smoke_tests_checks_symbolic_and_external_conversions(
+    monkeypatch,
+):
+    manifest = _load_manifest()
+    probes = []
+
+    monkeypatch.setattr(
+        manifest,
+        "collect_required_native_import_smokes",
+        lambda timeout: {"modules": {}},
+    )
+
+    def fake_python_probe(code, timeout):
+        probes.append((code, timeout))
+        return {"returncode": 0, "stdout": "", "stderr": "", "error": None}
+
+    monkeypatch.setattr(manifest, "_run_python_probe", fake_python_probe)
+
+    result = manifest.collect_runtime_smoke_tests(7.0)
+    probe_by_name = dict(
+        zip(
+            [name for name in result if name != "required_native_imports"],
+            probes,
+        )
+    )
+
+    assert "maxima_example_arrays" in result
+    assert 'maxima.example("arrays")' in probe_by_name["maxima_example_arrays"][0]
+    assert "maxima_lib_sr_integral" in result
+    assert "maxima_lib.sr_integral(sin(x), x)._sage_()" in probe_by_name[
+        "maxima_lib_sr_integral"
+    ][0]
+    assert "gap3_interface" in result
+    assert 'gap3._execute_line("1+1;")' in probe_by_name["gap3_interface"][0]
+    assert "values[2]" in probe_by_name["gap3_interface"][0]
+    assert "._latex_()" in probe_by_name["gap3_interface"][0]
+    assert "fricas_linear_ode_basis_sage" in result
+    assert 'fricas("sol.basis").sage()' in probe_by_name[
+        "fricas_linear_ode_basis_sage"
+    ][0]
+    assert "fricas_record_sage" in result
+    assert ".solve(y.operator(), x).sage()" in probe_by_name["fricas_record_sage"][0]
 
 
 def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):

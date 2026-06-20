@@ -441,6 +441,9 @@ else:
 
 
 def collect_features(timeout: float | None = 10.0) -> dict[str, Any]:
+    if not timeout:
+        return {"skipped": "feature collection disabled"}
+
     try:
         features_all = importlib.import_module("sage.features.all")
         features = list(features_all.all_features())
@@ -979,11 +982,79 @@ print(str(text)[:200])
 """,
             timeout,
         ),
+        "maxima_example_arrays": _run_python_probe(
+            """
+from sage.interfaces.maxima_lib import maxima
+text = str(maxima.example("arrays"))
+print(text[:200])
+if "a[n]:=n*a[n-1]" not in text:
+    raise SystemExit(1)
+""",
+            timeout,
+        ),
+        "maxima_lib_sr_integral": _run_python_probe(
+            """
+from sage.all import RR, cos, sin, var
+from sage.interfaces.maxima_lib import maxima_lib
+x = var("x", domain=RR)
+value = maxima_lib.sr_integral(sin(x), x)._sage_()
+print(value)
+if value != -cos(x):
+    raise SystemExit(1)
+""",
+            timeout,
+        ),
+        "gap3_interface": _run_python_probe(
+            """
+from sage.interfaces.gap3 import Gap3
+gap3 = Gap3()
+try:
+    output, error = gap3._execute_line("1+1;")
+    values = gap3([1, 2, 3])
+    indexed = values[2]
+    latex = values._latex_()
+    print({"output": output, "error": error, "indexed": str(indexed), "latex": latex})
+    if error or str(indexed) != "2" or "1" not in latex:
+        raise SystemExit(1)
+finally:
+    gap3.quit()
+""",
+            timeout,
+        ),
         "fricas_factor_sage": _run_python_probe(
             """
 from sage.interfaces.fricas import fricas
 value = fricas("factor(x^2-1)").sage()
 print(value)
+""",
+            timeout,
+        ),
+        "fricas_linear_ode_basis_sage": _run_python_probe(
+            """
+from sage.interfaces.fricas import fricas
+fricas.set("y", "operator y")
+fricas.set("deq", "x^3*D(y x, x, 3) + x^2*D(y x, x, 2) - 2*x*D(y x, x) + 2*y x - 2*x^4")
+fricas.set("sol", "solve(deq, y, x)")
+try:
+    value = fricas("sol.basis").sage()
+    print(value)
+    if len(value) != 3:
+        raise SystemExit(1)
+finally:
+    fricas.eval(")clear values y deq sol")
+""",
+            timeout,
+        ),
+        "fricas_record_sage": _run_python_probe(
+            """
+from sage.calculus.var import function, var
+from sage.interfaces.fricas import fricas
+x = var("x")
+y = function("y")(x)
+value = fricas(y.diff(x) + y - 1).solve(y.operator(), x).sage()
+print(value)
+if value["particular"] != 1 or len(value["basis"]) != 1:
+    raise SystemExit(1)
 """,
             timeout,
         ),
