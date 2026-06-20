@@ -245,6 +245,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
                 "numeric-tolerance",
                 "numeric output differs only in displayed floating-point precision",
             )
+        if _looks_like_maxima_symbolic_runtime_variant(result.module, text):
+            return (
+                "optional-external",
+                "maxima-symbolic-runtime-variant",
+                "Maxima integration behavior differs from the self-contained Sage runtime",
+            )
         if _looks_like_symbolic_variant(text):
             return (
                 "core-supported",
@@ -329,10 +335,21 @@ EXTERNAL_PATH_MARKERS = (
 )
 
 INSTALLED_SAGE_CLI_MARKERS = (
+    "unrecognized arguments: --advanced",
+    "unrecognized arguments: --gp",
     "unrecognized arguments: --python",
     "unrecognized arguments: --python3",
     "unrecognized arguments: --cython",
     "unrecognized arguments: --mwrank",
+    "unrecognized arguments: --singular",
+)
+
+MAXIMA_SYMBOLIC_RUNTIME_MARKERS = (
+    "algorithm=\"maxima\"",
+    "cases((",
+    "+infinity",
+    "maxima requested additional constraints",
+    "sage.interfaces.maxima_lib",
 )
 
 HEX_COLOR_RE = re.compile(r"#[0-9a-f]{6}")
@@ -369,6 +386,13 @@ def _looks_like_external_path_variant(text: str) -> bool:
 
 def _looks_like_symbolic_variant(text: str) -> bool:
     return any(marker in text for marker in SYMBOLIC_VARIANT_MARKERS)
+
+
+def _looks_like_maxima_symbolic_runtime_variant(module: str, text: str) -> bool:
+    return (
+        module.startswith(("sage.interfaces.maxima_lib", "sage.symbolic.integration"))
+        or "maxima" in text
+    ) and any(marker in text for marker in MAXIMA_SYMBOLIC_RUNTIME_MARKERS)
 
 
 def _looks_like_external_output_variant(text: str) -> bool:
@@ -521,6 +545,7 @@ def suggested_package(result: ModuleResult) -> str:
         "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post13",
         "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post13",
         "maxima-lisp-module-missing": "sagelite-maxima-runtime",
+        "maxima-symbolic-runtime-variant": "sagelite-maxima-runtime parity investigation",
         "fricas-runtime-error": "sagelite-fricas-runtime",
         "fpylll-reduction-failure": "sagelite-fplll-data or fpylll portability fix",
         "external-path-output-variant": "companion runtime path normalization",

@@ -199,6 +199,41 @@ Got:
     assert result.fingerprint == "symbolic-output-variant"
 
 
+def test_report_identifies_maxima_symbolic_runtime_variant(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/interfaces/maxima_lib.py", line 973, in sage.interfaces.maxima_lib.MaximaLib.sr_integral
+Failed example:
+    integral(x^n,x)
+Expected:
+    Traceback (most recent call last):
+    ...
+    ValueError: Computation failed since Maxima requested additional
+    constraints; using the 'assume' command before evaluation
+    Is n equal to -1?
+Got:
+    cases(((n != -1, x^(n + 1)/(n + 1)), (1, log(x))))
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.interfaces.maxima_lib.MaximaLib.sr_integral
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.interfaces.maxima_lib"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "maxima-symbolic-runtime-variant"
+    assert (
+        result.suggested_package
+        == "sagelite-maxima-runtime parity investigation"
+    )
+
+
 def test_report_identifies_external_output_variant(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
@@ -378,6 +413,33 @@ Expected:
     ''
 Got:
     'usage: sage [-h] [-v] [-q] [--simple-prompt] [-V] [-n [{jupyter,jupyterlab}]]\\n            [-c [COMMAND]]\\n            [file ...]\\nsage: error: unrecognized arguments: --python\\n'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.tests.cmdline
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.tests.cmdline"]
+
+    assert result.category == "packaging-runtime"
+    assert result.fingerprint == "installed-sage-cli-incomplete"
+
+
+def test_report_identifies_installed_sage_cli_advanced_option_gap(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/tests/cmdline.py", line 146, in sage.tests.cmdline
+Failed example:
+    err
+Expected:
+    ''
+Got:
+    'usage: sage [-h] [-v] [-q] [--simple-prompt] [-V] [-n [{jupyter,jupyterlab}]]\\n            [-c [COMMAND]]\\n            [file ...]\\nsage: error: unrecognized arguments: --advanced\\n'
 **********************************************************************
 1 item had failures:
    1 of  10 in sage.tests.cmdline
