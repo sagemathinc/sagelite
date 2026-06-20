@@ -19,6 +19,7 @@ AUTHORS:
 
 import importlib.metadata as importlib_metadata
 import os
+import shlex
 import shutil
 import socket
 import subprocess
@@ -714,9 +715,9 @@ def _bootstrap_sagelite_gap_runtime() -> None:
     """
     Seed ``SAGE_GAP_COMMAND`` from an optional GAP runtime companion package.
 
-    ``GAP_ROOT_PATHS`` is handled separately because it is needed by libgap at
-    import time.  The command is for Sage's pexpect GAP interface, whose
-    doctests still invoke a standalone ``gap`` executable.
+    The pexpect GAP interface uses ``SAGE_GAP_COMMAND`` verbatim.  Include the
+    same resolved ``GAP_ROOT_PATHS`` passed to libgap so the companion command
+    does not fall back to host-system GAP roots.
     """
     if os.environ.get("SAGE_GAP_COMMAND"):
         return
@@ -727,14 +728,22 @@ def _bootstrap_sagelite_gap_runtime() -> None:
     if root_paths:
         for root in root_paths.split(";"):
             _append_gap_root(companion_core_roots, [], root)
-    active_roots = {
-        root for root in _gap_root_paths().split(";") if root
-    }
+    active_root_paths = _gap_root_paths()
+    active_roots = {root for root in active_root_paths.split(";") if root}
     if companion_core_roots and not active_roots.intersection(companion_core_roots):
         return
 
     if command and os.path.isfile(command) and os.access(command, os.X_OK):
-        os.environ.setdefault("SAGE_GAP_COMMAND", os.fspath(command))
+        command_line = os.fspath(command)
+        if companion_core_roots and active_root_paths:
+            command_line = (
+                f"{shlex.quote(command_line)} -A -l "
+                f"{shlex.quote(active_root_paths)}"
+            )
+            gap_memory = globals().get("SAGE_GAP_MEMORY")
+            if gap_memory is not None:
+                command_line += f" -s {gap_memory} -o {gap_memory}"
+        os.environ.setdefault("SAGE_GAP_COMMAND", command_line)
 
 
 def _bootstrap_sagelite_gap3_runtime() -> None:

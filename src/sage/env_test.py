@@ -926,6 +926,58 @@ def test_gap_runtime_sets_pexpect_command(monkeypatch, tmp_path):
     assert env.os.environ["SAGE_GAP_COMMAND"] == str(command)
 
 
+def test_gap_runtime_command_uses_resolved_root_paths(monkeypatch, tmp_path):
+    companion = _gap_root(tmp_path, "companion")
+    package = _gap_package_root(tmp_path, "guava", package="guava")
+    command = _gap_runtime_command(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_GAP_COMMAND", raising=False)
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env, "_entry_points", lambda group: [_EntryPoint(lambda: package)]
+    )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_gap_runtime.runtime", "gap_command"): str(command),
+            ("sagelite_gap_runtime.runtime", "gap_root_paths"): str(companion),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert env.os.environ["SAGE_GAP_COMMAND"] == (
+        f"{command} -A -l '{companion};{package}'"
+    )
+
+
+def test_gap_runtime_command_quotes_resolved_root_paths(monkeypatch, tmp_path):
+    companion = _gap_root(tmp_path, "companion runtime")
+    command = _gap_runtime_command(tmp_path, "companion runtime")
+
+    monkeypatch.delenv("SAGE_GAP_COMMAND", raising=False)
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", "", raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_gap_runtime.runtime", "gap_command"): str(command),
+            ("sagelite_gap_runtime.runtime", "gap_root_paths"): str(companion),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert env.os.environ["SAGE_GAP_COMMAND"] == (
+        f"'{command}' -A -l '{companion}'"
+    )
+
+
 def test_gap_runtime_does_not_mix_companion_command_with_configured_core(
     monkeypatch, tmp_path
 ):
