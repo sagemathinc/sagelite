@@ -1308,6 +1308,9 @@ def test_release_workflow_verifies_standard_native_extensions():
     assert "sage/libs/coxeter3/coxeter." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/libs/braiding." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/libs/homfly." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/bliss." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/cliquer." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/planarity." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/rings/polynomial/pbori/pbori." in (
         RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     )
@@ -1324,6 +1327,9 @@ def test_release_workflow_verifies_standard_native_libraries():
     assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbliss" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libcliquer" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libplanarity" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
 
 def test_pari_data_wheel_declares_copied_runtime_data():
@@ -3616,6 +3622,9 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "sage/libs/coxeter3/coxeter." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/libs/braiding." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/libs/homfly." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/bliss." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/cliquer." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/graphs/planarity." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/rings/polynomial/pbori/pbori." in (
         RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     )
@@ -3627,6 +3636,9 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "libbraiding" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcoxeter3" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libbliss" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libcliquer" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libplanarity" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
     assert 'catalog["required_native_import_modules"]' in repair_text
     assert "expected repaired sagelite native modules to import" in repair_text
@@ -3634,6 +3646,9 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "sage.libs.coxeter3.coxeter" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.libs.braiding" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.libs.homfly" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
+    assert "sage.graphs.bliss" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
+    assert "sage.graphs.cliquer" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
+    assert "sage.graphs.planarity" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.rings.polynomial.pbori.pbori" in (
         RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     )

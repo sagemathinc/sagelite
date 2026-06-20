@@ -32,6 +32,7 @@ REQUIRED_NATIVE_EXTENSION_PREFIXES = [
     "sage/graphs/graph_decompositions/rankwidth.",
     "sage/graphs/graph_decompositions/tdlib.",
     "sage/graphs/mcqd.",
+    "sage/graphs/planarity.",
     "sage/libs/braiding.",
     "sage/libs/coxeter3/coxeter.",
     "sage/libs/eclib/mwrank.",
@@ -47,12 +48,15 @@ REQUIRED_NATIVE_EXTENSION_PREFIXES = [
 ]
 
 REQUIRED_NATIVE_LIBRARY_PREFIXES = [
+    "libbliss",
     "libbraiding",
     "libbrial",
     "libbrial_groebner",
+    "libcliquer",
     "libcoxeter3",
     "libhomfly",
     "libmtx",
+    "libplanarity",
     "libsirocco",
 ]
 
@@ -62,6 +66,7 @@ REQUIRED_NATIVE_IMPORT_MODULES = [
     "sage.graphs.graph_decompositions.rankwidth",
     "sage.graphs.graph_decompositions.tdlib",
     "sage.graphs.mcqd",
+    "sage.graphs.planarity",
     "sage.libs.braiding",
     "sage.libs.coxeter3.coxeter",
     "sage.libs.eclib.mwrank",
