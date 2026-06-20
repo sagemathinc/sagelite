@@ -189,6 +189,67 @@ def _manifest_feature_summary(path: Path) -> dict[str, object]:
     }
 
 
+def _normalize_distribution_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _manual_companion_packages(args: argparse.Namespace) -> list[str]:
+    return sorted(
+        {
+            _normalize_distribution_name(Path(path).name.split("-", 1)[0])
+            for path in args.installed_wheel
+            if Path(path).name.endswith(".whl")
+        }
+        - {"sagelite"}
+    )
+
+
+def _manifest_sagelite_packages(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        return {
+            "available": False,
+            "reason": "manifest not created",
+            "packages": [],
+            "companion_packages": [],
+        }
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad manifests
+        return {
+            "available": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+            "packages": [],
+            "companion_packages": [],
+        }
+
+    packages = []
+    companion_names = set()
+    for package in manifest.get("packages", []):
+        if not isinstance(package, dict):
+            continue
+        raw_name = package.get("name")
+        if not raw_name:
+            continue
+        normalized = _normalize_distribution_name(str(raw_name))
+        if normalized != "sagelite" and not normalized.startswith("sagelite-"):
+            continue
+        entry = {
+            "name": normalized,
+            "version": package.get("version"),
+            "location": package.get("location"),
+        }
+        packages.append(entry)
+        if normalized != "sagelite":
+            companion_names.add(normalized)
+
+    packages.sort(key=lambda package: str(package["name"]))
+    return {
+        "available": True,
+        "packages": packages,
+        "companion_packages": sorted(companion_names),
+    }
+
+
 def _analysis_summary(
     path: Path,
     *,
@@ -244,13 +305,10 @@ def _runtime_summary(
             wheelhouse_files[str(path)] = None
 
     installed_wheels = [Path(path).name for path in args.installed_wheel]
+    manifest_packages = _manifest_sagelite_packages(paths.runtime_manifest)
     companion_packages = sorted(
-        {
-            re.sub(r"[-_.]+", "-", Path(path).name.split("-", 1)[0]).lower()
-            for path in args.installed_wheel
-            if Path(path).name.endswith(".whl")
-        }
-        - {"sagelite"}
+        set(_manual_companion_packages(args))
+        | set(manifest_packages.get("companion_packages", []))
     )
 
     return {
@@ -288,6 +346,7 @@ def _runtime_summary(
             "wheelhouse_paths": wheelhouse_paths,
             "wheelhouse_files": wheelhouse_files,
             "installed_wheels": installed_wheels,
+            "installed_sagelite_packages": manifest_packages,
             "companion_packages": companion_packages,
         },
         "doctest_command": doctest_command,

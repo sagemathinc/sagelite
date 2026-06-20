@@ -240,6 +240,28 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                 json.dumps(
                     {
                         "schema": "manifest",
+                        "packages": [
+                            {
+                                "name": "sagelite",
+                                "version": "10.9.post1",
+                                "location": "/scratch/install/lib/python3.12/site-packages",
+                            },
+                            {
+                                "name": "sagelite-gap-runtime",
+                                "version": "10.9",
+                                "location": "/scratch/install/lib/python3.12/site-packages",
+                            },
+                            {
+                                "name": "sagelite_maxima_runtime",
+                                "version": "10.9.post13",
+                                "location": "/scratch/install/lib/python3.12/site-packages",
+                            },
+                            {
+                                "name": "numpy",
+                                "version": "2.2.0",
+                                "location": "/scratch/install/lib/python3.12/site-packages",
+                            },
+                        ],
                         "features": {
                             "features": [
                                 {"name": "gap", "present": True},
@@ -355,7 +377,34 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         }
     ]
     assert summary["wheels"]["installed_wheels"] == [gap_wheel.name]
-    assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
+    assert summary["wheels"]["companion_packages"] == [
+        "sagelite-gap-runtime",
+        "sagelite-maxima-runtime",
+    ]
+    assert summary["wheels"]["installed_sagelite_packages"] == {
+        "available": True,
+        "companion_packages": [
+            "sagelite-gap-runtime",
+            "sagelite-maxima-runtime",
+        ],
+        "packages": [
+            {
+                "name": "sagelite",
+                "version": "10.9.post1",
+                "location": "/scratch/install/lib/python3.12/site-packages",
+            },
+            {
+                "name": "sagelite-gap-runtime",
+                "version": "10.9",
+                "location": "/scratch/install/lib/python3.12/site-packages",
+            },
+            {
+                "name": "sagelite-maxima-runtime",
+                "version": "10.9.post13",
+                "location": "/scratch/install/lib/python3.12/site-packages",
+            },
+        ],
+    }
     assert summary["wheels"]["wheelhouse_files"][str(wheelhouse)] == [
         "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl",
         "sagelite_gap_runtime-10.9-py3-none-any.whl",
