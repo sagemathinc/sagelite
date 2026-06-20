@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import os
@@ -220,6 +221,23 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     assert env["PYTHONNOUSERSITE"] == "1"
     assert "PYTHONPATH" not in env
     assert "LD_LIBRARY_PATH" not in env
+
+
+def test_manual_companion_packages_parse_hyphenated_wheel_names():
+    runner = _load_runner()
+    args = argparse.Namespace(
+        installed_wheel=[
+            Path("sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"),
+            Path("sagelite-gap-runtime-10.9-py3-none-any.whl"),
+            Path("sagelite_maxima_runtime-10.9.post13-py3-none-any.whl"),
+            Path("not-a-wheel.txt"),
+        ]
+    )
+
+    assert runner._manual_companion_packages(args) == [
+        "sagelite-gap-runtime",
+        "sagelite-maxima-runtime",
+    ]
 
 
 def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):

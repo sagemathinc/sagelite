@@ -16,6 +16,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from packaging.utils import InvalidWheelFilename, parse_wheel_filename
+from packaging.version import InvalidVersion, Version
+
 
 TOOLS_DIR = Path(__file__).resolve().parent
 ANALYZER = TOOLS_DIR / "analyze-doctest-log.py"
@@ -194,12 +197,36 @@ def _normalize_distribution_name(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
+def _wheel_distribution_name(path: Path) -> str | None:
+    if path.suffix != ".whl":
+        return None
+    try:
+        name, _version, _build, _tags = parse_wheel_filename(path.name)
+    except InvalidWheelFilename:
+        stem = path.name[:-4]
+        parts = stem.split("-")
+        if len(parts) < 5:
+            return None
+        name_and_version = parts[:-3]
+        for version_index in range(len(name_and_version) - 1, 0, -1):
+            try:
+                Version(name_and_version[version_index])
+            except InvalidVersion:
+                continue
+            return _normalize_distribution_name(
+                "-".join(name_and_version[:version_index])
+            )
+        return None
+    return _normalize_distribution_name(name)
+
+
 def _manual_companion_packages(args: argparse.Namespace) -> list[str]:
     return sorted(
         {
-            _normalize_distribution_name(Path(path).name.split("-", 1)[0])
+            name
             for path in args.installed_wheel
-            if Path(path).name.endswith(".whl")
+            for name in [_wheel_distribution_name(Path(path))]
+            if name is not None
         }
         - {"sagelite"}
     )
