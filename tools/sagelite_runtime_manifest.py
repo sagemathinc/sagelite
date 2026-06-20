@@ -587,9 +587,7 @@ def collect_gap_details() -> dict[str, Any]:
     details["sage_env_gap_root_paths"] = roots
     details["sage_env_gap_roots"] = _split_gap_roots(roots)
     details["SAGE_GAP_COMMAND"] = getattr(sage_env, "SAGE_GAP_COMMAND", None)
-    roots_for_programs = _dedupe_strings(
-        details["sage_env_gap_roots"] + details["gap_roots"]
-    )
+    roots_for_programs = details["sage_env_gap_roots"]
     details["gap_package_programs"] = collect_gap_package_programs(
         roots_for_programs
     )

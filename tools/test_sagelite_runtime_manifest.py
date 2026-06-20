@@ -387,6 +387,43 @@ def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):
     }
 
 
+def test_collect_gap_details_uses_sage_env_roots_for_package_programs(
+    monkeypatch, tmp_path
+):
+    manifest = _load_manifest()
+    host_root = tmp_path / "usr" / "share" / "gap"
+    companion_root = tmp_path / "venv" / "gap"
+    host_package = host_root / "pkg" / "guava-host"
+    companion_package = companion_root / "pkg" / "guava-companion"
+    host_program = host_package / "bin" / "wtdist"
+    companion_program = companion_package / "bin" / "wtdist"
+    for program in (host_program, companion_program):
+        program.parent.mkdir(parents=True)
+        (program.parent.parent / "PackageInfo.g").write_text("", encoding="utf-8")
+        program.write_text("#!/bin/sh\n", encoding="utf-8")
+        program.chmod(0o755)
+
+    sage_env = types.ModuleType("sage.env")
+    sage_env.GAP_ROOT_PATHS = str(companion_root)
+    sage_env.SAGE_GAP_COMMAND = f"{companion_root}/bin/gap"
+
+    def import_module(name):
+        if name == "sage.env":
+            return sage_env
+        raise ImportError(name)
+
+    monkeypatch.setenv("GAP_ROOT_PATHS", str(host_root))
+    monkeypatch.setattr(manifest.importlib, "import_module", import_module)
+
+    details = manifest.collect_gap_details()
+
+    assert details["gap_roots"] == [str(host_root)]
+    assert details["sage_env_gap_roots"] == [str(companion_root)]
+    assert details["gap_package_programs"]["guava"]["package_dirs"] == [
+        str(companion_package.resolve())
+    ]
+
+
 def test_split_gap_roots_accepts_gap_semicolon_separator():
     manifest = _load_manifest()
 
