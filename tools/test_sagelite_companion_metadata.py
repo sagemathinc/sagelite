@@ -2534,6 +2534,14 @@ def test_gap_guava_package_registers_gap_root_path():
     setup_py = (
         ROOT / "companion-packages" / "sagelite-gap-package-guava" / "setup.py"
     ).read_text()
+    runtime_py = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-gap-package-guava"
+        / "src"
+        / "sagelite_gap_package_guava"
+        / "runtime.py"
+    ).read_text()
 
     assert pyproject["project"]["entry-points"]["sagemath.gap_root_paths"] == {
         "guava": "sagelite_gap_package_guava.runtime:gap_root_paths",
@@ -2547,6 +2555,70 @@ def test_gap_guava_package_registers_gap_root_path():
     assert "GUAVA_PROGRAM_NAMES = (\"wtdist\",)" in setup_py
     assert "SAGELITE_GAP_GUAVA_PROGRAM_DIR" in setup_py
     assert "_copy_guava_programs(source, target)" in setup_py
+    assert 'joinpath("bin", "wtdist")' in runtime_py
+
+
+def _load_guava_runtime_module():
+    runtime_path = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-gap-package-guava"
+        / "src"
+        / "sagelite_gap_package_guava"
+        / "runtime.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "test_sagelite_gap_package_guava_runtime",
+        runtime_path,
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _gap_package(root: Path, name: str) -> Path:
+    package = root / "pkg" / name
+    package.mkdir(parents=True)
+    (package / "PackageInfo.g").write_text("PackageInfo := rec();\n", encoding="utf-8")
+    return package
+
+
+def test_gap_guava_runtime_requires_complete_package_payload(monkeypatch, tmp_path):
+    runtime = _load_guava_runtime_module()
+    gaproot = tmp_path / "data" / "gaproot"
+    guava = _gap_package(gaproot, "guava-3.17")
+    _gap_package(gaproot, "sonata-2.9")
+    wtdist = guava / "bin" / "wtdist"
+    wtdist.parent.mkdir()
+    wtdist.write_text("#!/bin/sh\n", encoding="utf-8")
+    wtdist.chmod(0o755)
+
+    monkeypatch.setattr(runtime, "files", lambda package: tmp_path)
+
+    assert runtime.gap_root_paths() == str(gaproot)
+
+
+@pytest.mark.parametrize("missing", ["guava", "sonata", "wtdist", "executable"])
+def test_gap_guava_runtime_rejects_incomplete_package_payload(
+    monkeypatch, tmp_path, missing
+):
+    runtime = _load_guava_runtime_module()
+    gaproot = tmp_path / "data" / "gaproot"
+    if missing != "guava":
+        guava = _gap_package(gaproot, "guava-3.17")
+    if missing != "sonata":
+        _gap_package(gaproot, "sonata-2.9")
+    if missing not in {"guava", "wtdist"}:
+        wtdist = guava / "bin" / "wtdist"
+        wtdist.parent.mkdir()
+        wtdist.write_text("#!/bin/sh\n", encoding="utf-8")
+        if missing != "executable":
+            wtdist.chmod(0o755)
+
+    monkeypatch.setattr(runtime, "files", lambda package: tmp_path)
+
+    assert runtime.gap_root_paths() == ""
 
 
 def test_gap_guava_smoke_test_requires_wtdist_program():
