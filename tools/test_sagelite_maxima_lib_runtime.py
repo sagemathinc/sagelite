@@ -142,12 +142,15 @@ def test_maxima_lib_resolves_companion_install_root_without_library_helper(tmp_p
 
 
 def test_maxima_lib_seeds_companion_runtime_environment(monkeypatch, tmp_path):
+    fas = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10" / "maxima.fas"
     runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
     ecl_dir = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10"
     images_dir = tmp_path / "runtime" / "data" / "lib" / "maxima" / "5.47.0"
     prefix = tmp_path / "runtime" / "data"
+    fas.parent.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
     runtime_lib.mkdir(parents=True)
-    ecl_dir.mkdir(parents=True)
+    ecl_dir.mkdir(parents=True, exist_ok=True)
     images_dir.mkdir(parents=True)
 
     monkeypatch.setenv("LD_LIBRARY_PATH", "/existing/lib")
@@ -164,13 +167,14 @@ def test_maxima_lib_seeds_companion_runtime_environment(monkeypatch, tmp_path):
         return {
             "runtime_library_dir": str(runtime_lib),
             "ecl_dir": str(ecl_dir) + os.sep,
+            "maxima_fas": str(fas),
             "maxima_imagesdir": str(images_dir),
             "maxima_layout_autotools": "true",
             "maxima_prefix": str(prefix),
         }.get(attr_name)
 
     helpers = _maxima_path_helpers(optional_runtime_value)
-    helpers["_configure_companion_maxima_runtime_environment"]()
+    helpers["_configure_companion_maxima_runtime_environment"](str(fas))
 
     assert os.environ["LD_LIBRARY_PATH"].split(os.pathsep)[:2] == [
         str(runtime_lib),
@@ -205,7 +209,7 @@ def test_maxima_lib_preserves_companion_install_root_environment(
 
     helpers = _maxima_path_helpers(optional_runtime_value)
     maxima_fas, maxima_library = helpers["_configured_maxima_paths"]("", "")
-    helpers["_configure_companion_maxima_runtime_environment"]()
+    helpers["_configure_companion_maxima_runtime_environment"](maxima_fas)
     helpers["_publish_maxima_library_prefix"](maxima_library)
 
     assert maxima_fas == str(fas)
@@ -214,8 +218,11 @@ def test_maxima_lib_preserves_companion_install_root_environment(
 
 
 def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
+    fas = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10" / "maxima.fas"
     runtime_lib = tmp_path / "runtime" / "data" / "lib" / "runtime"
     custom_ecl = tmp_path / "custom" / "ecl"
+    fas.parent.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
     runtime_lib.mkdir(parents=True)
     custom_ecl.mkdir(parents=True)
     (custom_ecl / "maxima.asd").write_text("existing maxima asd\n")
@@ -231,13 +238,14 @@ def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
         return {
             "runtime_library_dir": str(runtime_lib),
             "ecl_dir": "/companion/ecl/",
+            "maxima_fas": str(fas),
             "maxima_imagesdir": "/companion/images",
             "maxima_layout_autotools": "true",
             "maxima_prefix": "/companion/prefix",
         }.get(attr_name)
 
     helpers = _maxima_path_helpers(optional_runtime_value)
-    helpers["_configure_companion_maxima_runtime_environment"]()
+    helpers["_configure_companion_maxima_runtime_environment"](str(fas))
 
     assert os.environ["LD_LIBRARY_PATH"] == str(runtime_lib)
     assert os.environ["ECLDIR"] == str(custom_ecl)
@@ -247,8 +255,10 @@ def test_maxima_lib_keeps_existing_runtime_environment(monkeypatch, tmp_path):
 
 
 def test_maxima_lib_replaces_unusable_ecldir(monkeypatch, tmp_path):
+    fas = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10" / "maxima.fas"
     companion_ecl = tmp_path / "runtime" / "data" / "lib" / "ecl-24.5.10"
     companion_ecl.mkdir(parents=True)
+    fas.write_text("maxima fas\n")
     (companion_ecl / "maxima.asd").write_text("companion maxima asd\n")
 
     monkeypatch.setenv("ECLDIR", "/custom/ecl")
@@ -257,9 +267,10 @@ def test_maxima_lib_replaces_unusable_ecldir(monkeypatch, tmp_path):
         assert module_name == "sagelite_maxima.runtime"
         return {
             "ecl_dir": str(companion_ecl),
+            "maxima_fas": str(fas),
         }.get(attr_name)
 
     helpers = _maxima_path_helpers(optional_runtime_value)
-    helpers["_configure_companion_maxima_runtime_environment"]()
+    helpers["_configure_companion_maxima_runtime_environment"](str(fas))
 
     assert os.environ["ECLDIR"] == str(companion_ecl)
