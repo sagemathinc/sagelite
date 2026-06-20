@@ -1525,8 +1525,8 @@ def test_fplll_data_wheel_is_exposed_by_sagelite_dependencies_and_runtime_extras
     extras = pyproject["project"]["optional-dependencies"]
     assert extras["fplll-data"] == [requirement]
     assert extras["fplll_data"] == [requirement]
-    assert requirement not in extras["runtime"]
-    assert requirement not in extras["full"]
+    assert requirement in extras["runtime"]
+    assert requirement in extras["full"]
 
 
 def test_info_runtime_wheel_declares_copied_runtime_files():
