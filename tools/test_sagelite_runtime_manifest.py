@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import types
+from argparse import Namespace
 from pathlib import Path
 
 
@@ -71,6 +72,80 @@ def test_collect_executables_marks_host_system_paths(monkeypatch):
 
     assert result["maxima"]["path"] == "/usr/bin/maxima"
     assert result["maxima"]["host_path"] is True
+
+
+def test_default_executables_include_installed_sagelite_console_scripts(monkeypatch):
+    manifest = _load_manifest()
+
+    class FakeDistribution:
+        def __init__(self, name, scripts):
+            self.name = name
+            self.metadata = {"Name": name}
+            self.entry_points = [
+                manifest.importlib.metadata.EntryPoint(
+                    name=script,
+                    value=f"{name.replace('-', '_')}.runtime:{script}",
+                    group="console_scripts",
+                )
+                for script in scripts
+            ]
+
+    monkeypatch.setattr(
+        manifest.importlib.metadata,
+        "distributions",
+        lambda: [
+            FakeDistribution("sagelite-topcom-runtime", ["points2alltriangs"]),
+            FakeDistribution("sagelite-nauty-runtime", ["dreadnaut"]),
+            FakeDistribution("unrelated-runtime", ["host-tool"]),
+        ],
+    )
+
+    executables = manifest.collect_default_executables()
+
+    assert "gap" in executables
+    assert "points2alltriangs" in executables
+    assert "dreadnaut" in executables
+    assert "host-tool" not in executables
+
+
+def test_collect_manifest_uses_discovered_default_executables(monkeypatch):
+    manifest = _load_manifest()
+    seen = {}
+
+    monkeypatch.setattr(
+        manifest,
+        "collect_default_executables",
+        lambda: ["gap", "points2alltriangs"],
+    )
+    monkeypatch.setattr(manifest, "collect_python_info", lambda: {})
+    monkeypatch.setattr(manifest, "collect_sage_environment", lambda: {})
+    monkeypatch.setattr(manifest, "collect_installed_packages", lambda: [])
+    monkeypatch.setattr(manifest, "collect_features", lambda timeout: {})
+    monkeypatch.setattr(manifest, "collect_gap_details", lambda: {})
+    monkeypatch.setattr(manifest, "collect_maxima_details", lambda: {})
+    monkeypatch.setattr(manifest, "collect_fricas_details", lambda: {})
+    monkeypatch.setattr(manifest, "collect_fplll_details", lambda: {})
+    monkeypatch.setattr(manifest, "collect_compiled_modules", lambda limit: [])
+    monkeypatch.setattr(manifest, "collect_source_inspection", lambda modules: {})
+
+    def fake_collect_executables(names):
+        seen["names"] = names
+        return {name: {"path": None} for name in names}
+
+    monkeypatch.setattr(manifest, "collect_executables", fake_collect_executables)
+
+    result = manifest.collect_manifest(
+        Namespace(
+            label="test",
+            executable=None,
+            feature_timeout=0,
+            compiled_limit=0,
+            inspect_module=[],
+        )
+    )
+
+    assert seen["names"] == ["gap", "points2alltriangs"]
+    assert sorted(result["executables"]) == ["gap", "points2alltriangs"]
 
 
 def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):

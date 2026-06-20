@@ -29,26 +29,91 @@ from typing import Any
 
 
 DEFAULT_EXECUTABLES = [
+    "4ti2",
+    "benzene",
+    "buckygen",
+    "cddexec",
+    "cddexec_gmp",
+    "class.x",
+    "circuits",
+    "convert",
+    "csdp",
+    "cu2",
+    "cubex",
+    "cws.x",
+    "dikcube",
+    "directg",
+    "dot",
+    "dvipng",
+    "ecm",
+    "fdp",
+    "flatter",
+    "fricas",
+    "frobby",
     "gap",
     "gap3",
-    "maxima",
-    "giac",
-    "fricas",
-    "singular",
-    "qepcad",
-    "latte-count",
-    "count",
-    "integrate",
-    "msolve",
-    "dot",
-    "neato",
-    "fdp",
-    "twopi",
-    "pdf2svg",
-    "dvipng",
+    "genbg",
+    "geng",
+    "genktreeg",
+    "genposetg",
+    "gentourng",
+    "gentreeg",
     "gfan",
-    "4ti2",
+    "gfan_bases",
+    "gfan_groebnercone",
+    "gfan_render",
+    "giac",
+    "glucose",
+    "glucose-syrup",
+    "graver",
+    "groebner",
+    "hilbert",
+    "info",
+    "integrate",
+    "kissat",
+    "latte-count",
+    "latte-integrate",
+    "lcalc",
+    "lie",
+    "lrs",
+    "lrsnash",
+    "magick",
+    "markov",
+    "maxima",
+    "mcube",
+    "msolve",
+    "mwrank",
+    "neato",
+    "nef.x",
+    "optimal",
     "palp",
+    "pdftocairo",
+    "pdf2svg",
+    "planarity",
+    "plantri",
+    "points2allfinetriang",
+    "points2allfinetriangs",
+    "points2alltriangs",
+    "points2finetriang",
+    "points2finetriangs",
+    "points2placingtriang",
+    "points2placingtriangs",
+    "points2triang",
+    "points2triangs",
+    "poly.x",
+    "ppi",
+    "qepcad",
+    "qsolve",
+    "rays",
+    "rubiks",
+    "singular",
+    "size222",
+    "sympow",
+    "tachyon",
+    "theta",
+    "count",
+    "twopi",
+    "zsolve",
 ]
 
 SAGE_ENV_KEYS = [
@@ -243,6 +308,36 @@ def collect_installed_packages() -> list[dict[str, str | None]]:
             }
         )
     return sorted(packages, key=lambda item: (item["name"] or "").lower())
+
+
+def _normalize_distribution_name(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def collect_installed_sagelite_console_scripts() -> list[str]:
+    """
+    Return console scripts contributed by installed sagelite distributions.
+
+    The static executable list covers the high-value parity probes from the
+    plan. Installed companion wheels can expose many more script names, so
+    discover them from package metadata when the manifest runs in a fresh venv.
+    """
+    scripts = set()
+    for dist in importlib.metadata.distributions():
+        raw_name = dist.metadata.get("Name") or dist.name
+        normalized = _normalize_distribution_name(raw_name)
+        if normalized != "sagelite" and not normalized.startswith("sagelite-"):
+            continue
+        for entry_point in dist.entry_points:
+            if entry_point.group == "console_scripts":
+                scripts.add(entry_point.name)
+    return sorted(scripts)
+
+
+def collect_default_executables() -> list[str]:
+    return sorted(
+        set(DEFAULT_EXECUTABLES) | set(collect_installed_sagelite_console_scripts())
+    )
 
 
 def _interesting_environment() -> dict[str, str]:
@@ -721,6 +816,7 @@ def collect_source_inspection(modules: list[str]) -> dict[str, Any]:
 
 
 def collect_manifest(args: argparse.Namespace) -> dict[str, Any]:
+    executables = args.executable or collect_default_executables()
     return {
         "schema": "sagelite-runtime-manifest-v1",
         "label": args.label,
@@ -728,7 +824,7 @@ def collect_manifest(args: argparse.Namespace) -> dict[str, Any]:
         "sage": collect_sage_environment(),
         "packages": collect_installed_packages(),
         "features": collect_features(args.feature_timeout),
-        "executables": collect_executables(args.executable),
+        "executables": collect_executables(executables),
         "gap": collect_gap_details(),
         "maxima": collect_maxima_details(),
         "fricas": collect_fricas_details(),
@@ -1111,8 +1207,11 @@ def _make_parser() -> argparse.ArgumentParser:
     collect.add_argument(
         "--executable",
         action="append",
-        default=list(DEFAULT_EXECUTABLES),
-        help="external executable to probe; may be repeated",
+        default=None,
+        help=(
+            "external executable to probe; may be repeated. By default, probes "
+            "the built-in parity list plus installed sagelite companion scripts."
+        ),
     )
     collect.add_argument(
         "--inspect-module",
