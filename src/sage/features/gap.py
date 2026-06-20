@@ -12,6 +12,7 @@ Features for testing the presence of the SageMath interfaces to ``gap`` and of G
 # *****************************************************************************
 
 import os
+from importlib import import_module
 
 from . import Feature, FeatureTestResult, PythonModule
 from .join_feature import JoinFeature
@@ -34,6 +35,57 @@ def _gap_directory_path(directory):
     if sage is not None:
         return os.fspath(sage())
     return os.fspath(directory)
+
+
+def _path_is_under(path, roots):
+    """
+    Return whether ``path`` is contained in one of ``roots``.
+    """
+    try:
+        real_path = os.path.realpath(os.fspath(path))
+    except (TypeError, ValueError):
+        return False
+    for root in roots:
+        try:
+            real_root = os.path.realpath(os.fspath(root))
+            if os.path.commonpath([real_path, real_root]) == real_root:
+                return True
+        except (OSError, TypeError, ValueError):
+            continue
+    return False
+
+
+def _sagelite_gap_package_roots(package):
+    """
+    Return companion GAP roots for ``package`` if a sagelite companion exists.
+
+    ``None`` means no sagelite companion package is installed.  An empty list
+    means a companion is installed but does not expose a complete usable GAP
+    package root, so host-system GAP packages must not satisfy the feature.
+    """
+    module_name = f"sagelite_gap_package_{package.lower()}"
+    try:
+        import_module(module_name)
+    except ImportError:
+        return None
+
+    try:
+        runtime = import_module(f"{module_name}.runtime")
+    except ImportError:
+        return []
+
+    gap_root_paths = getattr(runtime, "gap_root_paths", None)
+    if gap_root_paths is None:
+        return []
+
+    try:
+        roots = gap_root_paths() if callable(gap_root_paths) else gap_root_paths
+    except Exception:
+        return []
+
+    if not roots:
+        return []
+    return [root for root in os.fspath(roots).split(";") if root]
 
 
 class GapPackage(Feature):
@@ -83,6 +135,17 @@ class GapPackage(Feature):
             return FeatureTestResult(self, False,
                                      reason="sage.libs.gap is not available")
 
+        companion_roots = _sagelite_gap_package_roots(self.package)
+        if companion_roots == []:
+            return FeatureTestResult(
+                self,
+                False,
+                reason=(
+                    f"sagelite companion for GAP package {self.package} is "
+                    "installed but does not expose a complete GAP package root"
+                ),
+            )
+
         # This returns "true" even if the package is already loaded.
         command = 'LoadPackage("{package}")'.format(package=self.package)
         presence = libgap.eval(command)
@@ -103,17 +166,34 @@ class GapPackage(Feature):
                     )
 
                 missing = []
+                host_matches = []
                 for program in required_programs:
                     found = False
                     for directory in program_dirs:
                         path = os.path.join(_gap_directory_path(directory), program)
                         if os.path.isfile(path) and os.access(path, os.X_OK):
+                            if (
+                                companion_roots is not None
+                                and not _path_is_under(path, companion_roots)
+                            ):
+                                host_matches.append(path)
+                                continue
                             found = True
                             break
                     if not found:
                         missing.append(program)
 
                 if missing:
+                    if host_matches:
+                        return FeatureTestResult(
+                            self,
+                            False,
+                            reason=(
+                                f"GAP package {self.package} resolved required "
+                                "programs outside the installed sagelite "
+                                "companion roots: " + ", ".join(host_matches)
+                            ),
+                        )
                     return FeatureTestResult(
                         self,
                         False,
