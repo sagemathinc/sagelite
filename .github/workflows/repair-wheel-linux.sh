@@ -1515,6 +1515,8 @@ required_extensions = [
     "sage/libs/eclib/mwrank.",
     "sage/libs/eclib/newforms.",
     "sage/libs/homfly.",
+    "sage/libs/meataxe.",
+    "sage/libs/sirocco.",
     "sage/libs/symmetrica/symmetrica.",
     "sage/numerical/backends/glpk_backend.",
     "sage/numerical/backends/glpk_exact_backend.",
@@ -1538,6 +1540,8 @@ required_libraries = [
     "libbrial_groebner",
     "libcoxeter3",
     "libhomfly",
+    "libmtx",
+    "libsirocco",
 ]
 for library in required_libraries:
     bundled = [

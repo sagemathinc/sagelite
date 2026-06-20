@@ -636,6 +636,7 @@ RELEASE_REQUIRED_MESON_OPTIONS = {
     "eclib",
     "libbraiding",
     "libhomfly",
+    "meataxe",
     "mcqd",
     "rankwidth",
     "sirocco",
@@ -653,11 +654,23 @@ RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES = {
     "sage/libs/eclib/mwrank.",
     "sage/libs/eclib/newforms.",
     "sage/libs/homfly.",
+    "sage/libs/meataxe.",
+    "sage/libs/sirocco.",
     "sage/libs/symmetrica/symmetrica.",
     "sage/numerical/backends/glpk_backend.",
     "sage/numerical/backends/glpk_exact_backend.",
     "sage/numerical/backends/glpk_graph_backend.",
     "sage/rings/polynomial/pbori/pbori.",
+}
+
+RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES = {
+    "libbraiding",
+    "libbrial",
+    "libbrial_groebner",
+    "libcoxeter3",
+    "libhomfly",
+    "libmtx",
+    "libsirocco",
 }
 
 
@@ -1288,6 +1301,15 @@ def test_release_workflow_verifies_standard_native_extensions():
     workflow_text = workflow.read_text()
 
     for prefix in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES:
+        assert repr(prefix) in workflow_text or f'"{prefix}"' in workflow_text
+
+
+def test_release_workflow_verifies_standard_native_libraries():
+    workflow = ROOT / ".github" / "workflows" / "release.yml"
+    workflow_text = workflow.read_text()
+
+    assert "Missing required bundled native libraries" in workflow_text
+    for prefix in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES:
         assert repr(prefix) in workflow_text or f'"{prefix}"' in workflow_text
 
 
@@ -3570,13 +3592,7 @@ def test_linux_repair_validates_required_optional_native_extensions():
         assert repr(prefix) in repair_text or f'"{prefix}"' in repair_text
 
     assert "expected auditwheel-bundled runtime library" in repair_text
-    for library in (
-        "libbraiding",
-        "libbrial",
-        "libbrial_groebner",
-        "libcoxeter3",
-        "libhomfly",
-    ):
+    for library in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES:
         assert repr(library) in repair_text or f'"{library}"' in repair_text
 
 

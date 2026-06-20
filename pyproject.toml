@@ -32,6 +32,7 @@ setup = [
   '-Declib=auto',
   '-Dlibbraiding=auto',
   '-Dlibhomfly=auto',
+  '-Dmeataxe=auto',
   '-Dmcqd=auto',
   '-Drankwidth=auto',
   '-Dsirocco=auto',
