@@ -673,6 +673,14 @@ def collect_fplll_details() -> dict[str, Any]:
         if os.environ.get(key) is not None
     }
     try:
+        sage_env = importlib.import_module("sage.env")
+        bootstrap = getattr(sage_env, "_bootstrap_sagelite_fplll_data_runtime", None)
+        if callable(bootstrap):
+            bootstrap()
+    except Exception as exc:  # noqa: BLE001
+        sage_env = None
+        details["sage_env_error"] = f"{type(exc).__name__}: {exc}"
+    try:
         runtime = importlib.import_module("sagelite_fplll_data.runtime")
         companion_strategy = _safe_call(
             "sagelite_fplll_data.runtime.default_strategy",
@@ -695,7 +703,8 @@ def collect_fplll_details() -> dict[str, Any]:
         for key in ["default_strategy", "default_strategy_path"]:
             details[f"fpylll_config_{key}"] = getattr(config, key, None)
         try:
-            sage_env = importlib.import_module("sage.env")
+            if sage_env is None:
+                sage_env = importlib.import_module("sage.env")
             resolved_strategy = sage_env._fplll_default_strategy_file(
                 getattr(config, "default_strategy_path", ""),
                 getattr(config, "default_strategy", "default.json"),

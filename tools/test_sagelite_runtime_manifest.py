@@ -448,6 +448,12 @@ def test_collect_fplll_details_records_sage_resolved_strategy(monkeypatch, tmp_p
     config.default_strategy_path = "/project/local/share/fplll/strategies"
     config.default_strategy = "/project/local/share/fplll/strategies/default.json"
     sage_env = types.ModuleType("sage.env")
+
+    def bootstrap_fplll_data_runtime():
+        config.default_strategy_path = str(companion_strategy.parent)
+        config.default_strategy = str(companion_strategy)
+
+    sage_env._bootstrap_sagelite_fplll_data_runtime = bootstrap_fplll_data_runtime
     sage_env._fplll_default_strategy_file = lambda path, strategy: str(
         companion_strategy
     )
@@ -461,9 +467,10 @@ def test_collect_fplll_details_records_sage_resolved_strategy(monkeypatch, tmp_p
 
     assert details["companion_default_strategy"] == str(companion_strategy)
     assert details["companion_default_strategy_exists"] is True
-    assert details["fpylll_config_default_strategy_path"] == (
-        "/project/local/share/fplll/strategies"
+    assert details["fpylll_config_default_strategy_path"] == str(
+        companion_strategy.parent
     )
+    assert details["fpylll_config_default_strategy"] == str(companion_strategy)
     assert details["sage_resolved_default_strategy"] == str(companion_strategy)
     assert details["sage_resolved_default_strategy_exists"] is True
 
