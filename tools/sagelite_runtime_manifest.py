@@ -93,6 +93,10 @@ SOURCE_INSPECTION_MODULES = [
     "sage.rings.polynomial.pbori.pbori",
 ]
 
+GAP_PACKAGE_PROGRAMS = {
+    "guava": ["wtdist"],
+}
+
 PLATFORM_LIBRARY_RE = re.compile(
     r"^/(?:lib|lib64|usr/lib|usr/lib64)(?:/|$)|^linux-vdso\\.so"
 )
@@ -149,6 +153,28 @@ def _split_paths(value: str | None) -> list[str]:
     if not value:
         return []
     return [entry for entry in value.split(os.pathsep) if entry]
+
+
+def _split_gap_roots(value: str | None) -> list[str]:
+    if not value:
+        return []
+    roots = []
+    for entry in value.replace(os.pathsep, ";").split(";"):
+        entry = entry.strip()
+        if entry:
+            roots.append(entry)
+    return roots
+
+
+def _dedupe_strings(values: list[str]) -> list[str]:
+    seen = set()
+    deduped = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        deduped.append(value)
+    return deduped
 
 
 def collect_python_info() -> dict[str, Any]:
@@ -320,20 +346,93 @@ def collect_executables(names: list[str]) -> dict[str, Any]:
     return data
 
 
+def _gap_package_dirs(roots: list[str], package: str) -> list[Path]:
+    dirs = []
+    for root in roots:
+        pkg_root = Path(root) / "pkg"
+        if not pkg_root.is_dir():
+            continue
+        dirs.extend(pkg_root.glob(f"{package}*"))
+        dirs.extend(pkg_root.glob(f"{package.upper()}*"))
+    return sorted({path.resolve() for path in dirs if path.is_dir()})
+
+
+def _gap_package_program_dirs(package_dir: Path) -> list[Path]:
+    bin_dir = package_dir / "bin"
+    dirs = []
+    if bin_dir.is_dir():
+        dirs.append(bin_dir.resolve())
+        dirs.extend(path.resolve() for path in bin_dir.iterdir() if path.is_dir())
+    return sorted(set(dirs))
+
+
+def _program_status(program_dir: Path, name: str) -> dict[str, Any]:
+    path = program_dir / name
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "is_file": path.is_file(),
+        "executable": path.is_file() and os.access(path, os.X_OK),
+    }
+
+
+def collect_gap_package_programs(roots: list[str]) -> dict[str, Any]:
+    details = {}
+    for package, program_names in GAP_PACKAGE_PROGRAMS.items():
+        package_dirs = _gap_package_dirs(roots, package)
+        program_dirs = []
+        for package_dir in package_dirs:
+            for program_dir in _gap_package_program_dirs(package_dir):
+                programs = {
+                    name: _program_status(program_dir, name)
+                    for name in program_names
+                }
+                program_dirs.append(
+                    {
+                        "package_dir": str(package_dir),
+                        "path": str(program_dir),
+                        "programs": programs,
+                    }
+                )
+        complete = any(
+            all(
+                program["executable"]
+                for program in program_dir["programs"].values()
+            )
+            for program_dir in program_dirs
+        )
+        details[package] = {
+            "required_programs": program_names,
+            "package_dirs": [str(path) for path in package_dirs],
+            "program_dirs": program_dirs,
+            "complete": complete,
+        }
+    return details
+
+
 def collect_gap_details() -> dict[str, Any]:
     details = {
         "GAP_ROOT_PATHS": os.environ.get("GAP_ROOT_PATHS"),
-        "gap_roots": _split_paths(os.environ.get("GAP_ROOT_PATHS")),
+        "gap_roots": _split_gap_roots(os.environ.get("GAP_ROOT_PATHS")),
     }
     try:
         sage_env = importlib.import_module("sage.env")
     except Exception as exc:  # noqa: BLE001
         details["sage_env_error"] = f"{type(exc).__name__}: {exc}"
+        details["gap_package_programs"] = collect_gap_package_programs(
+            details["gap_roots"]
+        )
         return details
     roots = getattr(sage_env, "GAP_ROOT_PATHS", None)
     details["sage_env_gap_root_paths"] = roots
-    details["sage_env_gap_roots"] = _split_paths(roots)
+    details["sage_env_gap_roots"] = _split_gap_roots(roots)
     details["SAGE_GAP_COMMAND"] = getattr(sage_env, "SAGE_GAP_COMMAND", None)
+    roots_for_programs = _dedupe_strings(
+        details["sage_env_gap_roots"] + details["gap_roots"]
+    )
+    details["gap_package_programs"] = collect_gap_package_programs(
+        roots_for_programs
+    )
     details["workspace"] = _safe_call(
         "sage.libs.gap.saved_workspace",
         lambda: getattr(
@@ -585,6 +684,49 @@ def _dependency_leaks(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     return leaks
 
 
+def _gap_package_program_map(manifest: dict[str, Any]) -> dict[str, Any]:
+    return manifest.get("gap", {}).get("gap_package_programs", {})
+
+
+def _gap_package_program_differences(
+    reference: dict[str, Any], candidate: dict[str, Any]
+) -> dict[str, Any]:
+    ref_programs = _gap_package_program_map(reference)
+    cand_programs = _gap_package_program_map(candidate)
+    differences = {}
+    for package in sorted(set(ref_programs) | set(cand_programs)):
+        ref = ref_programs.get(package, {})
+        cand = cand_programs.get(package, {})
+        if ref.get("complete") != cand.get("complete"):
+            differences[package] = {
+                "reference_complete": ref.get("complete"),
+                "candidate_complete": cand.get("complete"),
+                "candidate_package_dirs": cand.get("package_dirs", []),
+                "candidate_program_dirs": cand.get("program_dirs", []),
+            }
+    return differences
+
+
+def _is_gap_host_path(path: str | None) -> bool:
+    if not path:
+        return False
+    return path.startswith(("/usr/share/gap", "/usr/lib/gap", "/usr/libexec/gap"))
+
+
+def _candidate_gap_host_leaks(candidate: dict[str, Any]) -> list[str]:
+    paths = []
+    gap = candidate.get("gap", {})
+    paths.extend(gap.get("sage_env_gap_roots") or [])
+    paths.extend(gap.get("gap_roots") or [])
+    for package in _gap_package_program_map(candidate).values():
+        paths.extend(package.get("package_dirs", []))
+        paths.extend(
+            program_dir.get("path")
+            for program_dir in package.get("program_dirs", [])
+        )
+    return sorted(path for path in _dedupe_strings(paths) if _is_gap_host_path(path))
+
+
 def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
     ref_packages = _package_map(reference)
     cand_packages = _package_map(candidate)
@@ -645,6 +787,10 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
         "executable_differences": executable_differences,
         "candidate_dependency_leaks": _dependency_leaks(candidate),
         "candidate_source_path_leaks": source_path_leaks,
+        "gap_package_program_differences": _gap_package_program_differences(
+            reference, candidate
+        ),
+        "candidate_gap_host_leaks": _candidate_gap_host_leaks(candidate),
         "gap": {
             "reference_roots": reference.get("gap", {}).get("sage_env_gap_roots"),
             "candidate_roots": candidate.get("gap", {}).get("sage_env_gap_roots"),
@@ -683,6 +829,11 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
         ("Executable path differences", diff.get("executable_differences", {})),
         ("Candidate dependency leaks", diff.get("candidate_dependency_leaks", [])),
         ("Candidate source path leaks", diff.get("candidate_source_path_leaks", {})),
+        (
+            "GAP package program differences",
+            diff.get("gap_package_program_differences", {}),
+        ),
+        ("Candidate GAP host path leaks", diff.get("candidate_gap_host_leaks", [])),
     ]
     for title, payload in buckets:
         count = len(payload)

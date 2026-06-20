@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +38,37 @@ def test_collect_executables_records_path_and_version_probe(monkeypatch):
     assert commands == [["/venv/bin/gap", "--version"]]
 
 
+def test_collect_gap_package_programs_records_executable_wtdist(tmp_path):
+    manifest = _load_manifest()
+    package = tmp_path / "gaproot" / "pkg" / "guava-3.17"
+    program = package / "bin" / "wtdist"
+    program.parent.mkdir(parents=True)
+    program.write_text("#!/bin/sh\n", encoding="utf-8")
+    program.chmod(program.stat().st_mode | 0o111)
+
+    result = manifest.collect_gap_package_programs([str(tmp_path / "gaproot")])
+
+    guava = result["guava"]
+    assert guava["complete"] is True
+    assert guava["package_dirs"] == [str(package.resolve())]
+    assert guava["program_dirs"][0]["programs"]["wtdist"] == {
+        "path": str(program.resolve()),
+        "exists": True,
+        "is_file": True,
+        "executable": True,
+    }
+
+
+def test_split_gap_roots_accepts_gap_semicolon_separator():
+    manifest = _load_manifest()
+
+    assert manifest._split_gap_roots("/sage/gap;/venv/gap") == [
+        "/sage/gap",
+        "/venv/gap",
+    ]
+    assert manifest._split_gap_roots(os.pathsep.join(["/a", "/b"])) == ["/a", "/b"]
+
+
 def test_compare_manifests_surfaces_parity_buckets():
     manifest = _load_manifest()
     reference = {
@@ -56,7 +88,28 @@ def test_compare_manifests_surfaces_parity_buckets():
             ]
         },
         "executables": {"gap": {"path": "/sage/local/bin/gap"}},
-        "gap": {"sage_env_gap_roots": ["/sage/local/lib/gap"]},
+        "gap": {
+            "sage_env_gap_roots": ["/sage/local/lib/gap"],
+            "gap_package_programs": {
+                "guava": {
+                    "complete": True,
+                    "package_dirs": ["/sage/local/lib/gap/pkg/guava"],
+                    "program_dirs": [
+                        {
+                            "path": "/sage/local/lib/gap/pkg/guava/bin",
+                            "programs": {
+                                "wtdist": {
+                                    "path": "/sage/local/lib/gap/pkg/guava/bin/wtdist",
+                                    "exists": True,
+                                    "is_file": True,
+                                    "executable": True,
+                                }
+                            },
+                        }
+                    ],
+                }
+            },
+        },
     }
     candidate = {
         "label": "pip",
@@ -86,7 +139,28 @@ def test_compare_manifests_surfaces_parity_buckets():
                 "sage_getfile_relative": "/scratch/build/src/sage/rings/rational.pyx"
             }
         },
-        "gap": {"sage_env_gap_roots": ["/usr/share/gap"]},
+        "gap": {
+            "sage_env_gap_roots": ["/usr/share/gap"],
+            "gap_package_programs": {
+                "guava": {
+                    "complete": False,
+                    "package_dirs": ["/usr/share/gap/pkg/guava"],
+                    "program_dirs": [
+                        {
+                            "path": "/usr/share/gap/pkg/guava/bin",
+                            "programs": {
+                                "wtdist": {
+                                    "path": "/usr/share/gap/pkg/guava/bin/wtdist",
+                                    "exists": False,
+                                    "is_file": False,
+                                    "executable": False,
+                                }
+                            },
+                        }
+                    ],
+                }
+            },
+        },
     }
 
     diff = manifest.compare_manifests(reference, candidate)
@@ -100,6 +174,11 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert diff["executable_differences"]["gap"]["candidate"] == "/usr/bin/gap"
     assert diff["candidate_dependency_leaks"][0]["module"] == "sage/libs/example.so"
     assert "sage.rings.rational" in diff["candidate_source_path_leaks"]
+    assert diff["gap_package_program_differences"]["guava"][
+        "candidate_complete"
+    ] is False
+    assert "/usr/share/gap" in diff["candidate_gap_host_leaks"]
+    assert "/usr/share/gap/pkg/guava" in diff["candidate_gap_host_leaks"]
 
 
 def test_cli_compare_writes_json_and_markdown(tmp_path):
