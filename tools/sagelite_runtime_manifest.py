@@ -190,6 +190,7 @@ def _dedupe_strings(values: list[str]) -> list[str]:
 def collect_python_info() -> dict[str, Any]:
     return {
         "executable": sys.executable,
+        "cwd": os.getcwd(),
         "version": sys.version,
         "version_info": list(sys.version_info),
         "implementation": platform.python_implementation(),
@@ -788,6 +789,46 @@ def _candidate_executable_host_leaks(candidate: dict[str, Any]) -> list[dict[str
     return leaks
 
 
+def _path_is_under(path: Path, root: Path) -> bool:
+    return path == root or root in path.parents
+
+
+def _candidate_python_path_leaks(candidate: dict[str, Any]) -> list[dict[str, str]]:
+    python = candidate.get("python", {})
+    prefixes = [
+        Path(value).resolve()
+        for value in [
+            python.get("prefix"),
+            python.get("exec_prefix"),
+        ]
+        if value
+    ]
+    entries = []
+    for raw_path in python.get("path", []):
+        if not raw_path:
+            continue
+        path = Path(raw_path)
+        try:
+            resolved = path.resolve()
+        except OSError:
+            resolved = path.absolute()
+        if any(_path_is_under(resolved, prefix) for prefix in prefixes):
+            continue
+
+        text = str(resolved)
+        reasons = []
+        if ".mesonpy-" in text:
+            reasons.append("meson build tree")
+        if text.startswith(("/project/", "/tmp/")):
+            reasons.append("temporary or project build tree")
+        if "/src" in text and (resolved / "sage").exists():
+            reasons.append("source-tree sage package")
+
+        if reasons:
+            entries.append({"path": raw_path, "reason": ", ".join(reasons)})
+    return entries
+
+
 def _gap_package_program_map(manifest: dict[str, Any]) -> dict[str, Any]:
     return manifest.get("gap", {}).get("gap_package_programs", {})
 
@@ -962,6 +1003,7 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
         "candidate_executable_host_leaks": _candidate_executable_host_leaks(
             candidate
         ),
+        "candidate_python_path_leaks": _candidate_python_path_leaks(candidate),
         "candidate_dependency_leaks": _dependency_leaks(candidate),
         "candidate_source_path_leaks": source_path_leaks,
         "gap_package_program_differences": _gap_package_program_differences(
@@ -1018,6 +1060,7 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
             "Candidate executable host path leaks",
             diff.get("candidate_executable_host_leaks", []),
         ),
+        ("Candidate Python path leaks", diff.get("candidate_python_path_leaks", [])),
         ("Candidate dependency leaks", diff.get("candidate_dependency_leaks", [])),
         ("Candidate source path leaks", diff.get("candidate_source_path_leaks", {})),
         (

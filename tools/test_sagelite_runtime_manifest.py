@@ -164,6 +164,37 @@ def test_ldd_marks_not_found_dependencies_outside_policy(monkeypatch, tmp_path):
     assert manifest._is_allowed_dependency(missing["path"], [Path("/venv")]) is False
 
 
+def test_candidate_python_path_leaks_ignore_venv_and_report_source_tree(tmp_path):
+    manifest = _load_manifest()
+    venv = tmp_path / "install"
+    source = tmp_path / "current-source" / "src"
+    (source / "sage").mkdir(parents=True)
+    candidate = {
+        "python": {
+            "prefix": str(venv),
+            "exec_prefix": str(venv),
+            "path": [
+                str(venv / "lib" / "python3.12" / "site-packages"),
+                str(source),
+                "/project/.mesonpy-abcd/src",
+            ],
+        }
+    }
+
+    leaks = manifest._candidate_python_path_leaks(candidate)
+
+    assert leaks == [
+        {
+            "path": str(source),
+            "reason": "temporary or project build tree, source-tree sage package",
+        },
+        {
+            "path": "/project/.mesonpy-abcd/src",
+            "reason": "meson build tree, temporary or project build tree",
+        },
+    ]
+
+
 def test_compare_manifests_surfaces_parity_buckets():
     manifest = _load_manifest()
     reference = {
@@ -226,7 +257,12 @@ def test_compare_manifests_surfaces_parity_buckets():
     }
     candidate = {
         "label": "pip",
-        "python": {"executable": "/scratch/install/bin/python", "prefix": "/scratch/install"},
+        "python": {
+            "executable": "/scratch/install/bin/python",
+            "prefix": "/scratch/install",
+            "exec_prefix": "/scratch/install",
+            "path": ["/scratch/install/lib/python3.12/site-packages", "/project/src"],
+        },
         "packages": [{"name": "sagelite", "version": "10.9.post1"}],
         "features": {
             "features": [
@@ -307,6 +343,9 @@ def test_compare_manifests_surfaces_parity_buckets():
         {"name": "gap", "path": "/usr/bin/gap"}
     ]
     assert diff["candidate_dependency_leaks"][0]["module"] == "sage/libs/example.so"
+    assert diff["candidate_python_path_leaks"] == [
+        {"path": "/project/src", "reason": "temporary or project build tree"}
+    ]
     assert "sage.rings.rational" in diff["candidate_source_path_leaks"]
     assert diff["gap_package_program_differences"]["guava"][
         "candidate_complete"
@@ -340,6 +379,7 @@ def test_compare_manifests_surfaces_parity_buckets():
 
     markdown = manifest.render_diff_markdown(diff)
     assert "### Candidate executable host path leaks" in markdown
+    assert "### Candidate Python path leaks" in markdown
     assert "### Maxima runtime differences" in markdown
     assert "### FriCAS runtime differences" in markdown
     assert "### FPLLL runtime differences" in markdown
