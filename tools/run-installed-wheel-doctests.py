@@ -257,6 +257,128 @@ def _manifest_smoke_summary(path: Path) -> dict[str, object]:
     }
 
 
+def _is_host_executable_path(path: str | None) -> bool:
+    return bool(
+        path
+        and path.startswith(
+            (
+                "/bin/",
+                "/sbin/",
+                "/usr/bin/",
+                "/usr/sbin/",
+                "/usr/local/bin/",
+                "/usr/local/sbin/",
+            )
+        )
+    )
+
+
+def _is_gap_host_path(path: str | None) -> bool:
+    return bool(
+        path
+        and path.startswith(("/usr/share/gap", "/usr/lib/gap", "/usr/libexec/gap"))
+    )
+
+
+def _path_is_under(path: Path, root: Path) -> bool:
+    return path == root or root in path.parents
+
+
+def _manifest_runtime_leak_summary(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        return {"available": False, "reason": "manifest not created"}
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad manifests
+        return {
+            "available": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+
+    host_executables = [
+        {"name": name, "path": details.get("path")}
+        for name, details in sorted(manifest.get("executables", {}).items())
+        if isinstance(details, dict) and _is_host_executable_path(details.get("path"))
+    ]
+
+    dependency_leaks = []
+    for module in manifest.get("compiled_modules", []):
+        if not isinstance(module, dict):
+            continue
+        dependencies = module.get("dependencies_outside_policy") or []
+        if dependencies:
+            dependency_leaks.append(
+                {
+                    "module": module.get("sage_relative_path") or module.get("path"),
+                    "dependencies": dependencies,
+                }
+            )
+
+    source_path_leaks = {
+        name: entry
+        for name, entry in manifest.get("source_inspection", {}).items()
+        if any(
+            marker in str(entry)
+            for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
+        )
+    }
+
+    gap_host_paths = []
+    gap = manifest.get("gap", {})
+    if isinstance(gap, dict):
+        gap_host_paths.extend(gap.get("sage_env_gap_roots") or [])
+        gap_host_paths.extend(gap.get("gap_roots") or [])
+        programs = gap.get("gap_package_programs", {})
+        if isinstance(programs, dict):
+            for package in programs.values():
+                if not isinstance(package, dict):
+                    continue
+                gap_host_paths.extend(package.get("package_dirs", []))
+                gap_host_paths.extend(
+                    program_dir.get("path")
+                    for program_dir in package.get("program_dirs", [])
+                    if isinstance(program_dir, dict)
+                )
+
+    gap_host_paths = sorted(
+        {
+            path
+            for path in gap_host_paths
+            if isinstance(path, str) and _is_gap_host_path(path)
+        }
+    )
+
+    python_path_leaks = []
+    python = manifest.get("python", {})
+    if isinstance(python, dict):
+        prefixes = [
+            Path(value).resolve()
+            for value in [python.get("prefix"), python.get("exec_prefix")]
+            if value
+        ]
+        for entry in python.get("path", []):
+            if not isinstance(entry, str):
+                continue
+            resolved = Path(entry).resolve()
+            if any(_path_is_under(resolved, prefix) for prefix in prefixes):
+                continue
+            if any(marker in entry for marker in ["/project/", "/tmp/", ".mesonpy-"]):
+                python_path_leaks.append(entry)
+
+    sections = {
+        "host_executables": host_executables,
+        "gap_host_paths": gap_host_paths,
+        "python_path_leaks": python_path_leaks,
+        "dependency_leaks": dependency_leaks,
+        "source_path_leaks": source_path_leaks,
+    }
+    return {
+        "available": True,
+        "counts": {name: len(value) for name, value in sections.items()},
+        **sections,
+    }
+
+
 def _normalize_distribution_name(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
@@ -464,6 +586,7 @@ def _runtime_summary(
         },
         "features": _manifest_feature_summary(paths.runtime_manifest),
         "smoke_tests": _manifest_smoke_summary(paths.runtime_manifest),
+        "runtime_leaks": _manifest_runtime_leak_summary(paths.runtime_manifest),
         "analysis": {
             "command": analyzer_command or [],
             **_analysis_summary(

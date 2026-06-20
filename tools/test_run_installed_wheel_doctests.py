@@ -302,6 +302,14 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                 json.dumps(
                     {
                         "schema": "manifest",
+                        "python": {
+                            "prefix": "/tmp/sagelite-install",
+                            "exec_prefix": "/tmp/sagelite-install",
+                            "path": [
+                                "/tmp/sagelite-install/lib/python3.12/site-packages",
+                                "/project/.mesonpy-abcd/src",
+                            ]
+                        },
                         "packages": [
                             {
                                 "name": "sagelite",
@@ -334,6 +342,35 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                                     "exception": "RuntimeError: probe failed",
                                 },
                             ]
+                        },
+                        "executables": {
+                            "gap": {"path": "/usr/bin/gap"},
+                            "maxima": {"path": "/scratch/install/bin/maxima"},
+                        },
+                        "gap": {
+                            "sage_env_gap_roots": ["/usr/share/gap"],
+                            "gap_roots": [],
+                            "gap_package_programs": {
+                                "guava": {
+                                    "package_dirs": ["/usr/share/gap/pkg/guava"],
+                                    "program_dirs": [
+                                        {"path": "/usr/share/gap/pkg/guava/bin"}
+                                    ],
+                                }
+                            },
+                        },
+                        "compiled_modules": [
+                            {
+                                "sage_relative_path": "sage/libs/ntl/error.so",
+                                "dependencies_outside_policy": [
+                                    {"name": "libntl.so.45", "path": "not found"}
+                                ],
+                            }
+                        ],
+                        "source_inspection": {
+                            "sage.rings.rational": {
+                                "sage_getfile_relative": "/scratch/build/src/sage/rings/rational.pyx"
+                            }
                         },
                         "smoke_tests": {
                             "required_native_imports": {
@@ -450,6 +487,36 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         "maxima_help",
         "required_native_imports.sage.libs.braiding",
     ]
+    assert summary["runtime_leaks"]["available"] is True
+    assert summary["runtime_leaks"]["counts"] == {
+        "dependency_leaks": 1,
+        "gap_host_paths": 3,
+        "host_executables": 1,
+        "python_path_leaks": 1,
+        "source_path_leaks": 1,
+    }
+    assert summary["runtime_leaks"]["host_executables"] == [
+        {"name": "gap", "path": "/usr/bin/gap"}
+    ]
+    assert summary["runtime_leaks"]["gap_host_paths"] == [
+        "/usr/share/gap",
+        "/usr/share/gap/pkg/guava",
+        "/usr/share/gap/pkg/guava/bin",
+    ]
+    assert summary["runtime_leaks"]["python_path_leaks"] == [
+        "/project/.mesonpy-abcd/src"
+    ]
+    assert summary["runtime_leaks"]["dependency_leaks"] == [
+        {
+            "module": "sage/libs/ntl/error.so",
+            "dependencies": [{"name": "libntl.so.45", "path": "not found"}],
+        }
+    ]
+    assert summary["runtime_leaks"]["source_path_leaks"] == {
+        "sage.rings.rational": {
+            "sage_getfile_relative": "/scratch/build/src/sage/rings/rational.pyx"
+        }
+    }
     assert summary["analysis"]["created"] is True
     assert summary["analysis"]["available"] is True
     assert summary["analysis"]["totals"] == {"modules_failed": 2, "modules_seen": 10}
