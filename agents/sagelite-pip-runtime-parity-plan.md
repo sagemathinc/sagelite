@@ -15,9 +15,17 @@ acceptable output variants, tolerances, or ordering differences.
 ## Current checkpoint
 
 - Repository branch: `develop`.
-- Relevant commits:
+- Original checkpoint commits:
   - `7ae08cca620 sagelite: stabilize installed doctest runtime`
   - `d6f056f1c51 sagelite: guard repaired native extension coverage`
+- Newer parity-tooling commits now on `develop` include:
+  - `8061aef7ae1 tools: infer sagelite wheels in installed doctest summaries`
+  - `dde53d7e217 sagelite: summarize runtime smoke failures`
+  - `6b4b4421285 sagelite: add runtime manifest smoke probes`
+  - `f12d8dab6e3 tools/sagelite: broaden runtime manifest executable probes`
+  - `f763daa6160 sagelite: report Python path leaks in runtime manifest diffs`
+  - `399cf2263ed sagelite: smoke test repaired native imports`
+  - `e489fcc4bcf sagelite: centralize native wheel catalog`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -26,6 +34,10 @@ acceptable output variants, tolerances, or ordering differences.
     `/scratch/sagelite-r2-work/current-validation/doctest-installed-no-fplll-symlink-clean-env-full-20260619-002757.log`
   - Partial analysis:
     `/scratch/sagelite-r2-work/current-validation/doctest-installed-no-fplll-symlink-clean-env-full-20260619-002757.partial.analysis.md`
+  - Current manifest diff:
+    `/scratch/sagelite-r2-work/runtime-manifest-diff-refresh-20260620-feature-collection-fix.md`
+  - Latest ad hoc current manifest:
+    `/scratch/sagelite-r2-work/current-validation/sagelite-runtime-manifest-codex-current.json`
 
 Known facts from the latest investigation:
 
@@ -42,6 +54,44 @@ Known facts from the latest investigation:
 - The previous passing installed run was narrower and still depended on manual
   runtime adjustments, including manually copied extensions and narrow
   `LD_LIBRARY_PATH`.
+- The tooling foundation is now much stronger than when this plan was written:
+  runtime manifests, manifest diffs, native wheel catalogs, repaired-wheel
+  native import smoke checks, sanitized installed doctest runs, runtime
+  summaries, and analyzer actionable buckets all exist.
+- The actual pip runtime is still not close to final acceptance. The latest
+  partial installed doctest analysis recorded 59 failed modules out of 62 seen.
+- The latest manifest diff still shows real parity gaps:
+  - feature collection for the reference manifest was not clean, so a fresh
+    self-contained baseline must be regenerated before treating feature
+    differences as authoritative;
+  - candidate GAP still leaks host paths such as `/usr/share/gap`;
+  - `sage_getfile_relative()` still reports build-tree paths for representative
+    compiled modules;
+  - `sage.libs.braiding` imports but fails with an undefined symbol in the
+    current raw-wheel validation environment;
+  - Maxima still points at build-prefix or host ECL state in some fields;
+  - fpylll still reports `/project/local/share/fplll/strategies` paths.
+
+## Reality status
+
+Approximate status as of 2026-06-20:
+
+- Phase 1, reproducible manifests: mostly implemented, but the reference
+  self-contained manifest must be regenerated with the correct Sage Python.
+- Phase 2, native wheel parity: CI/tooling checks are mostly implemented, but
+  repaired-wheel proof must happen in manylinux/CIBW, not on this host.
+- Phase 3, companion runtime parity: partially implemented and still the
+  largest remaining work area.
+- Phase 4, path discovery and host leakage: runner environment sanitization is
+  implemented; compiled-module source-path leakage and GAP host leakage remain.
+- Phase 5, installed test runner and triage: substantially implemented; the
+  next full run should use `--runtime-summary` so the report is self-contained.
+- Phase 6, doctest robustness: mostly intentionally deferred.
+- Phase 7, final clean install validation: not achieved.
+
+Overall this is past the diagnostic/tooling stage, but not near acceptance.
+The highest-value work is now to run a fresh validation cycle with the current
+tooling, then fix the biggest concrete parity gaps exposed by that cycle.
 
 ## Guiding principles
 
@@ -56,6 +106,11 @@ Known facts from the latest investigation:
    parity gaps, then decide which doctest outputs are acceptable variants.
 
 ## Phase 1: establish reproducible parity manifests
+
+Status: mostly implemented. The remaining Phase 1 work is operational: produce
+a clean self-contained reference manifest with the right Sage Python, produce a
+fresh pip-installed candidate manifest from the current wheelhouse, and compare
+them after feature collection succeeds in both environments.
 
 Create a manifest script that can be run in both environments:
 
@@ -89,11 +144,12 @@ The manifest should be machine-readable JSON and include:
 
 Deliverables:
 
-- `tools/sagelite_runtime_manifest.py`
-- A focused test for the manifest script.
-- Manifest JSON artifacts in `/scratch` for self-contained and pip-installed
-  environments.
-- A generated diff report identifying host leakage and missing runtime assets.
+- Done: `tools/sagelite_runtime_manifest.py`
+- Done: focused tests for the manifest script.
+- Done but stale/needs refresh: manifest JSON artifacts in `/scratch` for
+  self-contained and pip-installed environments.
+- Done but needs a clean reference rerun: generated diff reports identifying
+  host leakage and missing runtime assets.
 
 Success gate:
 
@@ -101,6 +157,10 @@ Success gate:
   doctest edits are made.
 
 ## Phase 2: build and repair wheel parity
+
+Status: tooling and CI checks are mostly implemented. The unresolved part is
+proof: repaired wheels must be validated in the manylinux/CIBW environment.
+Local repaired wheels from this host are not authoritative.
 
 Make the wheel build request the same native surface area as the self-contained
 runtime.
@@ -139,10 +199,19 @@ Success gate:
 
 ## Phase 3: companion runtime package parity
 
+Status: incomplete. Many companion packages and extras are declared and many
+feature helpers prefer sagelite companions, but the latest manifest/doctest
+artifacts still show host leakage and runtime-behavior differences.
+
 For each sagelite companion package, compare against self-contained Sage and
 ensure Sage discovers companion assets before host-system assets.
 
 ### GAP and GAP packages
+
+Current status: not clean. The manifest tooling can detect GUAVA program
+availability, but the latest diff still shows `/usr/share/gap` and GUAVA host
+paths in the candidate. Fix this before treating GUAVA doctest output as a
+doctest robustness issue.
 
 Observed issues:
 
@@ -175,6 +244,9 @@ Success gate:
 
 ### GAP3
 
+Current status: still needs a targeted runtime comparison and smoke test. The
+installed doctest analysis still flags `sage.interfaces.gap3`.
+
 Observed issues:
 
 - GAP3 examples returned different errors, blank output, wrong indexing, and
@@ -193,6 +265,11 @@ Success gate:
   variants.
 
 ### Maxima
+
+Current status: high-risk and still incomplete. There are tests and selftests
+around companion Maxima/ECL state, but the latest manifest diff still shows
+`MAXIMA_FAS`, `MAXIMA_PREFIX`, and `ECLDIR` differences. Resolve those before
+editing symbolic doctests.
 
 Observed issues:
 
@@ -228,6 +305,10 @@ Success gate:
 
 ### FriCAS
 
+Current status: partially instrumented, not proven. The manifest and selftest
+paths include FriCAS conversion smoke checks, but conversion crashes/errors
+remain a known installed-runtime bucket.
+
 Observed issues:
 
 - FriCAS Sage conversion segfaulted or failed with missing `UnaryExport`.
@@ -248,6 +329,9 @@ Success gate:
 - FriCAS conversion smoke tests pass without crashes.
 
 ### fpylll and fplll data
+
+Current status: unresolved. The latest manifest still reports fpylll strategy
+paths under `/project/local/share/fplll/strategies`.
 
 Observed issues:
 
@@ -276,6 +360,10 @@ Success gate:
 
 ### msolve
 
+Current status: unresolved. The analyzer can recognize msolve diagnostic parser
+failures, but parser behavior still needs targeted raw-output capture and a
+code fix before doctest normalization.
+
 Observed issues:
 
 - Most failures were dictionary key-order printing.
@@ -300,6 +388,11 @@ Success gate:
 
 ### LattE, qepcad, graphviz/dot2tex, Normaliz
 
+Current status: mixed. qepcad companion command construction has coverage, but
+external verbose-path and numeric-output failures should be revisited only
+after the fresh manifest and targeted smoke tests identify actual version/path
+differences.
+
 Actions:
 
 - Normalize companion executable paths in verbose output only where the
@@ -318,6 +411,10 @@ Success gate:
   venv or companion package locations.
 
 ## Phase 4: path-discovery and host-leakage cleanup
+
+Status: partially complete. Installed doctest runs now sanitize `PATH`,
+`PYTHONNOUSERSITE`, `PYTHONPATH`, and `LD_LIBRARY_PATH`, but compiled-module
+source-path leakage remains visible in manifest diffs.
 
 Observed issues:
 
@@ -349,7 +446,10 @@ Success gate:
 
 ## Phase 5: installed test runner and triage improvements
 
-The current analyzer under-classifies many failures as `unknown`.
+Status: substantially improved, but still expected to evolve. The analyzer now
+has more runtime fingerprints and the runner can emit runtime summaries. The
+next full installed run should use this path so the remaining `unknown` bucket
+can be reduced with evidence from current logs.
 
 Actions:
 
@@ -445,6 +545,9 @@ unset PYTHONPATH
     tools/run-installed-wheel-doctests.py \
     --python /scratch/sagelite-r2-work/install-<stamp>/bin/python \
     --output-dir /scratch/sagelite-r2-work/validation-<stamp> \
+    --runtime-summary \
+    --manifest-compiled-limit 200 \
+    --wheelhouse /scratch/sagelite-r2-work/wheelhouse-<stamp> \
     --label full \
     --full \
     --nthreads 4
@@ -462,15 +565,141 @@ Final acceptance criteria:
   intentionally unsupported optional features with feature detection preventing
   their doctests from running by default.
 
-## Suggested implementation order
+## Next high-value execution plan
 
-1. Runtime manifest and clean installed runner environment.
-2. Required native extension catalog, starting with `coxeter3`.
-3. GAP/GUAVA path and `wtdist` packaging.
-4. Maxima runtime help/example and integration parity.
-5. FriCAS conversion crashes.
-6. fpylll strategy-data and LLL fallback coverage.
-7. msolve parser diagnostics.
-8. Source-path leakage in compiled modules.
-9. LattE/qepcad/graphviz verbose path behavior.
-10. Doctest robustness edits for numeric, symbolic, and ordering variants.
+Do these in order. Do not spend time on broad doctest edits until items 1-8
+are either fixed or explicitly ruled out as runtime parity issues.
+
+1. Create a fresh authoritative validation baseline.
+   - Build or download current repaired Linux wheels in the same style that
+     release/CIBW uses. If only local raw wheels are available, label the run
+     as raw-wheel proof and do not treat it as final acceptance evidence.
+   - Create a new wheelhouse and fresh venv under `/scratch/sagelite-r2-work`.
+   - Install from wheels only and run `pip check`.
+   - Run `tools/sagelite_runtime_manifest.py collect` for:
+     - a self-contained Sage reference using the actual Sage Python, not
+       `/usr/bin/python3`;
+     - the fresh pip-installed candidate.
+   - Run `tools/sagelite_runtime_manifest.py compare`.
+   - Run `tools/run-installed-wheel-doctests.py --runtime-summary` for targeted
+     smoke/doctest buckets before attempting another full run.
+   - Deliverable: one timestamped `/scratch/sagelite-r2-work/validation-<stamp>`
+     directory containing install metadata, manifests, manifest diff, runtime
+     summary, smoke logs, and targeted doctest analysis.
+
+2. Prove or fix repaired-wheel native parity in manylinux/CIBW.
+   - Verify the repaired wheel contains every prefix from
+     `tools/sagelite_native_wheel_catalog.py`.
+   - Verify every required native import module imports from outside the source
+     tree with no `LD_LIBRARY_PATH`.
+   - Investigate the current `sage.libs.braiding` undefined-symbol failure.
+   - Confirm auditwheel bundles or policy-allows libraries including
+     `libbrial`, `libbrial_groebner`, `libbraiding`, `libhomfly`,
+     `libcoxeter3`, `libbliss`, `libcliquer`, `libmtx`, and `libsirocco`.
+   - Stop here if this fails: companion runtime work is less useful until the
+     core wheel imports reliably.
+
+3. Fix compiled-module source-path leakage.
+   - Use the manifest `source_inspection` failures for
+     `sage.rings.integer`, `sage.rings.rational`, `sage.libs.homfly`, and
+     similar modules as the starting set.
+   - Determine whether the source paths come from Cython debug/source metadata,
+     generated extension metadata, or Sage inspection assumptions.
+   - Add or extend an installed-wheel test that runs from `/scratch` and asserts
+     representative `sage_getfile_relative()` results are package-relative or
+     otherwise intentionally normalized.
+
+4. Fix GAP/GUAVA host leakage and completeness.
+   - Ensure the pip runtime prepends sagelite GAP roots before system GAP roots.
+   - Decide and implement one behavior for GUAVA:
+     - package executable `wtdist` in the companion wheel; or
+     - mark GUAVA unavailable when package data is present but `wtdist` is
+       missing.
+   - Targeted proof:
+     - `libgap.LoadPackage("guava")`;
+     - `libgap.DirectoriesPackagePrograms("guava")`;
+     - executable check for `wtdist`;
+     - one Sage `weight_distribution(algorithm="leon")` example.
+   - Success means no `/usr/share/gap` or `/usr/lib/gap` paths appear in the
+     candidate manifest unless they are deliberately allowed and documented.
+
+5. Fix Maxima/ECL runtime parity before symbolic doctests.
+   - Remove build-prefix leakage such as `current-build-prefix/lib/ecl/maxima.fas`
+     from installed runtime state.
+   - Ensure `MAXIMA_PREFIX`, `MAXIMA_FAS`, `MAXIMA_USERDIR`, `ECLDIR`, and
+     library-mode lookup point at the installed sagelite companion runtime or at
+     a documented system dependency, never a build tree.
+   - Targeted proof:
+     - `maxima.help("gcd")`;
+     - `maxima.example("arrays")`;
+     - `maxima_lib.sr_integral` examples involving assumptions;
+     - the calculus examples that currently produce `cases(...)` or crash.
+
+6. Fix fpylll/fplll strategy-data portability.
+   - Determine definitively whether installed fpylll can be redirected to
+     `sagelite-fplll-data` at runtime.
+   - If yes, centralize that setup during Sage initialization and add a smoke
+     test for the resolved strategy file.
+   - If no, plan a sagelite-controlled fpylll wheel or another packaging-level
+     fix. Do not rely on `/project/local` symlinks.
+   - Then re-run the known LLL/SVP/projective rational point examples.
+
+7. Fix FriCAS conversion runtime failures.
+   - Compare executable, prefix, startup files, Lisp backend, and environment
+     variables between self-contained and pip environments.
+   - Targeted proof:
+     - factorization converted back to Sage;
+     - `fricas("sol.basis").sage()`;
+     - `fricas_translator` polynomial ring and factorization conversions.
+
+8. Fix msolve parser diagnostics.
+   - Capture raw stdout/stderr for current failures.
+   - Make the parser tolerate or suppress diagnostics such as
+     `Restarting with another random linear form` only if self-contained Sage
+     accepts equivalent output.
+   - Replace `UnboundLocalError` paths with useful errors that include raw
+     output.
+   - Only then update doctests for ordering by comparing normalized structures.
+
+9. Clean up remaining external verbose-path and numeric-version buckets.
+   - qepcad: ensure command strings use the resolved sagelite executable path,
+     not `SAGE_LOCAL` assumptions.
+   - LattE/graphviz/dot2tex: compare versions and output formats against the
+     reference manifest before changing doctests.
+   - Normaliz/polyhedron numeric failures: decide whether differences are
+     dependency-version drift or precision bugs, then use tolerances only for
+     verified equivalent results.
+
+10. Reduce analyzer `unknown` using the new full-run evidence.
+    - Add fingerprints only for repeated root causes with clear evidence.
+    - Keep the report focused on packaging/runtime fixes first and doctest
+      robustness second.
+
+11. Only after runtime parity gaps are closed, edit brittle doctests.
+    - Prefer structural comparisons, sorted outputs, invariants, or tolerances.
+    - Do not mark real missing runtimes, crashes, source leakage, or parser
+      errors as acceptable doctest variance.
+
+12. Final validation.
+    - Fresh venv, wheels only, no repository cwd, no `LD_LIBRARY_PATH`, no
+      manual file copying, no `/project/local` symlink.
+    - `pip check`.
+    - Manifest compare.
+    - Native and companion smoke tests.
+    - Targeted doctests for every recently fixed bucket.
+    - Full installed doctests.
+
+## Known hard problems
+
+- Manylinux proof is mandatory. Local raw-wheel success is useful for debugging
+  but cannot prove published-wheel parity.
+- Maxima/ECL failures are high-risk because runtime packaging drift can look
+  like harmless symbolic-output drift.
+- fpylll strategy paths may require a packaging-level decision if upstream does
+  not support reliable runtime relocation.
+- Compiled-module source-path leakage may require build-system or Sage
+  inspection changes rather than simple packaging metadata tweaks.
+- GAP package data and GAP executable/program directories have multiple path
+  layers; fixing only `GAP_ROOT_PATHS` may not be enough.
+- Doctest robustness edits are easy to overuse. Keep them behind manifest and
+  smoke-test evidence.
