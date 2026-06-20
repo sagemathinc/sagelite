@@ -281,6 +281,38 @@ def test_compare_manifests_surfaces_parity_buckets():
     assert "### FPLLL runtime differences" in markdown
 
 
+def test_compare_manifests_reports_feature_collection_errors_without_null_diffs():
+    manifest = _load_manifest()
+    reference = {
+        "label": "self-contained",
+        "python": {"executable": "/usr/bin/python3"},
+        "packages": [],
+        "features": {"error": "ModuleNotFoundError: No module named 'sage'"},
+        "executables": {},
+    }
+    candidate = {
+        "label": "pip",
+        "python": {"executable": "/scratch/install/bin/python"},
+        "packages": [],
+        "features": {
+            "features": [
+                {"name": "sage.libs.coxeter3", "present": True},
+            ]
+        },
+        "executables": {},
+    }
+
+    diff = manifest.compare_manifests(reference, candidate)
+
+    assert diff["feature_collection_errors"] == {
+        "reference": "ModuleNotFoundError: No module named 'sage'",
+    }
+    assert diff["feature_differences"] == {}
+    markdown = manifest.render_diff_markdown(diff)
+    assert "### Feature collection issues" in markdown
+    assert "### Feature presence differences\n\nCount: 0" in markdown
+
+
 def test_cli_compare_writes_json_and_markdown(tmp_path):
     manifest = _load_manifest()
     reference = {

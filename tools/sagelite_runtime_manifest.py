@@ -717,6 +717,15 @@ def _feature_map(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _feature_collection_error(manifest: dict[str, Any]) -> str | None:
+    features = manifest.get("features", {})
+    if isinstance(features, dict) and not isinstance(features.get("features"), list):
+        error = features.get("error")
+        if error:
+            return str(error)
+    return None
+
+
 def _dependency_leaks(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     leaks = []
     for module in manifest.get("compiled_modules", []):
@@ -833,8 +842,20 @@ def _candidate_gap_host_leaks(candidate: dict[str, Any]) -> list[str]:
 def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
     ref_packages = _package_map(reference)
     cand_packages = _package_map(candidate)
-    ref_features = _feature_map(reference)
-    cand_features = _feature_map(candidate)
+    feature_collection_errors = {
+        label: error
+        for label, error in {
+            "reference": _feature_collection_error(reference),
+            "candidate": _feature_collection_error(candidate),
+        }.items()
+        if error
+    }
+    if feature_collection_errors:
+        ref_features = {}
+        cand_features = {}
+    else:
+        ref_features = _feature_map(reference)
+        cand_features = _feature_map(candidate)
 
     missing_packages = sorted(set(ref_packages) - set(cand_packages))
     version_differences = {
@@ -886,6 +907,7 @@ def compare_manifests(reference: dict[str, Any], candidate: dict[str, Any]) -> d
         },
         "missing_packages": missing_packages,
         "version_differences": version_differences,
+        "feature_collection_errors": feature_collection_errors,
         "feature_differences": feature_differences,
         "executable_differences": executable_differences,
         "candidate_dependency_leaks": _dependency_leaks(candidate),
@@ -937,6 +959,7 @@ def render_diff_markdown(diff: dict[str, Any]) -> str:
     buckets = [
         ("Missing packages", diff.get("missing_packages", [])),
         ("Package version differences", diff.get("version_differences", {})),
+        ("Feature collection issues", diff.get("feature_collection_errors", {})),
         ("Feature presence differences", diff.get("feature_differences", {})),
         ("Executable path differences", diff.get("executable_differences", {})),
         ("Candidate dependency leaks", diff.get("candidate_dependency_leaks", [])),
