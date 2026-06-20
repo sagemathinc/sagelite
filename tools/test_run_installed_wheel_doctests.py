@@ -295,6 +295,26 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                                 },
                             ]
                         },
+                        "smoke_tests": {
+                            "required_native_imports": {
+                                "modules": {
+                                    "sage.libs.coxeter3.coxeter": {
+                                        "present": True,
+                                        "returncode": 0,
+                                    },
+                                    "sage.libs.braiding": {
+                                        "present": False,
+                                        "returncode": 1,
+                                        "stderr": "ImportError: libbraiding.so not found",
+                                    },
+                                }
+                            },
+                            "maxima_help": {
+                                "returncode": 1,
+                                "stderr": "Module error: Don't know how to REQUIRE SB-BSD-SOCKETS",
+                            },
+                            "gap_guava": {"returncode": 0},
+                        },
                     }
                 )
                 + "\n",
@@ -380,6 +400,16 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
     assert summary["features"]["present"] == ["gap"]
     assert summary["features"]["absent"] == ["gap_package_guava"]
     assert summary["features"]["errored"] == ["fricas"]
+    assert summary["smoke_tests"]["available"] is True
+    assert summary["smoke_tests"]["counts"] == {
+        "failed": 2,
+        "passed": 2,
+        "unknown": 0,
+    }
+    assert sorted(summary["smoke_tests"]["failures"]) == [
+        "maxima_help",
+        "required_native_imports.sage.libs.braiding",
+    ]
     assert summary["analysis"]["created"] is True
     assert summary["analysis"]["available"] is True
     assert summary["analysis"]["totals"] == {"modules_failed": 2, "modules_seen": 10}

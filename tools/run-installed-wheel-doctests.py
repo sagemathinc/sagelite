@@ -193,6 +193,70 @@ def _manifest_feature_summary(path: Path) -> dict[str, object]:
     }
 
 
+def _manifest_smoke_summary(path: Path) -> dict[str, object]:
+    if not path.is_file():
+        return {"available": False, "reason": "manifest not created"}
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad manifests
+        return {
+            "available": False,
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+
+    smoke_tests = manifest.get("smoke_tests", {})
+    if not isinstance(smoke_tests, dict):
+        return {
+            "available": False,
+            "reason": "manifest smoke_tests section has unexpected shape",
+        }
+    if "skipped" in smoke_tests:
+        return {
+            "available": True,
+            "skipped": smoke_tests["skipped"],
+            "counts": {"passed": 0, "failed": 0, "unknown": 0},
+            "failures": {},
+        }
+
+    counts = {"passed": 0, "failed": 0, "unknown": 0}
+    failures = {}
+
+    native = smoke_tests.get("required_native_imports", {})
+    if isinstance(native, dict):
+        for module_name, result in native.get("modules", {}).items():
+            if not isinstance(result, dict):
+                counts["unknown"] += 1
+                continue
+            if result.get("present") is True:
+                counts["passed"] += 1
+            elif result.get("present") is False:
+                counts["failed"] += 1
+                failures[f"required_native_imports.{module_name}"] = result
+            else:
+                counts["unknown"] += 1
+
+    for name, result in smoke_tests.items():
+        if name == "required_native_imports":
+            continue
+        if not isinstance(result, dict):
+            counts["unknown"] += 1
+            continue
+        returncode = result.get("returncode")
+        if returncode == 0:
+            counts["passed"] += 1
+        elif returncode is None:
+            counts["unknown"] += 1
+        else:
+            counts["failed"] += 1
+            failures[name] = result
+
+    return {
+        "available": True,
+        "counts": counts,
+        "failures": failures,
+    }
+
+
 def _normalize_distribution_name(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
@@ -363,6 +427,7 @@ def _runtime_summary(
             "created": paths.runtime_manifest.is_file(),
         },
         "features": _manifest_feature_summary(paths.runtime_manifest),
+        "smoke_tests": _manifest_smoke_summary(paths.runtime_manifest),
         "analysis": {
             "command": analyzer_command or [],
             **_analysis_summary(
