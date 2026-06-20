@@ -481,8 +481,10 @@ def _bootstrap_sagelite_fplll_data_runtime() -> None:
         return
 
     strategy_dir = os.path.dirname(strategy)
-    os.environ.setdefault("SAGE_FPLLL_DEFAULT_STRATEGY", strategy)
-    os.environ.setdefault("FPLLL_DEFAULT_STRATEGY", strategy)
+    for variable in ("SAGE_FPLLL_DEFAULT_STRATEGY", "FPLLL_DEFAULT_STRATEGY"):
+        override = os.environ.get(variable)
+        if not (override and os.path.isfile(override)):
+            os.environ[variable] = strategy
 
     strategy_bytes = os.fsencode(strategy)
     strategy_dir_bytes = os.fsencode(strategy_dir)

@@ -620,6 +620,100 @@ def test_bootstrap_sagelite_fplll_data_runtime_updates_stale_fpylll_config(
     assert fpylll.BKZ.DEFAULT_STRATEGY_PATH == env.os.fsencode(strategy_dir)
 
 
+def test_bootstrap_sagelite_fplll_data_runtime_replaces_stale_environment(
+    monkeypatch, tmp_path
+):
+    strategy_dir = tmp_path / "strategies"
+    strategy_dir.mkdir()
+    bundled_strategy = strategy_dir / "default.json"
+    bundled_strategy.write_text("[]")
+
+    fpylll = types.ModuleType("fpylll")
+    fpylll_config = types.ModuleType("fpylll.config")
+    fpylll_config.default_strategy_path = b"/stale/share/fplll/strategies"
+    fpylll_config.default_strategy = (
+        b"/stale/share/fplll/strategies/default.json"
+    )
+    fpylll_config.__path__ = []
+    fpylll.BKZ = types.SimpleNamespace(
+        DEFAULT_STRATEGY_PATH=fpylll_config.default_strategy_path,
+        DEFAULT_STRATEGY=fpylll_config.default_strategy,
+    )
+    fpylll.__path__ = []
+
+    monkeypatch.setenv(
+        "SAGE_FPLLL_DEFAULT_STRATEGY",
+        "/project/local/share/fplll/strategies/default.json",
+    )
+    monkeypatch.setenv(
+        "FPLLL_DEFAULT_STRATEGY",
+        "/project/local/share/fplll/strategies/default.json",
+    )
+    monkeypatch.setitem(sys.modules, "fpylll", fpylll)
+    monkeypatch.setitem(sys.modules, "fpylll.config", fpylll_config)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(bundled_strategy)
+        if (module_name, attr_name)
+        == ("sagelite_fplll_data.runtime", "default_strategy")
+        else None,
+    )
+
+    env._bootstrap_sagelite_fplll_data_runtime()
+
+    assert env.os.environ["SAGE_FPLLL_DEFAULT_STRATEGY"] == str(bundled_strategy)
+    assert env.os.environ["FPLLL_DEFAULT_STRATEGY"] == str(bundled_strategy)
+    assert fpylll_config.default_strategy == env.os.fsencode(bundled_strategy)
+    assert fpylll_config.default_strategy_path == env.os.fsencode(strategy_dir)
+
+
+def test_bootstrap_sagelite_fplll_data_runtime_preserves_valid_environment(
+    monkeypatch, tmp_path
+):
+    env_strategy_dir = tmp_path / "env-strategies"
+    env_strategy_dir.mkdir()
+    env_strategy = env_strategy_dir / "default.json"
+    env_strategy.write_text("[]")
+    companion_strategy_dir = tmp_path / "companion-strategies"
+    companion_strategy_dir.mkdir()
+    companion_strategy = companion_strategy_dir / "default.json"
+    companion_strategy.write_text("[]")
+
+    fpylll = types.ModuleType("fpylll")
+    fpylll_config = types.ModuleType("fpylll.config")
+    fpylll_config.default_strategy_path = b"/stale/share/fplll/strategies"
+    fpylll_config.default_strategy = (
+        b"/stale/share/fplll/strategies/default.json"
+    )
+    fpylll_config.__path__ = []
+    fpylll.BKZ = types.SimpleNamespace(
+        DEFAULT_STRATEGY_PATH=fpylll_config.default_strategy_path,
+        DEFAULT_STRATEGY=fpylll_config.default_strategy,
+    )
+    fpylll.__path__ = []
+
+    monkeypatch.setenv("SAGE_FPLLL_DEFAULT_STRATEGY", str(env_strategy))
+    monkeypatch.setenv("FPLLL_DEFAULT_STRATEGY", str(env_strategy))
+    monkeypatch.setitem(sys.modules, "fpylll", fpylll)
+    monkeypatch.setitem(sys.modules, "fpylll.config", fpylll_config)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion_strategy)
+        if (module_name, attr_name)
+        == ("sagelite_fplll_data.runtime", "default_strategy")
+        else None,
+    )
+
+    env._bootstrap_sagelite_fplll_data_runtime()
+
+    assert env.os.environ["SAGE_FPLLL_DEFAULT_STRATEGY"] == str(env_strategy)
+    assert env.os.environ["FPLLL_DEFAULT_STRATEGY"] == str(env_strategy)
+    assert fpylll_config.default_strategy == env.os.fsencode(env_strategy)
+    assert fpylll_config.default_strategy_path == env.os.fsencode(env_strategy_dir)
+
+
 def test_bootstrap_sagelite_fplll_data_runtime_ignores_missing_strategy(
     monkeypatch,
 ):
