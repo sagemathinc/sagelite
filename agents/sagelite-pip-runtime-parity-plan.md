@@ -38,6 +38,8 @@ acceptable output variants, tolerances, or ordering differences.
     `/scratch/sagelite-r2-work/runtime-manifest-diff-refresh-20260620-feature-collection-fix.md`
   - Latest ad hoc current manifest:
     `/scratch/sagelite-r2-work/current-validation/sagelite-runtime-manifest-codex-current.json`
+  - Fresh raw-wheel baseline:
+    `/scratch/sagelite-r2-work/validation-raw-baseline-20260620-154330/README.md`
 
 Known facts from the latest investigation:
 
@@ -71,6 +73,14 @@ Known facts from the latest investigation:
     current raw-wheel validation environment;
   - Maxima still points at build-prefix or host ECL state in some fields;
   - fpylll still reports `/project/local/share/fplll/strategies` paths.
+- A fresh raw-wheel baseline on 2026-06-20 proved that a wheel-only install can
+  be assembled in a fresh Python 3.12 venv after filling the scratch wheelhouse
+  with third-party dependency wheels, and that `pip check` passes. However,
+  `import sage.all` fails immediately from `/scratch` because
+  `sage.libs.ntl.error` cannot resolve `libntl.so.45`. The native wheel catalog
+  now treats `sage/libs/ntl/error.`, `libntl`, and `sage.libs.ntl.error` as
+  required repaired-wheel surface area so manylinux repair validation catches
+  this before companion runtime work.
 
 ## Reality status
 

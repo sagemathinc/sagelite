@@ -39,6 +39,7 @@ REQUIRED_NATIVE_EXTENSION_PREFIXES = [
     "sage/libs/eclib/newforms.",
     "sage/libs/homfly.",
     "sage/libs/meataxe.",
+    "sage/libs/ntl/error.",
     "sage/libs/sirocco.",
     "sage/libs/symmetrica/symmetrica.",
     "sage/numerical/backends/glpk_backend.",
@@ -56,6 +57,7 @@ REQUIRED_NATIVE_LIBRARY_PREFIXES = [
     "libcoxeter3",
     "libhomfly",
     "libmtx",
+    "libntl",
     "libplanarity",
     "libsirocco",
 ]
@@ -73,6 +75,7 @@ REQUIRED_NATIVE_IMPORT_MODULES = [
     "sage.libs.eclib.newforms",
     "sage.libs.homfly",
     "sage.libs.meataxe",
+    "sage.libs.ntl.error",
     "sage.libs.sirocco",
     "sage.libs.symmetrica.symmetrica",
     "sage.numerical.backends.glpk_backend",

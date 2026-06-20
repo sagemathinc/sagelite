@@ -43,8 +43,11 @@ def test_native_wheel_catalog_exports_stable_json(capsys):
     assert "sage/libs/coxeter3/coxeter." in (
         payload["required_native_extension_prefixes"]
     )
+    assert "sage/libs/ntl/error." in payload["required_native_extension_prefixes"]
     assert "libcoxeter3" in payload["required_native_library_prefixes"]
+    assert "libntl" in payload["required_native_library_prefixes"]
     assert "sage.libs.coxeter3.coxeter" in payload["required_native_import_modules"]
+    assert "sage.libs.ntl.error" in payload["required_native_import_modules"]
 
 
 RUNTIME_PACKAGE_DATA = {
@@ -1311,6 +1314,7 @@ def test_release_workflow_verifies_standard_native_extensions():
     assert "sage/graphs/bliss." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/graphs/cliquer." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/graphs/planarity." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
+    assert "sage/libs/ntl/error." in RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     assert "sage/rings/polynomial/pbori/pbori." in (
         RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES
     )
@@ -3638,6 +3642,7 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "libhomfly" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libbliss" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libcliquer" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
+    assert "libntl" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libplanarity" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
     assert 'catalog["required_native_import_modules"]' in repair_text
@@ -3649,6 +3654,7 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "sage.graphs.bliss" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.graphs.cliquer" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.graphs.planarity" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
+    assert "sage.libs.ntl.error" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     assert "sage.rings.polynomial.pbori.pbori" in (
         RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     )
