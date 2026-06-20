@@ -2168,12 +2168,17 @@ def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
 
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "khoca >=1.4"
+    py_requirement = "py >=1.11,<2"
 
     assert requirement in pyproject["project"]["dependencies"]
-    assert extras["khoca"] == [requirement]
+    assert py_requirement in pyproject["project"]["dependencies"]
+    assert extras["khoca"] == [requirement, py_requirement]
     assert requirement in extras["extra"]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
+    assert py_requirement in extras["extra"]
+    assert py_requirement in extras["runtime"]
+    assert py_requirement in extras["full"]
 
 
 def test_mathics_pypi_runtime_is_exposed_by_sagelite_extras():
