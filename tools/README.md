@@ -91,6 +91,23 @@ summary. After analysis completes, the runtime summary includes the analyzer's
 category counts, fingerprint counts, and top actionable buckets so validation
 runs can be triaged without opening the full log first.
 
+## Validate a Sagelite Wheelhouse
+
+This command creates a fresh virtual environment, installs sagelite from one or
+more local wheelhouses with `--no-index`, runs `pip check`, then invokes
+`tools/run-installed-wheel-doctests.py` with runtime manifest and selftest
+capture enabled. It is intended for repaired-wheel validation artifacts from
+the manylinux/CIBW build, where local raw-wheel repair is not authoritative.
+
+Example:
+
+```bash
+python3 tools/validate-sagelite-wheelhouse.py \
+  --wheelhouse /scratch/sagelite-r2-work/wheelhouse-20260621 \
+  --work-dir /scratch/sagelite-r2-work \
+  --full
+```
+
 ## Update Version Number
 
 Increments the version number in the project. This command is useful when releasing a new version of the project.
