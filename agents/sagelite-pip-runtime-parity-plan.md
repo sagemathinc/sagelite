@@ -1,6 +1,6 @@
 # Sagelite pip runtime parity plan
 
-Date: 2026-06-19
+Date: 2026-06-21
 
 Goal: make the pip-installable `sagelite` distribution behave like the
 self-contained Sage runtime closely enough that installed doctests fail only
@@ -57,6 +57,9 @@ acceptable output variants, tolerances, or ordering differences.
   - `0e8c14a2b41 tools/sagelite: add wheelhouse validation wrapper`
   - `64b5b91c395 tools/sagelite: record wheelhouse validation install metadata`
   - `c1a038d58b7 tools/sagelite: record wheelhouse validation step results`
+  - `effa06ddccd agents: refresh sagelite parity checkpoint`
+  - `848a8bd6c36 tools/sagelite: classify wheelhouse validation inputs`
+  - `4fe2b1380d0 tools/sagelite: record repaired-wheel preflight failures`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -155,6 +158,29 @@ Known facts from the latest investigation:
   now writes `install-metadata.json` for raw-wheel preflight rejection, so an
   accidentally staged raw Linux wheelhouse still leaves auditable validation
   input classification instead of failing before artifact creation.
+- The current tree already contains the first msolve parser hardening from this
+  plan: `src/sage/rings/polynomial/msolve.py` ignores diagnostic lines before
+  the Sage-readable payload and raises `NotImplementedError` with raw msolve
+  output instead of leaking `UnboundLocalError`.
+
+Scheduled audit on 2026-06-21:
+
+- No repaired Linux sagelite wheelhouse is staged under
+  `/scratch/sagelite-r2-work`; only raw Linux diagnostic wheelhouses are
+  available locally. Authoritative parity validation still requires a fresh
+  manylinux/CIBW repaired-wheel artifact.
+- The raw baseline wheelhouse from 2026-06-20 is known to fail immediately at
+  `import sage.all` because `sage.libs.ntl.error` cannot resolve
+  `libntl.so.45`; rerunning that old raw wheel would not produce new parity
+  evidence.
+- Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+  - `PYTHONNOUSERSITE=1 PYTHONPATH=src .venv/bin/python -m pytest --confcutdir=src/sage/misc src/sage/misc/sageinspect_test.py -q`
+- Host `/usr/bin/python3` is Python 3.14 and cannot run the project tests
+  cleanly: with user-site enabled it finds a stale editable sagelite loader
+  pointing at `/tmp/sage-wheel-prefix/bin/python3`; with
+  `PYTHONNOUSERSITE=1`, `pytest` is not installed. Use the repository `.venv`
+  for local pure-Python tooling tests.
 
 ## Reality status
 
@@ -170,7 +196,9 @@ Approximate status as of 2026-06-20:
   while Maxima, FriCAS, GAP3, and msolve still need fresh repaired-wheel
   evidence.
 - Phase 4, path discovery and host leakage: runner environment sanitization is
-  implemented; source-path leak classification has been refined. Treat older
+  implemented; source-path leak classification has been refined; installed
+  wheel source-inspection selftest coverage and
+  `sage_getfile_relative()` build-prefix normalization are present. Treat older
   scratch source-leak and GAP-host-leak reports as stale unless reproduced by a
   fresh run from current `develop`.
 - Phase 5, installed test runner and triage: substantially implemented; the
@@ -456,24 +484,29 @@ Success gate:
 
 ### msolve
 
-Current status: unresolved. The analyzer can recognize msolve diagnostic parser
-failures, but parser behavior still needs targeted raw-output capture and a
-code fix before doctest normalization.
+Current status: partly fixed but not proven in an installed repaired-wheel
+environment. The analyzer can recognize msolve diagnostic parser failures, and
+the parser now skips diagnostic lines before the payload and reports unsupported
+formats with raw output instead of `UnboundLocalError`. Fresh installed
+doctests still need to prove whether remaining failures are only ordering
+differences.
 
 Observed issues:
 
 - Most failures were dictionary key-order printing.
-- Some failures were parser errors when msolve emitted extra lines such as
-  `Restarting with another random linear form` or emitted empty/non-Sage
-  output before the data.
+- Done: parser errors when msolve emitted extra lines such as
+  `Restarting with another random linear form` now skip diagnostics before the
+  payload and report empty/non-Sage output with raw-output context.
 
 Actions:
 
-- Capture raw msolve stdout/stderr for failing examples.
-- Make the parser robust against diagnostic lines if self-contained Sage accepts
-  them, or suppress diagnostics in the msolve wrapper.
-- Fix `UnboundLocalError` so unsupported output raises a useful error with the
-  raw output.
+- Done: capture raw msolve stdout in parser error messages for unsupported
+  output.
+- Done: make the parser robust against diagnostic lines before the
+  Sage-readable payload.
+- Done: fix `UnboundLocalError` so unsupported output raises a useful error
+  with the raw output.
+- Re-run the installed doctest examples in a fresh repaired-wheel environment.
 - Update doctests to compare sorted normalized items only after parser behavior
   is correct.
 
@@ -749,13 +782,12 @@ are either fixed or explicitly ruled out as runtime parity issues.
      - `fricas("sol.basis").sage()`;
      - `fricas_translator` polynomial ring and factorization conversions.
 
-8. Fix msolve parser diagnostics.
-   - Capture raw stdout/stderr for current failures.
-   - Make the parser tolerate or suppress diagnostics such as
-     `Restarting with another random linear form` only if self-contained Sage
-     accepts equivalent output.
-   - Replace `UnboundLocalError` paths with useful errors that include raw
-     output.
+8. Prove msolve parser diagnostics and fix remaining ordering failures.
+   - Done: parse through diagnostic lines such as
+     `Restarting with another random linear form`.
+   - Done: replace `UnboundLocalError` paths with useful errors that include
+     raw output.
+   - Re-run the current failing examples in a repaired-wheel environment.
    - Only then update doctests for ordering by comparing normalized structures.
 
 9. Clean up remaining external verbose-path and numeric-version buckets.
