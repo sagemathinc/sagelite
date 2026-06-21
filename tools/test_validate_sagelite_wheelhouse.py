@@ -140,6 +140,10 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "resolved_executable": None,
         "exists": False,
         "matches_controller": False,
+        "tag_probe": {
+            "attempted": False,
+            "error": "base Python executable could not be resolved",
+        },
     }
     assert host["controller_python"]["executable"] == sys.executable
     assert host["controller_python"]["cache_tag"]
@@ -254,6 +258,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
+    assert "- Base Python tag probe attempted: `False`" in summary
     assert "- Expected wheel Python tag: `cp312`" in summary
     assert "- Expected wheel ABI tag: `cp312`" in summary
     assert "`require-primary-sagelite-wheel-python-tag`" in summary

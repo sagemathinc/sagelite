@@ -669,6 +669,84 @@ def _resolve_executable(executable: str) -> str | None:
     return os.fspath(Path(resolved).resolve()) if resolved else None
 
 
+def _base_python_tag_probe(resolved_base_python: str | None) -> dict[str, object]:
+    if resolved_base_python is None:
+        return {
+            "attempted": False,
+            "error": "base Python executable could not be resolved",
+        }
+    probe = r"""
+import json
+import platform
+import sys
+import sysconfig
+
+payload = {
+    "python_version": platform.python_version(),
+    "implementation": platform.python_implementation(),
+    "cache_tag": sys.implementation.cache_tag,
+    "sysconfig_platform": sysconfig.get_platform(),
+    "machine": platform.machine(),
+}
+try:
+    from packaging import tags
+except Exception as exc:
+    payload["packaging_tags_available"] = False
+    payload["error"] = f"{type(exc).__name__}: {exc}"
+else:
+    seen_platforms = []
+    seen_platforms_set = set()
+    tag_strings = []
+    for tag in tags.sys_tags():
+        if len(tag_strings) < 20:
+            tag_strings.append(str(tag))
+        if tag.platform not in seen_platforms_set:
+            seen_platforms_set.add(tag.platform)
+            if len(seen_platforms) < 20:
+                seen_platforms.append(tag.platform)
+    payload["packaging_tags_available"] = True
+    payload["compatible_tags_sample"] = tag_strings
+    payload["compatible_platform_tags_sample"] = seen_platforms
+    payload["compatible_platform_tag_count"] = len(seen_platforms_set)
+print(json.dumps(payload, sort_keys=True))
+"""
+    try:
+        completed = subprocess.run(
+            [resolved_base_python, "-c", probe],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {
+            "attempted": True,
+            "executable": resolved_base_python,
+            "returncode": None,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    result: dict[str, object] = {
+        "attempted": True,
+        "executable": resolved_base_python,
+        "returncode": completed.returncode,
+    }
+    stdout = completed.stdout.strip()
+    if completed.stderr.strip():
+        result["stderr"] = completed.stderr.strip()
+    if completed.returncode != 0:
+        result["error"] = stdout or completed.stderr.strip()
+        return result
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError:
+        result["error"] = "base Python tag probe did not return JSON"
+        result["stdout"] = stdout
+        return result
+    if isinstance(payload, dict):
+        result.update(payload)
+    return result
+
+
 def validation_host_context(base_python: str) -> dict[str, object]:
     resolved_base_python = _resolve_executable(base_python)
     resolved_controller_python = _resolve_executable(sys.executable)
@@ -694,6 +772,7 @@ def validation_host_context(base_python: str) -> dict[str, object]:
                 and resolved_controller_python is not None
                 and Path(resolved_base_python) == Path(resolved_controller_python)
             ),
+            "tag_probe": _base_python_tag_probe(resolved_base_python),
         },
     }
 
@@ -739,6 +818,11 @@ def _validation_contract(
             "compatible_platform_tag_count"
         ),
         "compatible_platform_tags_sample": compatible_platform_tags_sample,
+        "base_python_tag_probe": (
+            host_context.get("base_python", {}).get("tag_probe", {})
+            if isinstance(host_context.get("base_python", {}), dict)
+            else {}
+        ),
         "companion_sagelite_wheel_compatibility": companion_compatibility,
         "incompatible_companion_sagelite_wheels": [
             item for item in companion_compatibility if not item["compatible"]
@@ -879,6 +963,24 @@ def write_validation_summary(
                 ),
             ]
         )
+        tag_probe = base_python.get("tag_probe", {})
+        if isinstance(tag_probe, dict):
+            lines.extend(
+                [
+                    (
+                        "- Base Python tag probe attempted: "
+                        f"`{tag_probe.get('attempted')}`"
+                    ),
+                    (
+                        "- Base Python packaging tags available: "
+                        f"`{tag_probe.get('packaging_tags_available')}`"
+                    ),
+                    (
+                        "- Base Python compatible platform tag count: "
+                        f"`{tag_probe.get('compatible_platform_tag_count')}`"
+                    ),
+                ]
+            )
     if validation_contract:
         lines.extend(
             [
