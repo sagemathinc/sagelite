@@ -6,12 +6,14 @@ Run an installed-wheel Sage doctest sweep and reduce it into triage artifacts.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
 import shlex
 import subprocess
 import sys
+import zipfile
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -510,6 +512,120 @@ def _recorded_installed_wheels(args: argparse.Namespace) -> tuple[list[str], boo
     return [path.name for path in _wheelhouse_sagelite_wheels(args.wheelhouse)], True
 
 
+def _recorded_sagelite_wheel_paths(args: argparse.Namespace) -> list[Path]:
+    if args.installed_wheel:
+        return [
+            Path(path)
+            for path in args.installed_wheel
+            if _wheel_distribution_name(Path(path)) == "sagelite"
+        ]
+    return [
+        path
+        for path in _wheelhouse_sagelite_wheels(args.wheelhouse)
+        if _wheel_distribution_name(path) == "sagelite"
+    ]
+
+
+def _load_native_catalog() -> dict[str, object]:
+    catalog_path = TOOLS_DIR / "sagelite_native_wheel_catalog.py"
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "sagelite_native_wheel_catalog", catalog_path
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot load spec for {catalog_path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.catalog()
+    except Exception as exc:  # noqa: BLE001 - summary should report the issue
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
+def _prefixed_shared_libraries(names: list[str], prefix: str) -> list[str]:
+    return sorted(
+        name
+        for name in names
+        if name.startswith("sagelite.libs/")
+        and os.path.basename(name).startswith(prefix)
+        and ".so" in os.path.basename(name)
+    )
+
+
+def _native_wheel_coverage(args: argparse.Namespace) -> dict[str, object]:
+    catalog = _load_native_catalog()
+    if "error" in catalog:
+        return {"available": False, "reason": catalog["error"], "wheels": []}
+
+    wheel_paths = _recorded_sagelite_wheel_paths(args)
+    if not wheel_paths:
+        return {
+            "available": False,
+            "reason": "no sagelite wheel recorded or inferred",
+            "wheels": [],
+        }
+
+    extension_prefixes = catalog["required_native_extension_prefixes"]
+    library_prefixes = catalog["required_native_library_prefixes"]
+    wheels = []
+    for path in wheel_paths:
+        wheel: dict[str, object] = {"path": str(path), "name": path.name}
+        try:
+            with zipfile.ZipFile(path) as archive:
+                names = archive.namelist()
+        except Exception as exc:  # noqa: BLE001 - keep summary artifact usable
+            wheel.update(
+                {
+                    "available": False,
+                    "reason": f"{type(exc).__name__}: {exc}",
+                }
+            )
+            wheels.append(wheel)
+            continue
+
+        missing_extensions = [
+            prefix
+            for prefix in extension_prefixes
+            if not any(
+                name.startswith(prefix) and name.endswith(".so") for name in names
+            )
+        ]
+        present_extensions = [
+            prefix for prefix in extension_prefixes if prefix not in missing_extensions
+        ]
+        missing_libraries = [
+            prefix
+            for prefix in library_prefixes
+            if not _prefixed_shared_libraries(names, prefix)
+        ]
+        present_libraries = [
+            prefix for prefix in library_prefixes if prefix not in missing_libraries
+        ]
+        wheel.update(
+            {
+                "available": True,
+                "required_extensions": {
+                    "counts": {
+                        "present": len(present_extensions),
+                        "missing": len(missing_extensions),
+                    },
+                    "present": present_extensions,
+                    "missing": missing_extensions,
+                },
+                "required_libraries": {
+                    "counts": {
+                        "present": len(present_libraries),
+                        "missing": len(missing_libraries),
+                    },
+                    "present": present_libraries,
+                    "missing": missing_libraries,
+                },
+            }
+        )
+        wheels.append(wheel)
+
+    return {"available": True, "wheels": wheels}
+
+
 def _manifest_sagelite_packages(path: Path) -> dict[str, object]:
     if not path.is_file():
         return {
@@ -661,6 +777,7 @@ def _runtime_summary(
             "wheelhouse_files": wheelhouse_files,
             "installed_wheels": installed_wheels,
             "installed_wheels_inferred_from_wheelhouse": installed_wheels_inferred,
+            "native_wheel_coverage": _native_wheel_coverage(args),
             "installed_sagelite_packages": manifest_packages,
             "companion_packages": companion_packages,
         },

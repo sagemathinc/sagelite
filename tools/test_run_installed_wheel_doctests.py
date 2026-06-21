@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 
 
@@ -302,6 +303,63 @@ def test_runner_infers_sagelite_wheels_from_wheelhouse_when_not_recorded(tmp_pat
     ]
     assert summary["wheels"]["installed_wheels_inferred_from_wheelhouse"] is True
     assert summary["wheels"]["companion_packages"] == ["sagelite-gap-runtime"]
+    assert summary["wheels"]["native_wheel_coverage"] == {
+        "available": True,
+        "wheels": [
+            {
+                "available": False,
+                "name": "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl",
+                "path": str(
+                    wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"
+                ),
+                "reason": "BadZipFile: File is not a zip file",
+            }
+        ],
+    }
+
+
+def test_runtime_summary_reports_required_native_wheel_coverage(tmp_path):
+    runner = _load_runner()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("sage/libs/braiding.cpython-312-x86_64-linux-gnu.so", "")
+        archive.writestr("sage/libs/ntl/error.cpython-312-x86_64-linux-gnu.so", "")
+        archive.writestr("sagelite.libs/libbraiding-abc123.so", "")
+        archive.writestr("sagelite.libs/libntl-abc123.so.45", "")
+
+    args = argparse.Namespace(
+        python=sys.executable,
+        wheelhouse=[wheelhouse],
+        installed_wheel=[],
+    )
+    paths = runner.make_artifact_paths(tmp_path, "summary")
+    summary = runner._runtime_summary(
+        args,
+        paths,
+        runner.build_clean_environment(sys.executable),
+        ["python", "-m", "sage.doctest"],
+        ["python", "manifest"],
+        0,
+    )
+
+    coverage = summary["wheels"]["native_wheel_coverage"]
+    assert coverage["available"] is True
+    assert coverage["wheels"][0]["available"] is True
+    assert coverage["wheels"][0]["required_extensions"]["present"] == [
+        "sage/libs/braiding.",
+        "sage/libs/ntl/error.",
+    ]
+    assert (
+        "sage/libs/homfly."
+        in coverage["wheels"][0]["required_extensions"]["missing"]
+    )
+    assert coverage["wheels"][0]["required_libraries"]["present"] == [
+        "libbraiding",
+        "libntl",
+    ]
+    assert "libhomfly" in coverage["wheels"][0]["required_libraries"]["missing"]
 
 
 def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):
