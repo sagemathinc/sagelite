@@ -140,6 +140,11 @@ Known facts from the latest investigation:
   install commands, so successful and interrupted validation runs record their
   fresh install path, wheelhouse inputs, package requirement, command sequence,
   and sanitized environment.
+- `tools/validate-sagelite-wheelhouse.py` now applies the same broad runtime
+  environment sanitization policy as the installed doctest runner before
+  creating the fresh venv, installing wheels, running `pip check`, and invoking
+  validation. The metadata records the removed runtime keys and prefixes so
+  CIBW/manylinux validation artifacts make inherited host leakage auditable.
 
 ## Reality status
 

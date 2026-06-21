@@ -21,19 +21,33 @@ def _load_validator():
     return module
 
 
-def test_builds_fresh_install_and_full_validation_commands(tmp_path):
+def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
     wheelhouse.mkdir()
     install_dir = tmp_path / "install"
     output_dir = tmp_path / "validation"
     commands = []
+    stale_environment = {
+        "SAGE_ROOT": "/project/source",
+        "SAGELITE_GAP_ROOT": "/tmp/stale-gap",
+        "MAXIMA_PREFIX": "/tmp/stale-maxima",
+        "FRICAS": "/tmp/stale-fricas",
+        "ALDORROOT": "/tmp/stale-aldor",
+        "FPLLL_DEFAULT_STRATEGY": "/project/local/share/fplll/strategies/default.json",
+        "GAP_ROOT_PATHS": "/usr/share/gap",
+        "MAXIMA": "/usr/bin/maxima",
+    }
+    for key, value in stale_environment.items():
+        monkeypatch.setenv(key, value)
 
     def fake_run(command, env):
         commands.append(command)
         assert env["PYTHONNOUSERSITE"] == "1"
         assert "PYTHONPATH" not in env
         assert "LD_LIBRARY_PATH" not in env
+        for key in stale_environment:
+            assert key not in env
         return subprocess.CompletedProcess(command, 0)
 
     validator._timestamp = lambda: "20260621-010203"
@@ -75,6 +89,22 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path):
     assert metadata["environment"]["PYTHONNOUSERSITE"] == "1"
     assert metadata["environment"]["PYTHONPATH"] is None
     assert metadata["environment"]["LD_LIBRARY_PATH"] is None
+    assert metadata["environment"]["GAP_ROOT_PATHS"] is None
+    assert metadata["environment"]["MAXIMA"] is None
+    assert metadata["removed_environment_keys"] == [
+        "GAP_ROOT_PATHS",
+        "LD_LIBRARY_PATH",
+        "MAXIMA",
+        "PYTHONPATH",
+    ]
+    assert metadata["removed_environment_prefixes"] == [
+        "SAGE_",
+        "SAGELITE_",
+        "MAXIMA_",
+        "FRICAS",
+        "ALDOR",
+        "FPLLL",
+    ]
     assert commands == [
         ["/opt/python/cp312/bin/python", "-m", "venv", os.fspath(install_dir)],
         [os.fspath(venv_python), "-m", "pip", "install", "-U", "pip"],

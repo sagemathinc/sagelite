@@ -20,6 +20,21 @@ RUNNER = TOOLS_DIR / "run-installed-wheel-doctests.py"
 DEFAULT_WORK_DIR = Path("/scratch/sagelite-r2-work")
 DEFAULT_PACKAGE = "sagelite[all-needed-extras]"
 
+RUNTIME_ENV_PREFIXES_TO_REMOVE = (
+    "SAGE_",
+    "SAGELITE_",
+    "MAXIMA_",
+    "FRICAS",
+    "ALDOR",
+    "FPLLL",
+)
+RUNTIME_ENV_KEYS_TO_REMOVE = {
+    "GAP_ROOT_PATHS",
+    "LD_LIBRARY_PATH",
+    "MAXIMA",
+    "PYTHONPATH",
+}
+
 
 def _timestamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -32,8 +47,11 @@ def _run(command: list[str], env: dict[str, str]) -> subprocess.CompletedProcess
 
 def _clean_environment() -> dict[str, str]:
     env = os.environ.copy()
-    for key in ("PYTHONPATH", "LD_LIBRARY_PATH"):
-        env.pop(key, None)
+    for key in list(env):
+        if key in RUNTIME_ENV_KEYS_TO_REMOVE or key.startswith(
+            RUNTIME_ENV_PREFIXES_TO_REMOVE
+        ):
+            env.pop(key, None)
     env["PYTHONNOUSERSITE"] = "1"
     return env
 
@@ -92,6 +110,12 @@ def write_install_metadata(
     env: dict[str, str],
 ) -> Path:
     path = output_dir / "install-metadata.json"
+    environment = {
+        "PATH": env.get("PATH", ""),
+        "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
+    }
+    for key in sorted(RUNTIME_ENV_KEYS_TO_REMOVE):
+        environment[key] = env.get(key)
     metadata = {
         "schema": "sagelite-wheelhouse-validation-install-v1",
         "label": label,
@@ -101,12 +125,9 @@ def write_install_metadata(
         "venv_python": os.fspath(venv_python),
         "wheelhouses": [os.fspath(path) for path in wheelhouses],
         "commands": commands,
-        "environment": {
-            "PATH": env.get("PATH", ""),
-            "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
-            "PYTHONPATH": env.get("PYTHONPATH"),
-            "LD_LIBRARY_PATH": env.get("LD_LIBRARY_PATH"),
-        },
+        "environment": environment,
+        "removed_environment_prefixes": list(RUNTIME_ENV_PREFIXES_TO_REMOVE),
+        "removed_environment_keys": sorted(RUNTIME_ENV_KEYS_TO_REMOVE),
     }
     path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
     return path
