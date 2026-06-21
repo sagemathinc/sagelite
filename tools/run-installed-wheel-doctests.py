@@ -308,6 +308,18 @@ SOURCE_INSPECTION_LEAK_FIELDS = (
     "sage_getfile_relative",
     "sage_getfile_relative_error",
 )
+ABSOLUTE_PATH_RE = re.compile(r"/[^\s:'\"`]+")
+
+
+def _absolute_paths_in_text(value: str) -> list[Path]:
+    paths = []
+    for match in ABSOLUTE_PATH_RE.finditer(value):
+        raw_path = match.group(0).rstrip(".,;)]}")
+        try:
+            paths.append(Path(raw_path).resolve())
+        except OSError:
+            paths.append(Path(raw_path).absolute())
+    return paths
 
 
 def _source_inspection_path_leak(entry: object, allowed_roots: list[Path]) -> bool:
@@ -324,12 +336,10 @@ def _source_inspection_path_leak(entry: object, allowed_roots: list[Path]) -> bo
             for marker in ["/scratch/", "/project/", ".mesonpy-", "/tmp/"]
         ):
             continue
-        try:
-            resolved = Path(value).resolve()
-        except OSError:
-            resolved = None
-        if resolved is not None and any(
-            _path_is_under(resolved, root) for root in allowed_roots
+        paths = _absolute_paths_in_text(value)
+        if paths and all(
+            any(_path_is_under(path, root) for root in allowed_roots)
+            for path in paths
         ):
             continue
         return True

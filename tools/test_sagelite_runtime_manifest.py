@@ -801,6 +801,37 @@ def test_compare_manifests_reports_build_tree_source_metadata():
     assert diff["candidate_source_path_leaks"] == candidate["source_inspection"]
 
 
+def test_compare_manifests_does_not_treat_installed_import_errors_as_source_leaks():
+    manifest = _load_manifest()
+    candidate = {
+        "python": {
+            "prefix": "/scratch/sagelite-r2-work/install",
+            "exec_prefix": "/scratch/sagelite-r2-work/install",
+        },
+        "source_inspection": {
+            "sage.libs.braiding": {
+                "error": (
+                    "ImportError: /scratch/sagelite-r2-work/install/lib/python3.12/"
+                    "site-packages/sage/libs/braiding.cpython-312-x86_64-linux-gnu.so: "
+                    "undefined symbol: _ZN8Braiding8SendToSCEi"
+                )
+            },
+            "sage.rings.integer": {
+                "error": (
+                    "RuntimeError: generated source path "
+                    "/scratch/sagelite-r2-work/current-source/src/sage/rings/integer.pyx"
+                )
+            },
+        },
+    }
+
+    diff = manifest.compare_manifests({}, candidate)
+
+    assert diff["candidate_source_path_leaks"] == {
+        "sage.rings.integer": candidate["source_inspection"]["sage.rings.integer"]
+    }
+
+
 def test_compare_manifests_reports_feature_collection_errors_without_null_diffs():
     manifest = _load_manifest()
     reference = {

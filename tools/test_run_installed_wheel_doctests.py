@@ -392,6 +392,13 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                             }
                         ],
                         "source_inspection": {
+                            "sage.libs.braiding": {
+                                "error": (
+                                    "ImportError: /tmp/sagelite-install/lib/python3.12/"
+                                    "site-packages/sage/libs/braiding.cpython-312-x86_64-linux-gnu.so: "
+                                    "undefined symbol: _ZN8Braiding8SendToSCEi"
+                                )
+                            },
                             "sage.rings.integer": {
                                 "file": (
                                     "/tmp/sagelite-install/lib/python3.12/"
