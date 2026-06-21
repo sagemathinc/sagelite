@@ -354,6 +354,45 @@ def test_collect_runtime_smoke_tests_checks_cypari2_private_pari(monkeypatch):
     assert '"private_pari"' in cypari_code
 
 
+def test_collect_runtime_smoke_tests_checks_fplll_strategy_data(monkeypatch):
+    manifest = _load_manifest()
+    probes = []
+
+    monkeypatch.setattr(
+        manifest,
+        "collect_required_native_import_smokes",
+        lambda timeout: {"modules": {}},
+    )
+
+    def fake_python_probe(code, timeout):
+        probes.append((code, timeout))
+        return {"returncode": 0, "stdout": "", "stderr": "", "error": None}
+
+    monkeypatch.setattr(manifest, "_run_python_probe", fake_python_probe)
+
+    result = manifest.collect_runtime_smoke_tests(7.0)
+    probe_by_name = dict(
+        zip(
+            [name for name in result if name != "required_native_imports"],
+            probes,
+        )
+    )
+
+    assert "fplll_strategy_data" in result
+    fplll_code, fplll_timeout = probe_by_name["fplll_strategy_data"]
+    assert fplll_timeout == 7.0
+    assert (
+        'getattr(sage_env, "_bootstrap_sagelite_fplll_data_runtime", None)'
+        in fplll_code
+    )
+    assert (
+        'getattr(sage_env, "_fplll_default_strategy_file", None)'
+        in fplll_code
+    )
+    assert '"resolved_strategy_exists"' in fplll_code
+    assert 'str(resolved_path).startswith("/project/local/")' in fplll_code
+
+
 def test_collect_runtime_smoke_tests_checks_symbolic_and_external_conversions(
     monkeypatch,
 ):

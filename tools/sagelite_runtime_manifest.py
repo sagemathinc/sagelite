@@ -1015,6 +1015,44 @@ if private_pari:
 """,
             timeout,
         ),
+        "fplll_strategy_data": _run_python_probe(
+            """
+import json
+from pathlib import Path
+
+from fpylll import config
+from sage import env as sage_env
+
+bootstrap = getattr(sage_env, "_bootstrap_sagelite_fplll_data_runtime", None)
+if callable(bootstrap):
+    bootstrap()
+
+default_strategy_path = getattr(config, "default_strategy_path", "")
+default_strategy = getattr(config, "default_strategy", "default.json")
+resolver = getattr(sage_env, "_fplll_default_strategy_file", None)
+if callable(resolver):
+    resolved_strategy = resolver(default_strategy_path, default_strategy)
+else:
+    candidate = Path(default_strategy)
+    resolved_strategy = (
+        candidate
+        if candidate.is_absolute()
+        else Path(default_strategy_path) / candidate
+    )
+
+resolved_path = Path(resolved_strategy)
+result = {
+    "default_strategy_path": str(default_strategy_path),
+    "default_strategy": str(default_strategy),
+    "resolved_strategy": str(resolved_path),
+    "resolved_strategy_exists": resolved_path.is_file(),
+}
+print(json.dumps(result))
+if not resolved_path.is_file() or str(resolved_path).startswith("/project/local/"):
+    raise SystemExit(1)
+""",
+            timeout,
+        ),
         "maxima_help": _run_python_probe(
             """
 from sage.interfaces.maxima import maxima
