@@ -291,6 +291,13 @@ Scheduled audit on 2026-06-21:
   tags, so CIBW artifacts expose wrong-ABI or wrong-platform companion wheels
   without opening the JSON inventory. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records the inferred wheel validation
+  contract in wheelhouse validation artifacts: expected primary/companion
+  Python and ABI tags, normalized host machine, compatible platform tag sample,
+  and enabled preflight flags. This makes CIBW preflight artifacts auditable
+  without reconstructing the validation contract from the command line and host
+  metadata. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py -q`
 
 ## Reality status
 

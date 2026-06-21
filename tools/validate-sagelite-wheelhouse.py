@@ -558,6 +558,33 @@ def _host_context_machine(host_context: dict[str, object]) -> str | None:
     return str(machine) if machine else None
 
 
+def _validation_contract(
+    *,
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    host_context: dict[str, object],
+    enabled_preflights: list[str],
+) -> dict[str, object]:
+    controller = host_context.get("controller_python", {})
+    if not isinstance(controller, dict):
+        controller = {}
+    compatible_platform_tags = controller.get("compatible_platform_tags_sample", [])
+    if not isinstance(compatible_platform_tags, list):
+        compatible_platform_tags = []
+    return {
+        "expected_python_tag": expected_python_tag,
+        "expected_abi_tag": expected_abi_tag,
+        "expected_platform_machine": _normalized_platform_machine(
+            _host_context_machine(host_context)
+        ),
+        "compatible_platform_tag_count": controller.get(
+            "compatible_platform_tag_count"
+        ),
+        "compatible_platform_tags_sample": compatible_platform_tags,
+        "enabled_preflights": enabled_preflights,
+    }
+
+
 def build_venv_command(base_python: str, install_dir: Path) -> list[str]:
     return [base_python, "-m", "venv", os.fspath(install_dir)]
 
@@ -601,6 +628,7 @@ def write_install_metadata(
     env: dict[str, str],
     inventory: dict[str, object],
     host_context: dict[str, object],
+    validation_contract: dict[str, object] | None = None,
     status: str = "pending",
     exit_code: int | None = None,
     command_results: list[dict[str, object]] | None = None,
@@ -624,6 +652,7 @@ def write_install_metadata(
         "wheelhouse_inventory": inventory,
         "native_wheel_catalog": sagelite_native_wheel_catalog.catalog(),
         "validation_host": host_context,
+        "validation_contract": validation_contract or {},
         "commands": commands,
         "status": status,
         "exit_code": exit_code,
@@ -653,6 +682,7 @@ def write_validation_summary(
     command_results: list[dict[str, object]] | None = None,
     preflight_error: str | None = None,
     host_context: dict[str, object] | None = None,
+    validation_contract: dict[str, object] | None = None,
 ) -> Path:
     path = output_dir / "validation-summary.md"
     inventory = wheelhouse_inventory(wheelhouses)
@@ -686,6 +716,28 @@ def write_validation_summary(
                     f"`{controller.get('compatible_platform_tag_count')}`"
                 ),
             ]
+        )
+    if validation_contract:
+        lines.extend(
+            [
+                "- Expected wheel Python tag: "
+                f"`{validation_contract.get('expected_python_tag')}`",
+                "- Expected wheel ABI tag: "
+                f"`{validation_contract.get('expected_abi_tag')}`",
+                "- Expected platform machine: "
+                f"`{validation_contract.get('expected_platform_machine')}`",
+            ]
+        )
+        enabled_preflights = validation_contract.get("enabled_preflights", [])
+        if not isinstance(enabled_preflights, list):
+            enabled_preflights = []
+        lines.append(
+            "- Enabled preflights: "
+            + (
+                ", ".join(f"`{preflight}`" for preflight in enabled_preflights)
+                if enabled_preflights
+                else "`none`"
+            )
         )
     lines.append("- Wheelhouses:")
     lines.extend(f"  - `{wheelhouse}`" for wheelhouse in wheelhouses)
@@ -1033,12 +1085,16 @@ def main(argv: list[str] | None = None) -> int:
     ]
     command_phases = list(VALIDATION_PHASES)
     preflight_checks = []
+    enabled_preflights = []
     if args.require_repaired_sagelite_wheel:
         preflight_checks.append(_ensure_repaired_sagelite_wheel)
+        enabled_preflights.append("require-repaired-sagelite-wheel")
     if args.require_all_needed_extra_sagelite_wheels:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
+        enabled_preflights.append("require-all-needed-extra-sagelite-wheels")
     if args.reject_duplicate_companion_sagelite_wheels:
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
+        enabled_preflights.append("reject-duplicate-companion-sagelite-wheels")
     if args.require_compatible_companion_sagelite_wheels:
         compatible_platform_tags = _compatible_platform_tags()
         preflight_checks.append(
@@ -1049,18 +1105,21 @@ def main(argv: list[str] | None = None) -> int:
                 compatible_platform_tags,
             )
         )
+        enabled_preflights.append("require-compatible-companion-sagelite-wheels")
     if args.require_primary_sagelite_wheel_python_tag:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_python_tag(
                 inventory, expected_python_tag
             )
         )
+        enabled_preflights.append("require-primary-sagelite-wheel-python-tag")
     if args.require_primary_sagelite_wheel_abi_tag:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_abi_tag(
                 inventory, expected_abi_tag
             )
         )
+        enabled_preflights.append("require-primary-sagelite-wheel-abi-tag")
     if args.require_primary_sagelite_wheel_platform_machine:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_platform_machine(
@@ -1068,6 +1127,7 @@ def main(argv: list[str] | None = None) -> int:
                 _host_context_machine(host_context),
             )
         )
+        enabled_preflights.append("require-primary-sagelite-wheel-platform-machine")
     if args.require_primary_sagelite_wheel_compatible_platform_tag:
         compatible_platform_tags = _compatible_platform_tags()
         preflight_checks.append(
@@ -1076,6 +1136,15 @@ def main(argv: list[str] | None = None) -> int:
                 compatible_platform_tags,
             )
         )
+        enabled_preflights.append(
+            "require-primary-sagelite-wheel-compatible-platform-tag"
+        )
+    validation_contract = _validation_contract(
+        expected_python_tag=expected_python_tag,
+        expected_abi_tag=expected_abi_tag,
+        host_context=host_context,
+        enabled_preflights=enabled_preflights,
+    )
     for check in preflight_checks:
         try:
             check(inventory)
@@ -1092,6 +1161,7 @@ def main(argv: list[str] | None = None) -> int:
                 env=env,
                 inventory=inventory,
                 host_context=host_context,
+                validation_contract=validation_contract,
                 status="failed",
                 exit_code=2,
                 preflight_error=str(exc),
@@ -1106,6 +1176,7 @@ def main(argv: list[str] | None = None) -> int:
                 exit_code=2,
                 preflight_error=str(exc),
                 host_context=host_context,
+                validation_contract=validation_contract,
             )
             print(str(exc), file=sys.stderr)
             print(f"metadata: {metadata_path}")
@@ -1123,6 +1194,7 @@ def main(argv: list[str] | None = None) -> int:
         env=env,
         inventory=inventory,
         host_context=host_context,
+        validation_contract=validation_contract,
         status="running",
     )
     summary_path = write_validation_summary(
@@ -1134,6 +1206,7 @@ def main(argv: list[str] | None = None) -> int:
         status="running",
         exit_code=None,
         host_context=host_context,
+        validation_contract=validation_contract,
     )
     command_results: list[dict[str, object]] = []
     for index, command in enumerate(commands, start=1):
@@ -1161,6 +1234,7 @@ def main(argv: list[str] | None = None) -> int:
             env=env,
             inventory=inventory,
             host_context=host_context,
+            validation_contract=validation_contract,
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
@@ -1175,6 +1249,7 @@ def main(argv: list[str] | None = None) -> int:
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
             host_context=host_context,
+            validation_contract=validation_contract,
         )
         if result.returncode:
             print(f"metadata: {metadata_path}")
@@ -1193,6 +1268,7 @@ def main(argv: list[str] | None = None) -> int:
         env=env,
         inventory=inventory,
         host_context=host_context,
+        validation_contract=validation_contract,
         status="passed",
         exit_code=0,
         command_results=command_results,
@@ -1207,6 +1283,7 @@ def main(argv: list[str] | None = None) -> int:
         exit_code=0,
         command_results=command_results,
         host_context=host_context,
+        validation_contract=validation_contract,
     )
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")

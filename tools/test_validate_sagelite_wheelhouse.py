@@ -138,6 +138,14 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert host["controller_python"]["executable"] == sys.executable
     assert host["controller_python"]["cache_tag"]
     assert host["controller_python"]["sysconfig_platform"]
+    assert metadata["validation_contract"]["expected_python_tag"] == "cp312"
+    assert metadata["validation_contract"]["expected_abi_tag"] == "cp312"
+    assert "require-primary-sagelite-wheel-python-tag" in metadata[
+        "validation_contract"
+    ]["enabled_preflights"]
+    assert "require-primary-sagelite-wheel-abi-tag" in metadata[
+        "validation_contract"
+    ]["enabled_preflights"]
     assert [
         file["name"]
         for file in metadata["wheelhouse_inventory"]["primary_sagelite_wheels"]
@@ -240,6 +248,10 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
+    assert "- Expected wheel Python tag: `cp312`" in summary
+    assert "- Expected wheel ABI tag: `cp312`" in summary
+    assert "`require-primary-sagelite-wheel-python-tag`" in summary
+    assert "`require-primary-sagelite-wheel-abi-tag`" in summary
     assert (
         f"- `{repaired_wheel.name}` "
         "(python: cp312; abi: cp312; platform: manylinux_2_28_x86_64)"
@@ -296,6 +308,7 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
     assert metadata["commands"] == commands
     assert metadata["status"] == "passed"
     assert metadata["exit_code"] == 0
+    assert metadata["validation_contract"]["enabled_preflights"] == []
     assert commands[4] == [
         os.fspath(venv_python),
         os.fspath(ROOT / "tools" / "run-installed-wheel-doctests.py"),
@@ -513,6 +526,7 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     ] is True
     assert "- Status: `failed`" in summary
     assert "- Exit code: `2`" in summary
+    assert "- Enabled preflights: `require-repaired-sagelite-wheel`" in summary
     assert (
         f"- `{raw_wheel.name}` "
         "(python: cp312; abi: cp312; platform: linux_x86_64)"
@@ -1120,6 +1134,18 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert controller["compatible_platform_tags_sample"] == [
         "manylinux_2_28_x86_64",
         "linux_x86_64",
+    ]
+    contract = metadata["validation_contract"]
+    assert contract["expected_python_tag"] == "cp312"
+    assert contract["expected_abi_tag"] == "cp312"
+    assert contract["expected_platform_machine"] == "x86_64"
+    assert contract["compatible_platform_tag_count"] == 2
+    assert contract["compatible_platform_tags_sample"] == [
+        "manylinux_2_28_x86_64",
+        "linux_x86_64",
+    ]
+    assert "require-primary-sagelite-wheel-compatible-platform-tag" in contract[
+        "enabled_preflights"
     ]
     primary_wheel = metadata["wheelhouse_inventory"]["primary_sagelite_wheels"][0]
     assert primary_wheel["platform_tags"] == ["manylinux_2_99_x86_64"]
