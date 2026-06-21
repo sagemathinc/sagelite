@@ -397,17 +397,17 @@ def _wheel_tags_rendered(wheel: dict[str, object]) -> str:
     )
 
 
-def _ensure_compatible_companion_sagelite_wheels(
+def _companion_sagelite_wheel_compatibility(
     inventory: dict[str, object],
     expected_python_tag: str | None,
     expected_abi_tag: str | None,
     compatible_platform_tags: list[str],
-) -> None:
+) -> list[dict[str, object]]:
     wheels = inventory["companion_sagelite_wheels"]  # type: ignore[index]
     if not isinstance(wheels, list):
         wheels = []
     compatible_platforms = set(compatible_platform_tags)
-    incompatible = []
+    report = []
     for wheel in wheels:
         if not isinstance(wheel, dict):
             continue
@@ -430,9 +430,54 @@ def _ensure_compatible_companion_sagelite_wheels(
         platform_ok = "any" in platform_tags or any(
             str(tag) in compatible_platforms for tag in platform_tags
         )
-        if python_ok and abi_ok and platform_ok:
+        mismatches = []
+        if not python_ok:
+            mismatches.append("python")
+        if not abi_ok:
+            mismatches.append("abi")
+        if not platform_ok:
+            mismatches.append("platform")
+        report.append(
+            {
+                "name": wheel.get("name"),
+                "project_name": wheel.get("project_name"),
+                "python_tags": python_tags,
+                "abi_tags": abi_tags,
+                "platform_tags": platform_tags,
+                "python_compatible": python_ok,
+                "abi_compatible": abi_ok,
+                "platform_compatible": platform_ok,
+                "compatible": python_ok and abi_ok and platform_ok,
+                "mismatches": mismatches,
+            }
+        )
+    return report
+
+
+def _ensure_compatible_companion_sagelite_wheels(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> None:
+    incompatible = []
+    for item in _companion_sagelite_wheel_compatibility(
+        inventory,
+        expected_python_tag,
+        expected_abi_tag,
+        compatible_platform_tags,
+    ):
+        if item["compatible"]:
             continue
-        incompatible.append(f"{wheel.get('name')} ({_wheel_tags_rendered(wheel)})")
+        mismatches = item.get("mismatches", [])
+        if not isinstance(mismatches, list):
+            mismatches = []
+        incompatible.append(
+            f"{item.get('name')} ({_wheel_tags_rendered(item)}; "
+            "mismatches: "
+            + ", ".join(str(mismatch) for mismatch in mismatches)
+            + ")"
+        )
 
     if not incompatible:
         return
@@ -663,17 +708,27 @@ def _host_context_machine(host_context: dict[str, object]) -> str | None:
 
 def _validation_contract(
     *,
+    inventory: dict[str, object],
     expected_python_tag: str | None,
     expected_abi_tag: str | None,
     host_context: dict[str, object],
+    compatible_platform_tags: list[str],
     enabled_preflights: list[str],
 ) -> dict[str, object]:
     controller = host_context.get("controller_python", {})
     if not isinstance(controller, dict):
         controller = {}
-    compatible_platform_tags = controller.get("compatible_platform_tags_sample", [])
-    if not isinstance(compatible_platform_tags, list):
-        compatible_platform_tags = []
+    compatible_platform_tags_sample = controller.get(
+        "compatible_platform_tags_sample", []
+    )
+    if not isinstance(compatible_platform_tags_sample, list):
+        compatible_platform_tags_sample = []
+    companion_compatibility = _companion_sagelite_wheel_compatibility(
+        inventory,
+        expected_python_tag,
+        expected_abi_tag,
+        compatible_platform_tags,
+    )
     return {
         "expected_python_tag": expected_python_tag,
         "expected_abi_tag": expected_abi_tag,
@@ -683,7 +738,11 @@ def _validation_contract(
         "compatible_platform_tag_count": controller.get(
             "compatible_platform_tag_count"
         ),
-        "compatible_platform_tags_sample": compatible_platform_tags,
+        "compatible_platform_tags_sample": compatible_platform_tags_sample,
+        "companion_sagelite_wheel_compatibility": companion_compatibility,
+        "incompatible_companion_sagelite_wheels": [
+            item for item in companion_compatibility if not item["compatible"]
+        ],
         "enabled_preflights": enabled_preflights,
     }
 
@@ -929,6 +988,40 @@ def write_validation_summary(
             else "`none`"
         )
     )
+    incompatible_companion_wheels = []
+    if validation_contract:
+        incompatible_companion_wheels = validation_contract.get(
+            "incompatible_companion_sagelite_wheels", []
+        )
+    if not isinstance(incompatible_companion_wheels, list):
+        incompatible_companion_wheels = []
+    lines.append(
+        "- Incompatible companion sagelite wheels: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in incompatible_companion_wheels
+                if isinstance(item, dict)
+            )
+            if incompatible_companion_wheels
+            else "`none`"
+        )
+    )
+    for item in incompatible_companion_wheels:
+        if not isinstance(item, dict):
+            continue
+        mismatches = item.get("mismatches", [])
+        if not isinstance(mismatches, list):
+            mismatches = []
+        lines.append(
+            "  - "
+            f"`{item.get('name')}` mismatches: "
+            + (
+                ", ".join(f"`{mismatch}`" for mismatch in mismatches)
+                if mismatches
+                else "`none`"
+            )
+        )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]
     required_import_modules = native_catalog["required_native_import_modules"]
@@ -1188,6 +1281,7 @@ def main(argv: list[str] | None = None) -> int:
     host_context = validation_host_context(args.python)
     expected_python_tag = _requested_python_wheel_tag(args.python, host_context)
     expected_abi_tag = expected_python_tag
+    compatible_platform_tags = _compatible_platform_tags()
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1227,7 +1321,6 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(_ensure_companion_sagelite_wheel_requirements)
         enabled_preflights.append("require-sagelite-companion-wheel-requirements")
     if args.require_compatible_companion_sagelite_wheels:
-        compatible_platform_tags = _compatible_platform_tags()
         preflight_checks.append(
             lambda inventory: _ensure_compatible_companion_sagelite_wheels(
                 inventory,
@@ -1260,7 +1353,6 @@ def main(argv: list[str] | None = None) -> int:
         )
         enabled_preflights.append("require-primary-sagelite-wheel-platform-machine")
     if args.require_primary_sagelite_wheel_compatible_platform_tag:
-        compatible_platform_tags = _compatible_platform_tags()
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_platform_tag_compatible(
                 inventory,
@@ -1271,9 +1363,11 @@ def main(argv: list[str] | None = None) -> int:
             "require-primary-sagelite-wheel-compatible-platform-tag"
         )
     validation_contract = _validation_contract(
+        inventory=inventory,
         expected_python_tag=expected_python_tag,
         expected_abi_tag=expected_abi_tag,
         host_context=host_context,
+        compatible_platform_tags=compatible_platform_tags,
         enabled_preflights=enabled_preflights,
     )
     for check in preflight_checks:

@@ -937,12 +937,28 @@ def test_require_compatible_companion_sagelite_wheels_rejects_mismatch(
     companion_wheel = metadata["wheelhouse_inventory"]["companion_sagelite_wheels"][0]
     assert companion_wheel["python_tags"] == ["cp313"]
     assert companion_wheel["abi_tags"] == ["cp313"]
+    incompatibility = metadata["validation_contract"][
+        "incompatible_companion_sagelite_wheels"
+    ][0]
+    assert incompatibility["name"] == mismatched_companion.name
+    assert incompatibility["python_compatible"] is False
+    assert incompatibility["abi_compatible"] is False
+    assert incompatibility["platform_compatible"] is True
+    assert incompatibility["mismatches"] == ["python", "abi"]
     assert (
         f"- `{mismatched_companion.name}` "
         "(python: cp313; abi: cp313; platform: manylinux_2_28_x86_64)"
     ) in summary
+    assert (
+        f"- Incompatible companion sagelite wheels: "
+        f"`{mismatched_companion.name}`"
+    ) in summary
+    assert (
+        f"  - `{mismatched_companion.name}` mismatches: `python`, `abi`"
+    ) in summary
     assert "## Preflight Error" in summary
     assert "companion wheels are not compatible" in summary
+    assert "mismatches: python, abi" in summary
 
 
 def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
@@ -992,6 +1008,9 @@ def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
     )
     assert metadata["status"] == "passed"
     assert metadata["preflight_error"] is None
+    assert metadata["validation_contract"][
+        "incompatible_companion_sagelite_wheels"
+    ] == []
 
 
 def test_require_primary_sagelite_wheel_python_tag_rejects_mismatch(tmp_path):
