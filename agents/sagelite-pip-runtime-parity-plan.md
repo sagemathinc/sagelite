@@ -217,6 +217,11 @@ Scheduled audit on 2026-06-21:
   validation directories now record the required Meson options, native import
   module surface, and native library prefixes in `install-metadata.json` and
   summarize the catalog in `validation-summary.md`.
+- Follow-up scheduled tooling work now names each wheelhouse validation step in
+  `install-metadata.json` command results and in `validation-summary.md`,
+  preserving host/interpreter context in failure summaries. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

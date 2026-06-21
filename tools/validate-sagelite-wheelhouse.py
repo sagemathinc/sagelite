@@ -28,6 +28,13 @@ import sagelite_native_wheel_catalog
 RUNNER = TOOLS_DIR / "run-installed-wheel-doctests.py"
 DEFAULT_WORK_DIR = Path("/scratch/sagelite-r2-work")
 DEFAULT_PACKAGE = "sagelite[all-needed-extras]"
+VALIDATION_PHASES = (
+    "create virtual environment",
+    "upgrade pip",
+    "install wheelhouse package",
+    "run pip check",
+    "run installed doctest validation",
+)
 
 RUNTIME_ENV_PREFIXES_TO_REMOVE = (
     "SAGE_",
@@ -381,7 +388,10 @@ def write_validation_summary(
             )
             lines.extend(
                 [
-                    f"### {result.get('index')}. {result.get('status')}",
+                    (
+                        f"### {result.get('index')}. {result.get('phase')}: "
+                        f"{result.get('status')}"
+                    ),
                     "",
                     f"- Return code: `{result.get('returncode')}`",
                     f"- Elapsed seconds: `{result.get('elapsed_seconds')}`",
@@ -554,6 +564,7 @@ def main(argv: list[str] | None = None) -> int:
             else args.doctest_args,
         ),
     ]
+    command_phases = list(VALIDATION_PHASES)
     if args.require_repaired_sagelite_wheel:
         try:
             _ensure_repaired_sagelite_wheel(inventory)
@@ -620,6 +631,7 @@ def main(argv: list[str] | None = None) -> int:
         command_results.append(
             {
                 "index": index,
+                "phase": command_phases[index - 1],
                 "command": command,
                 "returncode": result.returncode,
                 "elapsed_seconds": round(time.perf_counter() - started, 3),
@@ -651,6 +663,7 @@ def main(argv: list[str] | None = None) -> int:
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
+            host_context=host_context,
         )
         if result.returncode:
             print(f"metadata: {metadata_path}")

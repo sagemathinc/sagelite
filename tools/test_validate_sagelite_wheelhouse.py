@@ -201,6 +201,13 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         4,
         5,
     ]
+    assert [result["phase"] for result in metadata["command_results"]] == [
+        "create virtual environment",
+        "upgrade pip",
+        "install wheelhouse package",
+        "run pip check",
+        "run installed doctest validation",
+    ]
     assert all(
         isinstance(result["elapsed_seconds"], float)
         for result in metadata["command_results"]
@@ -218,7 +225,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "`brial`" in summary
     assert "- Required native import modules: `19`" in summary
     assert "`libntl`" in summary
-    assert "### 5. passed" in summary
+    assert "### 5. run installed doctest validation: passed" in summary
     assert "--optional sage,optional,external" in summary
 
 
@@ -342,6 +349,16 @@ def test_stops_after_failed_step(tmp_path):
         12,
     ]
     assert [result["command"] for result in metadata["command_results"]] == commands
+    assert [result["phase"] for result in metadata["command_results"]] == [
+        "create virtual environment",
+        "upgrade pip",
+        "install wheelhouse package",
+    ]
+    summary = (
+        tmp_path / "validation-20260621-030405" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert "### 3. install wheelhouse package: failed" in summary
+    assert "- Controller Python:" in summary
 
 
 def test_missing_wheelhouse_fails_before_creating_commands(tmp_path):
