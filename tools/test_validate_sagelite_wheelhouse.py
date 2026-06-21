@@ -98,6 +98,14 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is False
+    assert "brial" in metadata["native_wheel_catalog"]["required_meson_options"]
+    assert (
+        "sage.libs.ntl.error"
+        in metadata["native_wheel_catalog"]["required_native_import_modules"]
+    )
+    assert "libntl" in metadata["native_wheel_catalog"][
+        "required_native_library_prefixes"
+    ]
     host = metadata["validation_host"]
     assert host["base_python"] == {
         "requested": "/opt/python/cp312/bin/python",
@@ -205,6 +213,11 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Controller Python:" in summary
     assert f"- `{repaired_wheel.name}` (manylinux_2_28_x86_64)" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
+    assert "## Native Wheel Catalog" in summary
+    assert "- Required Meson options:" in summary
+    assert "`brial`" in summary
+    assert "- Required native import modules: `19`" in summary
+    assert "`libntl`" in summary
     assert "### 5. passed" in summary
     assert "--optional sage,optional,external" in summary
 
@@ -428,6 +441,10 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     assert "repaired sagelite wheel is required" in metadata["preflight_error"]
     assert raw_wheel.name in metadata["preflight_error"]
     assert metadata["command_results"] == []
+    assert (
+        "sage.libs.ntl.error"
+        in metadata["native_wheel_catalog"]["required_native_import_modules"]
+    )
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is True
@@ -436,6 +453,7 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     assert f"- `{raw_wheel.name}` (linux_x86_64)" in summary
     assert "- Contains repaired primary sagelite wheel: `False`" in summary
     assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
+    assert "## Native Wheel Catalog" in summary
     assert "## Preflight Error" in summary
     assert "repaired sagelite wheel is required" in summary
 

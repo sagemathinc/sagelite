@@ -212,6 +212,11 @@ Scheduled audit on 2026-06-21:
   pointing at `/tmp/sage-wheel-prefix/bin/python3`; with
   `PYTHONNOUSERSITE=1`, `pytest` is not installed. Use the repository `.venv`
   for local pure-Python tooling tests.
+- Follow-up scheduled tooling work added the native wheel catalog to
+  `tools/validate-sagelite-wheelhouse.py` artifacts. Future CIBW/manylinux
+  validation directories now record the required Meson options, native import
+  module surface, and native library prefixes in `install-metadata.json` and
+  summarize the catalog in `validation-summary.md`.
 
 ## Reality status
 

@@ -19,8 +19,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-
 TOOLS_DIR = Path(__file__).resolve().parent
+if os.fspath(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, os.fspath(TOOLS_DIR))
+
+import sagelite_native_wheel_catalog
+
 RUNNER = TOOLS_DIR / "run-installed-wheel-doctests.py"
 DEFAULT_WORK_DIR = Path("/scratch/sagelite-r2-work")
 DEFAULT_PACKAGE = "sagelite[all-needed-extras]"
@@ -251,6 +255,7 @@ def write_install_metadata(
         "venv_python": os.fspath(venv_python),
         "wheelhouses": [os.fspath(path) for path in wheelhouses],
         "wheelhouse_inventory": inventory,
+        "native_wheel_catalog": sagelite_native_wheel_catalog.catalog(),
         "validation_host": host_context,
         "commands": commands,
         "status": status,
@@ -335,6 +340,29 @@ def write_validation_summary(
         [
             f"- Contains repaired primary sagelite wheel: `{contains_repaired}`",
             f"- Contains raw Linux primary sagelite wheel: `{contains_raw_linux}`",
+        ]
+    )
+    native_catalog = sagelite_native_wheel_catalog.catalog()
+    required_meson_options = native_catalog["required_meson_options"]
+    required_import_modules = native_catalog["required_native_import_modules"]
+    required_library_prefixes = native_catalog["required_native_library_prefixes"]
+    lines.extend(
+        [
+            "",
+            "## Native Wheel Catalog",
+            "",
+            (
+                "- Required Meson options: "
+                + ", ".join(f"`{option}`" for option in required_meson_options)
+            ),
+            (
+                "- Required native import modules: "
+                f"`{len(required_import_modules)}`"
+            ),
+            (
+                "- Required native library prefixes: "
+                + ", ".join(f"`{prefix}`" for prefix in required_library_prefixes)
+            ),
         ]
     )
     if preflight_error:
