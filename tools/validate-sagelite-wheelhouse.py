@@ -239,6 +239,18 @@ def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
     )
 
 
+def _ensure_all_needed_extra_sagelite_wheels(inventory: dict[str, object]) -> None:
+    missing = inventory["missing_all_needed_extra_sagelite_packages"]
+    if not isinstance(missing, list):
+        missing = []
+    if not missing:
+        return
+    raise RuntimeError(
+        "all-needed-extras companion sagelite wheels are required but missing: "
+        + ", ".join(str(package) for package in missing)
+    )
+
+
 def _resolve_executable(executable: str) -> str | None:
     path = Path(executable)
     if path.is_absolute() or os.sep in executable:
@@ -648,6 +660,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-all-needed-extra-sagelite-wheels",
+        action="store_true",
+        help=(
+            "fail before installation unless every sagelite companion package "
+            "declared by the all-needed-extras extra is present in the wheelhouse"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -690,9 +710,14 @@ def main(argv: list[str] | None = None) -> int:
         ),
     ]
     command_phases = list(VALIDATION_PHASES)
+    preflight_checks = []
     if args.require_repaired_sagelite_wheel:
+        preflight_checks.append(_ensure_repaired_sagelite_wheel)
+    if args.require_all_needed_extra_sagelite_wheels:
+        preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
+    for check in preflight_checks:
         try:
-            _ensure_repaired_sagelite_wheel(inventory)
+            check(inventory)
         except RuntimeError as exc:
             metadata_path = write_install_metadata(
                 output_dir,

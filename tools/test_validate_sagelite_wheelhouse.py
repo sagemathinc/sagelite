@@ -558,6 +558,100 @@ def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path)
     assert "exactly one primary sagelite wheel is required" in summary
 
 
+def test_require_all_needed_extra_sagelite_wheels_rejects_missing_companions(
+    tmp_path,
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-063000"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-all-needed-extra-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-063000" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-063000" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "all-needed-extras companion sagelite wheels are required" in metadata[
+        "preflight_error"
+    ]
+    assert "sagelite-gap-runtime" not in metadata["preflight_error"]
+    assert "sagelite-maxima-runtime" in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"][
+        "contains_all_needed_extra_sagelite_wheels"
+    ] is False
+    assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `28`" in summary
+    assert "`sagelite-maxima-runtime`" in summary
+    assert "## Preflight Error" in summary
+    assert "all-needed-extras companion sagelite wheels are required" in summary
+
+
+def test_require_all_needed_extra_sagelite_wheels_allows_complete_companions(
+    tmp_path,
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    for package in validator._all_needed_extra_sagelite_packages():
+        wheel_name = package.replace("-", "_") + "-10.9-py3-none-any.whl"
+        (wheelhouse / wheel_name).write_text("")
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._timestamp = lambda: "20260621-063500"
+    validator._run = fake_run
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-all-needed-extra-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-063500" / "install-metadata.json").read_text()
+    )
+    assert metadata["status"] == "passed"
+    assert metadata["wheelhouse_inventory"][
+        "contains_all_needed_extra_sagelite_wheels"
+    ] is True
+    assert metadata["wheelhouse_inventory"][
+        "missing_all_needed_extra_sagelite_packages"
+    ] == []
+
+
 def test_require_repaired_sagelite_wheel_rejects_mixed_primary_wheels(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
