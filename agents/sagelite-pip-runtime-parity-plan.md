@@ -246,6 +246,13 @@ Scheduled audit on 2026-06-21:
   an install when duplicate normalized sagelite companion package names are
   staged. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records Python and ABI tags for every
+  wheelhouse wheel in validation inventory metadata and renders the primary
+  sagelite wheel's Python, ABI, and platform tags in `validation-summary.md`,
+  making multi-ABI CIBW artifacts easier to audit when the staged wheel does
+  not match the requested validation interpreter. Focused local validation
+  passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

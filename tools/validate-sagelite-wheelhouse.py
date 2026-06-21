@@ -85,13 +85,21 @@ def _ensure_wheelhouses(paths: list[Path]) -> list[Path]:
     return wheelhouses
 
 
-def _wheel_platform_tags(wheel: Path) -> list[str]:
+def _wheel_tags(wheel: Path) -> dict[str, list[str]]:
     if wheel.suffix != ".whl":
-        return []
+        return {"python": [], "abi": [], "platform": []}
     parts = wheel.name[:-4].split("-")
     if len(parts) < 5:
-        return []
-    return parts[-1].split(".")
+        return {"python": [], "abi": [], "platform": []}
+    return {
+        "python": parts[-3].split("."),
+        "abi": parts[-2].split("."),
+        "platform": parts[-1].split("."),
+    }
+
+
+def _wheel_platform_tags(wheel: Path) -> list[str]:
+    return _wheel_tags(wheel)["platform"]
 
 
 def _is_sagelite_project_wheel(wheel: Path) -> bool:
@@ -148,7 +156,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     files: list[dict[str, object]] = []
     for wheelhouse in wheelhouses:
         for wheel in sorted(wheelhouse.glob("*.whl")):
-            platform_tags = _wheel_platform_tags(wheel)
+            wheel_tags = _wheel_tags(wheel)
             is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
             project_name = _wheel_project_name(wheel)
             files.append(
@@ -157,7 +165,9 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
                     "path": os.fspath(wheel),
                     "wheelhouse": os.fspath(wheelhouse),
                     "project_name": project_name,
-                    "platform_tags": platform_tags,
+                    "python_tags": wheel_tags["python"],
+                    "abi_tags": wheel_tags["abi"],
+                    "platform_tags": wheel_tags["platform"],
                     "is_sagelite_project_wheel": _is_sagelite_project_wheel(wheel),
                     "is_primary_sagelite_wheel": is_primary_sagelite,
                     "is_repaired_linux_wheel": _is_repaired_linux_wheel(wheel),
@@ -433,12 +443,25 @@ def write_validation_summary(
     for wheel in primary_sagelite_wheels:
         if not isinstance(wheel, dict):
             continue
+        python_tags = wheel.get("python_tags", [])
+        if not isinstance(python_tags, list):
+            python_tags = []
+        abi_tags = wheel.get("abi_tags", [])
+        if not isinstance(abi_tags, list):
+            abi_tags = []
         platform_tags = wheel.get("platform_tags", [])
         if not isinstance(platform_tags, list):
             platform_tags = []
+        rendered_python_tags = ", ".join(str(tag) for tag in python_tags)
+        rendered_abi_tags = ", ".join(str(tag) for tag in abi_tags)
         rendered_tags = ", ".join(str(tag) for tag in platform_tags)
         lines.append(
-            f"  - `{wheel.get('name')}` ({rendered_tags or 'no platform tags'})"
+            (
+                f"  - `{wheel.get('name')}` "
+                f"(python: {rendered_python_tags or 'no python tags'}; "
+                f"abi: {rendered_abi_tags or 'no abi tags'}; "
+                f"platform: {rendered_tags or 'no platform tags'})"
+            )
         )
     if not primary_sagelite_wheels:
         lines.append("  - none")

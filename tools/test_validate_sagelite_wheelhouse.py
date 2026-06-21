@@ -237,7 +237,10 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
-    assert f"- `{repaired_wheel.name}` (manylinux_2_28_x86_64)" in summary
+    assert (
+        f"- `{repaired_wheel.name}` "
+        "(python: cp312; abi: cp312; platform: manylinux_2_28_x86_64)"
+    ) in summary
     assert "- Companion sagelite wheels:" in summary
     assert "- `sagelite_gap_runtime-10.9-py3-none-any.whl`" in summary
     assert "- Contains companion sagelite wheels: `True`" in summary
@@ -444,6 +447,8 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "path": os.fspath(raw_wheel.resolve()),
             "wheelhouse": os.fspath(wheelhouse.resolve()),
             "project_name": "sagelite",
+            "python_tags": ["cp312"],
+            "abi_tags": ["cp312"],
             "platform_tags": ["linux_x86_64"],
             "is_sagelite_project_wheel": True,
             "is_primary_sagelite_wheel": True,
@@ -505,7 +510,10 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     ] is True
     assert "- Status: `failed`" in summary
     assert "- Exit code: `2`" in summary
-    assert f"- `{raw_wheel.name}` (linux_x86_64)" in summary
+    assert (
+        f"- `{raw_wheel.name}` "
+        "(python: cp312; abi: cp312; platform: linux_x86_64)"
+    ) in summary
     assert "- Contains repaired primary sagelite wheel: `False`" in summary
     assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
     assert "## Native Wheel Catalog" in summary
