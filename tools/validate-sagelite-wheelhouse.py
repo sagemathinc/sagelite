@@ -16,10 +16,12 @@ import subprocess
 import sys
 import sysconfig
 import time
+import tomllib
 from datetime import datetime
 from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = TOOLS_DIR.parent
 if os.fspath(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, os.fspath(TOOLS_DIR))
 
@@ -100,6 +102,37 @@ def _is_primary_sagelite_wheel(wheel: Path) -> bool:
     return wheel.name.startswith("sagelite-")
 
 
+def _wheel_project_name(wheel: Path) -> str | None:
+    if wheel.suffix != ".whl":
+        return None
+    parts = wheel.name[:-4].split("-")
+    if len(parts) < 5:
+        return None
+    return parts[0].replace("_", "-").lower()
+
+
+def _sagelite_requirement_name(requirement: str) -> str | None:
+    match = re.match(r"\s*([A-Za-z0-9_.-]+)", requirement)
+    if not match:
+        return None
+    name = match.group(1).replace("_", "-").lower()
+    if not name.startswith("sagelite-"):
+        return None
+    return name
+
+
+def _all_needed_extra_sagelite_packages() -> list[str]:
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
+        data = tomllib.load(pyproject)
+    requirements = data["project"]["optional-dependencies"]["all-needed-extras"]
+    package_names = {
+        name
+        for requirement in requirements
+        if (name := _sagelite_requirement_name(requirement)) is not None
+    }
+    return sorted(package_names)
+
+
 def _is_repaired_linux_wheel(wheel: Path) -> bool:
     return any(
         tag.startswith(("manylinux", "musllinux"))
@@ -117,11 +150,13 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         for wheel in sorted(wheelhouse.glob("*.whl")):
             platform_tags = _wheel_platform_tags(wheel)
             is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
+            project_name = _wheel_project_name(wheel)
             files.append(
                 {
                     "name": wheel.name,
                     "path": os.fspath(wheel),
                     "wheelhouse": os.fspath(wheelhouse),
+                    "project_name": project_name,
                     "platform_tags": platform_tags,
                     "is_sagelite_project_wheel": _is_sagelite_project_wheel(wheel),
                     "is_primary_sagelite_wheel": is_primary_sagelite,
@@ -140,13 +175,42 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         for file in sagelite_project_wheels
         if not file["is_primary_sagelite_wheel"]
     ]
+    companion_package_names = sorted(
+        {
+            str(file["project_name"])
+            for file in companion_sagelite_wheels
+            if file["project_name"]
+        }
+    )
+    duplicate_companion_package_names = sorted(
+        {
+            str(file["project_name"])
+            for file in companion_sagelite_wheels
+            if file["project_name"]
+            and sum(
+                1
+                for other in companion_sagelite_wheels
+                if other["project_name"] == file["project_name"]
+            )
+            > 1
+        }
+    )
+    all_needed_extra_packages = _all_needed_extra_sagelite_packages()
+    missing_all_needed_extra_packages = sorted(
+        set(all_needed_extra_packages) - set(companion_package_names)
+    )
     return {
         "files": files,
         "sagelite_project_wheels": sagelite_project_wheels,
         "primary_sagelite_wheels": primary_sagelite_wheels,
         "companion_sagelite_wheels": companion_sagelite_wheels,
+        "companion_sagelite_package_names": companion_package_names,
+        "duplicate_companion_sagelite_package_names": duplicate_companion_package_names,
+        "all_needed_extra_sagelite_packages": all_needed_extra_packages,
+        "missing_all_needed_extra_sagelite_packages": missing_all_needed_extra_packages,
         "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
         "contains_companion_sagelite_wheels": bool(companion_sagelite_wheels),
+        "contains_all_needed_extra_sagelite_wheels": not missing_all_needed_extra_packages,
         "contains_repaired_primary_sagelite_wheel": any(
             file["is_repaired_linux_wheel"] for file in primary_sagelite_wheels
         ),
@@ -370,10 +434,46 @@ def write_validation_summary(
                 "- Contains companion sagelite wheels: "
                 f"`{inventory['contains_companion_sagelite_wheels']}`"
             ),
+            (
+                "- Contains all-needed-extra sagelite wheels: "
+                f"`{inventory['contains_all_needed_extra_sagelite_wheels']}`"
+            ),
             f"- Contains repaired primary sagelite wheel: `{contains_repaired}`",
             f"- Contains raw Linux primary sagelite wheel: `{contains_raw_linux}`",
         ]
     )
+    companion_package_names = inventory.get("companion_sagelite_package_names", [])
+    if not isinstance(companion_package_names, list):
+        companion_package_names = []
+    missing_all_needed_extra_packages = inventory.get(
+        "missing_all_needed_extra_sagelite_packages", []
+    )
+    if not isinstance(missing_all_needed_extra_packages, list):
+        missing_all_needed_extra_packages = []
+    duplicate_companion_package_names = inventory.get(
+        "duplicate_companion_sagelite_package_names", []
+    )
+    if not isinstance(duplicate_companion_package_names, list):
+        duplicate_companion_package_names = []
+    lines.extend(
+        [
+            f"- Companion sagelite package count: `{len(companion_package_names)}`",
+            (
+                "- Missing all-needed-extra sagelite package count: "
+                f"`{len(missing_all_needed_extra_packages)}`"
+            ),
+        ]
+    )
+    if missing_all_needed_extra_packages:
+        lines.append(
+            "- Missing all-needed-extra sagelite packages: "
+            + ", ".join(f"`{name}`" for name in missing_all_needed_extra_packages)
+        )
+    if duplicate_companion_package_names:
+        lines.append(
+            "- Duplicate companion sagelite packages: "
+            + ", ".join(f"`{name}`" for name in duplicate_companion_package_names)
+        )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]
     required_import_modules = native_catalog["required_native_import_modules"]

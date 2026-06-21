@@ -105,6 +105,18 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         file["name"]
         for file in metadata["wheelhouse_inventory"]["companion_sagelite_wheels"]
     ] == ["sagelite_gap_runtime-10.9-py3-none-any.whl"]
+    assert metadata["wheelhouse_inventory"]["companion_sagelite_package_names"] == [
+        "sagelite-gap-runtime"
+    ]
+    assert "sagelite-gap-runtime" not in metadata["wheelhouse_inventory"][
+        "missing_all_needed_extra_sagelite_packages"
+    ]
+    assert "sagelite-maxima-runtime" in metadata["wheelhouse_inventory"][
+        "missing_all_needed_extra_sagelite_packages"
+    ]
+    assert metadata["wheelhouse_inventory"][
+        "contains_all_needed_extra_sagelite_wheels"
+    ] is False
     assert "brial" in metadata["native_wheel_catalog"]["required_meson_options"]
     assert (
         "sage.libs.ntl.error"
@@ -229,6 +241,10 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Companion sagelite wheels:" in summary
     assert "- `sagelite_gap_runtime-10.9-py3-none-any.whl`" in summary
     assert "- Contains companion sagelite wheels: `True`" in summary
+    assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
+    assert "- Companion sagelite package count: `1`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `28`" in summary
+    assert "`sagelite-maxima-runtime`" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
     assert "## Native Wheel Catalog" in summary
     assert "- Required Meson options:" in summary
@@ -427,6 +443,7 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "name": raw_wheel.name,
             "path": os.fspath(raw_wheel.resolve()),
             "wheelhouse": os.fspath(wheelhouse.resolve()),
+            "project_name": "sagelite",
             "platform_tags": ["linux_x86_64"],
             "is_sagelite_project_wheel": True,
             "is_primary_sagelite_wheel": True,
@@ -437,6 +454,13 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
     assert [
         wheel["name"] for wheel in inventory["companion_sagelite_wheels"]
     ] == ["sagelite_fplll_data-10.9-py3-none-any.whl"]
+    assert inventory["companion_sagelite_package_names"] == ["sagelite-fplll-data"]
+    assert "sagelite-fplll-data" not in inventory[
+        "missing_all_needed_extra_sagelite_packages"
+    ]
+    assert "sagelite-gap-runtime" in inventory[
+        "missing_all_needed_extra_sagelite_packages"
+    ]
 
 
 def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
@@ -529,6 +553,7 @@ def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path)
         "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`"
     ) in summary
     assert "- Contains companion sagelite wheels: `True`" in summary
+    assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
     assert "## Preflight Error" in summary
     assert "exactly one primary sagelite wheel is required" in summary
 
@@ -575,3 +600,52 @@ def test_require_repaired_sagelite_wheel_rejects_mixed_primary_wheels(tmp_path):
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is True
+
+
+def test_inventory_records_complete_all_needed_extra_companion_coverage(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    expected_packages = validator._all_needed_extra_sagelite_packages()
+    for package in expected_packages:
+        wheel_name = package.replace("-", "_") + "-10.9-py3-none-any.whl"
+        (wheelhouse / wheel_name).write_text("")
+
+    inventory = validator.wheelhouse_inventory([wheelhouse])
+
+    assert inventory["contains_all_needed_extra_sagelite_wheels"] is True
+    assert inventory["all_needed_extra_sagelite_packages"] == expected_packages
+    assert inventory["companion_sagelite_package_names"] == expected_packages
+    assert inventory["missing_all_needed_extra_sagelite_packages"] == []
+    assert inventory["duplicate_companion_sagelite_package_names"] == []
+
+
+def test_inventory_records_duplicate_companion_packages(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9.post1-py3-none-any.whl").write_text("")
+
+    inventory = validator.wheelhouse_inventory([wheelhouse])
+    summary_dir = tmp_path / "validation"
+    summary_dir.mkdir()
+    validator.write_validation_summary(
+        summary_dir,
+        label="duplicates",
+        package="sagelite[all-needed-extras]",
+        install_dir=tmp_path / "install",
+        wheelhouses=[wheelhouse],
+        status="failed",
+        exit_code=2,
+    )
+    summary = (summary_dir / "validation-summary.md").read_text(encoding="utf-8")
+
+    assert inventory["companion_sagelite_package_names"] == ["sagelite-gap-runtime"]
+    assert inventory["duplicate_companion_sagelite_package_names"] == [
+        "sagelite-gap-runtime"
+    ]
+    assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary

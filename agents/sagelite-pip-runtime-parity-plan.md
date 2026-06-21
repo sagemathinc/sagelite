@@ -228,6 +228,12 @@ Scheduled audit on 2026-06-21:
   coverage without opening the full inventory JSON. Focused local validation
   passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now normalizes companion sagelite wheel
+  package names in wheelhouse validation metadata, records duplicate companion
+  packages, and reports missing `all-needed-extras` sagelite companion wheels
+  in both `install-metadata.json` and `validation-summary.md`. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
