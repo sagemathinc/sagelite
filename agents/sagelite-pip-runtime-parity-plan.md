@@ -343,6 +343,12 @@ Scheduled audit on 2026-06-21:
   profile and the individual checks it enables. Focused local validation
   passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled documentation work updated the wheelhouse validation
+  README to recommend the strict repaired-wheelhouse preflight for
+  authoritative manylinux/CIBW proof runs. This keeps the documented command
+  aligned with the current proof contract: repaired primary wheel, complete and
+  non-duplicate sagelite companions, dependency-specifier checks, and
+  Python/ABI/platform tag compatibility checks.
 
 ## Reality status
 
@@ -865,7 +871,9 @@ are either fixed or explicitly ruled out as runtime parity issues.
    - Build or download current repaired Linux wheels in the same style that
      release/CIBW uses. If only local raw wheels are available, label the run
      as raw-wheel proof and do not treat it as final acceptance evidence.
-   - Create a new wheelhouse and fresh venv under `/scratch/sagelite-r2-work`.
+   - Create a new wheelhouse and fresh venv under `/scratch/sagelite-r2-work`
+     with `tools/validate-sagelite-wheelhouse.py
+     --strict-repaired-wheelhouse-preflight`.
    - Install from wheels only and run `pip check`.
    - Run `tools/sagelite_runtime_manifest.py collect` for:
      - a self-contained Sage reference using the actual Sage Python, not

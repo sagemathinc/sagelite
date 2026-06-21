@@ -100,14 +100,16 @@ capture enabled. It is intended for repaired-wheel validation artifacts from
 the manylinux/CIBW build, where local raw-wheel repair is not authoritative.
 The validation directory includes `install-metadata.json`, which records the
 fresh install path, wheelhouse inputs, package requirement, commands, and
-sanitized environment used for the run. It also records the controller Python
-and requested base Python so CIBW artifacts show which interpreter created the
-fresh venv. The metadata is updated after each step with command result
-phase, status, exit code, and elapsed time so interrupted or failed scheduled
-runs still identify the failing phase. Use
-`--require-repaired-sagelite-wheel` for authoritative manylinux/CIBW proof
-runs so raw Linux wheels fail during metadata-recorded preflight instead of
-being mistaken for repaired-wheel evidence.
+sanitized environment used for the run. It also records the controller Python,
+requested base Python, native wheel catalog, staged sagelite companion wheels,
+and inferred wheel validation contract so CIBW artifacts show which interpreter
+created the fresh venv and which wheel tags were expected. The metadata is
+updated after each step with command result phase, status, exit code, and
+elapsed time so interrupted or failed scheduled runs still identify the failing
+phase. Use `--strict-repaired-wheelhouse-preflight` for authoritative
+manylinux/CIBW proof runs so raw, mixed-ABI, wrong-platform, duplicate, stale,
+or incomplete sagelite wheelhouses fail during metadata-recorded preflight
+instead of being mistaken for repaired-wheel evidence.
 
 Example:
 
@@ -115,7 +117,7 @@ Example:
 python3 tools/validate-sagelite-wheelhouse.py \
   --wheelhouse /scratch/sagelite-r2-work/wheelhouse-20260621 \
   --work-dir /scratch/sagelite-r2-work \
-  --require-repaired-sagelite-wheel \
+  --strict-repaired-wheelhouse-preflight \
   --full
 ```
 
