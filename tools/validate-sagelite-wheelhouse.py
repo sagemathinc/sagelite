@@ -132,13 +132,18 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
 
 
 def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
-    if inventory["contains_repaired_primary_sagelite_wheel"]:
-        return
     wheels = [
         str(file["name"])
         for file in inventory["primary_sagelite_wheels"]  # type: ignore[index]
     ]
     detail = ", ".join(wheels) if wheels else "none"
+    if len(wheels) != 1:
+        raise RuntimeError(
+            "exactly one primary sagelite wheel is required for repaired-wheel "
+            f"validation; primary sagelite wheels: {detail}"
+        )
+    if inventory["contains_repaired_primary_sagelite_wheel"]:
+        return
     raise RuntimeError(
         "repaired sagelite wheel is required but no primary sagelite wheel has a "
         f"manylinux or musllinux platform tag; primary sagelite wheels: {detail}"

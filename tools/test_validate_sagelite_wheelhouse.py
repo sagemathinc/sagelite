@@ -425,3 +425,86 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
     assert "## Preflight Error" in summary
     assert "repaired sagelite wheel is required" in summary
+
+
+def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-060708"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-repaired-sagelite-wheel",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-060708" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-060708" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "exactly one primary sagelite wheel is required" in metadata[
+        "preflight_error"
+    ]
+    assert "primary sagelite wheels: none" in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"]["primary_sagelite_wheels"] == []
+    assert "- Primary sagelite wheels:\n  - none" in summary
+    assert "## Preflight Error" in summary
+    assert "exactly one primary sagelite wheel is required" in summary
+
+
+def test_require_repaired_sagelite_wheel_rejects_mixed_primary_wheels(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    raw_wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"
+    repaired_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    raw_wheel.write_text("")
+    repaired_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-070809"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-repaired-sagelite-wheel",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-070809" / "install-metadata.json").read_text()
+    )
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "exactly one primary sagelite wheel is required" in metadata[
+        "preflight_error"
+    ]
+    assert raw_wheel.name in metadata["preflight_error"]
+    assert repaired_wheel.name in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"][
+        "contains_repaired_primary_sagelite_wheel"
+    ] is True
+    assert metadata["wheelhouse_inventory"][
+        "contains_raw_linux_primary_sagelite_wheel"
+    ] is True
