@@ -788,6 +788,22 @@ def _check_benzene_runtime():
 _FRICAS_RUNTIME_PROBE = """
 from sage.all import PolynomialRing, QQ
 from sage.interfaces.fricas import fricas
+from sage.interfaces.fricas_translator import (
+    LazyParent,
+    SEXEvaluator,
+    SEXParser,
+    SEXPorter,
+)
+
+
+def translated_sage(element):
+    process = element._check_valid()
+    domain = SEXParser(
+        process.get_string(f"sageprint(dom({element._name})::Any)")
+    ).parse()
+    export = SEXPorter(domain).export_call()
+    exported = process.get_string(f"sageprint({export}({element._name}))")
+    return SEXEvaluator(SEXParser(exported).parse(), LazyParent(domain)).eval()
 
 R = PolynomialRing(QQ, "x")
 x = R.gen()
@@ -799,6 +815,18 @@ fricas("sol := solve([x^2 - 1], [x])")
 basis = fricas("sol.basis").sage()
 if len(basis) != 1:
     raise RuntimeError(f"unexpected FriCAS solution basis conversion: {basis!r}")
+
+S = PolynomialRing(QQ, ("x", "y", "z"))
+sx, sy, sz = S.gens()
+polynomial = translated_sage(fricas("x^2*y - 3*z + 1"))
+if polynomial != sx**2 * sy - 3 * sz + 1:
+    raise RuntimeError(f"unexpected FriCAS translator polynomial: {polynomial!r}")
+translated_factorization = translated_sage(fricas("-48").factor())
+if translated_factorization.prod() != -48:
+    raise RuntimeError(
+        "unexpected FriCAS translator factorization: "
+        f"{translated_factorization!r}"
+    )
 
 print("FriCAS conversions available")
 """

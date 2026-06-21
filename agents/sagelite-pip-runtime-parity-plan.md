@@ -398,7 +398,7 @@ Actions:
 
 - Compare FriCAS executable, Lisp backend, startup files, and environment
   variables against self-contained Sage.
-- Add a runtime smoke test for:
+- Done: add a runtime smoke test for:
   - factorization converted back to Sage;
   - `fricas("sol.basis").sage()`;
   - `fricas_translator` polynomial ring and factorization conversions.
