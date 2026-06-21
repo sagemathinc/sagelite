@@ -26,6 +26,19 @@ acceptable output variants, tolerances, or ordering differences.
   - `f763daa6160 sagelite: report Python path leaks in runtime manifest diffs`
   - `399cf2263ed sagelite: smoke test repaired native imports`
   - `e489fcc4bcf sagelite: centralize native wheel catalog`
+  - `288b6184a48 env: prefer sagelite GAP runtime over host roots`
+  - `1ec2914d7de tools/sagelite: use resolved GAP roots for program probes`
+  - `b2255c5ba76 sagelite: include fplll data in runtime extras`
+  - `dacd7aa6e56 tools/sagelite: report bootstrapped fplll strategy paths`
+  - `87c66e699ab tools/sagelite: sanitize installed runtime environment`
+  - `5c3da77019c env: repair stale fplll strategy environment`
+  - `d00d1fa4b82 sagelite: add installed validation extras`
+  - `b6636950a33 sagelite: require eclib runtime in repaired wheels`
+  - `9e7ae43f54d sagelite: keep selftest collecting runtime failures`
+  - `388ab1af72c sagelite: reject host GUAVA feature programs`
+  - `3cab3756b32 sagelite: smoke test GUAVA Leon runtime`
+  - `dec22cbd620 sagelite: refine source path leak classification`
+  - `3be3d150a82 sagelite: include fplll data in validation extras`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -91,6 +104,12 @@ Known facts from the latest investigation:
   doctest runner now strips inherited Sage, Sagelite, Maxima, GAP, FriCAS,
   Aldor, and fplll runtime environment variables before collecting manifests
   or running doctests.
+- Since that raw-wheel validation, selftest has been changed to keep collecting
+  runtime failures after early packaging failures; GAP companion root ordering
+  and GUAVA Leon smoke coverage have been tightened; stale fpylll strategy
+  paths can be repaired from `sagelite-fplll-data`; and the native catalog now
+  includes the eclib runtime surface that failed in the raw-wheel proof.
+  These changes still need a manylinux/CIBW repaired-wheel validation cycle.
 
 ## Reality status
 
@@ -98,12 +117,16 @@ Approximate status as of 2026-06-20:
 
 - Phase 1, reproducible manifests: mostly implemented, but the reference
   self-contained manifest must be regenerated with the correct Sage Python.
-- Phase 2, native wheel parity: CI/tooling checks are mostly implemented, but
-  repaired-wheel proof must happen in manylinux/CIBW, not on this host.
-- Phase 3, companion runtime parity: partially implemented and still the
-  largest remaining work area.
+- Phase 2, native wheel parity: CI/tooling checks are mostly implemented and
+  the required native catalog has been broadened, but repaired-wheel proof must
+  happen in manylinux/CIBW, not on this host.
+- Phase 3, companion runtime parity: partially implemented. GAP/GUAVA and
+  fplll have newer targeted runtime checks and bootstrapping fixes, while
+  Maxima, FriCAS, GAP3, and msolve still need fresh repaired-wheel evidence.
 - Phase 4, path discovery and host leakage: runner environment sanitization is
-  implemented; compiled-module source-path leakage and GAP host leakage remain.
+  implemented; source-path leak classification has been refined. Treat older
+  scratch source-leak and GAP-host-leak reports as stale unless reproduced by a
+  fresh run from current `develop`.
 - Phase 5, installed test runner and triage: substantially implemented; the
   next full run should use `--runtime-summary` so the report is self-contained.
   The runner now sanitizes inherited runtime variables in addition to `PATH`,
@@ -112,8 +135,10 @@ Approximate status as of 2026-06-20:
 - Phase 7, final clean install validation: not achieved.
 
 Overall this is past the diagnostic/tooling stage, but not near acceptance.
-The highest-value work is now to run a fresh validation cycle with the current
-tooling, then fix the biggest concrete parity gaps exposed by that cycle.
+The highest-value work is now to run a fresh manylinux/CIBW repaired-wheel
+validation cycle with the current tooling. Local raw-wheel validation remains
+useful for diagnostics, but native-library, PARI, and auditwheel conclusions
+must come from the repaired-wheel environment.
 
 ## Guiding principles
 
