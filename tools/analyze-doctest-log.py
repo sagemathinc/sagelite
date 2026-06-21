@@ -185,6 +185,18 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             "maxima-runtime-abi-mismatch",
             "Maxima runtime wheel is ABI-incompatible with the loaded ECL library",
         ),
+        (
+            "cannot open shared object file",
+            "optional-external",
+            "native-library-load-failure",
+            "required native shared library failed to load from the installed wheel",
+        ),
+        (
+            "undefined symbol",
+            "optional-external",
+            "native-library-load-failure",
+            "required native shared library failed to link from the installed wheel",
+        ),
         ("executable '", "optional-external", "missing-executable", "standalone executable not found"),
         ("not found on path", "optional-external", "missing-executable", "standalone executable not found"),
         (
@@ -554,6 +566,21 @@ NATIVE_EXTENSION_PACKAGES = {
     "sage.rings.polynomial.pbori.pbori": "sagelite repaired wheel native catalog: brial",
 }
 
+NATIVE_LIBRARY_PACKAGES = {
+    "libbliss": "sagelite repaired wheel native catalog: bliss",
+    "libbraiding": "sagelite repaired wheel native catalog: libbraiding",
+    "libbrial_groebner": "sagelite repaired wheel native catalog: brial",
+    "libbrial": "sagelite repaired wheel native catalog: brial",
+    "libcliquer": "sagelite repaired wheel native catalog: cliquer",
+    "libcoxeter3": "sagelite repaired wheel native catalog: coxeter3",
+    "libec": "sagelite repaired wheel native catalog: eclib",
+    "libhomfly": "sagelite repaired wheel native catalog: homfly",
+    "libmtx": "sagelite repaired wheel native catalog: meataxe",
+    "libntl": "sagelite repaired wheel native catalog: ntl",
+    "libplanarity": "sagelite repaired wheel native catalog: planarity",
+    "libsirocco": "sagelite repaired wheel native catalog: sirocco",
+}
+
 
 def _matched_package(text: str, packages: dict[str, str]) -> str:
     for needle, package in sorted(packages.items(), key=lambda item: -len(item[0])):
@@ -586,6 +613,10 @@ def suggested_package(result: ModuleResult) -> str:
         package = _matched_package(text, NATIVE_EXTENSION_PACKAGES)
         if package:
             return package
+    if result.fingerprint == "native-library-load-failure":
+        package = _matched_package(text, NATIVE_LIBRARY_PACKAGES)
+        if package:
+            return package
 
     return {
         "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post13",
@@ -607,6 +638,7 @@ def suggested_package(result: ModuleResult) -> str:
         "missing-database": "matching sagelite-database-* companion package",
         "missing-executable": "matching sagelite-*-runtime companion package",
         "mixed-pari-runtime": "rebuild sagelite with source-built cypari2 and one repaired libpari",
+        "native-library-load-failure": "matching repaired sagelite wheel bundled library",
         "optional-feature-missing": "matching sagelite companion package or PyPI dependency",
         "optional-native-lib-missing": "matching sagelite runtime or sagelite core extension",
     }.get(result.fingerprint, "")

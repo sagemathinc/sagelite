@@ -988,6 +988,38 @@ Exception raised:
     assert report["fingerprint_counts"] == {"optional-native-lib-missing": 1}
 
 
+def test_report_identifies_required_native_library_load_failure(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/libs/ntl/error.pyx", line 42, in sage.libs.ntl.error
+Failed example:
+    import sage.all
+Exception raised:
+    Traceback (most recent call last):
+    ImportError: libntl.so.45: cannot open shared object file: No such file or directory
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.libs.ntl.error
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.libs.ntl.error"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "native-library-load-failure"
+    assert (
+        result.evidence
+        == "required native shared library failed to load from the installed wheel"
+    )
+    assert result.suggested_package == "sagelite repaired wheel native catalog: ntl"
+    assert report["fingerprint_counts"] == {"native-library-load-failure": 1}
+
+
 def test_report_suggests_pypi_data_wheels_for_named_missing_databases(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
