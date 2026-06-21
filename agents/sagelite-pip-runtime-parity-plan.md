@@ -240,6 +240,12 @@ Scheduled audit on 2026-06-21:
   an install when a validation run is meant to prove the full
   `sagelite[all-needed-extras]` runtime. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work added
+  `tools/validate-sagelite-wheelhouse.py --reject-duplicate-companion-sagelite-wheels`,
+  which rejects ambiguous companion/runtime/data wheelhouses before creating
+  an install when duplicate normalized sagelite companion package names are
+  staged. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

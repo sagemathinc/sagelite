@@ -743,3 +743,48 @@ def test_inventory_records_duplicate_companion_packages(tmp_path):
         "sagelite-gap-runtime"
     ]
     assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary
+
+
+def test_reject_duplicate_companion_sagelite_wheels_preflight(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9.post1-py3-none-any.whl").write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-071500"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--reject-duplicate-companion-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-071500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-071500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "duplicate sagelite companion wheels are not allowed" in metadata[
+        "preflight_error"
+    ]
+    assert "sagelite-gap-runtime" in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"][
+        "duplicate_companion_sagelite_package_names"
+    ] == ["sagelite-gap-runtime"]
+    assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary
+    assert "## Preflight Error" in summary
+    assert "duplicate sagelite companion wheels are not allowed" in summary

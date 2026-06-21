@@ -251,6 +251,20 @@ def _ensure_all_needed_extra_sagelite_wheels(inventory: dict[str, object]) -> No
     )
 
 
+def _ensure_no_duplicate_companion_sagelite_wheels(
+    inventory: dict[str, object],
+) -> None:
+    duplicates = inventory["duplicate_companion_sagelite_package_names"]
+    if not isinstance(duplicates, list):
+        duplicates = []
+    if not duplicates:
+        return
+    raise RuntimeError(
+        "duplicate sagelite companion wheels are not allowed for validation: "
+        + ", ".join(str(package) for package in duplicates)
+    )
+
+
 def _resolve_executable(executable: str) -> str | None:
     path = Path(executable)
     if path.is_absolute() or os.sep in executable:
@@ -668,6 +682,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--reject-duplicate-companion-sagelite-wheels",
+        action="store_true",
+        help=(
+            "fail before installation when more than one sagelite companion "
+            "wheel provides the same normalized package name"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -715,6 +737,8 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(_ensure_repaired_sagelite_wheel)
     if args.require_all_needed_extra_sagelite_wheels:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
+    if args.reject_duplicate_companion_sagelite_wheels:
+        preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
     for check in preflight_checks:
         try:
             check(inventory)
