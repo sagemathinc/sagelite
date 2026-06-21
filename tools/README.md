@@ -102,7 +102,10 @@ The validation directory includes `install-metadata.json`, which records the
 fresh install path, wheelhouse inputs, package requirement, commands, and
 sanitized environment used for the run. The metadata is updated after each
 step with command result status, exit code, and elapsed time so interrupted or
-failed scheduled runs still identify the failing phase.
+failed scheduled runs still identify the failing phase. Use
+`--require-repaired-sagelite-wheel` for authoritative manylinux/CIBW proof
+runs so raw Linux wheels fail during metadata-recorded preflight instead of
+being mistaken for repaired-wheel evidence.
 
 Example:
 
@@ -110,6 +113,7 @@ Example:
 python3 tools/validate-sagelite-wheelhouse.py \
   --wheelhouse /scratch/sagelite-r2-work/wheelhouse-20260621 \
   --work-dir /scratch/sagelite-r2-work \
+  --require-repaired-sagelite-wheel \
   --full
 ```
 

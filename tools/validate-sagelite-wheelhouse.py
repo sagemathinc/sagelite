@@ -190,6 +190,7 @@ def write_install_metadata(
     status: str = "pending",
     exit_code: int | None = None,
     command_results: list[dict[str, object]] | None = None,
+    preflight_error: str | None = None,
 ) -> Path:
     path = output_dir / "install-metadata.json"
     environment = {
@@ -210,6 +211,7 @@ def write_install_metadata(
         "commands": commands,
         "status": status,
         "exit_code": exit_code,
+        "preflight_error": preflight_error,
         "command_results": command_results or [],
         "environment": environment,
         "removed_environment_prefixes": list(RUNTIME_ENV_PREFIXES_TO_REMOVE),
@@ -350,8 +352,6 @@ def main(argv: list[str] | None = None) -> int:
     output_dir = args.output_dir or args.work_dir / f"validation-{stamp}"
     wheelhouses = _ensure_wheelhouses(args.wheelhouse)
     inventory = wheelhouse_inventory(wheelhouses)
-    if args.require_repaired_sagelite_wheel:
-        _ensure_repaired_sagelite_wheel(inventory)
     venv_python = install_dir / "bin" / "python"
     env = _clean_environment()
 
@@ -377,6 +377,28 @@ def main(argv: list[str] | None = None) -> int:
             else args.doctest_args,
         ),
     ]
+    if args.require_repaired_sagelite_wheel:
+        try:
+            _ensure_repaired_sagelite_wheel(inventory)
+        except RuntimeError as exc:
+            metadata_path = write_install_metadata(
+                output_dir,
+                label=label,
+                package=args.package,
+                base_python=args.python,
+                install_dir=install_dir,
+                venv_python=venv_python,
+                wheelhouses=wheelhouses,
+                commands=commands,
+                env=env,
+                inventory=inventory,
+                status="failed",
+                exit_code=2,
+                preflight_error=str(exc),
+            )
+            print(str(exc), file=sys.stderr)
+            print(f"metadata: {metadata_path}")
+            return 2
     metadata_path = write_install_metadata(
         output_dir,
         label=label,

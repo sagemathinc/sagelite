@@ -151,6 +151,10 @@ Known facts from the latest investigation:
   per-step command result records. Failed scheduled validations should now show
   whether the run stopped during venv creation, pip upgrade, wheel install,
   `pip check`, or installed doctest validation without opening the raw CI log.
+- `tools/validate-sagelite-wheelhouse.py --require-repaired-sagelite-wheel`
+  now writes `install-metadata.json` for raw-wheel preflight rejection, so an
+  accidentally staged raw Linux wheelhouse still leaves auditable validation
+  input classification instead of failing before artifact creation.
 
 ## Reality status
 

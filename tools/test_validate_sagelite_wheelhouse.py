@@ -378,24 +378,32 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
     wheelhouse.mkdir()
-    (wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl").write_text("")
+    raw_wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"
+    raw_wheel.write_text("")
     commands = []
     validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-050607"
 
-    try:
-        validator.main(
-            [
-                "--wheelhouse",
-                str(wheelhouse),
-                "--work-dir",
-                str(tmp_path),
-                "--require-repaired-sagelite-wheel",
-            ]
-        )
-    except RuntimeError as exc:
-        assert "repaired sagelite wheel is required" in str(exc)
-        assert "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl" in str(exc)
-    else:
-        raise AssertionError("expected RuntimeError")
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-repaired-sagelite-wheel",
+        ]
+    )
 
+    assert exit_code == 2
     assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-050607" / "install-metadata.json").read_text()
+    )
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "repaired sagelite wheel is required" in metadata["preflight_error"]
+    assert raw_wheel.name in metadata["preflight_error"]
+    assert metadata["command_results"] == []
+    assert metadata["wheelhouse_inventory"][
+        "contains_raw_linux_primary_sagelite_wheel"
+    ] is True
