@@ -8,10 +8,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import re
+import shutil
 import shlex
 import subprocess
 import sys
+import sysconfig
 import time
 from datetime import datetime
 from pathlib import Path
@@ -150,6 +153,40 @@ def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
     )
 
 
+def _resolve_executable(executable: str) -> str | None:
+    path = Path(executable)
+    if path.is_absolute() or os.sep in executable:
+        return os.fspath(path.resolve()) if path.exists() else None
+    resolved = shutil.which(executable)
+    return os.fspath(Path(resolved).resolve()) if resolved else None
+
+
+def validation_host_context(base_python: str) -> dict[str, object]:
+    resolved_base_python = _resolve_executable(base_python)
+    resolved_controller_python = _resolve_executable(sys.executable)
+    return {
+        "controller_python": {
+            "executable": sys.executable,
+            "resolved_executable": resolved_controller_python,
+            "version": platform.python_version(),
+            "implementation": platform.python_implementation(),
+            "cache_tag": sys.implementation.cache_tag,
+            "sysconfig_platform": sysconfig.get_platform(),
+            "machine": platform.machine(),
+        },
+        "base_python": {
+            "requested": base_python,
+            "resolved_executable": resolved_base_python,
+            "exists": resolved_base_python is not None,
+            "matches_controller": (
+                resolved_base_python is not None
+                and resolved_controller_python is not None
+                and Path(resolved_base_python) == Path(resolved_controller_python)
+            ),
+        },
+    }
+
+
 def build_venv_command(base_python: str, install_dir: Path) -> list[str]:
     return [base_python, "-m", "venv", os.fspath(install_dir)]
 
@@ -192,6 +229,7 @@ def write_install_metadata(
     commands: list[list[str]],
     env: dict[str, str],
     inventory: dict[str, object],
+    host_context: dict[str, object],
     status: str = "pending",
     exit_code: int | None = None,
     command_results: list[dict[str, object]] | None = None,
@@ -213,6 +251,7 @@ def write_install_metadata(
         "venv_python": os.fspath(venv_python),
         "wheelhouses": [os.fspath(path) for path in wheelhouses],
         "wheelhouse_inventory": inventory,
+        "validation_host": host_context,
         "commands": commands,
         "status": status,
         "exit_code": exit_code,
@@ -241,6 +280,7 @@ def write_validation_summary(
     exit_code: int | None,
     command_results: list[dict[str, object]] | None = None,
     preflight_error: str | None = None,
+    host_context: dict[str, object] | None = None,
 ) -> Path:
     path = output_dir / "validation-summary.md"
     inventory = wheelhouse_inventory(wheelhouses)
@@ -251,8 +291,27 @@ def write_validation_summary(
         f"- Exit code: `{exit_code}`",
         f"- Package: `{package}`",
         f"- Install dir: `{install_dir}`",
-        "- Wheelhouses:",
     ]
+    if host_context:
+        controller = host_context.get("controller_python", {})
+        base_python = host_context.get("base_python", {})
+        if not isinstance(controller, dict):
+            controller = {}
+        if not isinstance(base_python, dict):
+            base_python = {}
+        lines.extend(
+            [
+                f"- Base Python: `{base_python.get('requested')}`",
+                f"- Resolved base Python: `{base_python.get('resolved_executable')}`",
+                (
+                    "- Controller Python: "
+                    f"`{controller.get('executable')}` "
+                    f"({controller.get('version')}, "
+                    f"{controller.get('sysconfig_platform')})"
+                ),
+            ]
+        )
+    lines.append("- Wheelhouses:")
     lines.extend(f"  - `{wheelhouse}`" for wheelhouse in wheelhouses)
     primary_sagelite_wheels = inventory.get("primary_sagelite_wheels", [])
     if not isinstance(primary_sagelite_wheels, list):
@@ -443,6 +502,7 @@ def main(argv: list[str] | None = None) -> int:
     inventory = wheelhouse_inventory(wheelhouses)
     venv_python = install_dir / "bin" / "python"
     env = _clean_environment()
+    host_context = validation_host_context(args.python)
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -481,6 +541,7 @@ def main(argv: list[str] | None = None) -> int:
                 commands=commands,
                 env=env,
                 inventory=inventory,
+                host_context=host_context,
                 status="failed",
                 exit_code=2,
                 preflight_error=str(exc),
@@ -494,6 +555,7 @@ def main(argv: list[str] | None = None) -> int:
                 status="failed",
                 exit_code=2,
                 preflight_error=str(exc),
+                host_context=host_context,
             )
             print(str(exc), file=sys.stderr)
             print(f"metadata: {metadata_path}")
@@ -510,6 +572,7 @@ def main(argv: list[str] | None = None) -> int:
         commands=commands,
         env=env,
         inventory=inventory,
+        host_context=host_context,
         status="running",
     )
     summary_path = write_validation_summary(
@@ -520,6 +583,7 @@ def main(argv: list[str] | None = None) -> int:
         wheelhouses=wheelhouses,
         status="running",
         exit_code=None,
+        host_context=host_context,
     )
     command_results: list[dict[str, object]] = []
     for index, command in enumerate(commands, start=1):
@@ -545,6 +609,7 @@ def main(argv: list[str] | None = None) -> int:
             commands=commands,
             env=env,
             inventory=inventory,
+            host_context=host_context,
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
@@ -575,6 +640,7 @@ def main(argv: list[str] | None = None) -> int:
         commands=commands,
         env=env,
         inventory=inventory,
+        host_context=host_context,
         status="passed",
         exit_code=0,
         command_results=command_results,
@@ -588,6 +654,7 @@ def main(argv: list[str] | None = None) -> int:
         status="passed",
         exit_code=0,
         command_results=command_results,
+        host_context=host_context,
     )
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")

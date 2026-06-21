@@ -100,9 +100,11 @@ capture enabled. It is intended for repaired-wheel validation artifacts from
 the manylinux/CIBW build, where local raw-wheel repair is not authoritative.
 The validation directory includes `install-metadata.json`, which records the
 fresh install path, wheelhouse inputs, package requirement, commands, and
-sanitized environment used for the run. The metadata is updated after each
-step with command result status, exit code, and elapsed time so interrupted or
-failed scheduled runs still identify the failing phase. Use
+sanitized environment used for the run. It also records the controller Python
+and requested base Python so CIBW artifacts show which interpreter created the
+fresh venv. The metadata is updated after each step with command result
+status, exit code, and elapsed time so interrupted or failed scheduled runs
+still identify the failing phase. Use
 `--require-repaired-sagelite-wheel` for authoritative manylinux/CIBW proof
 runs so raw Linux wheels fail during metadata-recorded preflight instead of
 being mistaken for repaired-wheel evidence.

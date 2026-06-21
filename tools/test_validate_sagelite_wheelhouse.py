@@ -98,6 +98,16 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is False
+    host = metadata["validation_host"]
+    assert host["base_python"] == {
+        "requested": "/opt/python/cp312/bin/python",
+        "resolved_executable": None,
+        "exists": False,
+        "matches_controller": False,
+    }
+    assert host["controller_python"]["executable"] == sys.executable
+    assert host["controller_python"]["cache_tag"]
+    assert host["controller_python"]["sysconfig_platform"]
     assert [
         file["name"]
         for file in metadata["wheelhouse_inventory"]["primary_sagelite_wheels"]
@@ -190,6 +200,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "# Sagelite wheelhouse validation: cibw-proof" in summary
     assert "- Status: `passed`" in summary
     assert "- Exit code: `0`" in summary
+    assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
+    assert "- Resolved base Python: `None`" in summary
+    assert "- Controller Python:" in summary
     assert f"- `{repaired_wheel.name}` (manylinux_2_28_x86_64)" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
     assert "### 5. passed" in summary
