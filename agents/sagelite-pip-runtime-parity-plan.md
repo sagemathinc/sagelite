@@ -349,6 +349,13 @@ Scheduled audit on 2026-06-21:
   aligned with the current proof contract: repaired primary wheel, complete and
   non-duplicate sagelite companions, dependency-specifier checks, and
   Python/ABI/platform tag compatibility checks.
+- Follow-up scheduled tooling work now renders sagelite companion wheel
+  compatibility coverage directly in `validation-summary.md`, including the
+  number of checked and passing companion wheels plus per-wheel Python, ABI,
+  platform, and mismatch status. Successful CIBW proof artifacts can now show
+  companion tag coverage without requiring a JSON viewer. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

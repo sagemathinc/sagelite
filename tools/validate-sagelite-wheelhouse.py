@@ -1146,12 +1146,35 @@ def write_validation_summary(
         )
     )
     incompatible_companion_wheels = []
+    companion_wheel_compatibility = []
     if validation_contract:
+        companion_wheel_compatibility = validation_contract.get(
+            "companion_sagelite_wheel_compatibility", []
+        )
         incompatible_companion_wheels = validation_contract.get(
             "incompatible_companion_sagelite_wheels", []
         )
+    if not isinstance(companion_wheel_compatibility, list):
+        companion_wheel_compatibility = []
     if not isinstance(incompatible_companion_wheels, list):
         incompatible_companion_wheels = []
+    compatible_companion_wheels = [
+        item
+        for item in companion_wheel_compatibility
+        if isinstance(item, dict) and item.get("compatible")
+    ]
+    lines.extend(
+        [
+            (
+                "- Companion compatibility checked wheels: "
+                f"`{len(companion_wheel_compatibility)}`"
+            ),
+            (
+                "- Companion compatibility passed wheels: "
+                f"`{len(compatible_companion_wheels)}`"
+            ),
+        ]
+    )
     lines.append(
         "- Incompatible companion sagelite wheels: "
         + (
@@ -1164,7 +1187,9 @@ def write_validation_summary(
             else "`none`"
         )
     )
-    for item in incompatible_companion_wheels:
+    if companion_wheel_compatibility:
+        lines.append("- Companion compatibility details:")
+    for item in companion_wheel_compatibility:
         if not isinstance(item, dict):
             continue
         mismatches = item.get("mismatches", [])
@@ -1172,12 +1197,18 @@ def write_validation_summary(
             mismatches = []
         lines.append(
             "  - "
-            f"`{item.get('name')}` mismatches: "
+            f"`{item.get('name')}`: "
+            f"compatible `{item.get('compatible')}` "
+            f"(python: `{item.get('python_compatible')}`; "
+            f"abi: `{item.get('abi_compatible')}`; "
+            f"platform: `{item.get('platform_compatible')}`; "
+            "mismatches: "
             + (
                 ", ".join(f"`{mismatch}`" for mismatch in mismatches)
                 if mismatches
                 else "`none`"
             )
+            + ")"
         )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]

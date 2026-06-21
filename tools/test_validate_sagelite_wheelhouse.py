@@ -273,6 +273,12 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
     assert "- Companion sagelite package count: `1`" in summary
     assert "- Missing all-needed-extra sagelite package count: `28`" in summary
+    assert "- Companion compatibility checked wheels: `1`" in summary
+    assert "- Companion compatibility passed wheels: `1`" in summary
+    assert (
+        "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`: compatible `True` "
+        "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
+    ) in summary
     assert "`sagelite-maxima-runtime`" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
     assert "## Native Wheel Catalog" in summary
@@ -1023,8 +1029,12 @@ def test_require_compatible_companion_sagelite_wheels_rejects_mismatch(
         f"`{mismatched_companion.name}`"
     ) in summary
     assert (
-        f"  - `{mismatched_companion.name}` mismatches: `python`, `abi`"
+        f"  - `{mismatched_companion.name}`: compatible `False` "
+        "(python: `False`; abi: `False`; platform: `True`; "
+        "mismatches: `python`, `abi`)"
     ) in summary
+    assert "- Companion compatibility checked wheels: `1`" in summary
+    assert "- Companion compatibility passed wheels: `0`" in summary
     assert "## Preflight Error" in summary
     assert "companion wheels are not compatible" in summary
     assert "mismatches: python, abi" in summary
@@ -1080,6 +1090,20 @@ def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
     assert metadata["validation_contract"][
         "incompatible_companion_sagelite_wheels"
     ] == []
+    summary = (
+        tmp_path / "validation-20260621-072100" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert "- Companion compatibility checked wheels: `2`" in summary
+    assert "- Companion compatibility passed wheels: `2`" in summary
+    assert (
+        "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`: compatible `True` "
+        "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
+    ) in summary
+    assert (
+        "  - `sagelite_maxima_runtime-10.9-cp312-cp312-manylinux_2_28_x86_64.whl`: "
+        "compatible `True` "
+        "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
+    ) in summary
 
 
 def test_require_primary_sagelite_wheel_python_tag_rejects_mismatch(tmp_path):
