@@ -39,6 +39,10 @@ acceptable output variants, tolerances, or ordering differences.
   - `3cab3756b32 sagelite: smoke test GUAVA Leon runtime`
   - `dec22cbd620 sagelite: refine source path leak classification`
   - `3be3d150a82 sagelite: include fplll data in validation extras`
+  - `3da976f920f agents: refresh sagelite parity checkpoint`
+  - `e70692e91fb tools/sagelite: report native wheel coverage in runtime summaries`
+  - `55ddb91b4e0 sagelite: reject build-tree source metadata in selftest`
+  - `fad57c422fe tools/sagelite: classify fpylll strategy path leaks`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -110,6 +114,9 @@ Known facts from the latest investigation:
   paths can be repaired from `sagelite-fplll-data`; and the native catalog now
   includes the eclib runtime surface that failed in the raw-wheel proof.
   These changes still need a manylinux/CIBW repaired-wheel validation cycle.
+- The installed doctest analyzer now separates stale fpylll strategy-data path
+  leaks from generic stale build paths, so fresh logs should point that bucket
+  at `sagelite-fplll-data` or a rebuilt fpylll runtime.
 
 ## Reality status
 
