@@ -316,6 +316,15 @@ def test_selftest_continues_after_maxima_runtime_packaging_failure(monkeypatch):
         "PARI runtime conversion",
         "Maxima library runtime",
         "required native imports",
+        "compiled source inspection paths",
+    ]
+    assert calls[:7] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "required native imports",
+        "compiled source inspection paths",
         "import sage.all",
     ]
     assert "symbolic integration" in calls
@@ -376,12 +385,154 @@ def test_selftest_continues_after_required_native_import_failure(monkeypatch):
     monkeypatch.setattr(selftest, "_run_check", run_check)
 
     assert selftest.main([]) == 1
-    assert calls[:6] == [
+    assert calls[:7] == [
         "installed package requirements",
         "PARI runtime packaging",
         "PARI runtime conversion",
         "Maxima library runtime",
         "required native imports",
+        "compiled source inspection paths",
+        "import sage.all",
+    ]
+    assert "symbolic integration" in calls
+
+
+def test_selftest_rejects_build_tree_source_inspection_paths(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    install_prefix = tmp_path / "install"
+    allowed_source = (
+        install_prefix
+        / "lib"
+        / "python3.12"
+        / "site-packages"
+        / "sage"
+        / "rings"
+        / "integer.pyx"
+    )
+    build_source = tmp_path / "build" / "src" / "sage" / "rings" / "rational.pyx"
+
+    modules = {
+        "sage.rings.integer": types.SimpleNamespace(
+            sourcefile=str(allowed_source),
+            relativefile="sage/rings/integer.pyx",
+        ),
+        "sage.rings.rational": types.SimpleNamespace(
+            sourcefile=str(allowed_source),
+            relativefile=str(build_source),
+        ),
+        "sage.libs.braiding": types.SimpleNamespace(
+            sourcefile=str(allowed_source),
+            relativefile=RuntimeError(f"generated source path {build_source}"),
+        ),
+    }
+
+    def sage_getfile_relative(module):
+        if isinstance(module.relativefile, Exception):
+            raise module.relativefile
+        return module.relativefile
+
+    sageinspect = types.SimpleNamespace(sage_getfile_relative=sage_getfile_relative)
+    sage = types.ModuleType("sage")
+    sage.__path__ = []
+    misc = types.ModuleType("sage.misc")
+    misc.sageinspect = sageinspect
+    monkeypatch.setitem(sys.modules, "sage", sage)
+    monkeypatch.setitem(sys.modules, "sage.misc", misc)
+    monkeypatch.setitem(sys.modules, "sage.misc.sageinspect", sageinspect)
+    monkeypatch.setattr(selftest.sys, "prefix", str(install_prefix))
+    monkeypatch.setattr(selftest.sys, "exec_prefix", str(install_prefix))
+    monkeypatch.setattr(
+        selftest.importlib,
+        "import_module",
+        lambda name: modules[name] if name in modules else (_ for _ in ()).throw(
+            ImportError(name)
+        ),
+    )
+    monkeypatch.setattr(
+        selftest.inspect,
+        "getsourcefile",
+        lambda module: module.sourcefile,
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_SOURCE_INSPECTION_MODULES",
+        ["sage.rings.integer", "sage.rings.rational", "sage.libs.braiding"],
+    )
+
+    with pytest.raises(RuntimeError, match="build-tree source paths") as exc:
+        selftest._check_source_inspection_paths()
+
+    assert "sage.rings.rational sage_getfile_relative" in str(exc.value)
+    assert "sage.libs.braiding sage_getfile_relative error" in str(exc.value)
+    assert str(build_source) in str(exc.value)
+    assert str(allowed_source) not in str(exc.value)
+
+
+def test_selftest_accepts_portable_source_inspection_paths(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    install_prefix = tmp_path / "install"
+    installed_source = (
+        install_prefix
+        / "lib"
+        / "python3.12"
+        / "site-packages"
+        / "sage"
+        / "rings"
+        / "integer.pyx"
+    )
+    module = types.SimpleNamespace(
+        sourcefile=str(installed_source),
+        relativefile="sage/rings/integer.pyx",
+    )
+
+    sageinspect = types.SimpleNamespace(
+        sage_getfile_relative=lambda module: module.relativefile
+    )
+    sage = types.ModuleType("sage")
+    sage.__path__ = []
+    misc = types.ModuleType("sage.misc")
+    misc.sageinspect = sageinspect
+    monkeypatch.setitem(sys.modules, "sage", sage)
+    monkeypatch.setitem(sys.modules, "sage.misc", misc)
+    monkeypatch.setitem(sys.modules, "sage.misc.sageinspect", sageinspect)
+    monkeypatch.setattr(selftest.sys, "prefix", str(install_prefix))
+    monkeypatch.setattr(selftest.sys, "exec_prefix", str(install_prefix))
+    monkeypatch.setattr(selftest.importlib, "import_module", lambda name: module)
+    monkeypatch.setattr(
+        selftest.inspect,
+        "getsourcefile",
+        lambda module: module.sourcefile,
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_SOURCE_INSPECTION_MODULES",
+        ["sage.rings.integer"],
+    )
+
+    assert (
+        selftest._check_source_inspection_paths()
+        == "1 compiled module source paths portable"
+    )
+
+
+def test_selftest_continues_after_source_inspection_path_failure(monkeypatch):
+    selftest = _load_selftest()
+    calls = []
+
+    def run_check(name, check):
+        calls.append(name)
+        return name != "compiled source inspection paths"
+
+    monkeypatch.setattr(selftest, "_run_check", run_check)
+
+    assert selftest.main([]) == 1
+    assert calls[:7] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "required native imports",
+        "compiled source inspection paths",
         "import sage.all",
     ]
     assert "symbolic integration" in calls
@@ -411,19 +562,21 @@ def test_selftest_runs_maxima_before_symbolic_integration(monkeypatch):
     monkeypatch.setattr(selftest, "_optional_runtime_summary", lambda: None)
 
     assert selftest.main([]) == 1
-    assert calls[:5] == [
-        "installed package requirements",
-        "PARI runtime packaging",
-        "PARI runtime conversion",
-        "Maxima library runtime",
-        "required native imports",
-    ]
     assert calls[:6] == [
         "installed package requirements",
         "PARI runtime packaging",
         "PARI runtime conversion",
         "Maxima library runtime",
         "required native imports",
+        "compiled source inspection paths",
+    ]
+    assert calls[:7] == [
+        "installed package requirements",
+        "PARI runtime packaging",
+        "PARI runtime conversion",
+        "Maxima library runtime",
+        "required native imports",
+        "compiled source inspection paths",
         "import sage.all",
     ]
     assert calls.index("Maxima library runtime") < calls.index("symbolic integration")

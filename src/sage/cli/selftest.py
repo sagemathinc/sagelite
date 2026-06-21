@@ -9,7 +9,9 @@ import ctypes
 import importlib
 import importlib.metadata as importlib_metadata
 import importlib.util
+import inspect
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -239,6 +241,91 @@ def _check_required_native_imports():
         )
 
     return f"{len(modules)} required native modules import"
+
+
+_SOURCE_INSPECTION_MODULES = [
+    "sage.rings.integer",
+    "sage.rings.rational",
+    "sage.libs.braiding",
+    "sage.rings.polynomial.pbori.pbori",
+]
+_ABSOLUTE_PATH_RE = re.compile(r"(?<![A-Za-z0-9_.-])/[^\s:'\"`]+")
+
+
+def _source_path_is_portable(path_text: str | None, allowed_roots: list[Path]) -> bool:
+    if not path_text:
+        return True
+
+    path_candidates = []
+    path = Path(path_text)
+    if path.is_absolute():
+        path_candidates.append(path)
+    else:
+        path_candidates.extend(
+            Path(match.group(0).rstrip(".,;)]}"))
+            for match in _ABSOLUTE_PATH_RE.finditer(path_text)
+        )
+    if not path_candidates:
+        return True
+
+    for candidate in path_candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            resolved = candidate.absolute()
+        if not any(
+            resolved == root or root in resolved.parents for root in allowed_roots
+        ):
+            return False
+    return True
+
+
+def _check_source_inspection_paths():
+    """
+    Reject wheels whose compiled modules expose build-tree source paths.
+
+    Cython metadata can preserve absolute ``.pyx`` paths.  Those paths confused
+    installed doctests that exercise Sage source inspection, so repaired wheels
+    should report package-relative paths or files under the installed prefix.
+    """
+    from sage.misc import sageinspect
+
+    allowed_roots = [Path(sys.prefix).resolve(), Path(sys.exec_prefix).resolve()]
+    leaks = []
+
+    for module_name in _SOURCE_INSPECTION_MODULES:
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+
+        values = []
+        try:
+            values.append(("inspect.getsourcefile", inspect.getsourcefile(module)))
+        except Exception as exc:  # noqa: BLE001 - report source metadata failures
+            values.append(
+                ("inspect.getsourcefile error", f"{type(exc).__name__}: {exc}")
+            )
+        try:
+            values.append(
+                ("sage_getfile_relative", sageinspect.sage_getfile_relative(module))
+            )
+        except Exception as exc:  # noqa: BLE001 - error messages can contain leaks
+            values.append(
+                ("sage_getfile_relative error", f"{type(exc).__name__}: {exc}")
+            )
+
+        for label, path_text in values:
+            if not _source_path_is_portable(path_text, allowed_roots):
+                leaks.append(f"{module_name} {label}: {path_text}")
+
+    if leaks:
+        raise RuntimeError(
+            "compiled Sage modules expose build-tree source paths:\n  "
+            + "\n  ".join(leaks)
+        )
+
+    return f"{len(_SOURCE_INSPECTION_MODULES)} compiled module source paths portable"
 
 
 def _check_factor():
@@ -1599,6 +1686,7 @@ def main(argv: list[str] | None = None) -> int:
         ("PARI runtime conversion", _check_pari_runtime_roundtrip),
         ("Maxima library runtime", _check_maxima_runtime),
         ("required native imports", _check_required_native_imports),
+        ("compiled source inspection paths", _check_source_inspection_paths),
         ("import sage.all", _check_import_sage_all),
         ("integer factorization", _check_factor),
         ("symbolic integration", _check_symbolic_integration),
