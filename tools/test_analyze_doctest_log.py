@@ -988,6 +988,37 @@ Exception raised:
     assert report["fingerprint_counts"] == {"optional-native-lib-missing": 1}
 
 
+def test_report_identifies_required_native_feature_without_module_name(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/categories/coxeter_groups.py", line 42, in sage.categories.coxeter_groups
+Failed example:
+    CoxeterGroup(['B',3], implementation="coxeter3")
+Exception raised:
+    Traceback (most recent call last):
+    sage.features.FeatureNotPresentError: coxeter3 is not available.
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.categories.coxeter_groups
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    report = analyzer.build_report(results)
+    result = results["sage.categories.coxeter_groups"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "optional-native-lib-missing"
+    assert (
+        result.suggested_package
+        == "sagelite repaired wheel native catalog: coxeter3"
+    )
+    assert report["fingerprint_counts"] == {"optional-native-lib-missing": 1}
+
+
 def test_report_identifies_required_native_library_load_failure(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"
@@ -1018,6 +1049,19 @@ Exception raised:
     )
     assert result.suggested_package == "sagelite repaired wheel native catalog: ntl"
     assert report["fingerprint_counts"] == {"native-library-load-failure": 1}
+
+
+def test_native_analyzer_mappings_follow_required_catalog():
+    analyzer = _load_analyzer()
+    catalog = analyzer.NATIVE_WHEEL_CATALOG
+
+    assert catalog is not None
+    assert set(catalog.REQUIRED_NATIVE_IMPORT_MODULES) <= set(
+        analyzer.NATIVE_EXTENSION_PACKAGES
+    )
+    assert set(catalog.REQUIRED_NATIVE_LIBRARY_PREFIXES) <= set(
+        analyzer.NATIVE_LIBRARY_PACKAGES
+    )
 
 
 def test_report_suggests_pypi_data_wheels_for_named_missing_databases(tmp_path):

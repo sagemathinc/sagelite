@@ -14,12 +14,33 @@ with the per-module stats JSON and produces:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
+
+
+TOOLS_DIR = Path(__file__).resolve().parent
+
+
+def _load_native_wheel_catalog() -> Any | None:
+    catalog_path = TOOLS_DIR / "sagelite_native_wheel_catalog.py"
+    if not catalog_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location(
+        "sagelite_native_wheel_catalog", catalog_path
+    )
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+NATIVE_WHEEL_CATALOG = _load_native_wheel_catalog()
 
 
 RUN_RE = re.compile(
@@ -228,6 +249,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             "Sage documentation source tree is not available in the installed runtime",
         ),
     ]
+    if "featurenotpresenterror" in text and _matched_package(text, NATIVE_FEATURE_PACKAGES):
+        return (
+            "optional-external",
+            "optional-native-lib-missing",
+            "required Sage native extension is not bundled in the installed wheel",
+        )
     for needle, category, fingerprint, evidence in external_patterns:
         if needle in text:
             return category, fingerprint, evidence
@@ -544,41 +571,85 @@ MISSING_DATABASE_PACKAGES = {
     "matroid_database": "matroid-database",
 }
 
-NATIVE_EXTENSION_PACKAGES = {
-    "sage.graphs.bliss": "sagelite repaired wheel native catalog: bliss",
-    "sage.graphs.cliquer": "sagelite repaired wheel native catalog: cliquer",
-    "sage.graphs.graph_decompositions.rankwidth": "sagelite repaired wheel native catalog: rankwidth",
-    "sage.graphs.graph_decompositions.tdlib": "sagelite repaired wheel native catalog: tdlib",
-    "sage.graphs.mcqd": "sagelite repaired wheel native catalog: mcqd",
-    "sage.graphs.planarity": "sagelite repaired wheel native catalog: planarity",
-    "sage.libs.braiding": "sagelite repaired wheel native catalog: libbraiding",
-    "sage.libs.coxeter3.coxeter": "sagelite repaired wheel native catalog: coxeter3",
-    "sage.libs.eclib.mwrank": "sagelite repaired wheel native catalog: eclib",
-    "sage.libs.eclib.newforms": "sagelite repaired wheel native catalog: eclib",
-    "sage.libs.homfly": "sagelite repaired wheel native catalog: homfly",
-    "sage.libs.meataxe": "sagelite repaired wheel native catalog: meataxe",
-    "sage.libs.ntl.error": "sagelite repaired wheel native catalog: ntl",
-    "sage.libs.sirocco": "sagelite repaired wheel native catalog: sirocco",
-    "sage.libs.symmetrica.symmetrica": "sagelite repaired wheel native catalog: symmetrica",
-    "sage.numerical.backends.glpk_backend": "sagelite repaired wheel native catalog: glpk",
-    "sage.numerical.backends.glpk_exact_backend": "sagelite repaired wheel native catalog: glpk",
-    "sage.numerical.backends.glpk_graph_backend": "sagelite repaired wheel native catalog: glpk",
-    "sage.rings.polynomial.pbori.pbori": "sagelite repaired wheel native catalog: brial",
+NATIVE_CATALOG_LABELS = {
+    "bliss": "bliss",
+    "braiding": "libbraiding",
+    "brial": "brial",
+    "brial_groebner": "brial",
+    "cliquer": "cliquer",
+    "coxeter3": "coxeter3",
+    "ec": "eclib",
+    "eclib": "eclib",
+    "glpk": "glpk",
+    "homfly": "homfly",
+    "meataxe": "meataxe",
+    "mcqd": "mcqd",
+    "mtx": "meataxe",
+    "ntl": "ntl",
+    "pbori": "brial",
+    "planarity": "planarity",
+    "rankwidth": "rankwidth",
+    "sirocco": "sirocco",
+    "symmetrica": "symmetrica",
+    "tdlib": "tdlib",
 }
 
-NATIVE_LIBRARY_PACKAGES = {
-    "libbliss": "sagelite repaired wheel native catalog: bliss",
-    "libbraiding": "sagelite repaired wheel native catalog: libbraiding",
-    "libbrial_groebner": "sagelite repaired wheel native catalog: brial",
-    "libbrial": "sagelite repaired wheel native catalog: brial",
-    "libcliquer": "sagelite repaired wheel native catalog: cliquer",
-    "libcoxeter3": "sagelite repaired wheel native catalog: coxeter3",
-    "libec": "sagelite repaired wheel native catalog: eclib",
-    "libhomfly": "sagelite repaired wheel native catalog: homfly",
-    "libmtx": "sagelite repaired wheel native catalog: meataxe",
-    "libntl": "sagelite repaired wheel native catalog: ntl",
-    "libplanarity": "sagelite repaired wheel native catalog: planarity",
-    "libsirocco": "sagelite repaired wheel native catalog: sirocco",
+
+def _native_catalog_package(label: str) -> str:
+    return f"sagelite repaired wheel native catalog: {label}"
+
+
+def _native_label_from_module(module: str) -> str:
+    for needle, label in NATIVE_CATALOG_LABELS.items():
+        if needle in module:
+            return label
+    return module.rsplit(".", 1)[-1]
+
+
+def _native_label_from_library(prefix: str) -> str:
+    library = prefix.removeprefix("lib").split("-", 1)[0].split(".", 1)[0]
+    return NATIVE_CATALOG_LABELS.get(library, library)
+
+
+def _catalog_native_extension_packages() -> dict[str, str]:
+    if NATIVE_WHEEL_CATALOG is None:
+        return {}
+    return {
+        module: _native_catalog_package(_native_label_from_module(module))
+        for module in NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_IMPORT_MODULES
+    }
+
+
+def _catalog_native_library_packages() -> dict[str, str]:
+    if NATIVE_WHEEL_CATALOG is None:
+        return {}
+    return {
+        prefix: _native_catalog_package(_native_label_from_library(prefix))
+        for prefix in NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_LIBRARY_PREFIXES
+    }
+
+
+NATIVE_EXTENSION_PACKAGES = _catalog_native_extension_packages()
+NATIVE_LIBRARY_PACKAGES = _catalog_native_library_packages()
+NATIVE_FEATURE_PACKAGES = {
+    feature: _native_catalog_package(NATIVE_CATALOG_LABELS.get(feature, feature))
+    for feature in (
+        "bliss",
+        "brial",
+        "coxeter3",
+        "eclib",
+        "glpk",
+        "libbraiding",
+        "libhomfly",
+        "mcqd",
+        "meataxe",
+        "ntl",
+        "planarity",
+        "rankwidth",
+        "sirocco",
+        "symmetrica",
+        "tdlib",
+    )
 }
 
 
@@ -609,8 +680,14 @@ def suggested_package(result: ModuleResult) -> str:
         package = _matched_package(text, MISSING_DATABASE_PACKAGES)
         if package:
             return package
+        package = _matched_package(text, NATIVE_FEATURE_PACKAGES)
+        if package:
+            return package
     if result.fingerprint == "optional-native-lib-missing":
         package = _matched_package(text, NATIVE_EXTENSION_PACKAGES)
+        if package:
+            return package
+        package = _matched_package(text, NATIVE_FEATURE_PACKAGES)
         if package:
             return package
     if result.fingerprint == "native-library-load-failure":
