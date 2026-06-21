@@ -221,6 +221,90 @@ def write_install_metadata(
     return path
 
 
+def _format_command(command: list[str]) -> str:
+    return " ".join(shlex.quote(part) for part in command)
+
+
+def write_validation_summary(
+    output_dir: Path,
+    *,
+    label: str,
+    package: str,
+    install_dir: Path,
+    wheelhouses: list[Path],
+    status: str,
+    exit_code: int | None,
+    command_results: list[dict[str, object]] | None = None,
+    preflight_error: str | None = None,
+) -> Path:
+    path = output_dir / "validation-summary.md"
+    inventory = wheelhouse_inventory(wheelhouses)
+    lines = [
+        f"# Sagelite wheelhouse validation: {label}",
+        "",
+        f"- Status: `{status}`",
+        f"- Exit code: `{exit_code}`",
+        f"- Package: `{package}`",
+        f"- Install dir: `{install_dir}`",
+        "- Wheelhouses:",
+    ]
+    lines.extend(f"  - `{wheelhouse}`" for wheelhouse in wheelhouses)
+    primary_sagelite_wheels = inventory.get("primary_sagelite_wheels", [])
+    if not isinstance(primary_sagelite_wheels, list):
+        primary_sagelite_wheels = []
+    lines.append("- Primary sagelite wheels:")
+    for wheel in primary_sagelite_wheels:
+        if not isinstance(wheel, dict):
+            continue
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+        rendered_tags = ", ".join(str(tag) for tag in platform_tags)
+        lines.append(
+            f"  - `{wheel.get('name')}` ({rendered_tags or 'no platform tags'})"
+        )
+    if not primary_sagelite_wheels:
+        lines.append("  - none")
+    contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]
+    contains_raw_linux = inventory["contains_raw_linux_primary_sagelite_wheel"]
+    lines.extend(
+        [
+            f"- Contains repaired primary sagelite wheel: `{contains_repaired}`",
+            f"- Contains raw Linux primary sagelite wheel: `{contains_raw_linux}`",
+        ]
+    )
+    if preflight_error:
+        lines.extend(["", "## Preflight Error", "", preflight_error])
+
+    if command_results:
+        lines.extend(["", "## Steps", ""])
+        for result in command_results:
+            command = result.get("command")
+            rendered_command = (
+                _format_command(command)
+                if isinstance(command, list) and all(
+                    isinstance(part, str) for part in command
+                )
+                else str(command)
+            )
+            lines.extend(
+                [
+                    f"### {result.get('index')}. {result.get('status')}",
+                    "",
+                    f"- Return code: `{result.get('returncode')}`",
+                    f"- Elapsed seconds: `{result.get('elapsed_seconds')}`",
+                    "",
+                    "```bash",
+                    rendered_command,
+                    "```",
+                    "",
+                ]
+            )
+
+    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    return path
+
+
 def build_validation_command(
     venv_python: Path,
     output_dir: Path,
@@ -396,8 +480,19 @@ def main(argv: list[str] | None = None) -> int:
                 exit_code=2,
                 preflight_error=str(exc),
             )
+            summary_path = write_validation_summary(
+                output_dir,
+                label=label,
+                package=args.package,
+                install_dir=install_dir,
+                wheelhouses=wheelhouses,
+                status="failed",
+                exit_code=2,
+                preflight_error=str(exc),
+            )
             print(str(exc), file=sys.stderr)
             print(f"metadata: {metadata_path}")
+            print(f"summary: {summary_path}")
             return 2
     metadata_path = write_install_metadata(
         output_dir,
@@ -411,6 +506,15 @@ def main(argv: list[str] | None = None) -> int:
         env=env,
         inventory=inventory,
         status="running",
+    )
+    summary_path = write_validation_summary(
+        output_dir,
+        label=label,
+        package=args.package,
+        install_dir=install_dir,
+        wheelhouses=wheelhouses,
+        status="running",
+        exit_code=None,
     )
     command_results: list[dict[str, object]] = []
     for index, command in enumerate(commands, start=1):
@@ -440,8 +544,19 @@ def main(argv: list[str] | None = None) -> int:
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
         )
+        summary_path = write_validation_summary(
+            output_dir,
+            label=label,
+            package=args.package,
+            install_dir=install_dir,
+            wheelhouses=wheelhouses,
+            status="running" if result.returncode == 0 else "failed",
+            exit_code=None if result.returncode == 0 else result.returncode,
+            command_results=command_results,
+        )
         if result.returncode:
             print(f"metadata: {metadata_path}")
+            print(f"summary: {summary_path}")
             return result.returncode
 
     metadata_path = write_install_metadata(
@@ -459,9 +574,20 @@ def main(argv: list[str] | None = None) -> int:
         exit_code=0,
         command_results=command_results,
     )
+    summary_path = write_validation_summary(
+        output_dir,
+        label=label,
+        package=args.package,
+        install_dir=install_dir,
+        wheelhouses=wheelhouses,
+        status="passed",
+        exit_code=0,
+        command_results=command_results,
+    )
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")
     print(f"metadata: {metadata_path}")
+    print(f"summary: {summary_path}")
     return 0
 
 

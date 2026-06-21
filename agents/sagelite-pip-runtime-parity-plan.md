@@ -158,6 +158,11 @@ Known facts from the latest investigation:
   now writes `install-metadata.json` for raw-wheel preflight rejection, so an
   accidentally staged raw Linux wheelhouse still leaves auditable validation
   input classification instead of failing before artifact creation.
+- `tools/validate-sagelite-wheelhouse.py` now also writes
+  `validation-summary.md` beside the install metadata. Scheduled CIBW or
+  scratch validation artifacts expose the overall status, exit code, wheelhouse
+  classification, preflight error, and completed step commands without requiring
+  a JSON viewer.
 - The current tree already contains the first msolve parser hardening from this
   plan: `src/sage/rings/polynomial/msolve.py` ignores diagnostic lines before
   the Sage-readable payload and raises `NotImplementedError` with raw msolve

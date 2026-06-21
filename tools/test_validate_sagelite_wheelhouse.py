@@ -84,6 +84,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert exit_code == 0
     venv_python = install_dir / "bin" / "python"
     metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
     assert metadata["schema"] == "sagelite-wheelhouse-validation-install-v1"
     assert metadata["label"] == "cibw-proof"
     assert metadata["package"] == "sagelite[all-needed-extras]"
@@ -186,6 +187,13 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         isinstance(result["elapsed_seconds"], float)
         for result in metadata["command_results"]
     )
+    assert "# Sagelite wheelhouse validation: cibw-proof" in summary
+    assert "- Status: `passed`" in summary
+    assert "- Exit code: `0`" in summary
+    assert f"- `{repaired_wheel.name}` (manylinux_2_28_x86_64)" in summary
+    assert "- Contains repaired primary sagelite wheel: `True`" in summary
+    assert "### 5. passed" in summary
+    assert "--optional sage,optional,external" in summary
 
 
 def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
@@ -399,6 +407,9 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     metadata = json.loads(
         (tmp_path / "validation-20260621-050607" / "install-metadata.json").read_text()
     )
+    summary = (
+        tmp_path / "validation-20260621-050607" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
     assert metadata["status"] == "failed"
     assert metadata["exit_code"] == 2
     assert "repaired sagelite wheel is required" in metadata["preflight_error"]
@@ -407,3 +418,10 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is True
+    assert "- Status: `failed`" in summary
+    assert "- Exit code: `2`" in summary
+    assert f"- `{raw_wheel.name}` (linux_x86_64)" in summary
+    assert "- Contains repaired primary sagelite wheel: `False`" in summary
+    assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
+    assert "## Preflight Error" in summary
+    assert "repaired sagelite wheel is required" in summary
