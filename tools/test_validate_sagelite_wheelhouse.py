@@ -551,6 +551,70 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     assert "repaired sagelite wheel is required" in summary
 
 
+def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    raw_wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"
+    raw_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-081500"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--strict-repaired-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-081500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-081500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    enabled_preflights = metadata["validation_contract"]["enabled_preflights"]
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "repaired sagelite wheel is required" in metadata["preflight_error"]
+    assert raw_wheel.name in metadata["preflight_error"]
+    assert enabled_preflights == [
+        "strict-repaired-wheelhouse-preflight",
+        "require-repaired-sagelite-wheel",
+        "require-all-needed-extra-sagelite-wheels",
+        "reject-duplicate-companion-sagelite-wheels",
+        "require-sagelite-companion-wheel-requirements",
+        "require-compatible-companion-sagelite-wheels",
+        "require-primary-sagelite-wheel-python-tag",
+        "require-primary-sagelite-wheel-abi-tag",
+        "require-primary-sagelite-wheel-platform-machine",
+        "require-primary-sagelite-wheel-compatible-platform-tag",
+    ]
+    assert (
+        "- Enabled preflights: "
+        "`strict-repaired-wheelhouse-preflight`, "
+        "`require-repaired-sagelite-wheel`, "
+        "`require-all-needed-extra-sagelite-wheels`, "
+        "`reject-duplicate-companion-sagelite-wheels`, "
+        "`require-sagelite-companion-wheel-requirements`, "
+        "`require-compatible-companion-sagelite-wheels`, "
+        "`require-primary-sagelite-wheel-python-tag`, "
+        "`require-primary-sagelite-wheel-abi-tag`, "
+        "`require-primary-sagelite-wheel-platform-machine`, "
+        "`require-primary-sagelite-wheel-compatible-platform-tag`"
+    ) in summary
+    assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
+    assert "## Preflight Error" in summary
+
+
 def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"

@@ -333,6 +333,16 @@ Scheduled audit on 2026-06-21:
   when the controller and requested base Python differ. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work added
+  `tools/validate-sagelite-wheelhouse.py --strict-repaired-wheelhouse-preflight`,
+  which enables the full repaired-wheelhouse proof preflight profile before
+  creating a fresh install: repaired primary wheel, complete `all-needed-extras`
+  sagelite companion wheels, duplicate companion rejection, companion
+  requirement checks, companion tag compatibility, and primary wheel
+  Python/ABI/platform checks. The validation contract records both the strict
+  profile and the individual checks it enables. Focused local validation
+  passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
