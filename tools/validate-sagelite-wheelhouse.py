@@ -275,6 +275,54 @@ def _ensure_no_duplicate_companion_sagelite_wheels(
     )
 
 
+def _requested_python_wheel_tag(
+    base_python: str, host_context: dict[str, object]
+) -> str | None:
+    match = re.search(r"cp(\d{2,3})", base_python)
+    if match:
+        return f"cp{match.group(1)}"
+    match = re.search(r"python3[._-]?(\d{1,2})", base_python)
+    if match:
+        return f"cp3{match.group(1)}"
+    base_context = host_context.get("base_python", {})
+    if isinstance(base_context, dict) and base_context.get("matches_controller"):
+        cache_tag = sys.implementation.cache_tag
+        if cache_tag and re.fullmatch(r"cpython-\d{2,3}", cache_tag):
+            return "cp" + cache_tag.rsplit("-", 1)[1]
+    return None
+
+
+def _ensure_primary_sagelite_wheel_python_tag(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+) -> None:
+    if expected_python_tag is None:
+        raise RuntimeError(
+            "primary sagelite wheel Python tag validation was requested, but "
+            "the requested base Python tag could not be inferred"
+        )
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    details = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        python_tags = wheel.get("python_tags", [])
+        if not isinstance(python_tags, list):
+            python_tags = []
+        name = wheel.get("name")
+        rendered_tags = ", ".join(str(tag) for tag in python_tags) or "none"
+        details.append(f"{name} ({rendered_tags})")
+        if expected_python_tag in python_tags:
+            return
+    detail = ", ".join(details) if details else "none"
+    raise RuntimeError(
+        "primary sagelite wheel Python tag does not match requested base "
+        f"Python tag {expected_python_tag}; primary sagelite wheels: {detail}"
+    )
+
+
 def _resolve_executable(executable: str) -> str | None:
     path = Path(executable)
     if path.is_absolute() or os.sep in executable:
@@ -713,6 +761,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-primary-sagelite-wheel-python-tag",
+        action="store_true",
+        help=(
+            "fail before installation unless the primary sagelite wheel Python "
+            "tag matches the requested base Python"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -731,6 +787,7 @@ def main(argv: list[str] | None = None) -> int:
     venv_python = install_dir / "bin" / "python"
     env = _clean_environment()
     host_context = validation_host_context(args.python)
+    expected_python_tag = _requested_python_wheel_tag(args.python, host_context)
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -762,6 +819,12 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
     if args.reject_duplicate_companion_sagelite_wheels:
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
+    if args.require_primary_sagelite_wheel_python_tag:
+        preflight_checks.append(
+            lambda inventory: _ensure_primary_sagelite_wheel_python_tag(
+                inventory, expected_python_tag
+            )
+        )
     for check in preflight_checks:
         try:
             check(inventory)

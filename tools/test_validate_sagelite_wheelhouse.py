@@ -70,6 +70,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
             "cibw-proof",
             "--python",
             "/opt/python/cp312/bin/python",
+            "--require-primary-sagelite-wheel-python-tag",
             "--full",
             "--nthreads",
             "4",
@@ -796,3 +797,53 @@ def test_reject_duplicate_companion_sagelite_wheels_preflight(tmp_path):
     assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary
     assert "## Preflight Error" in summary
     assert "duplicate sagelite companion wheels are not allowed" in summary
+
+
+def test_require_primary_sagelite_wheel_python_tag_rejects_mismatch(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    mismatched_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp313-cp313-manylinux_2_28_x86_64.whl"
+    )
+    mismatched_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-072500"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-repaired-sagelite-wheel",
+            "--require-primary-sagelite-wheel-python-tag",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-072500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-072500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "Python tag does not match requested base Python tag cp312" in metadata[
+        "preflight_error"
+    ]
+    assert mismatched_wheel.name in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"]["primary_sagelite_wheels"][0][
+        "python_tags"
+    ] == ["cp313"]
+    assert (
+        f"- `{mismatched_wheel.name}` "
+        "(python: cp313; abi: cp313; platform: manylinux_2_28_x86_64)"
+    ) in summary
+    assert "## Preflight Error" in summary
+    assert "Python tag does not match requested base Python tag cp312" in summary
