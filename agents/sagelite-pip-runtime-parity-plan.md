@@ -60,6 +60,8 @@ acceptable output variants, tolerances, or ordering differences.
   - `effa06ddccd agents: refresh sagelite parity checkpoint`
   - `848a8bd6c36 tools/sagelite: classify wheelhouse validation inputs`
   - `4fe2b1380d0 tools/sagelite: record repaired-wheel preflight failures`
+  - `6bf2b7afc28 tools/sagelite: summarize wheelhouse validation artifacts`
+  - `45e46663f1c tools/sagelite: reject ambiguous repaired-wheel validation inputs`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -174,6 +176,20 @@ Scheduled audit on 2026-06-21:
   `/scratch/sagelite-r2-work`; only raw Linux diagnostic wheelhouses are
   available locally. Authoritative parity validation still requires a fresh
   manylinux/CIBW repaired-wheel artifact.
+- Older Cloudflare release artifacts are present under
+  `/scratch/sagelite-r2-work/cloudflare-wheel-artifacts/release-26987879340`,
+  but they contain three primary repaired sagelite wheels for Python 3.12,
+  3.13, and 3.14. They are stale relative to the current tooling and are not a
+  valid single-interpreter validation input.
+- The combined R2 wheelhouse under
+  `/scratch/sagelite-r2-work/cloudflare-wheel-artifacts/combined-r2/wheels`
+  contains multiple raw Linux primary sagelite wheels, so it is also not a
+  valid repaired-wheel validation input.
+- Repaired-wheel preflight artifacts from this scheduled run:
+  - `/scratch/sagelite-r2-work/validation-scheduled-20260621-release-preflight/validation-summary.md`
+    records the stale multi-Python repaired release wheelhouse rejection.
+  - `/scratch/sagelite-r2-work/validation-scheduled-20260621-combined-preflight/validation-summary.md`
+    records the combined raw-wheel wheelhouse rejection.
 - The raw baseline wheelhouse from 2026-06-20 is known to fail immediately at
   `import sage.all` because `sage.libs.ntl.error` cannot resolve
   `libntl.so.45`; rerunning that old raw wheel would not produce new parity
