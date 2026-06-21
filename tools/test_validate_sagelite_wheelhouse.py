@@ -955,3 +955,71 @@ def test_require_primary_sagelite_wheel_platform_machine_rejects_mismatch(
     ) in summary
     assert "## Preflight Error" in summary
     assert "platform tag does not match validation host machine x86_64" in summary
+
+
+def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    mismatched_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_99_x86_64.whl"
+    )
+    mismatched_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-074000"
+    monkeypatch.setattr(validator.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-repaired-sagelite-wheel",
+            "--require-primary-sagelite-wheel-python-tag",
+            "--require-primary-sagelite-wheel-abi-tag",
+            "--require-primary-sagelite-wheel-platform-machine",
+            "--require-primary-sagelite-wheel-compatible-platform-tag",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-074000" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-074000" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "platform tag is not compatible with the validation host" in metadata[
+        "preflight_error"
+    ]
+    assert "manylinux_2_28_x86_64" in metadata["preflight_error"]
+    assert mismatched_wheel.name in metadata["preflight_error"]
+    controller = metadata["validation_host"]["controller_python"]
+    assert controller["compatible_platform_tag_count"] == 2
+    assert controller["compatible_platform_tags_sample"] == [
+        "manylinux_2_28_x86_64",
+        "linux_x86_64",
+    ]
+    primary_wheel = metadata["wheelhouse_inventory"]["primary_sagelite_wheels"][0]
+    assert primary_wheel["platform_tags"] == ["manylinux_2_99_x86_64"]
+    assert (
+        f"- `{mismatched_wheel.name}` "
+        "(python: cp312; abi: cp312; platform: manylinux_2_99_x86_64)"
+    ) in summary
+    assert "- Controller compatible platform tag count: `2`" in summary
+    assert "## Preflight Error" in summary
+    assert "platform tag is not compatible with the validation host" in summary

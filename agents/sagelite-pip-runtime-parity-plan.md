@@ -275,6 +275,14 @@ Scheduled audit on 2026-06-21:
   repaired-wheel, Python-tag, and ABI-tag preflights. Focused local validation
   passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work added
+  `tools/validate-sagelite-wheelhouse.py --require-primary-sagelite-wheel-compatible-platform-tag`,
+  which rejects a staged primary sagelite wheel whose platform tag is not in
+  the validation host's compatible platform tag set. This catches wrong
+  manylinux/musllinux policy tags before installation even when the wheel's
+  architecture, Python tag, and ABI tag otherwise match. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

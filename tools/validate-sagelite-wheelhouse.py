@@ -20,6 +20,8 @@ import tomllib
 from datetime import datetime
 from pathlib import Path
 
+from packaging import tags as packaging_tags
+
 TOOLS_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = TOOLS_DIR.parent
 if os.fspath(TOOLS_DIR) not in sys.path:
@@ -365,6 +367,52 @@ def _normalized_platform_machine(machine: str | None) -> str | None:
     return aliases.get(normalized, normalized)
 
 
+def _compatible_platform_tags() -> list[str]:
+    seen = set()
+    platforms = []
+    for tag in packaging_tags.sys_tags():
+        platform_tag = tag.platform
+        if platform_tag in seen:
+            continue
+        seen.add(platform_tag)
+        platforms.append(platform_tag)
+    return platforms
+
+
+def _ensure_primary_sagelite_wheel_platform_tag_compatible(
+    inventory: dict[str, object],
+    compatible_platform_tags: list[str],
+) -> None:
+    if not compatible_platform_tags:
+        raise RuntimeError(
+            "primary sagelite wheel platform tag compatibility validation was "
+            "requested, but compatible platform tags could not be inferred"
+        )
+    compatible = set(compatible_platform_tags)
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    details = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+        name = wheel.get("name")
+        rendered_tags = ", ".join(str(tag) for tag in platform_tags) or "none"
+        details.append(f"{name} ({rendered_tags})")
+        if any(str(tag) in compatible for tag in platform_tags):
+            return
+    detail = ", ".join(details) if details else "none"
+    sample = ", ".join(compatible_platform_tags[:8])
+    raise RuntimeError(
+        "primary sagelite wheel platform tag is not compatible with the "
+        f"validation host; compatible platform tags include: {sample}; "
+        f"primary sagelite wheels: {detail}"
+    )
+
+
 def _ensure_primary_sagelite_wheel_platform_machine(
     inventory: dict[str, object],
     expected_machine: str | None,
@@ -413,6 +461,7 @@ def _resolve_executable(executable: str) -> str | None:
 def validation_host_context(base_python: str) -> dict[str, object]:
     resolved_base_python = _resolve_executable(base_python)
     resolved_controller_python = _resolve_executable(sys.executable)
+    compatible_platform_tags = _compatible_platform_tags()
     return {
         "controller_python": {
             "executable": sys.executable,
@@ -422,6 +471,8 @@ def validation_host_context(base_python: str) -> dict[str, object]:
             "cache_tag": sys.implementation.cache_tag,
             "sysconfig_platform": sysconfig.get_platform(),
             "machine": platform.machine(),
+            "compatible_platform_tag_count": len(compatible_platform_tags),
+            "compatible_platform_tags_sample": compatible_platform_tags[:20],
         },
         "base_python": {
             "requested": base_python,
@@ -566,6 +617,10 @@ def write_validation_summary(
                     f"`{controller.get('executable')}` "
                     f"({controller.get('version')}, "
                     f"{controller.get('sysconfig_platform')})"
+                ),
+                (
+                    "- Controller compatible platform tag count: "
+                    f"`{controller.get('compatible_platform_tag_count')}`"
                 ),
             ]
         )
@@ -872,6 +927,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-primary-sagelite-wheel-compatible-platform-tag",
+        action="store_true",
+        help=(
+            "fail before installation unless the primary sagelite wheel has a "
+            "platform tag compatible with the validation host"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -940,6 +1003,14 @@ def main(argv: list[str] | None = None) -> int:
             lambda inventory: _ensure_primary_sagelite_wheel_platform_machine(
                 inventory,
                 _host_context_machine(host_context),
+            )
+        )
+    if args.require_primary_sagelite_wheel_compatible_platform_tag:
+        compatible_platform_tags = _compatible_platform_tags()
+        preflight_checks.append(
+            lambda inventory: _ensure_primary_sagelite_wheel_platform_tag_compatible(
+                inventory,
+                compatible_platform_tags,
             )
         )
     for check in preflight_checks:
