@@ -354,6 +354,54 @@ def _ensure_primary_sagelite_wheel_abi_tag(
     )
 
 
+def _normalized_platform_machine(machine: str | None) -> str | None:
+    if not machine:
+        return None
+    normalized = machine.lower().replace("-", "_")
+    aliases = {
+        "amd64": "x86_64",
+        "arm64": "aarch64",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _ensure_primary_sagelite_wheel_platform_machine(
+    inventory: dict[str, object],
+    expected_machine: str | None,
+) -> None:
+    expected_machine = _normalized_platform_machine(expected_machine)
+    if expected_machine is None:
+        raise RuntimeError(
+            "primary sagelite wheel platform validation was requested, but "
+            "the validation host machine could not be inferred"
+        )
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    details = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+        name = wheel.get("name")
+        rendered_tags = ", ".join(str(tag) for tag in platform_tags) or "none"
+        details.append(f"{name} ({rendered_tags})")
+        for tag in platform_tags:
+            if _normalized_platform_machine(str(tag)).endswith(
+                f"_{expected_machine}"
+            ):
+                return
+            if _normalized_platform_machine(str(tag)) == expected_machine:
+                return
+    detail = ", ".join(details) if details else "none"
+    raise RuntimeError(
+        "primary sagelite wheel platform tag does not match validation host "
+        f"machine {expected_machine}; primary sagelite wheels: {detail}"
+    )
+
+
 def _resolve_executable(executable: str) -> str | None:
     path = Path(executable)
     if path.is_absolute() or os.sep in executable:
@@ -386,6 +434,14 @@ def validation_host_context(base_python: str) -> dict[str, object]:
             ),
         },
     }
+
+
+def _host_context_machine(host_context: dict[str, object]) -> str | None:
+    controller = host_context.get("controller_python", {})
+    if not isinstance(controller, dict):
+        return None
+    machine = controller.get("machine")
+    return str(machine) if machine else None
 
 
 def build_venv_command(base_python: str, install_dir: Path) -> list[str]:
@@ -808,6 +864,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-primary-sagelite-wheel-platform-machine",
+        action="store_true",
+        help=(
+            "fail before installation unless the primary sagelite wheel "
+            "platform tag matches the validation host machine architecture"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -869,6 +933,13 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_abi_tag(
                 inventory, expected_abi_tag
+            )
+        )
+    if args.require_primary_sagelite_wheel_platform_machine:
+        preflight_checks.append(
+            lambda inventory: _ensure_primary_sagelite_wheel_platform_machine(
+                inventory,
+                _host_context_machine(host_context),
             )
         )
     for check in preflight_checks:
