@@ -52,6 +52,7 @@ class ArtifactPaths:
     analysis_md: Path
     runtime_manifest: Path
     runtime_summary: Path
+    selftest_log: Path
 
 
 def _timestamp() -> str:
@@ -73,6 +74,7 @@ def make_artifact_paths(output_dir: Path, label: str) -> ArtifactPaths:
         analysis_md=output_dir / f"{base}.analysis.md",
         runtime_manifest=output_dir / f"{base}.runtime-manifest.json",
         runtime_summary=output_dir / f"{base}.runtime-summary.json",
+        selftest_log=output_dir / f"{base}.selftest.log",
     )
 
 
@@ -145,6 +147,10 @@ def build_manifest_command(
     if compiled_limit is not None:
         command.extend(["--compiled-limit", str(compiled_limit)])
     return command
+
+
+def build_selftest_command(python: str) -> list[str]:
+    return [python, "-m", "sage.cli.selftest"]
 
 
 def build_clean_environment(python: str) -> dict[str, str]:
@@ -715,6 +721,8 @@ def _runtime_summary(
     manifest_returncode: int,
     analyzer_command: list[str] | None = None,
     analyzer_returncode: int | None = None,
+    selftest_command: list[str] | None = None,
+    selftest_returncode: int | None = None,
 ) -> dict[str, object]:
     wheelhouse_paths = [str(path) for path in args.wheelhouse]
     wheelhouse_files = {}
@@ -755,12 +763,19 @@ def _runtime_summary(
             "analysis_json": str(paths.analysis_json),
             "analysis_md": str(paths.analysis_md),
             "runtime_manifest": str(paths.runtime_manifest),
+            "selftest_log": str(paths.selftest_log),
         },
         "runtime_manifest": {
             "command": manifest_command,
             "returncode": manifest_returncode,
             "path": str(paths.runtime_manifest),
             "created": paths.runtime_manifest.is_file(),
+        },
+        "selftest": {
+            "command": selftest_command or [],
+            "returncode": selftest_returncode,
+            "path": str(paths.selftest_log),
+            "created": paths.selftest_log.is_file(),
         },
         "features": _manifest_feature_summary(paths.runtime_manifest),
         "smoke_tests": _manifest_smoke_summary(paths.runtime_manifest),
@@ -794,6 +809,8 @@ def write_runtime_summary(
     manifest_returncode: int,
     analyzer_command: list[str] | None = None,
     analyzer_returncode: int | None = None,
+    selftest_command: list[str] | None = None,
+    selftest_returncode: int | None = None,
 ) -> None:
     summary = _runtime_summary(
         args,
@@ -804,6 +821,8 @@ def write_runtime_summary(
         manifest_returncode,
         analyzer_command,
         analyzer_returncode,
+        selftest_command,
+        selftest_returncode,
     )
     paths.runtime_summary.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
@@ -814,6 +833,26 @@ def write_runtime_summary(
 def _run(command: list[str], env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     print(f"+ {' '.join(shlex.quote(part) for part in command)}", flush=True)
     return subprocess.run(command, check=False, text=True, env=env)
+
+
+def _run_to_log(
+    command: list[str],
+    env: dict[str, str],
+    log_path: Path,
+) -> subprocess.CompletedProcess[str]:
+    print(
+        f"+ {' '.join(shlex.quote(part) for part in command)} > {log_path}",
+        flush=True,
+    )
+    with log_path.open("w", encoding="utf-8") as log:
+        return subprocess.run(
+            command,
+            check=False,
+            text=True,
+            env=env,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+        )
 
 
 def _make_parser() -> argparse.ArgumentParser:
@@ -869,6 +908,11 @@ def _make_parser() -> argparse.ArgumentParser:
         help="write a sanitized environment summary and runtime manifest before doctesting",
     )
     parser.add_argument(
+        "--selftest",
+        action="store_true",
+        help="run sagelite-selftest before doctesting and record its log",
+    )
+    parser.add_argument(
         "--manifest-compiled-limit",
         type=int,
         default=None,
@@ -906,6 +950,8 @@ def main(argv: list[str] | None = None) -> int:
     paths = make_artifact_paths(args.output_dir, label)
     env = build_clean_environment(args.python)
     doctest_command = build_doctest_command(args, paths)
+    selftest_command = build_selftest_command(args.python) if args.selftest else None
+    selftest_returncode = None
 
     if args.runtime_summary:
         manifest_command = build_manifest_command(
@@ -915,6 +961,9 @@ def main(argv: list[str] | None = None) -> int:
             compiled_limit=args.manifest_compiled_limit,
         )
         manifest = _run(manifest_command, env)
+        if selftest_command is not None:
+            selftest = _run_to_log(selftest_command, env, paths.selftest_log)
+            selftest_returncode = selftest.returncode
         write_runtime_summary(
             args,
             paths,
@@ -922,9 +971,14 @@ def main(argv: list[str] | None = None) -> int:
             doctest_command,
             manifest_command,
             manifest.returncode,
+            selftest_command=selftest_command,
+            selftest_returncode=selftest_returncode,
         )
         print(f"runtime manifest: {paths.runtime_manifest}")
         print(f"runtime summary: {paths.runtime_summary}")
+    elif selftest_command is not None:
+        selftest = _run_to_log(selftest_command, env, paths.selftest_log)
+        selftest_returncode = selftest.returncode
 
     doctest = _run(doctest_command, env)
 
@@ -950,6 +1004,8 @@ def main(argv: list[str] | None = None) -> int:
             manifest.returncode,
             analyzer_command,
             analyzer.returncode,
+            selftest_command=selftest_command,
+            selftest_returncode=selftest_returncode,
         )
 
     print(f"log: {paths.log}")
@@ -962,10 +1018,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.runtime_summary:
         print(f"runtime manifest: {paths.runtime_manifest}")
         print(f"runtime summary: {paths.runtime_summary}")
+    if args.selftest:
+        print(f"selftest log: {paths.selftest_log}")
 
     if analyzer.returncode:
         return analyzer.returncode
-    return doctest.returncode
+    if doctest.returncode:
+        return doctest.returncode
+    return selftest_returncode or 0
 
 
 if __name__ == "__main__":

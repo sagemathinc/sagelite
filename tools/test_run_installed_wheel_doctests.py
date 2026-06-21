@@ -209,6 +209,36 @@ def test_runner_prioritizes_analyzer_failure_exit_code(monkeypatch, tmp_path):
     assert exit_code == 7
 
 
+def test_runner_can_record_selftest_before_doctests(monkeypatch, tmp_path):
+    runner = _load_runner()
+    monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-050608")
+    commands = []
+
+    def fake_run(command, check, text, env, stdout=None, stderr=None):
+        commands.append(command)
+        if command[1:] == ["-m", "sage.cli.selftest"]:
+            assert stdout is not None
+            assert stderr == subprocess.STDOUT
+            stdout.write("checking PARI runtime packaging ... FAIL\n")
+            return subprocess.CompletedProcess(command, 1)
+        if command[2] == "sage.doctest":
+            Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
+            Path(command[7]).write_text("{}\n", encoding="utf-8")
+            return subprocess.CompletedProcess(command, 0)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(runner.subprocess, "run", fake_run)
+
+    exit_code = runner.main(["--output-dir", str(tmp_path), "--selftest"])
+
+    assert exit_code == 1
+    assert commands[0] == [sys.executable, "-m", "sage.cli.selftest"]
+    assert commands[1][2] == "sage.doctest"
+    assert (
+        tmp_path / "doctest-installed-short-20260616-050608.selftest.log"
+    ).read_text(encoding="utf-8") == "checking PARI runtime packaging ... FAIL\n"
+
+
 def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
     runner = _load_runner()
     monkeypatch.setenv("PATH", "/usr/bin")
@@ -362,7 +392,9 @@ def test_runtime_summary_reports_required_native_wheel_coverage(tmp_path):
     assert "libhomfly" in coverage["wheels"][0]["required_libraries"]["missing"]
 
 
-def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, tmp_path):
+def test_runner_runtime_summary_records_manifest_selftest_and_wheel_inputs(
+    monkeypatch, tmp_path
+):
     runner = _load_runner()
     monkeypatch.setattr(runner, "_timestamp", lambda: "20260616-060708")
     wheelhouse = tmp_path / "wheelhouse"
@@ -375,7 +407,7 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
     gap_wheel.write_text("", encoding="utf-8")
     commands = []
 
-    def fake_run(command, check, text, env):
+    def fake_run(command, check, text, env, stdout=None, stderr=None):
         commands.append(command)
         assert env["PYTHONNOUSERSITE"] == "1"
         assert "PYTHONPATH" not in env
@@ -498,6 +530,14 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
                 encoding="utf-8",
             )
             return subprocess.CompletedProcess(command, 0)
+        if command[1:] == ["-m", "sage.cli.selftest"]:
+            assert stdout is not None
+            assert stderr == subprocess.STDOUT
+            stdout.write(
+                "checking PARI runtime packaging ... FAIL\n"
+                "RuntimeError: cypari2 is installed with a private PARI runtime\n"
+            )
+            return subprocess.CompletedProcess(command, 1)
         if command[2] == "sage.doctest":
             Path(command[5]).write_text("Running doctests\n", encoding="utf-8")
             Path(command[7]).write_text("{}\n", encoding="utf-8")
@@ -538,6 +578,7 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
             "--output-dir",
             str(tmp_path),
             "--runtime-summary",
+            "--selftest",
             "--manifest-compiled-limit",
             "2",
             "--wheelhouse",
@@ -547,7 +588,7 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         ]
     )
 
-    assert exit_code == 0
+    assert exit_code == 1
     assert commands[0] == [
         sys.executable,
         str(ROOT / "tools" / "sagelite_runtime_manifest.py"),
@@ -559,7 +600,8 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
         "--compiled-limit",
         "2",
     ]
-    assert commands[1][2] == "sage.doctest"
+    assert commands[1] == [sys.executable, "-m", "sage.cli.selftest"]
+    assert commands[2][2] == "sage.doctest"
 
     summary_path = (
         tmp_path / "doctest-installed-short-20260616-060708.runtime-summary.json"
@@ -568,6 +610,14 @@ def test_runner_runtime_summary_records_manifest_and_wheel_inputs(monkeypatch, t
     assert summary["environment"]["PYTHONNOUSERSITE"] == "1"
     assert summary["environment"]["PYTHONPATH_present"] is False
     assert summary["runtime_manifest"]["created"] is True
+    assert summary["selftest"] == {
+        "command": [sys.executable, "-m", "sage.cli.selftest"],
+        "created": True,
+        "path": str(
+            tmp_path / "doctest-installed-short-20260616-060708.selftest.log"
+        ),
+        "returncode": 1,
+    }
     assert summary["features"]["counts"] == {
         "absent": 1,
         "errored": 1,
