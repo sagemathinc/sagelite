@@ -25,7 +25,7 @@ on:
       test_command:
         description: "Command to run after sagelite-selftest"
         required: false
-        default: "test-venv/bin/python tools/run-installed-wheel-doctests.py --output-dir .local-build-logs --label staged-index"
+        default: "test-venv/bin/python tools/run-installed-wheel-doctests.py --output-dir .local-build-logs --label staged-index --runtime-summary --manifest-compiled-limit 200"
         type: string
 
 jobs:

@@ -3737,6 +3737,15 @@ def test_linux_repair_validates_required_optional_native_extensions():
     )
 
 
+def test_staged_wheel_index_validation_collects_runtime_summary_by_default():
+    workflow = ROOT / ".github" / "workflows" / "test-sagelite-wheel-index.yml"
+    workflow_text = workflow.read_text()
+
+    assert "tools/run-installed-wheel-doctests.py" in workflow_text
+    assert "--runtime-summary" in workflow_text
+    assert "--manifest-compiled-limit 200" in workflow_text
+
+
 def test_linux_repair_rejects_mixed_pari_runtimes():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()
