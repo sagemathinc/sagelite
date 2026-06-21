@@ -1254,6 +1254,103 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert "platform tag is not compatible with the validation host" in summary
 
 
+def test_platform_tag_preflight_uses_base_python_probe_tags(tmp_path, monkeypatch):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    wheel = wheelhouse / (
+        "sagelite-10.9.post1-cp312-cp312-manylinux_2_17_x86_64.whl"
+    )
+    wheel.write_text("")
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
+    validator._timestamp = lambda: "20260621-074500"
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+    monkeypatch.setattr(
+        validator,
+        "validation_host_context",
+        lambda base_python: {
+            "controller_python": {
+                "executable": sys.executable,
+                "version": "3.12.4",
+                "sysconfig_platform": "linux-x86_64",
+                "machine": "x86_64",
+                "compatible_platform_tag_count": 2,
+                "compatible_platform_tags_sample": [
+                    "manylinux_2_28_x86_64",
+                    "linux_x86_64",
+                ],
+            },
+            "base_python": {
+                "requested": base_python,
+                "resolved_executable": "/opt/python/cp312/bin/python",
+                "exists": True,
+                "matches_controller": False,
+                "tag_probe": {
+                    "attempted": True,
+                    "cache_tag": "cpython-312",
+                    "compatible_platform_tags": [
+                        "manylinux_2_17_x86_64",
+                        "linux_x86_64",
+                    ],
+                    "compatible_platform_tags_sample": [
+                        "manylinux_2_17_x86_64",
+                        "linux_x86_64",
+                    ],
+                    "compatible_platform_tag_count": 2,
+                },
+            },
+        },
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/custom/interpreter",
+            "--require-primary-sagelite-wheel-python-tag",
+            "--require-primary-sagelite-wheel-abi-tag",
+            "--require-primary-sagelite-wheel-compatible-platform-tag",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-074500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-074500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    contract = metadata["validation_contract"]
+    assert contract["expected_python_tag"] == "cp312"
+    assert contract["compatible_platform_tag_source"] == "base-python-probe"
+    assert contract["compatible_platform_tag_count"] == 2
+    assert contract["compatible_platform_tags_sample"] == [
+        "manylinux_2_17_x86_64",
+        "linux_x86_64",
+    ]
+    assert metadata["status"] == "passed"
+    assert metadata["preflight_error"] is None
+    assert (
+        f"- `{wheel.name}` "
+        "(python: cp312; abi: cp312; platform: manylinux_2_17_x86_64)"
+    ) in summary
+    assert "- Compatible platform tag source: `base-python-probe`" in summary
+
+
 def test_requested_python_wheel_tag_uses_base_python_probe_cache_tag():
     validator = _load_validator()
 

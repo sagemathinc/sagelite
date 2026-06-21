@@ -710,11 +710,11 @@ else:
             tag_strings.append(str(tag))
         if tag.platform not in seen_platforms_set:
             seen_platforms_set.add(tag.platform)
-            if len(seen_platforms) < 20:
-                seen_platforms.append(tag.platform)
+            seen_platforms.append(tag.platform)
     payload["packaging_tags_available"] = True
     payload["compatible_tags_sample"] = tag_strings
-    payload["compatible_platform_tags_sample"] = seen_platforms
+    payload["compatible_platform_tags"] = seen_platforms
+    payload["compatible_platform_tags_sample"] = seen_platforms[:20]
     payload["compatible_platform_tag_count"] = len(seen_platforms_set)
 print(json.dumps(payload, sort_keys=True))
 """
@@ -793,6 +793,28 @@ def _host_context_machine(host_context: dict[str, object]) -> str | None:
     return str(machine) if machine else None
 
 
+def _validation_platform_tags(
+    host_context: dict[str, object],
+    controller_platform_tags: list[str],
+) -> tuple[list[str], str]:
+    base_context = host_context.get("base_python", {})
+    if isinstance(base_context, dict):
+        tag_probe = base_context.get("tag_probe", {})
+        if isinstance(tag_probe, dict):
+            base_platform_tags = tag_probe.get("compatible_platform_tags", [])
+            if isinstance(base_platform_tags, list) and base_platform_tags:
+                return [str(tag) for tag in base_platform_tags], "base-python-probe"
+            base_platform_tags_sample = tag_probe.get(
+                "compatible_platform_tags_sample", []
+            )
+            if isinstance(base_platform_tags_sample, list) and base_platform_tags_sample:
+                return (
+                    [str(tag) for tag in base_platform_tags_sample],
+                    "base-python-probe-sample",
+                )
+    return controller_platform_tags, "controller-python"
+
+
 def _validation_contract(
     *,
     inventory: dict[str, object],
@@ -800,6 +822,7 @@ def _validation_contract(
     expected_abi_tag: str | None,
     host_context: dict[str, object],
     compatible_platform_tags: list[str],
+    compatible_platform_tag_source: str,
     enabled_preflights: list[str],
 ) -> dict[str, object]:
     controller = host_context.get("controller_python", {})
@@ -822,10 +845,10 @@ def _validation_contract(
         "expected_platform_machine": _normalized_platform_machine(
             _host_context_machine(host_context)
         ),
-        "compatible_platform_tag_count": controller.get(
-            "compatible_platform_tag_count"
-        ),
-        "compatible_platform_tags_sample": compatible_platform_tags_sample,
+        "compatible_platform_tag_source": compatible_platform_tag_source,
+        "compatible_platform_tag_count": len(compatible_platform_tags),
+        "compatible_platform_tags_sample": compatible_platform_tags[:20]
+        or compatible_platform_tags_sample,
         "base_python_tag_probe": (
             host_context.get("base_python", {}).get("tag_probe", {})
             if isinstance(host_context.get("base_python", {}), dict)
@@ -1020,6 +1043,8 @@ def write_validation_summary(
                 f"`{validation_contract.get('expected_abi_tag')}`",
                 "- Expected platform machine: "
                 f"`{validation_contract.get('expected_platform_machine')}`",
+                "- Compatible platform tag source: "
+                f"`{validation_contract.get('compatible_platform_tag_source')}`",
             ]
         )
         enabled_preflights = validation_contract.get("enabled_preflights", [])
@@ -1413,7 +1438,9 @@ def main(argv: list[str] | None = None) -> int:
     host_context = validation_host_context(args.python)
     expected_python_tag = _requested_python_wheel_tag(args.python, host_context)
     expected_abi_tag = expected_python_tag
-    compatible_platform_tags = _compatible_platform_tags()
+    compatible_platform_tags, compatible_platform_tag_source = _validation_platform_tags(
+        host_context, _compatible_platform_tags()
+    )
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1500,6 +1527,7 @@ def main(argv: list[str] | None = None) -> int:
         expected_abi_tag=expected_abi_tag,
         host_context=host_context,
         compatible_platform_tags=compatible_platform_tags,
+        compatible_platform_tag_source=compatible_platform_tag_source,
         enabled_preflights=enabled_preflights,
     )
     for check in preflight_checks:
