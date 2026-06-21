@@ -260,6 +260,13 @@ Scheduled audit on 2026-06-21:
   artifacts into an auditable preflight failure instead of a later install-time
   ambiguity. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work added
+  `tools/validate-sagelite-wheelhouse.py --require-primary-sagelite-wheel-abi-tag`,
+  which rejects a staged primary sagelite wheel whose ABI tag does not match
+  the requested validation interpreter. This catches malformed or mixed-ABI
+  CIBW artifacts before pip installation when paired with the existing Python
+  tag and repaired-wheel preflights. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

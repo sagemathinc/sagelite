@@ -323,6 +323,37 @@ def _ensure_primary_sagelite_wheel_python_tag(
     )
 
 
+def _ensure_primary_sagelite_wheel_abi_tag(
+    inventory: dict[str, object],
+    expected_abi_tag: str | None,
+) -> None:
+    if expected_abi_tag is None:
+        raise RuntimeError(
+            "primary sagelite wheel ABI tag validation was requested, but "
+            "the requested base Python ABI tag could not be inferred"
+        )
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    details = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        abi_tags = wheel.get("abi_tags", [])
+        if not isinstance(abi_tags, list):
+            abi_tags = []
+        name = wheel.get("name")
+        rendered_tags = ", ".join(str(tag) for tag in abi_tags) or "none"
+        details.append(f"{name} ({rendered_tags})")
+        if expected_abi_tag in abi_tags:
+            return
+    detail = ", ".join(details) if details else "none"
+    raise RuntimeError(
+        "primary sagelite wheel ABI tag does not match requested base "
+        f"Python ABI tag {expected_abi_tag}; primary sagelite wheels: {detail}"
+    )
+
+
 def _resolve_executable(executable: str) -> str | None:
     path = Path(executable)
     if path.is_absolute() or os.sep in executable:
@@ -769,6 +800,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-primary-sagelite-wheel-abi-tag",
+        action="store_true",
+        help=(
+            "fail before installation unless the primary sagelite wheel ABI "
+            "tag matches the requested base Python ABI"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -788,6 +827,7 @@ def main(argv: list[str] | None = None) -> int:
     env = _clean_environment()
     host_context = validation_host_context(args.python)
     expected_python_tag = _requested_python_wheel_tag(args.python, host_context)
+    expected_abi_tag = expected_python_tag
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -823,6 +863,12 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_python_tag(
                 inventory, expected_python_tag
+            )
+        )
+    if args.require_primary_sagelite_wheel_abi_tag:
+        preflight_checks.append(
+            lambda inventory: _ensure_primary_sagelite_wheel_abi_tag(
+                inventory, expected_abi_tag
             )
         )
     for check in preflight_checks:
