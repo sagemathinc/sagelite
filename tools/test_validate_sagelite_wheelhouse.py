@@ -25,6 +25,11 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
     wheelhouse.mkdir()
+    repaired_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    repaired_wheel.write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
     install_dir = tmp_path / "install"
     output_dir = tmp_path / "validation"
     commands = []
@@ -86,6 +91,16 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["install_dir"] == os.fspath(install_dir)
     assert metadata["venv_python"] == os.fspath(venv_python)
     assert metadata["wheelhouses"] == [os.fspath(wheelhouse.resolve())]
+    assert metadata["wheelhouse_inventory"][
+        "contains_repaired_primary_sagelite_wheel"
+    ] is True
+    assert metadata["wheelhouse_inventory"][
+        "contains_raw_linux_primary_sagelite_wheel"
+    ] is False
+    assert [
+        file["name"]
+        for file in metadata["wheelhouse_inventory"]["primary_sagelite_wheels"]
+    ] == [repaired_wheel.name]
     assert metadata["status"] == "passed"
     assert metadata["exit_code"] == 0
     assert metadata["environment"]["PYTHONNOUSERSITE"] == "1"
@@ -306,5 +321,81 @@ def test_missing_wheelhouse_fails_before_creating_commands(tmp_path):
         assert "wheelhouse directory does not exist" in str(exc)
     else:
         raise AssertionError("expected FileNotFoundError")
+
+    assert commands == []
+
+
+def test_records_raw_linux_wheelhouse_inventory(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    raw_wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl"
+    raw_wheel.write_text("")
+    (wheelhouse / "sagelite_fplll_data-10.9-py3-none-any.whl").write_text("")
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._timestamp = lambda: "20260621-040506"
+    validator._run = fake_run
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--package",
+            "sagelite",
+        ]
+    )
+
+    assert exit_code == 0
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-040506" / "install-metadata.json").read_text()
+    )
+    inventory = metadata["wheelhouse_inventory"]
+    assert inventory["contains_primary_sagelite_wheel"] is True
+    assert inventory["contains_repaired_primary_sagelite_wheel"] is False
+    assert inventory["contains_raw_linux_primary_sagelite_wheel"] is True
+    assert inventory["primary_sagelite_wheels"] == [
+        {
+            "name": raw_wheel.name,
+            "path": os.fspath(raw_wheel.resolve()),
+            "wheelhouse": os.fspath(wheelhouse.resolve()),
+            "platform_tags": ["linux_x86_64"],
+            "is_sagelite_project_wheel": True,
+            "is_primary_sagelite_wheel": True,
+            "is_repaired_linux_wheel": False,
+            "is_raw_linux_wheel": True,
+        }
+    ]
+
+
+def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl").write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+
+    try:
+        validator.main(
+            [
+                "--wheelhouse",
+                str(wheelhouse),
+                "--work-dir",
+                str(tmp_path),
+                "--require-repaired-sagelite-wheel",
+            ]
+        )
+    except RuntimeError as exc:
+        assert "repaired sagelite wheel is required" in str(exc)
+        assert "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl" in str(exc)
+    else:
+        raise AssertionError("expected RuntimeError")
 
     assert commands == []

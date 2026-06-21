@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -68,6 +69,82 @@ def _ensure_wheelhouses(paths: list[Path]) -> list[Path]:
     return wheelhouses
 
 
+def _wheel_platform_tags(wheel: Path) -> list[str]:
+    if wheel.suffix != ".whl":
+        return []
+    parts = wheel.name[:-4].split("-")
+    if len(parts) < 5:
+        return []
+    return parts[-1].split(".")
+
+
+def _is_sagelite_project_wheel(wheel: Path) -> bool:
+    return re.match(r"^sagelite[-_]", wheel.name) is not None
+
+
+def _is_primary_sagelite_wheel(wheel: Path) -> bool:
+    return wheel.name.startswith("sagelite-")
+
+
+def _is_repaired_linux_wheel(wheel: Path) -> bool:
+    return any(
+        tag.startswith(("manylinux", "musllinux"))
+        for tag in _wheel_platform_tags(wheel)
+    )
+
+
+def _is_raw_linux_wheel(wheel: Path) -> bool:
+    return any(tag.startswith("linux_") for tag in _wheel_platform_tags(wheel))
+
+
+def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
+    files: list[dict[str, object]] = []
+    for wheelhouse in wheelhouses:
+        for wheel in sorted(wheelhouse.glob("*.whl")):
+            platform_tags = _wheel_platform_tags(wheel)
+            is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
+            files.append(
+                {
+                    "name": wheel.name,
+                    "path": os.fspath(wheel),
+                    "wheelhouse": os.fspath(wheelhouse),
+                    "platform_tags": platform_tags,
+                    "is_sagelite_project_wheel": _is_sagelite_project_wheel(wheel),
+                    "is_primary_sagelite_wheel": is_primary_sagelite,
+                    "is_repaired_linux_wheel": _is_repaired_linux_wheel(wheel),
+                    "is_raw_linux_wheel": _is_raw_linux_wheel(wheel),
+                }
+            )
+    primary_sagelite_wheels = [
+        file for file in files if file["is_primary_sagelite_wheel"]
+    ]
+    return {
+        "files": files,
+        "primary_sagelite_wheels": primary_sagelite_wheels,
+        "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
+        "contains_repaired_primary_sagelite_wheel": any(
+            file["is_repaired_linux_wheel"] for file in primary_sagelite_wheels
+        ),
+        "contains_raw_linux_primary_sagelite_wheel": any(
+            file["is_raw_linux_wheel"] for file in primary_sagelite_wheels
+        ),
+    }
+
+
+def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
+    if inventory["contains_repaired_primary_sagelite_wheel"]:
+        return
+    wheels = [
+        str(file["name"])
+        for file in inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    ]
+    detail = ", ".join(wheels) if wheels else "none"
+    raise RuntimeError(
+        "repaired sagelite wheel is required but no primary sagelite wheel has a "
+        f"manylinux or musllinux platform tag; primary sagelite wheels: {detail}"
+    )
+
+
 def build_venv_command(base_python: str, install_dir: Path) -> list[str]:
     return [base_python, "-m", "venv", os.fspath(install_dir)]
 
@@ -109,6 +186,7 @@ def write_install_metadata(
     wheelhouses: list[Path],
     commands: list[list[str]],
     env: dict[str, str],
+    inventory: dict[str, object],
     status: str = "pending",
     exit_code: int | None = None,
     command_results: list[dict[str, object]] | None = None,
@@ -128,6 +206,7 @@ def write_install_metadata(
         "install_dir": os.fspath(install_dir),
         "venv_python": os.fspath(venv_python),
         "wheelhouses": [os.fspath(path) for path in wheelhouses],
+        "wheelhouse_inventory": inventory,
         "commands": commands,
         "status": status,
         "exit_code": exit_code,
@@ -248,6 +327,14 @@ def _make_parser() -> argparse.ArgumentParser:
         help="compiled-module probe limit for runtime manifest collection",
     )
     parser.add_argument(
+        "--require-repaired-sagelite-wheel",
+        action="store_true",
+        help=(
+            "fail before installation unless a primary sagelite wheel has a "
+            "manylinux or musllinux platform tag"
+        ),
+    )
+    parser.add_argument(
         "doctest_args",
         nargs=argparse.REMAINDER,
         help="extra arguments passed through to the installed doctest runner",
@@ -262,6 +349,9 @@ def main(argv: list[str] | None = None) -> int:
     install_dir = args.install_dir or args.work_dir / f"install-{stamp}"
     output_dir = args.output_dir or args.work_dir / f"validation-{stamp}"
     wheelhouses = _ensure_wheelhouses(args.wheelhouse)
+    inventory = wheelhouse_inventory(wheelhouses)
+    if args.require_repaired_sagelite_wheel:
+        _ensure_repaired_sagelite_wheel(inventory)
     venv_python = install_dir / "bin" / "python"
     env = _clean_environment()
 
@@ -297,6 +387,7 @@ def main(argv: list[str] | None = None) -> int:
         wheelhouses=wheelhouses,
         commands=commands,
         env=env,
+        inventory=inventory,
         status="running",
     )
     command_results: list[dict[str, object]] = []
@@ -322,6 +413,7 @@ def main(argv: list[str] | None = None) -> int:
             wheelhouses=wheelhouses,
             commands=commands,
             env=env,
+            inventory=inventory,
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
@@ -340,6 +432,7 @@ def main(argv: list[str] | None = None) -> int:
         wheelhouses=wheelhouses,
         commands=commands,
         env=env,
+        inventory=inventory,
         status="passed",
         exit_code=0,
         command_results=command_results,
