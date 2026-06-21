@@ -46,8 +46,16 @@ acceptable output variants, tolerances, or ordering differences.
   - `c9164a34cb5 tools/sagelite: map missing native modules in doctest analysis`
   - `04418370406 tools/sagelite: smoke test cypari2 PARI packaging`
   - `87a9f451537 tools/sagelite: classify native library load failures`
+  - `9e47d758cf9 tools/sagelite: refine representative doctest fingerprints`
+  - `26faf89070b tools/sagelite: collect runtime summaries for staged index tests`
+  - `e7a725d42fd agents: refresh sagelite parity checkpoint`
   - `299f3685afe tools/sagelite: smoke test fplll strategy data`
   - `a32ce89fad7 tools/sagelite: smoke test msolve variety runtime`
+  - `40712df1cc0 sagelite: smoke test GAP3 runtime behavior`
+  - `c15358e5974 tools/sagelite: capture selftest in installed doctest runs`
+  - `8b058c7515e tools/sagelite: summarize selftest failures in runtime reports`
+  - `0e8c14a2b41 tools/sagelite: add wheelhouse validation wrapper`
+  - `64b5b91c395 tools/sagelite: record wheelhouse validation install metadata`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -127,6 +135,11 @@ Known facts from the latest investigation:
   `sagelite-selftest` now also probes GAP3 prompt parsing, help output,
   1-based list indexing, and LaTeX formatting when `sagelite-gap3-runtime` is
   installed.
+- `tools/validate-sagelite-wheelhouse.py` now writes
+  `install-metadata.json` into each validation directory before running the
+  install commands, so successful and interrupted validation runs record their
+  fresh install path, wheelhouse inputs, package requirement, command sequence,
+  and sanitized environment.
 
 ## Reality status
 
@@ -653,7 +666,8 @@ are either fixed or explicitly ruled out as runtime parity issues.
      smoke/doctest buckets before attempting another full run.
    - Deliverable: one timestamped `/scratch/sagelite-r2-work/validation-<stamp>`
      directory containing install metadata, manifests, manifest diff, runtime
-     summary, smoke logs, and targeted doctest analysis.
+     summary, smoke logs, and targeted doctest analysis. The validation
+     wrapper creates `install-metadata.json` automatically.
 
 2. Prove or fix repaired-wheel native parity in manylinux/CIBW.
    - Verify the repaired wheel contains every prefix from
