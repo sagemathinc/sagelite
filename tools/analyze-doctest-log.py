@@ -162,6 +162,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
             "fpylll failed during lattice reduction",
         ),
         (
+            "fplll/strategies",
+            "optional-external",
+            "fpylll-strategy-path-leak",
+            "fpylll is still resolving strategy data outside the installed runtime",
+        ),
+        (
             "restarting with another random linear form",
             "core-supported",
             "msolve-parser-diagnostic",
@@ -548,6 +554,7 @@ def suggested_package(result: ModuleResult) -> str:
         "maxima-symbolic-runtime-variant": "sagelite-maxima-runtime parity investigation",
         "fricas-runtime-error": "sagelite-fricas-runtime",
         "fpylll-reduction-failure": "sagelite-fplll-data or fpylll portability fix",
+        "fpylll-strategy-path-leak": "sagelite-fplll-data or rebuilt fpylll runtime",
         "external-path-output-variant": "companion runtime path normalization",
         "gap3-runtime-error": "sagelite-gap3-runtime",
         "gap-interrupt-behavior": "sagelite-gap-runtime",

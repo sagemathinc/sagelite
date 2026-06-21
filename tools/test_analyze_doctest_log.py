@@ -1155,3 +1155,30 @@ Exception raised:
     assert result.category == "optional-external"
     assert result.fingerprint == "fpylll-reduction-failure"
     assert result.suggested_package == "sagelite-fplll-data or fpylll portability fix"
+
+
+def test_report_identifies_fpylll_strategy_path_leak(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/modules/free_module_integer.py", line 42, in sage.modules.free_module_integer
+Failed example:
+    M.shortest_vector()
+Exception raised:
+    Traceback (most recent call last):
+    FileNotFoundError: [Errno 2] No such file or directory: '/project/local/share/fplll/strategies/default.json'
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.modules.free_module_integer
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.modules.free_module_integer"]
+
+    assert result.category == "optional-external"
+    assert result.fingerprint == "fpylll-strategy-path-leak"
+    assert result.suggested_package == "sagelite-fplll-data or rebuilt fpylll runtime"
