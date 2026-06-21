@@ -991,6 +991,30 @@ if not loaded or not wtdist_executable or weight_distribution != [1, 0, 3, 0]:
 """,
             timeout,
         ),
+        "cypari2_private_pari": _run_python_probe(
+            """
+import importlib.util
+import json
+from pathlib import Path
+
+spec = importlib.util.find_spec("cypari2")
+if spec is None or spec.origin is None:
+    print(json.dumps({"cypari2": "not importable", "private_pari": []}))
+    raise SystemExit(1)
+
+package_dir = Path(spec.origin).parent
+private_lib_dir = package_dir.parent / "cypari2.libs"
+private_pari = sorted(path.name for path in private_lib_dir.glob("libpari*"))
+print(json.dumps({
+    "cypari2_origin": spec.origin,
+    "private_lib_dir": str(private_lib_dir),
+    "private_pari": private_pari,
+}))
+if private_pari:
+    raise SystemExit(1)
+""",
+            timeout,
+        ),
         "maxima_help": _run_python_probe(
             """
 from sage.interfaces.maxima import maxima
