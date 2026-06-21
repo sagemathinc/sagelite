@@ -315,6 +315,42 @@ Got:
     assert result.fingerprint == "representative-choice"
 
 
+def test_report_identifies_riemann_surface_monodromy_representative_choice(tmp_path):
+    analyzer = _load_analyzer()
+    log = tmp_path / "doctest.log"
+    log.write_text(
+        """**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/schemes/riemann_surfaces/riemann_surface.py", line 42, in sage.schemes.riemann_surfaces.riemann_surface
+Failed example:
+    S.monodromy_group()
+Expected:
+    [(0,1,2), (0,1), (0,2)]
+Got:
+    [(0,2,1), (0,1), (1,2)]
+**********************************************************************
+File ".venv/lib/python3.12/site-packages/sage/schemes/riemann_surfaces/riemann_surface.py", line 57, in sage.schemes.riemann_surfaces.riemann_surface
+Failed example:
+    list(zip(S.branch_locus + [unsigned_infinity], G)) # abs tol 1e-7
+Expected:
+    [(0.000000000000000, (0,1,2)), (-1.31362670141929, (0,1))]
+Got:
+    [(0.000000000000000, (0,2,1)), (-1.31362670141929, (0,1))]
+Tolerance exceeded in 1 of 6:
+    1 vs 2, tolerance 1e0 > 1e-7
+**********************************************************************
+1 item had failures:
+   1 of  10 in sage.schemes.riemann_surfaces.riemann_surface
+""",
+        encoding="utf-8",
+    )
+
+    results = analyzer.parse_log(log)
+    analyzer.build_report(results)
+    result = results["sage.schemes.riemann_surfaces.riemann_surface"]
+
+    assert result.fingerprint == "representative-choice"
+
+
 def test_report_identifies_color_hex_precision_variant(tmp_path):
     analyzer = _load_analyzer()
     log = tmp_path / "doctest.log"

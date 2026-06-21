@@ -245,6 +245,12 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
                 "color-output-variant",
                 "color conversion output differs only in adjacent hex-channel rounding",
             )
+        if _looks_like_representative_choice(text):
+            return (
+                "core-supported",
+                "representative-choice",
+                "algorithm selected a different valid representative or ordering",
+            )
         if _looks_like_numeric_tolerance_mismatch(text):
             return (
                 "core-supported",
@@ -268,12 +274,6 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
                 "optional-external",
                 "external-output-variant",
                 "external runtime emitted verbose or formatting output that differs",
-            )
-        if _looks_like_representative_choice(text):
-            return (
-                "core-supported",
-                "representative-choice",
-                "algorithm selected a different valid representative or ordering",
             )
         return (
             "core-supported",
@@ -325,13 +325,15 @@ EXTERNAL_OUTPUT_MARKERS = (
 )
 
 REPRESENTATIVE_CHOICE_MARKERS = (
+    "branch_locus",
     "character_table",
+    "designs.steiner_triple_system",
     "graph on",
+    "monodromy_group",
     "subgraph of",
     "uniformizer",
     "tv.components()",
     "tv._components_intersection()",
-    "designs.steiner_triple_system",
 )
 
 EXTERNAL_PATH_MARKERS = (
