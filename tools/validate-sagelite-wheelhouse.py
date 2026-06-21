@@ -20,7 +20,10 @@ import tomllib
 from datetime import datetime
 from pathlib import Path
 
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import SpecifierSet
 from packaging import tags as packaging_tags
+from packaging.version import InvalidVersion, Version
 
 TOOLS_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = TOOLS_DIR.parent
@@ -100,6 +103,15 @@ def _wheel_tags(wheel: Path) -> dict[str, list[str]]:
     }
 
 
+def _wheel_version(wheel: Path) -> str | None:
+    if wheel.suffix != ".whl":
+        return None
+    parts = wheel.name[:-4].split("-")
+    if len(parts) < 5:
+        return None
+    return parts[1]
+
+
 def _wheel_platform_tags(wheel: Path) -> list[str]:
     return _wheel_tags(wheel)["platform"]
 
@@ -131,6 +143,28 @@ def _sagelite_requirement_name(requirement: str) -> str | None:
     return name
 
 
+def _sagelite_project_requirements() -> dict[str, list[str]]:
+    requirements_by_name: dict[str, list[str]] = {}
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
+        data = tomllib.load(pyproject)
+    requirements = list(data["project"]["dependencies"])
+    for extra_requirements in data["project"]["optional-dependencies"].values():
+        requirements.extend(extra_requirements)
+
+    for requirement_text in requirements:
+        try:
+            requirement = Requirement(requirement_text)
+        except InvalidRequirement:
+            continue
+        name = requirement.name.replace("_", "-").lower()
+        if not name.startswith("sagelite-"):
+            continue
+        requirements_by_name.setdefault(name, [])
+        if str(requirement.specifier) not in requirements_by_name[name]:
+            requirements_by_name[name].append(str(requirement.specifier))
+    return requirements_by_name
+
+
 def _all_needed_extra_sagelite_packages() -> list[str]:
     with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
         data = tomllib.load(pyproject)
@@ -155,18 +189,21 @@ def _is_raw_linux_wheel(wheel: Path) -> bool:
 
 
 def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
+    sagelite_requirements = _sagelite_project_requirements()
     files: list[dict[str, object]] = []
     for wheelhouse in wheelhouses:
         for wheel in sorted(wheelhouse.glob("*.whl")):
             wheel_tags = _wheel_tags(wheel)
             is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
             project_name = _wheel_project_name(wheel)
+            version = _wheel_version(wheel)
             files.append(
                 {
                     "name": wheel.name,
                     "path": os.fspath(wheel),
                     "wheelhouse": os.fspath(wheelhouse),
                     "project_name": project_name,
+                    "version": version,
                     "python_tags": wheel_tags["python"],
                     "abi_tags": wheel_tags["abi"],
                     "platform_tags": wheel_tags["platform"],
@@ -211,6 +248,43 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     missing_all_needed_extra_packages = sorted(
         set(all_needed_extra_packages) - set(companion_package_names)
     )
+    unsatisfied_companion_requirements = []
+    for file in companion_sagelite_wheels:
+        project_name = file.get("project_name")
+        version = file.get("version")
+        if not project_name or not version:
+            continue
+        specifiers = sagelite_requirements.get(str(project_name), [])
+        if not specifiers:
+            continue
+        try:
+            parsed_version = Version(str(version))
+        except InvalidVersion:
+            unsatisfied_companion_requirements.append(
+                {
+                    "name": file["name"],
+                    "project_name": project_name,
+                    "version": version,
+                    "required_specifiers": specifiers,
+                    "reason": "invalid wheel version",
+                }
+            )
+            continue
+        failed_specifiers = [
+            specifier
+            for specifier in specifiers
+            if specifier and parsed_version not in SpecifierSet(specifier)
+        ]
+        if failed_specifiers:
+            unsatisfied_companion_requirements.append(
+                {
+                    "name": file["name"],
+                    "project_name": project_name,
+                    "version": version,
+                    "required_specifiers": failed_specifiers,
+                    "reason": "version does not satisfy sagelite requirements",
+                }
+            )
     return {
         "files": files,
         "sagelite_project_wheels": sagelite_project_wheels,
@@ -218,6 +292,9 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "companion_sagelite_wheels": companion_sagelite_wheels,
         "companion_sagelite_package_names": companion_package_names,
         "duplicate_companion_sagelite_package_names": duplicate_companion_package_names,
+        "unsatisfied_companion_sagelite_requirements": (
+            unsatisfied_companion_requirements
+        ),
         "all_needed_extra_sagelite_packages": all_needed_extra_packages,
         "missing_all_needed_extra_sagelite_packages": missing_all_needed_extra_packages,
         "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
@@ -274,6 +351,32 @@ def _ensure_no_duplicate_companion_sagelite_wheels(
     raise RuntimeError(
         "duplicate sagelite companion wheels are not allowed for validation: "
         + ", ".join(str(package) for package in duplicates)
+    )
+
+
+def _ensure_companion_sagelite_wheel_requirements(
+    inventory: dict[str, object],
+) -> None:
+    unsatisfied = inventory["unsatisfied_companion_sagelite_requirements"]
+    if not isinstance(unsatisfied, list):
+        unsatisfied = []
+    if not unsatisfied:
+        return
+    details = []
+    for item in unsatisfied:
+        if not isinstance(item, dict):
+            continue
+        specifiers = item.get("required_specifiers", [])
+        if not isinstance(specifiers, list):
+            specifiers = []
+        details.append(
+            f"{item.get('name')} version {item.get('version')} requires "
+            + ", ".join(str(specifier) for specifier in specifiers)
+        )
+    raise RuntimeError(
+        "sagelite companion wheel versions do not satisfy sagelite package "
+        "requirements: "
+        + "; ".join(details)
     )
 
 
@@ -809,6 +912,23 @@ def write_validation_summary(
             "- Duplicate companion sagelite packages: "
             + ", ".join(f"`{name}`" for name in duplicate_companion_package_names)
         )
+    unsatisfied_companion_requirements = inventory.get(
+        "unsatisfied_companion_sagelite_requirements", []
+    )
+    if not isinstance(unsatisfied_companion_requirements, list):
+        unsatisfied_companion_requirements = []
+    lines.append(
+        "- Unsatisfied companion sagelite requirements: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in unsatisfied_companion_requirements
+                if isinstance(item, dict)
+            )
+            if unsatisfied_companion_requirements
+            else "`none`"
+        )
+    )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]
     required_import_modules = native_catalog["required_native_import_modules"]
@@ -999,6 +1119,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-sagelite-companion-wheel-requirements",
+        action="store_true",
+        help=(
+            "fail before installation when staged sagelite companion wheels do "
+            "not satisfy sagelite's declared dependency specifiers"
+        ),
+    )
+    parser.add_argument(
         "--require-compatible-companion-sagelite-wheels",
         action="store_true",
         help=(
@@ -1095,6 +1223,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.reject_duplicate_companion_sagelite_wheels:
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
         enabled_preflights.append("reject-duplicate-companion-sagelite-wheels")
+    if args.require_sagelite_companion_wheel_requirements:
+        preflight_checks.append(_ensure_companion_sagelite_wheel_requirements)
+        enabled_preflights.append("require-sagelite-companion-wheel-requirements")
     if args.require_compatible_companion_sagelite_wheels:
         compatible_platform_tags = _compatible_platform_tags()
         preflight_checks.append(

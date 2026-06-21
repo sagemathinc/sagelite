@@ -298,6 +298,13 @@ Scheduled audit on 2026-06-21:
   without reconstructing the validation contract from the command line and host
   metadata. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py -q`
+- Follow-up scheduled tooling work now records wheel versions in wheelhouse
+  validation inventory metadata, reports staged companion wheels that do not
+  satisfy `sagelite`'s declared dependency specifiers, and adds
+  `tools/validate-sagelite-wheelhouse.py --require-sagelite-companion-wheel-requirements`
+  to reject stale companion wheelhouses before installation. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

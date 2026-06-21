@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 
@@ -19,6 +20,11 @@ def _load_validator():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _companion_version(package: str) -> str:
+    with (ROOT / "companion-packages" / package / "pyproject.toml").open("rb") as f:
+        return tomllib.load(f)["project"]["version"]
 
 
 def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch):
@@ -463,6 +469,7 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "path": os.fspath(raw_wheel.resolve()),
             "wheelhouse": os.fspath(wheelhouse.resolve()),
             "project_name": "sagelite",
+            "version": "10.9.post1",
             "python_tags": ["cp312"],
             "abi_tags": ["cp312"],
             "platform_tags": ["linux_x86_64"],
@@ -476,6 +483,7 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
         wheel["name"] for wheel in inventory["companion_sagelite_wheels"]
     ] == ["sagelite_fplll_data-10.9-py3-none-any.whl"]
     assert inventory["companion_sagelite_package_names"] == ["sagelite-fplll-data"]
+    assert inventory["companion_sagelite_wheels"][0]["version"] == "10.9"
     assert "sagelite-fplll-data" not in inventory[
         "missing_all_needed_extra_sagelite_packages"
     ]
@@ -730,7 +738,8 @@ def test_inventory_records_complete_all_needed_extra_companion_coverage(tmp_path
     ).write_text("")
     expected_packages = validator._all_needed_extra_sagelite_packages()
     for package in expected_packages:
-        wheel_name = package.replace("-", "_") + "-10.9-py3-none-any.whl"
+        version = _companion_version(package)
+        wheel_name = package.replace("-", "_") + f"-{version}-py3-none-any.whl"
         (wheelhouse / wheel_name).write_text("")
 
     inventory = validator.wheelhouse_inventory([wheelhouse])
@@ -740,6 +749,7 @@ def test_inventory_records_complete_all_needed_extra_companion_coverage(tmp_path
     assert inventory["companion_sagelite_package_names"] == expected_packages
     assert inventory["missing_all_needed_extra_sagelite_packages"] == []
     assert inventory["duplicate_companion_sagelite_package_names"] == []
+    assert inventory["unsatisfied_companion_sagelite_requirements"] == []
 
 
 def test_inventory_records_duplicate_companion_packages(tmp_path):
@@ -768,6 +778,68 @@ def test_inventory_records_duplicate_companion_packages(tmp_path):
         "sagelite-gap-runtime"
     ]
     assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary
+    assert "- Unsatisfied companion sagelite requirements:" in summary
+
+
+def test_reject_unsatisfied_companion_sagelite_requirements_preflight(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    outdated_gap_runtime = wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl"
+    outdated_gap_runtime.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-071000"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-sagelite-companion-wheel-requirements",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-071000" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-071000" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    unsatisfied = metadata["wheelhouse_inventory"][
+        "unsatisfied_companion_sagelite_requirements"
+    ]
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "companion wheel versions do not satisfy" in metadata["preflight_error"]
+    assert outdated_gap_runtime.name in metadata["preflight_error"]
+    assert ">=10.9.post2" in metadata["preflight_error"]
+    assert "<10.10" in metadata["preflight_error"]
+    assert unsatisfied == [
+        {
+            "name": outdated_gap_runtime.name,
+            "project_name": "sagelite-gap-runtime",
+            "version": "10.9",
+            "required_specifiers": ["<10.10,>=10.9.post2"],
+            "reason": "version does not satisfy sagelite requirements",
+        }
+    ]
+    assert (
+        "- Enabled preflights: "
+        "`require-sagelite-companion-wheel-requirements`"
+    ) in summary
+    assert (
+        "- Unsatisfied companion sagelite requirements: "
+        f"`{outdated_gap_runtime.name}`"
+    ) in summary
+    assert "## Preflight Error" in summary
+    assert "companion wheel versions do not satisfy" in summary
 
 
 def test_reject_duplicate_companion_sagelite_wheels_preflight(tmp_path):
