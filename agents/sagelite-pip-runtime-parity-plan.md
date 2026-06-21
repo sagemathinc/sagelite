@@ -62,6 +62,7 @@ acceptable output variants, tolerances, or ordering differences.
   - `4fe2b1380d0 tools/sagelite: record repaired-wheel preflight failures`
   - `6bf2b7afc28 tools/sagelite: summarize wheelhouse validation artifacts`
   - `45e46663f1c tools/sagelite: reject ambiguous repaired-wheel validation inputs`
+  - `16c8e209822 tools/sagelite: record validation host Python context`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -165,6 +166,11 @@ Known facts from the latest investigation:
   scratch validation artifacts expose the overall status, exit code, wheelhouse
   classification, preflight error, and completed step commands without requiring
   a JSON viewer.
+- `tools/validate-sagelite-wheelhouse.py` now records validation host context
+  in both artifacts, including the controller Python version/platform and the
+  requested base Python used to create the fresh venv. This should make CIBW
+  multi-ABI artifacts auditable when a repaired-wheel validation uses the wrong
+  interpreter or runs under an unexpected controller Python.
 - The current tree already contains the first msolve parser hardening from this
   plan: `src/sage/rings/polynomial/msolve.py` ignores diagnostic lines before
   the Sage-readable payload and raises `NotImplementedError` with raw msolve
@@ -197,6 +203,10 @@ Scheduled audit on 2026-06-21:
 - Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
   - `PYTHONNOUSERSITE=1 PYTHONPATH=src .venv/bin/python -m pytest --confcutdir=src/sage/misc src/sage/misc/sageinspect_test.py -q`
+- Follow-up scheduled tooling validation added host/interpreter context to
+  wheelhouse validation metadata and summaries. Focused local validation passed
+  with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 - Host `/usr/bin/python3` is Python 3.14 and cannot run the project tests
   cleanly: with user-site enabled it finds a stale editable sagelite loader
   pointing at `/tmp/sage-wheel-prefix/bin/python3`; with
