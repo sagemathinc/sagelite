@@ -611,8 +611,22 @@ def test_runner_runtime_summary_records_manifest_selftest_and_wheel_inputs(
     assert summary["environment"]["PYTHONPATH_present"] is False
     assert summary["runtime_manifest"]["created"] is True
     assert summary["selftest"] == {
+        "available": True,
         "command": [sys.executable, "-m", "sage.cli.selftest"],
+        "counts": {
+            "checks": 1,
+            "error_headlines": 1,
+            "failed": 1,
+            "passed": 0,
+        },
         "created": True,
+        "error_headlines": [
+            {
+                "kind": "RuntimeError",
+                "message": "cypari2 is installed with a private PARI runtime",
+            }
+        ],
+        "failures": [{"name": "PARI runtime packaging", "status": "FAIL"}],
         "path": str(
             tmp_path / "doctest-installed-short-20260616-060708.selftest.log"
         ),
@@ -719,3 +733,64 @@ def test_runner_runtime_summary_records_manifest_selftest_and_wheel_inputs(
         "sagelite-10.9.post1-cp312-cp312-linux_x86_64.whl",
         "sagelite_gap_runtime-10.9-py3-none-any.whl",
     ]
+
+
+def test_selftest_summary_parses_checks_and_error_headlines(tmp_path):
+    runner = _load_runner()
+    log = tmp_path / "selftest.log"
+    log.write_text(
+        "checking installed requirements ... ok\n"
+        "checking PARI runtime packaging ... FAIL\n"
+        "Traceback (most recent call last):\n"
+        "RuntimeError: cypari2 is installed with a private PARI runtime\n"
+        "checking Maxima runtime ... FAIL\n"
+        "ModuleNotFoundError: No module named 'socket'\n",
+        encoding="utf-8",
+    )
+
+    summary = runner._selftest_summary(
+        log,
+        selftest_command=["python", "-m", "sage.cli.selftest"],
+        selftest_returncode=1,
+    )
+
+    assert summary == {
+        "available": True,
+        "command": ["python", "-m", "sage.cli.selftest"],
+        "counts": {
+            "checks": 3,
+            "error_headlines": 2,
+            "failed": 2,
+            "passed": 1,
+        },
+        "created": True,
+        "error_headlines": [
+            {
+                "kind": "RuntimeError",
+                "message": "cypari2 is installed with a private PARI runtime",
+            },
+            {"kind": "ModuleNotFoundError", "message": "No module named 'socket'"},
+        ],
+        "failures": [
+            {"name": "PARI runtime packaging", "status": "FAIL"},
+            {"name": "Maxima runtime", "status": "FAIL"},
+        ],
+        "path": str(log),
+        "returncode": 1,
+    }
+
+
+def test_selftest_summary_handles_missing_log(tmp_path):
+    runner = _load_runner()
+    log = tmp_path / "missing.log"
+
+    assert runner._selftest_summary(
+        log,
+        selftest_command=None,
+        selftest_returncode=None,
+    ) == {
+        "command": [],
+        "created": False,
+        "path": str(log),
+        "returncode": None,
+    }

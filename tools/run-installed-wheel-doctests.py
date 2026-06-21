@@ -712,6 +712,77 @@ def _analysis_summary(
     return summary
 
 
+SELFTEST_CHECK_RE = re.compile(
+    r"^checking (?P<name>.+?) \.\.\. (?P<status>ok|FAIL)(?: .*)?$"
+)
+SELFTEST_ERROR_RE = re.compile(
+    r"^(?P<kind>[A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception|Warning))(?::\s*(?P<message>.*))?$"
+)
+
+
+def _selftest_summary(
+    path: Path,
+    *,
+    selftest_command: list[str] | None,
+    selftest_returncode: int | None,
+    limit: int = 12,
+) -> dict[str, object]:
+    summary: dict[str, object] = {
+        "command": selftest_command or [],
+        "returncode": selftest_returncode,
+        "path": str(path),
+        "created": path.is_file(),
+    }
+    if not path.is_file():
+        return summary
+
+    checks = []
+    failures = []
+    error_headlines = []
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception as exc:  # noqa: BLE001 - summary should survive bad logs
+        summary["available"] = False
+        summary["reason"] = f"{type(exc).__name__}: {exc}"
+        return summary
+
+    for line in lines:
+        check_match = SELFTEST_CHECK_RE.match(line.strip())
+        if check_match:
+            check = {
+                "name": check_match.group("name"),
+                "status": check_match.group("status"),
+            }
+            checks.append(check)
+            if check["status"] == "FAIL":
+                failures.append(check)
+            continue
+
+        error_match = SELFTEST_ERROR_RE.match(line.strip())
+        if error_match:
+            headline = {
+                "kind": error_match.group("kind"),
+                "message": error_match.group("message") or "",
+            }
+            if headline not in error_headlines:
+                error_headlines.append(headline)
+
+    summary.update(
+        {
+            "available": True,
+            "counts": {
+                "passed": sum(1 for check in checks if check["status"] == "ok"),
+                "failed": len(failures),
+                "checks": len(checks),
+                "error_headlines": len(error_headlines),
+            },
+            "failures": failures[:limit],
+            "error_headlines": error_headlines[:limit],
+        }
+    )
+    return summary
+
+
 def _runtime_summary(
     args: argparse.Namespace,
     paths: ArtifactPaths,
@@ -771,12 +842,11 @@ def _runtime_summary(
             "path": str(paths.runtime_manifest),
             "created": paths.runtime_manifest.is_file(),
         },
-        "selftest": {
-            "command": selftest_command or [],
-            "returncode": selftest_returncode,
-            "path": str(paths.selftest_log),
-            "created": paths.selftest_log.is_file(),
-        },
+        "selftest": _selftest_summary(
+            paths.selftest_log,
+            selftest_command=selftest_command,
+            selftest_returncode=selftest_returncode,
+        ),
         "features": _manifest_feature_summary(paths.runtime_manifest),
         "smoke_tests": _manifest_smoke_summary(paths.runtime_manifest),
         "runtime_leaks": _manifest_runtime_leak_summary(paths.runtime_manifest),
