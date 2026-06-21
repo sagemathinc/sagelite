@@ -222,6 +222,12 @@ Scheduled audit on 2026-06-21:
   preserving host/interpreter context in failure summaries. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records sagelite companion/runtime/data
+  wheels separately from the primary sagelite wheel in wheelhouse validation
+  metadata and summaries, so future CIBW artifacts expose staged companion
+  coverage without opening the full inventory JSON. Focused local validation
+  passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

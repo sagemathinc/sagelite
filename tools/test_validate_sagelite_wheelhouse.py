@@ -98,6 +98,13 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is False
+    assert metadata["wheelhouse_inventory"][
+        "contains_companion_sagelite_wheels"
+    ] is True
+    assert [
+        file["name"]
+        for file in metadata["wheelhouse_inventory"]["companion_sagelite_wheels"]
+    ] == ["sagelite_gap_runtime-10.9-py3-none-any.whl"]
     assert "brial" in metadata["native_wheel_catalog"]["required_meson_options"]
     assert (
         "sage.libs.ntl.error"
@@ -219,6 +226,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
     assert f"- `{repaired_wheel.name}` (manylinux_2_28_x86_64)" in summary
+    assert "- Companion sagelite wheels:" in summary
+    assert "- `sagelite_gap_runtime-10.9-py3-none-any.whl`" in summary
+    assert "- Contains companion sagelite wheels: `True`" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
     assert "## Native Wheel Catalog" in summary
     assert "- Required Meson options:" in summary
@@ -409,6 +419,7 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
     )
     inventory = metadata["wheelhouse_inventory"]
     assert inventory["contains_primary_sagelite_wheel"] is True
+    assert inventory["contains_companion_sagelite_wheels"] is True
     assert inventory["contains_repaired_primary_sagelite_wheel"] is False
     assert inventory["contains_raw_linux_primary_sagelite_wheel"] is True
     assert inventory["primary_sagelite_wheels"] == [
@@ -423,6 +434,9 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "is_raw_linux_wheel": True,
         }
     ]
+    assert [
+        wheel["name"] for wheel in inventory["companion_sagelite_wheels"]
+    ] == ["sagelite_fplll_data-10.9-py3-none-any.whl"]
 
 
 def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
@@ -510,6 +524,11 @@ def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path)
     assert "primary sagelite wheels: none" in metadata["preflight_error"]
     assert metadata["wheelhouse_inventory"]["primary_sagelite_wheels"] == []
     assert "- Primary sagelite wheels:\n  - none" in summary
+    assert (
+        "- Companion sagelite wheels:\n"
+        "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`"
+    ) in summary
+    assert "- Contains companion sagelite wheels: `True`" in summary
     assert "## Preflight Error" in summary
     assert "exactly one primary sagelite wheel is required" in summary
 

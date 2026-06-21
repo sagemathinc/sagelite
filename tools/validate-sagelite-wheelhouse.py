@@ -132,10 +132,21 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     primary_sagelite_wheels = [
         file for file in files if file["is_primary_sagelite_wheel"]
     ]
+    sagelite_project_wheels = [
+        file for file in files if file["is_sagelite_project_wheel"]
+    ]
+    companion_sagelite_wheels = [
+        file
+        for file in sagelite_project_wheels
+        if not file["is_primary_sagelite_wheel"]
+    ]
     return {
         "files": files,
+        "sagelite_project_wheels": sagelite_project_wheels,
         "primary_sagelite_wheels": primary_sagelite_wheels,
+        "companion_sagelite_wheels": companion_sagelite_wheels,
         "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
+        "contains_companion_sagelite_wheels": bool(companion_sagelite_wheels),
         "contains_repaired_primary_sagelite_wheel": any(
             file["is_repaired_linux_wheel"] for file in primary_sagelite_wheels
         ),
@@ -341,10 +352,24 @@ def write_validation_summary(
         )
     if not primary_sagelite_wheels:
         lines.append("  - none")
+    companion_sagelite_wheels = inventory.get("companion_sagelite_wheels", [])
+    if not isinstance(companion_sagelite_wheels, list):
+        companion_sagelite_wheels = []
+    lines.append("- Companion sagelite wheels:")
+    for wheel in companion_sagelite_wheels:
+        if not isinstance(wheel, dict):
+            continue
+        lines.append(f"  - `{wheel.get('name')}`")
+    if not companion_sagelite_wheels:
+        lines.append("  - none")
     contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]
     contains_raw_linux = inventory["contains_raw_linux_primary_sagelite_wheel"]
     lines.extend(
         [
+            (
+                "- Contains companion sagelite wheels: "
+                f"`{inventory['contains_companion_sagelite_wheels']}`"
+            ),
             f"- Contains repaired primary sagelite wheel: `{contains_repaired}`",
             f"- Contains raw Linux primary sagelite wheel: `{contains_raw_linux}`",
         ]
