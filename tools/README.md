@@ -98,6 +98,9 @@ more local wheelhouses with `--no-index`, runs `pip check`, then invokes
 `tools/run-installed-wheel-doctests.py` with runtime manifest and selftest
 capture enabled. It is intended for repaired-wheel validation artifacts from
 the manylinux/CIBW build, where local raw-wheel repair is not authoritative.
+The validation directory includes `install-metadata.json`, which records the
+fresh install path, wheelhouse inputs, package requirement, commands, and
+sanitized environment used for the run.
 
 Example:
 

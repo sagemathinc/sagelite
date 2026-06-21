@@ -6,6 +6,7 @@ Create a fresh sagelite install from a wheelhouse and run installed validation.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shlex
 import subprocess
@@ -76,6 +77,39 @@ def build_install_command(
 
 def build_pip_check_command(venv_python: Path) -> list[str]:
     return [os.fspath(venv_python), "-m", "pip", "check"]
+
+
+def write_install_metadata(
+    output_dir: Path,
+    *,
+    label: str,
+    package: str,
+    base_python: str,
+    install_dir: Path,
+    venv_python: Path,
+    wheelhouses: list[Path],
+    commands: list[list[str]],
+    env: dict[str, str],
+) -> Path:
+    path = output_dir / "install-metadata.json"
+    metadata = {
+        "schema": "sagelite-wheelhouse-validation-install-v1",
+        "label": label,
+        "package": package,
+        "base_python": base_python,
+        "install_dir": os.fspath(install_dir),
+        "venv_python": os.fspath(venv_python),
+        "wheelhouses": [os.fspath(path) for path in wheelhouses],
+        "commands": commands,
+        "environment": {
+            "PATH": env.get("PATH", ""),
+            "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
+            "PYTHONPATH": env.get("PYTHONPATH"),
+            "LD_LIBRARY_PATH": env.get("LD_LIBRARY_PATH"),
+        },
+    }
+    path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+    return path
 
 
 def build_validation_command(
@@ -225,6 +259,17 @@ def main(argv: list[str] | None = None) -> int:
             else args.doctest_args,
         ),
     ]
+    metadata_path = write_install_metadata(
+        output_dir,
+        label=label,
+        package=args.package,
+        base_python=args.python,
+        install_dir=install_dir,
+        venv_python=venv_python,
+        wheelhouses=wheelhouses,
+        commands=commands,
+        env=env,
+    )
     for command in commands:
         result = _run(command, env)
         if result.returncode:
@@ -232,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")
+    print(f"metadata: {metadata_path}")
     return 0
 
 

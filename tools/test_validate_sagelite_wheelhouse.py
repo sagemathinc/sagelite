@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -63,6 +64,17 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path):
 
     assert exit_code == 0
     venv_python = install_dir / "bin" / "python"
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    assert metadata["schema"] == "sagelite-wheelhouse-validation-install-v1"
+    assert metadata["label"] == "cibw-proof"
+    assert metadata["package"] == "sagelite[all-needed-extras]"
+    assert metadata["base_python"] == "/opt/python/cp312/bin/python"
+    assert metadata["install_dir"] == os.fspath(install_dir)
+    assert metadata["venv_python"] == os.fspath(venv_python)
+    assert metadata["wheelhouses"] == [os.fspath(wheelhouse.resolve())]
+    assert metadata["environment"]["PYTHONNOUSERSITE"] == "1"
+    assert metadata["environment"]["PYTHONPATH"] is None
+    assert metadata["environment"]["LD_LIBRARY_PATH"] is None
     assert commands == [
         ["/opt/python/cp312/bin/python", "-m", "venv", os.fspath(install_dir)],
         [os.fspath(venv_python), "-m", "pip", "install", "-U", "pip"],
@@ -100,6 +112,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path):
             "sage,optional,external",
         ],
     ]
+    assert metadata["commands"] == commands
 
 
 def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
@@ -130,7 +143,11 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
     install_dir = tmp_path / "install-20260621-020304"
     output_dir = tmp_path / "validation-20260621-020304"
     venv_python = install_dir / "bin" / "python"
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
     assert commands[2][-1] == "sagelite"
+    assert metadata["label"] == "repaired-wheel-20260621-020304"
+    assert metadata["package"] == "sagelite"
+    assert metadata["commands"] == commands
     assert commands[4] == [
         os.fspath(venv_python),
         os.fspath(ROOT / "tools" / "run-installed-wheel-doctests.py"),
@@ -172,6 +189,37 @@ def test_stops_after_failed_step(tmp_path):
 
     assert exit_code == 12
     assert len(commands) == 3
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-030405" / "install-metadata.json").read_text()
+    )
+    assert metadata["commands"] == commands + [
+        [
+            os.fspath(tmp_path / "install-20260621-030405" / "bin" / "python"),
+            "-m",
+            "pip",
+            "check",
+        ],
+        [
+            os.fspath(tmp_path / "install-20260621-030405" / "bin" / "python"),
+            os.fspath(ROOT / "tools" / "run-installed-wheel-doctests.py"),
+            "--python",
+            os.fspath(tmp_path / "install-20260621-030405" / "bin" / "python"),
+            "--output-dir",
+            os.fspath(tmp_path / "validation-20260621-030405"),
+            "--label",
+            "repaired-wheel-20260621-030405",
+            "--runtime-summary",
+            "--selftest",
+            "--nthreads",
+            "1",
+            "--short",
+            "300",
+            "--manifest-compiled-limit",
+            "200",
+            "--wheelhouse",
+            os.fspath(wheelhouse.resolve()),
+        ],
+    ]
 
 
 def test_missing_wheelhouse_fails_before_creating_commands(tmp_path):
