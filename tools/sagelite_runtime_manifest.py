@@ -1083,6 +1083,32 @@ if value != -cos(x):
 """,
             timeout,
         ),
+        "msolve_variety": _run_python_probe(
+            """
+from sage.rings.rational_field import QQ
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+
+R = PolynomialRing(QQ, ("x", "y"))
+x, y = R.gens()
+values = R.ideal([x**2 - 1, y**2 - 1]).variety(
+    QQ, algorithm="msolve", proof=False
+)
+normalized = sorted(
+    tuple(sorted((str(variable), value) for variable, value in point.items()))
+    for point in values
+)
+print(normalized)
+expected = [
+    (("x", -1), ("y", -1)),
+    (("x", -1), ("y", 1)),
+    (("x", 1), ("y", -1)),
+    (("x", 1), ("y", 1)),
+]
+if normalized != expected:
+    raise SystemExit(1)
+""",
+            timeout,
+        ),
         "gap3_interface": _run_python_probe(
             """
 from sage.interfaces.gap3 import Gap3

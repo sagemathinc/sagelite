@@ -425,6 +425,10 @@ def test_collect_runtime_smoke_tests_checks_symbolic_and_external_conversions(
     assert "maxima_lib.sr_integral(sin(x), x)._sage_()" in probe_by_name[
         "maxima_lib_sr_integral"
     ][0]
+    assert "msolve_variety" in result
+    assert 'algorithm="msolve"' in probe_by_name["msolve_variety"][0]
+    assert "proof=False" in probe_by_name["msolve_variety"][0]
+    assert "normalized != expected" in probe_by_name["msolve_variety"][0]
     assert "gap3_interface" in result
     assert 'gap3._execute_line("1+1;")' in probe_by_name["gap3_interface"][0]
     assert "values[2]" in probe_by_name["gap3_interface"][0]
