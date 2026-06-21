@@ -498,6 +498,14 @@ def _requested_python_wheel_tag(
     if match:
         return f"cp3{match.group(1)}"
     base_context = host_context.get("base_python", {})
+    if isinstance(base_context, dict):
+        tag_probe = base_context.get("tag_probe", {})
+        if isinstance(tag_probe, dict):
+            cache_tag = tag_probe.get("cache_tag")
+            if isinstance(cache_tag, str) and re.fullmatch(
+                r"cpython-\d{2,3}", cache_tag
+            ):
+                return "cp" + cache_tag.rsplit("-", 1)[1]
     if isinstance(base_context, dict) and base_context.get("matches_controller"):
         cache_tag = sys.implementation.cache_tag
         if cache_tag and re.fullmatch(r"cpython-\d{2,3}", cache_tag):
@@ -972,6 +980,18 @@ def write_validation_summary(
                         f"`{tag_probe.get('attempted')}`"
                     ),
                     (
+                        "- Base Python probe version: "
+                        f"`{tag_probe.get('python_version')}`"
+                    ),
+                    (
+                        "- Base Python probe cache tag: "
+                        f"`{tag_probe.get('cache_tag')}`"
+                    ),
+                    (
+                        "- Base Python probe platform: "
+                        f"`{tag_probe.get('sysconfig_platform')}`"
+                    ),
+                    (
                         "- Base Python packaging tags available: "
                         f"`{tag_probe.get('packaging_tags_available')}`"
                     ),
@@ -981,6 +1001,16 @@ def write_validation_summary(
                     ),
                 ]
             )
+            compatible_tags_sample = tag_probe.get("compatible_tags_sample", [])
+            if not isinstance(compatible_tags_sample, list):
+                compatible_tags_sample = []
+            if compatible_tags_sample:
+                lines.append(
+                    "- Base Python compatible tag sample: "
+                    + ", ".join(
+                        f"`{tag}`" for tag in compatible_tags_sample[:5]
+                    )
+                )
     if validation_contract:
         lines.extend(
             [

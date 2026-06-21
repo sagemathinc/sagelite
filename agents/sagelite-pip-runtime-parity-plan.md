@@ -319,6 +319,12 @@ Scheduled audit on 2026-06-21:
   are recorded as auditable metadata instead of changing validation behavior.
   Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now uses a successful requested-base-Python
+  probe cache tag to infer expected primary sagelite wheel Python/ABI tags
+  when the executable path itself is not descriptive, and renders the base
+  interpreter probe version, cache tag, sysconfig platform, and compatible tag
+  sample in `validation-summary.md`. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

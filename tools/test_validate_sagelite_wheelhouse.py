@@ -1252,3 +1252,71 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert "- Controller compatible platform tag count: `2`" in summary
     assert "## Preflight Error" in summary
     assert "platform tag is not compatible with the validation host" in summary
+
+
+def test_requested_python_wheel_tag_uses_base_python_probe_cache_tag():
+    validator = _load_validator()
+
+    assert (
+        validator._requested_python_wheel_tag(
+            "/custom/interpreter",
+            {
+                "base_python": {
+                    "matches_controller": False,
+                    "tag_probe": {"cache_tag": "cpython-313"},
+                },
+            },
+        )
+        == "cp313"
+    )
+
+
+def test_summary_renders_base_python_probe_details(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    summary_dir = tmp_path / "validation"
+    summary_dir.mkdir()
+
+    validator.write_validation_summary(
+        summary_dir,
+        label="base-probe",
+        package="sagelite[all-needed-extras]",
+        install_dir=tmp_path / "install",
+        wheelhouses=[wheelhouse],
+        status="failed",
+        exit_code=2,
+        host_context={
+            "controller_python": {
+                "executable": "/controller/python",
+                "version": "3.12.4",
+                "sysconfig_platform": "linux-x86_64",
+                "compatible_platform_tag_count": 2,
+            },
+            "base_python": {
+                "requested": "/custom/interpreter",
+                "resolved_executable": "/custom/interpreter",
+                "tag_probe": {
+                    "attempted": True,
+                    "python_version": "3.13.1",
+                    "cache_tag": "cpython-313",
+                    "sysconfig_platform": "linux-x86_64",
+                    "packaging_tags_available": True,
+                    "compatible_platform_tag_count": 2,
+                    "compatible_tags_sample": [
+                        "cp313-cp313-manylinux_2_28_x86_64",
+                        "cp313-cp313-linux_x86_64",
+                    ],
+                },
+            },
+        },
+    )
+
+    summary = (summary_dir / "validation-summary.md").read_text(encoding="utf-8")
+    assert "- Base Python probe version: `3.13.1`" in summary
+    assert "- Base Python probe cache tag: `cpython-313`" in summary
+    assert "- Base Python probe platform: `linux-x86_64`" in summary
+    assert (
+        "- Base Python compatible tag sample: "
+        "`cp313-cp313-manylinux_2_28_x86_64`, `cp313-cp313-linux_x86_64`"
+    ) in summary
