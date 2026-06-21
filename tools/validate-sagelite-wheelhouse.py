@@ -277,6 +277,69 @@ def _ensure_no_duplicate_companion_sagelite_wheels(
     )
 
 
+def _wheel_tags_rendered(wheel: dict[str, object]) -> str:
+    python_tags = wheel.get("python_tags", [])
+    if not isinstance(python_tags, list):
+        python_tags = []
+    abi_tags = wheel.get("abi_tags", [])
+    if not isinstance(abi_tags, list):
+        abi_tags = []
+    platform_tags = wheel.get("platform_tags", [])
+    if not isinstance(platform_tags, list):
+        platform_tags = []
+    return (
+        f"python: {', '.join(str(tag) for tag in python_tags) or 'no python tags'}; "
+        f"abi: {', '.join(str(tag) for tag in abi_tags) or 'no abi tags'}; "
+        f"platform: {', '.join(str(tag) for tag in platform_tags) or 'no platform tags'}"
+    )
+
+
+def _ensure_compatible_companion_sagelite_wheels(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> None:
+    wheels = inventory["companion_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    compatible_platforms = set(compatible_platform_tags)
+    incompatible = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        python_tags = wheel.get("python_tags", [])
+        if not isinstance(python_tags, list):
+            python_tags = []
+        abi_tags = wheel.get("abi_tags", [])
+        if not isinstance(abi_tags, list):
+            abi_tags = []
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+
+        python_ok = "py3" in python_tags or (
+            expected_python_tag is not None and expected_python_tag in python_tags
+        )
+        abi_ok = "none" in abi_tags or (
+            expected_abi_tag is not None and expected_abi_tag in abi_tags
+        )
+        platform_ok = "any" in platform_tags or any(
+            str(tag) in compatible_platforms for tag in platform_tags
+        )
+        if python_ok and abi_ok and platform_ok:
+            continue
+        incompatible.append(f"{wheel.get('name')} ({_wheel_tags_rendered(wheel)})")
+
+    if not incompatible:
+        return
+    raise RuntimeError(
+        "sagelite companion wheels are not compatible with the requested "
+        "validation interpreter or host platform: "
+        + "; ".join(incompatible)
+    )
+
+
 def _requested_python_wheel_tag(
     base_python: str, host_context: dict[str, object]
 ) -> str | None:
@@ -633,26 +696,7 @@ def write_validation_summary(
     for wheel in primary_sagelite_wheels:
         if not isinstance(wheel, dict):
             continue
-        python_tags = wheel.get("python_tags", [])
-        if not isinstance(python_tags, list):
-            python_tags = []
-        abi_tags = wheel.get("abi_tags", [])
-        if not isinstance(abi_tags, list):
-            abi_tags = []
-        platform_tags = wheel.get("platform_tags", [])
-        if not isinstance(platform_tags, list):
-            platform_tags = []
-        rendered_python_tags = ", ".join(str(tag) for tag in python_tags)
-        rendered_abi_tags = ", ".join(str(tag) for tag in abi_tags)
-        rendered_tags = ", ".join(str(tag) for tag in platform_tags)
-        lines.append(
-            (
-                f"  - `{wheel.get('name')}` "
-                f"(python: {rendered_python_tags or 'no python tags'}; "
-                f"abi: {rendered_abi_tags or 'no abi tags'}; "
-                f"platform: {rendered_tags or 'no platform tags'})"
-            )
-        )
+        lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
     if not primary_sagelite_wheels:
         lines.append("  - none")
     companion_sagelite_wheels = inventory.get("companion_sagelite_wheels", [])
@@ -662,7 +706,7 @@ def write_validation_summary(
     for wheel in companion_sagelite_wheels:
         if not isinstance(wheel, dict):
             continue
-        lines.append(f"  - `{wheel.get('name')}`")
+        lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
     if not companion_sagelite_wheels:
         lines.append("  - none")
     contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]
@@ -903,6 +947,15 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-compatible-companion-sagelite-wheels",
+        action="store_true",
+        help=(
+            "fail before installation unless every sagelite companion wheel has "
+            "Python, ABI, and platform tags compatible with the requested "
+            "validation interpreter and host"
+        ),
+    )
+    parser.add_argument(
         "--require-primary-sagelite-wheel-python-tag",
         action="store_true",
         help=(
@@ -986,6 +1039,16 @@ def main(argv: list[str] | None = None) -> int:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
     if args.reject_duplicate_companion_sagelite_wheels:
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
+    if args.require_compatible_companion_sagelite_wheels:
+        compatible_platform_tags = _compatible_platform_tags()
+        preflight_checks.append(
+            lambda inventory: _ensure_compatible_companion_sagelite_wheels(
+                inventory,
+                expected_python_tag,
+                expected_abi_tag,
+                compatible_platform_tags,
+            )
+        )
     if args.require_primary_sagelite_wheel_python_tag:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_python_tag(

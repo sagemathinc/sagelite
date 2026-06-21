@@ -801,6 +801,113 @@ def test_reject_duplicate_companion_sagelite_wheels_preflight(tmp_path):
     assert "duplicate sagelite companion wheels are not allowed" in summary
 
 
+def test_require_compatible_companion_sagelite_wheels_rejects_mismatch(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    mismatched_companion = (
+        wheelhouse
+        / "sagelite_gap_runtime-10.9-cp313-cp313-manylinux_2_28_x86_64.whl"
+    )
+    mismatched_companion.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-072000"
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-compatible-companion-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-072000" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-072000" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "companion wheels are not compatible" in metadata["preflight_error"]
+    assert mismatched_companion.name in metadata["preflight_error"]
+    companion_wheel = metadata["wheelhouse_inventory"]["companion_sagelite_wheels"][0]
+    assert companion_wheel["python_tags"] == ["cp313"]
+    assert companion_wheel["abi_tags"] == ["cp313"]
+    assert (
+        f"- `{mismatched_companion.name}` "
+        "(python: cp313; abi: cp313; platform: manylinux_2_28_x86_64)"
+    ) in summary
+    assert "## Preflight Error" in summary
+    assert "companion wheels are not compatible" in summary
+
+
+def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    (
+        wheelhouse
+        / "sagelite_maxima_runtime-10.9-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
+    validator._timestamp = lambda: "20260621-072100"
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-compatible-companion-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-072100" / "install-metadata.json").read_text()
+    )
+    assert metadata["status"] == "passed"
+    assert metadata["preflight_error"] is None
+
+
 def test_require_primary_sagelite_wheel_python_tag_rejects_mismatch(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"

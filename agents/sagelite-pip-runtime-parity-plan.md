@@ -283,6 +283,14 @@ Scheduled audit on 2026-06-21:
   architecture, Python tag, and ABI tag otherwise match. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work added
+  `tools/validate-sagelite-wheelhouse.py --require-compatible-companion-sagelite-wheels`,
+  which rejects staged sagelite companion/runtime/data wheels whose Python,
+  ABI, or platform tags are incompatible with the requested validation
+  interpreter or host. Validation summaries now also render companion wheel
+  tags, so CIBW artifacts expose wrong-ABI or wrong-platform companion wheels
+  without opening the JSON inventory. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
