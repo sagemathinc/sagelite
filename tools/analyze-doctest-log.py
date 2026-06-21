@@ -187,6 +187,18 @@ def classify(result: ModuleResult) -> tuple[str, str, str]:
         ),
         ("executable '", "optional-external", "missing-executable", "standalone executable not found"),
         ("not found on path", "optional-external", "missing-executable", "standalone executable not found"),
+        (
+            "no module named 'sage.libs.",
+            "optional-external",
+            "optional-native-lib-missing",
+            "required Sage native extension is not bundled in the installed wheel",
+        ),
+        (
+            'no module named "sage.libs.',
+            "optional-external",
+            "optional-native-lib-missing",
+            "required Sage native extension is not bundled in the installed wheel",
+        ),
         ("featurenotpresenterror", "optional-external", "optional-feature-missing", "optional feature is unavailable"),
         ("module error: don't know how to require maxima", "optional-external", "maxima-library-mode-missing", "Maxima library mode is unavailable"),
         (".mesonpy-", "optional-external", "stale-build-path", "installed code still refers to a build-tree path"),
@@ -520,6 +532,28 @@ MISSING_DATABASE_PACKAGES = {
     "matroid_database": "matroid-database",
 }
 
+NATIVE_EXTENSION_PACKAGES = {
+    "sage.graphs.bliss": "sagelite repaired wheel native catalog: bliss",
+    "sage.graphs.cliquer": "sagelite repaired wheel native catalog: cliquer",
+    "sage.graphs.graph_decompositions.rankwidth": "sagelite repaired wheel native catalog: rankwidth",
+    "sage.graphs.graph_decompositions.tdlib": "sagelite repaired wheel native catalog: tdlib",
+    "sage.graphs.mcqd": "sagelite repaired wheel native catalog: mcqd",
+    "sage.graphs.planarity": "sagelite repaired wheel native catalog: planarity",
+    "sage.libs.braiding": "sagelite repaired wheel native catalog: libbraiding",
+    "sage.libs.coxeter3.coxeter": "sagelite repaired wheel native catalog: coxeter3",
+    "sage.libs.eclib.mwrank": "sagelite repaired wheel native catalog: eclib",
+    "sage.libs.eclib.newforms": "sagelite repaired wheel native catalog: eclib",
+    "sage.libs.homfly": "sagelite repaired wheel native catalog: homfly",
+    "sage.libs.meataxe": "sagelite repaired wheel native catalog: meataxe",
+    "sage.libs.ntl.error": "sagelite repaired wheel native catalog: ntl",
+    "sage.libs.sirocco": "sagelite repaired wheel native catalog: sirocco",
+    "sage.libs.symmetrica.symmetrica": "sagelite repaired wheel native catalog: symmetrica",
+    "sage.numerical.backends.glpk_backend": "sagelite repaired wheel native catalog: glpk",
+    "sage.numerical.backends.glpk_exact_backend": "sagelite repaired wheel native catalog: glpk",
+    "sage.numerical.backends.glpk_graph_backend": "sagelite repaired wheel native catalog: glpk",
+    "sage.rings.polynomial.pbori.pbori": "sagelite repaired wheel native catalog: brial",
+}
+
 
 def _matched_package(text: str, packages: dict[str, str]) -> str:
     for needle, package in sorted(packages.items(), key=lambda item: -len(item[0])):
@@ -546,6 +580,10 @@ def suggested_package(result: ModuleResult) -> str:
             return package
     if result.fingerprint in {"missing-database", "optional-feature-missing"}:
         package = _matched_package(text, MISSING_DATABASE_PACKAGES)
+        if package:
+            return package
+    if result.fingerprint == "optional-native-lib-missing":
+        package = _matched_package(text, NATIVE_EXTENSION_PACKAGES)
         if package:
             return package
 
