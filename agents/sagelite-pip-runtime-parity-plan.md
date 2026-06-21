@@ -356,6 +356,14 @@ Scheduled audit on 2026-06-21:
   companion tag coverage without requiring a JSON viewer. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records and summarizes primary sagelite
+  wheel compatibility in the same validation contract as companion wheel
+  compatibility, including Python tag, ABI tag, compatible platform tag,
+  repaired-wheel status, raw Linux status, and mismatch categories. This makes
+  repaired-wheel proof artifacts show whether the primary wheel contract passed
+  without relying on the first preflight error alone. Focused local validation
+  passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

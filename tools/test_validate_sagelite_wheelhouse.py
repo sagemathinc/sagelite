@@ -150,6 +150,26 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert host["controller_python"]["sysconfig_platform"]
     assert metadata["validation_contract"]["expected_python_tag"] == "cp312"
     assert metadata["validation_contract"]["expected_abi_tag"] == "cp312"
+    primary_compatibility = metadata["validation_contract"][
+        "primary_sagelite_wheel_compatibility"
+    ]
+    assert primary_compatibility == [
+        {
+            "name": repaired_wheel.name,
+            "project_name": "sagelite",
+            "python_tags": ["cp312"],
+            "abi_tags": ["cp312"],
+            "platform_tags": ["manylinux_2_28_x86_64"],
+            "python_compatible": True,
+            "abi_compatible": True,
+            "platform_compatible": True,
+            "repaired_linux": True,
+            "raw_linux": False,
+            "compatible": True,
+            "mismatches": [],
+        }
+    ]
+    assert metadata["validation_contract"]["incompatible_primary_sagelite_wheels"] == []
     assert "require-primary-sagelite-wheel-python-tag" in metadata[
         "validation_contract"
     ]["enabled_preflights"]
@@ -258,6 +278,14 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
+    assert "- Primary compatibility checked wheels: `1`" in summary
+    assert "- Primary compatibility passed wheels: `1`" in summary
+    assert "- Incompatible primary sagelite wheels: `none`" in summary
+    assert (
+        f"  - `{repaired_wheel.name}`: compatible `True` "
+        "(python: `True`; abi: `True`; platform: `True`; repaired: `True`; "
+        "raw-linux: `False`; mismatches: `none`)"
+    ) in summary
     assert "- Base Python tag probe attempted: `False`" in summary
     assert "- Expected wheel Python tag: `cp312`" in summary
     assert "- Expected wheel ABI tag: `cp312`" in summary
@@ -552,6 +580,14 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     ) in summary
     assert "- Contains repaired primary sagelite wheel: `False`" in summary
     assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
+    assert "- Primary compatibility checked wheels: `1`" in summary
+    assert "- Primary compatibility passed wheels: `0`" in summary
+    assert f"- Incompatible primary sagelite wheels: `{raw_wheel.name}`" in summary
+    assert (
+        f"  - `{raw_wheel.name}`: compatible `False` "
+        "(python: `True`; abi: `True`; platform: `True`; repaired: `False`; "
+        "raw-linux: `True`; mismatches: `repaired`)"
+    ) in summary
     assert "## Native Wheel Catalog" in summary
     assert "## Preflight Error" in summary
     assert "repaired sagelite wheel is required" in summary
@@ -1323,6 +1359,17 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert contract["expected_python_tag"] == "cp312"
     assert contract["expected_abi_tag"] == "cp312"
     assert contract["expected_platform_machine"] == "x86_64"
+    primary_compatibility = contract["primary_sagelite_wheel_compatibility"]
+    assert primary_compatibility[0]["name"] == mismatched_wheel.name
+    assert primary_compatibility[0]["python_compatible"] is True
+    assert primary_compatibility[0]["abi_compatible"] is True
+    assert primary_compatibility[0]["platform_compatible"] is False
+    assert primary_compatibility[0]["repaired_linux"] is True
+    assert primary_compatibility[0]["compatible"] is False
+    assert primary_compatibility[0]["mismatches"] == ["platform"]
+    assert contract["incompatible_primary_sagelite_wheels"][0]["name"] == (
+        mismatched_wheel.name
+    )
     assert contract["compatible_platform_tag_count"] == 2
     assert contract["compatible_platform_tags_sample"] == [
         "manylinux_2_28_x86_64",
@@ -1336,6 +1383,16 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert (
         f"- `{mismatched_wheel.name}` "
         "(python: cp312; abi: cp312; platform: manylinux_2_99_x86_64)"
+    ) in summary
+    assert "- Primary compatibility checked wheels: `1`" in summary
+    assert "- Primary compatibility passed wheels: `0`" in summary
+    assert (
+        f"- Incompatible primary sagelite wheels: `{mismatched_wheel.name}`"
+    ) in summary
+    assert (
+        f"  - `{mismatched_wheel.name}`: compatible `False` "
+        "(python: `True`; abi: `True`; platform: `False`; repaired: `True`; "
+        "raw-linux: `False`; mismatches: `platform`)"
     ) in summary
     assert "- Controller compatible platform tag count: `2`" in summary
     assert "## Preflight Error" in summary

@@ -454,6 +454,65 @@ def _companion_sagelite_wheel_compatibility(
     return report
 
 
+def _primary_sagelite_wheel_compatibility(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> list[dict[str, object]]:
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    compatible_platforms = set(compatible_platform_tags)
+    report = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        python_tags = wheel.get("python_tags", [])
+        if not isinstance(python_tags, list):
+            python_tags = []
+        abi_tags = wheel.get("abi_tags", [])
+        if not isinstance(abi_tags, list):
+            abi_tags = []
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+
+        python_ok = (
+            expected_python_tag is not None and expected_python_tag in python_tags
+        )
+        abi_ok = expected_abi_tag is not None and expected_abi_tag in abi_tags
+        platform_ok = any(str(tag) in compatible_platforms for tag in platform_tags)
+        repaired_linux = bool(wheel.get("is_repaired_linux_wheel"))
+        raw_linux = bool(wheel.get("is_raw_linux_wheel"))
+        mismatches = []
+        if not python_ok:
+            mismatches.append("python")
+        if not abi_ok:
+            mismatches.append("abi")
+        if not platform_ok:
+            mismatches.append("platform")
+        if not repaired_linux:
+            mismatches.append("repaired")
+        report.append(
+            {
+                "name": wheel.get("name"),
+                "project_name": wheel.get("project_name"),
+                "python_tags": python_tags,
+                "abi_tags": abi_tags,
+                "platform_tags": platform_tags,
+                "python_compatible": python_ok,
+                "abi_compatible": abi_ok,
+                "platform_compatible": platform_ok,
+                "repaired_linux": repaired_linux,
+                "raw_linux": raw_linux,
+                "compatible": python_ok and abi_ok and platform_ok and repaired_linux,
+                "mismatches": mismatches,
+            }
+        )
+    return report
+
+
 def _ensure_compatible_companion_sagelite_wheels(
     inventory: dict[str, object],
     expected_python_tag: str | None,
@@ -839,6 +898,12 @@ def _validation_contract(
         expected_abi_tag,
         compatible_platform_tags,
     )
+    primary_compatibility = _primary_sagelite_wheel_compatibility(
+        inventory,
+        expected_python_tag,
+        expected_abi_tag,
+        compatible_platform_tags,
+    )
     return {
         "expected_python_tag": expected_python_tag,
         "expected_abi_tag": expected_abi_tag,
@@ -854,6 +919,10 @@ def _validation_contract(
             if isinstance(host_context.get("base_python", {}), dict)
             else {}
         ),
+        "primary_sagelite_wheel_compatibility": primary_compatibility,
+        "incompatible_primary_sagelite_wheels": [
+            item for item in primary_compatibility if not item["compatible"]
+        ],
         "companion_sagelite_wheel_compatibility": companion_compatibility,
         "incompatible_companion_sagelite_wheels": [
             item for item in companion_compatibility if not item["compatible"]
@@ -1145,6 +1214,73 @@ def write_validation_summary(
             else "`none`"
         )
     )
+    incompatible_primary_wheels = []
+    primary_wheel_compatibility = []
+    if validation_contract:
+        primary_wheel_compatibility = validation_contract.get(
+            "primary_sagelite_wheel_compatibility", []
+        )
+        incompatible_primary_wheels = validation_contract.get(
+            "incompatible_primary_sagelite_wheels", []
+        )
+    if not isinstance(primary_wheel_compatibility, list):
+        primary_wheel_compatibility = []
+    if not isinstance(incompatible_primary_wheels, list):
+        incompatible_primary_wheels = []
+    compatible_primary_wheels = [
+        item
+        for item in primary_wheel_compatibility
+        if isinstance(item, dict) and item.get("compatible")
+    ]
+    lines.extend(
+        [
+            (
+                "- Primary compatibility checked wheels: "
+                f"`{len(primary_wheel_compatibility)}`"
+            ),
+            (
+                "- Primary compatibility passed wheels: "
+                f"`{len(compatible_primary_wheels)}`"
+            ),
+        ]
+    )
+    lines.append(
+        "- Incompatible primary sagelite wheels: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in incompatible_primary_wheels
+                if isinstance(item, dict)
+            )
+            if incompatible_primary_wheels
+            else "`none`"
+        )
+    )
+    if primary_wheel_compatibility:
+        lines.append("- Primary compatibility details:")
+    for item in primary_wheel_compatibility:
+        if not isinstance(item, dict):
+            continue
+        mismatches = item.get("mismatches", [])
+        if not isinstance(mismatches, list):
+            mismatches = []
+        lines.append(
+            "  - "
+            f"`{item.get('name')}`: "
+            f"compatible `{item.get('compatible')}` "
+            f"(python: `{item.get('python_compatible')}`; "
+            f"abi: `{item.get('abi_compatible')}`; "
+            f"platform: `{item.get('platform_compatible')}`; "
+            f"repaired: `{item.get('repaired_linux')}`; "
+            f"raw-linux: `{item.get('raw_linux')}`; "
+            "mismatches: "
+            + (
+                ", ".join(f"`{mismatch}`" for mismatch in mismatches)
+                if mismatches
+                else "`none`"
+            )
+            + ")"
+        )
     incompatible_companion_wheels = []
     companion_wheel_compatibility = []
     if validation_contract:
