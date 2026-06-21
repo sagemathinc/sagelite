@@ -11,6 +11,7 @@ import os
 import shlex
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -108,6 +109,9 @@ def write_install_metadata(
     wheelhouses: list[Path],
     commands: list[list[str]],
     env: dict[str, str],
+    status: str = "pending",
+    exit_code: int | None = None,
+    command_results: list[dict[str, object]] | None = None,
 ) -> Path:
     path = output_dir / "install-metadata.json"
     environment = {
@@ -125,6 +129,9 @@ def write_install_metadata(
         "venv_python": os.fspath(venv_python),
         "wheelhouses": [os.fspath(path) for path in wheelhouses],
         "commands": commands,
+        "status": status,
+        "exit_code": exit_code,
+        "command_results": command_results or [],
         "environment": environment,
         "removed_environment_prefixes": list(RUNTIME_ENV_PREFIXES_TO_REMOVE),
         "removed_environment_keys": sorted(RUNTIME_ENV_KEYS_TO_REMOVE),
@@ -290,12 +297,53 @@ def main(argv: list[str] | None = None) -> int:
         wheelhouses=wheelhouses,
         commands=commands,
         env=env,
+        status="running",
     )
-    for command in commands:
+    command_results: list[dict[str, object]] = []
+    for index, command in enumerate(commands, start=1):
+        started = time.perf_counter()
         result = _run(command, env)
+        command_results.append(
+            {
+                "index": index,
+                "command": command,
+                "returncode": result.returncode,
+                "elapsed_seconds": round(time.perf_counter() - started, 3),
+                "status": "passed" if result.returncode == 0 else "failed",
+            }
+        )
+        write_install_metadata(
+            output_dir,
+            label=label,
+            package=args.package,
+            base_python=args.python,
+            install_dir=install_dir,
+            venv_python=venv_python,
+            wheelhouses=wheelhouses,
+            commands=commands,
+            env=env,
+            status="running" if result.returncode == 0 else "failed",
+            exit_code=None if result.returncode == 0 else result.returncode,
+            command_results=command_results,
+        )
         if result.returncode:
+            print(f"metadata: {metadata_path}")
             return result.returncode
 
+    metadata_path = write_install_metadata(
+        output_dir,
+        label=label,
+        package=args.package,
+        base_python=args.python,
+        install_dir=install_dir,
+        venv_python=venv_python,
+        wheelhouses=wheelhouses,
+        commands=commands,
+        env=env,
+        status="passed",
+        exit_code=0,
+        command_results=command_results,
+    )
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")
     print(f"metadata: {metadata_path}")

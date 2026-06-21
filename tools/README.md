@@ -100,7 +100,9 @@ capture enabled. It is intended for repaired-wheel validation artifacts from
 the manylinux/CIBW build, where local raw-wheel repair is not authoritative.
 The validation directory includes `install-metadata.json`, which records the
 fresh install path, wheelhouse inputs, package requirement, commands, and
-sanitized environment used for the run.
+sanitized environment used for the run. The metadata is updated after each
+step with command result status, exit code, and elapsed time so interrupted or
+failed scheduled runs still identify the failing phase.
 
 Example:
 

@@ -86,6 +86,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["install_dir"] == os.fspath(install_dir)
     assert metadata["venv_python"] == os.fspath(venv_python)
     assert metadata["wheelhouses"] == [os.fspath(wheelhouse.resolve())]
+    assert metadata["status"] == "passed"
+    assert metadata["exit_code"] == 0
     assert metadata["environment"]["PYTHONNOUSERSITE"] == "1"
     assert metadata["environment"]["PYTHONPATH"] is None
     assert metadata["environment"]["LD_LIBRARY_PATH"] is None
@@ -143,6 +145,32 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         ],
     ]
     assert metadata["commands"] == commands
+    assert [result["returncode"] for result in metadata["command_results"]] == [
+        0,
+        0,
+        0,
+        0,
+        0,
+    ]
+    assert [result["status"] for result in metadata["command_results"]] == [
+        "passed",
+        "passed",
+        "passed",
+        "passed",
+        "passed",
+    ]
+    assert [result["command"] for result in metadata["command_results"]] == commands
+    assert [result["index"] for result in metadata["command_results"]] == [
+        1,
+        2,
+        3,
+        4,
+        5,
+    ]
+    assert all(
+        isinstance(result["elapsed_seconds"], float)
+        for result in metadata["command_results"]
+    )
 
 
 def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
@@ -178,6 +206,8 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
     assert metadata["label"] == "repaired-wheel-20260621-020304"
     assert metadata["package"] == "sagelite"
     assert metadata["commands"] == commands
+    assert metadata["status"] == "passed"
+    assert metadata["exit_code"] == 0
     assert commands[4] == [
         os.fspath(venv_python),
         os.fspath(ROOT / "tools" / "run-installed-wheel-doctests.py"),
@@ -222,6 +252,8 @@ def test_stops_after_failed_step(tmp_path):
     metadata = json.loads(
         (tmp_path / "validation-20260621-030405" / "install-metadata.json").read_text()
     )
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 12
     assert metadata["commands"] == commands + [
         [
             os.fspath(tmp_path / "install-20260621-030405" / "bin" / "python"),
@@ -250,6 +282,17 @@ def test_stops_after_failed_step(tmp_path):
             os.fspath(wheelhouse.resolve()),
         ],
     ]
+    assert [result["status"] for result in metadata["command_results"]] == [
+        "passed",
+        "passed",
+        "failed",
+    ]
+    assert [result["returncode"] for result in metadata["command_results"]] == [
+        0,
+        0,
+        12,
+    ]
+    assert [result["command"] for result in metadata["command_results"]] == commands
 
 
 def test_missing_wheelhouse_fails_before_creating_commands(tmp_path):
