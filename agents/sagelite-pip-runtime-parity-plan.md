@@ -56,6 +56,7 @@ acceptable output variants, tolerances, or ordering differences.
   - `8b058c7515e tools/sagelite: summarize selftest failures in runtime reports`
   - `0e8c14a2b41 tools/sagelite: add wheelhouse validation wrapper`
   - `64b5b91c395 tools/sagelite: record wheelhouse validation install metadata`
+  - `c1a038d58b7 tools/sagelite: record wheelhouse validation step results`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -145,6 +146,11 @@ Known facts from the latest investigation:
   creating the fresh venv, installing wheels, running `pip check`, and invoking
   validation. The metadata records the removed runtime keys and prefixes so
   CIBW/manylinux validation artifacts make inherited host leakage auditable.
+- `tools/validate-sagelite-wheelhouse.py` now rewrites `install-metadata.json`
+  after each completed command with the overall run status, exit code, and
+  per-step command result records. Failed scheduled validations should now show
+  whether the run stopped during venv creation, pip upgrade, wheel install,
+  `pip check`, or installed doctest validation without opening the raw CI log.
 
 ## Reality status
 
