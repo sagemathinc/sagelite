@@ -43,6 +43,11 @@ acceptable output variants, tolerances, or ordering differences.
   - `e70692e91fb tools/sagelite: report native wheel coverage in runtime summaries`
   - `55ddb91b4e0 sagelite: reject build-tree source metadata in selftest`
   - `fad57c422fe tools/sagelite: classify fpylll strategy path leaks`
+  - `c9164a34cb5 tools/sagelite: map missing native modules in doctest analysis`
+  - `04418370406 tools/sagelite: smoke test cypari2 PARI packaging`
+  - `87a9f451537 tools/sagelite: classify native library load failures`
+  - `299f3685afe tools/sagelite: smoke test fplll strategy data`
+  - `a32ce89fad7 tools/sagelite: smoke test msolve variety runtime`
 - Scratch install state:
   - Install metadata: `/scratch/sagelite-r2-work/current-install-latest.env`
   - Current raw proof wheel:
@@ -117,6 +122,11 @@ Known facts from the latest investigation:
 - The installed doctest analyzer now separates stale fpylll strategy-data path
   leaks from generic stale build paths, so fresh logs should point that bucket
   at `sagelite-fplll-data` or a rebuilt fpylll runtime.
+- The runtime manifest now has smoke probes for private cypari2 PARI wheels,
+  fplll strategy-data relocation, and a basic msolve variety computation.
+  `sagelite-selftest` now also probes GAP3 prompt parsing, help output,
+  1-based list indexing, and LaTeX formatting when `sagelite-gap3-runtime` is
+  installed.
 
 ## Reality status
 
@@ -127,9 +137,10 @@ Approximate status as of 2026-06-20:
 - Phase 2, native wheel parity: CI/tooling checks are mostly implemented and
   the required native catalog has been broadened, but repaired-wheel proof must
   happen in manylinux/CIBW, not on this host.
-- Phase 3, companion runtime parity: partially implemented. GAP/GUAVA and
-  fplll have newer targeted runtime checks and bootstrapping fixes, while
-  Maxima, FriCAS, GAP3, and msolve still need fresh repaired-wheel evidence.
+- Phase 3, companion runtime parity: partially implemented. GAP/GUAVA, GAP3,
+  fplll, and msolve have newer targeted runtime checks and bootstrapping fixes,
+  while Maxima, FriCAS, GAP3, and msolve still need fresh repaired-wheel
+  evidence.
 - Phase 4, path discovery and host leakage: runner environment sanitization is
   implemented; source-path leak classification has been refined. Treat older
   scratch source-leak and GAP-host-leak reports as stale unless reproduced by a
@@ -298,8 +309,10 @@ Success gate:
 
 ### GAP3
 
-Current status: still needs a targeted runtime comparison and smoke test. The
-installed doctest analysis still flags `sage.interfaces.gap3`.
+Current status: instrumented but not proven. `sagelite-selftest` now runs a
+targeted GAP3 smoke probe when the companion runtime is installed, but the
+installed doctest analysis still needs a fresh repaired-wheel rerun for
+`sage.interfaces.gap3`.
 
 Observed issues:
 
@@ -310,7 +323,8 @@ Actions:
 
 - Compare GAP3 version, startup files, package path, prompt handling, and
   command echoing against self-contained Sage.
-- Add a smoke test for `Gap3._execute_line`, `Gap3.help`, indexing, and LaTeX.
+- Done: add a smoke test for `Gap3._execute_line`, `Gap3.help`, indexing, and
+  LaTeX.
 - Fix the interface if the pip runtime prompt/output parsing differs.
 
 Success gate:

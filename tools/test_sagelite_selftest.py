@@ -21,6 +21,21 @@ def _stub_sage_env(monkeypatch, maxima_fas=""):
     monkeypatch.setitem(sys.modules, "sage.env", env)
 
 
+def _stub_gap3_feature(monkeypatch):
+    sage = types.ModuleType("sage")
+    sage.__path__ = []
+    features = types.ModuleType("sage.features")
+    gap3 = types.ModuleType("sage.features.gap3")
+
+    class Gap3:
+        pass
+
+    gap3.Gap3 = Gap3
+    monkeypatch.setitem(sys.modules, "sage", sage)
+    monkeypatch.setitem(sys.modules, "sage.features", features)
+    monkeypatch.setitem(sys.modules, "sage.features.gap3", gap3)
+
+
 def _load_selftest():
     path = ROOT / "src" / "sage" / "cli" / "selftest.py"
     spec = importlib.util.spec_from_file_location("sage_cli_selftest", path)
@@ -636,6 +651,70 @@ def test_selftest_gap_guava_leon_runs_isolated_probe(monkeypatch):
         (
             selftest._GAP_GUAVA_RUNTIME_PROBE,
             "GAP GUAVA Leon probe",
+            30,
+        )
+    ]
+
+
+def test_selftest_gap3_probe_exercises_prompt_help_indexing_and_latex():
+    selftest = _load_selftest()
+    probe = selftest._GAP3_RUNTIME_PROBE
+
+    assert 'gap3._execute_line("2+3;")' in probe
+    assert 'gap3.help("help", pager=False)' in probe
+    assert "values[1]" in probe
+    assert "values[2]" in probe
+    assert "latex(matrix)" in probe
+    assert "GAP3 prompt, help, indexing, and LaTeX available" in probe
+
+
+def test_selftest_gap3_skips_probe_without_companion(monkeypatch):
+    selftest = _load_selftest()
+    probes = []
+    _stub_gap3_feature(monkeypatch)
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_companion_feature",
+        lambda module_name, feature_factory, description: "not installed",
+    )
+    monkeypatch.setattr(
+        selftest,
+        "_run_subprocess_probe",
+        lambda script, description: probes.append((script, description)),
+    )
+
+    assert selftest._check_gap3_runtime() == "not installed"
+    assert probes == []
+
+
+def test_selftest_gap3_runs_isolated_probe(monkeypatch):
+    selftest = _load_selftest()
+    probes = []
+    _stub_gap3_feature(monkeypatch)
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_companion_feature",
+        lambda module_name, feature_factory, description: (
+            "GAP3 executable runtime available"
+        ),
+    )
+
+    def run_subprocess_probe(script, description="runtime probe", timeout=30):
+        probes.append((script, description, timeout))
+        return "GAP3 prompt, help, indexing, and LaTeX available"
+
+    monkeypatch.setattr(selftest, "_run_subprocess_probe", run_subprocess_probe)
+
+    assert (
+        selftest._check_gap3_runtime()
+        == "GAP3 prompt, help, indexing, and LaTeX available"
+    )
+    assert probes == [
+        (
+            selftest._GAP3_RUNTIME_PROBE,
+            "GAP3 runtime probe",
             30,
         )
     ]

@@ -696,12 +696,43 @@ def _check_ecl_runtime():
     return "ECL command and support directory available"
 
 
+_GAP3_RUNTIME_PROBE = r"""
+from sage.interfaces.gap3 import gap3
+from sage.misc.latex import latex
+
+normal_output, error_output = gap3._execute_line("2+3;")
+if error_output or "5" not in str(normal_output):
+    raise RuntimeError(
+        "GAP3 _execute_line returned unexpected output: "
+        f"normal={normal_output!r}, error={error_output!r}"
+    )
+
+help_text = str(gap3.help("help", pager=False))
+if "GAP help system" not in help_text and "help system" not in help_text:
+    raise RuntimeError("GAP3 help output is not available")
+
+values = gap3([1, 2, 3])
+if str(values[1]) != "1" or str(values[2]) != "2":
+    raise RuntimeError(f"GAP3 list indexing is not 1-based: {values!r}")
+
+matrix = gap3([[1, 2], [3, 4]])
+matrix_latex = latex(matrix)
+if r"\begin{array}" not in matrix_latex or "3&4" not in matrix_latex:
+    raise RuntimeError(f"GAP3 LaTeX output is not available: {matrix_latex!r}")
+
+print("GAP3 prompt, help, indexing, and LaTeX available")
+"""
+
+
 def _check_gap3_runtime():
     from sage.features.gap3 import Gap3
 
-    return _check_companion_feature(
+    feature_status = _check_companion_feature(
         "sagelite_gap3", Gap3, "GAP3 executable runtime"
     )
+    if feature_status == "not installed":
+        return feature_status
+    return _run_subprocess_probe(_GAP3_RUNTIME_PROBE, "GAP3 runtime probe")
 
 
 def _check_gfan_runtime():
