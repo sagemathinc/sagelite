@@ -1527,6 +1527,7 @@ def test_fplll_data_wheel_is_exposed_by_sagelite_dependencies_and_runtime_extras
     extras = pyproject["project"]["optional-dependencies"]
     assert extras["fplll-data"] == [requirement]
     assert extras["fplll_data"] == [requirement]
+    assert requirement in extras["all-needed-extras"]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -3783,6 +3784,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
+    assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-stein-watkins >=10.9,<10.10" in validation_requirements

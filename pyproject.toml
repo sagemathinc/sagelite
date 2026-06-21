@@ -162,6 +162,7 @@ all-needed-extras = [
   'sagelite-database-sloane >=10.9,<10.10',
   'sagelite-database-stein-watkins >=10.9,<10.10',
   'sagelite-ecl-runtime >=10.9,<10.10',
+  'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-fricas-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post2,<10.10',
   'sagelite-gap3-runtime >=10.9.post1,<10.10',
