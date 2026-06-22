@@ -731,6 +731,8 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "python_tags": ["cp312"],
             "abi_tags": ["cp312"],
             "platform_tags": ["linux_x86_64"],
+            "valid_wheel_filename": True,
+            "wheel_filename_error": None,
             "is_sagelite_project_wheel": True,
             "is_primary_sagelite_wheel": True,
             "is_repaired_linux_wheel": False,
@@ -853,6 +855,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert raw_wheel.name in metadata["preflight_error"]
     assert enabled_preflights == [
         "strict-repaired-wheelhouse-preflight",
+        "reject-invalid-wheel-filenames",
         "reject-duplicate-primary-sagelite-wheels",
         "require-repaired-sagelite-wheel",
         "require-package-all-needed-extras",
@@ -869,6 +872,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert (
         "- Enabled preflights: "
         "`strict-repaired-wheelhouse-preflight`, "
+        "`reject-invalid-wheel-filenames`, "
         "`reject-duplicate-primary-sagelite-wheels`, "
         "`require-repaired-sagelite-wheel`, "
         "`require-package-all-needed-extras`, "
@@ -1264,9 +1268,10 @@ def test_strict_repaired_wheelhouse_preflight_rejects_duplicate_primary_first(
     enabled = metadata["validation_contract"]["enabled_preflights"]
     assert enabled[:3] == [
         "strict-repaired-wheelhouse-preflight",
+        "reject-invalid-wheel-filenames",
         "reject-duplicate-primary-sagelite-wheels",
-        "require-repaired-sagelite-wheel",
     ]
+    assert enabled[3] == "require-repaired-sagelite-wheel"
     assert "duplicate primary sagelite wheels are not allowed" in metadata[
         "preflight_error"
     ]
@@ -1321,6 +1326,39 @@ def test_inventory_records_stable_wheelhouse_input_identity(tmp_path):
     assert len(identity["sha256"]) == 64
 
 
+def test_inventory_records_invalid_wheel_filenames(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    invalid_wheel = wheelhouse / "not-a-wheel.whl"
+    invalid_wheel.write_text("")
+
+    inventory = validator.wheelhouse_inventory([wheelhouse])
+    summary_dir = tmp_path / "validation"
+    summary_dir.mkdir()
+    validator.write_validation_summary(
+        summary_dir,
+        label="invalid",
+        package="sagelite[all-needed-extras]",
+        install_dir=tmp_path / "install",
+        wheelhouses=[wheelhouse],
+        inventory=inventory,
+        status="failed",
+        exit_code=2,
+    )
+    summary = (summary_dir / "validation-summary.md").read_text(encoding="utf-8")
+
+    assert inventory["contains_invalid_wheels"] is True
+    assert [wheel["name"] for wheel in inventory["invalid_wheels"]] == [
+        invalid_wheel.name
+    ]
+    assert inventory["invalid_wheels"][0]["valid_wheel_filename"] is False
+    assert inventory["invalid_wheels"][0]["wheel_filename_error"]
+    assert "- Contains invalid wheel filenames: `True`" in summary
+    assert "- Invalid wheel filename count: `1`" in summary
+    assert f"  - `{invalid_wheel.name}`:" in summary
+
+
 def test_inventory_records_duplicate_companion_packages(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
@@ -1348,6 +1386,46 @@ def test_inventory_records_duplicate_companion_packages(tmp_path):
     ]
     assert "- Duplicate companion sagelite packages: `sagelite-gap-runtime`" in summary
     assert "- Unsatisfied companion sagelite requirements:" in summary
+
+
+def test_reject_invalid_wheel_filenames_preflight(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    invalid_wheel = wheelhouse / "not-a-wheel.whl"
+    invalid_wheel.write_text("")
+
+    validator._timestamp = lambda: "20260621-070500"
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--reject-invalid-wheel-filenames",
+        ]
+    )
+
+    assert exit_code == 2
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-070500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-070500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["wheelhouse_inventory"]["contains_invalid_wheels"] is True
+    assert metadata["wheelhouse_inventory"]["invalid_wheels"][0]["name"] == (
+        invalid_wheel.name
+    )
+    assert "reject-invalid-wheel-filenames" in metadata["validation_contract"][
+        "enabled_preflights"
+    ]
+    assert "invalid wheel filenames are not allowed" in metadata["preflight_error"]
+    assert "- Contains invalid wheel filenames: `True`" in summary
+    assert f"  - `{invalid_wheel.name}`:" in summary
+    assert "invalid wheel filenames are not allowed" in summary
 
 
 def test_reject_unsatisfied_companion_sagelite_requirements_preflight(tmp_path):

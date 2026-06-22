@@ -462,6 +462,14 @@ Scheduled audit on 2026-06-21:
   to the staged wheelhouse input set without requiring a JSON viewer. Focused
   local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records malformed staged `.whl`
+  filenames in wheelhouse inventory metadata and `validation-summary.md`, and
+  adds `tools/validate-sagelite-wheelhouse.py --reject-invalid-wheel-filenames`.
+  The strict repaired-wheelhouse preflight enables this check before other
+  wheelhouse ambiguity checks, so malformed proof inputs fail with a direct
+  preflight diagnosis instead of a later pip install error. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

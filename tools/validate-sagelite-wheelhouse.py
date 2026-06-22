@@ -24,6 +24,7 @@ from pathlib import Path
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.specifiers import SpecifierSet
 from packaging import tags as packaging_tags
+from packaging.utils import InvalidWheelFilename, parse_wheel_filename
 from packaging.version import InvalidVersion, Version
 
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -128,6 +129,14 @@ def _wheel_file_identity(wheel: Path) -> dict[str, object]:
         "size_bytes": wheel.stat().st_size,
         "sha256": digest.hexdigest(),
     }
+
+
+def _wheel_filename_error(wheel: Path) -> str | None:
+    try:
+        parse_wheel_filename(wheel.name)
+    except InvalidWheelFilename as exc:
+        return str(exc)
+    return None
 
 
 def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, object]:
@@ -243,6 +252,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
             is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
             project_name = _wheel_project_name(wheel)
             version = _wheel_version(wheel)
+            filename_error = _wheel_filename_error(wheel)
             files.append(
                 {
                     "name": wheel.name,
@@ -255,6 +265,8 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
                     "python_tags": wheel_tags["python"],
                     "abi_tags": wheel_tags["abi"],
                     "platform_tags": wheel_tags["platform"],
+                    "valid_wheel_filename": filename_error is None,
+                    "wheel_filename_error": filename_error,
                     "is_sagelite_project_wheel": _is_sagelite_project_wheel(wheel),
                     "is_primary_sagelite_wheel": is_primary_sagelite,
                     "is_repaired_linux_wheel": _is_repaired_linux_wheel(wheel),
@@ -273,6 +285,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     third_party_wheels = [
         file for file in files if not file["is_sagelite_project_wheel"]
     ]
+    invalid_wheels = [file for file in files if not file["valid_wheel_filename"]]
     companion_sagelite_wheels = [
         file
         for file in sagelite_project_wheels
@@ -348,6 +361,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
             duplicate_primary_sagelite_wheel_names
         ),
         "third_party_wheels": third_party_wheels,
+        "invalid_wheels": invalid_wheels,
         "companion_sagelite_wheels": companion_sagelite_wheels,
         "companion_sagelite_package_names": companion_package_names,
         "duplicate_companion_sagelite_package_names": duplicate_companion_package_names,
@@ -359,6 +373,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
         "contains_companion_sagelite_wheels": bool(companion_sagelite_wheels),
         "contains_third_party_wheels": bool(third_party_wheels),
+        "contains_invalid_wheels": bool(invalid_wheels),
         "contains_all_needed_extra_sagelite_wheels": not missing_all_needed_extra_packages,
         "contains_repaired_primary_sagelite_wheel": any(
             file["is_repaired_linux_wheel"] for file in primary_sagelite_wheels
@@ -367,6 +382,23 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
             file["is_raw_linux_wheel"] for file in primary_sagelite_wheels
         ),
 }
+
+
+def _ensure_no_invalid_wheel_filenames(inventory: dict[str, object]) -> None:
+    invalid_wheels = inventory["invalid_wheels"]
+    if not isinstance(invalid_wheels, list):
+        invalid_wheels = []
+    if not invalid_wheels:
+        return
+    details = []
+    for wheel in invalid_wheels:
+        if not isinstance(wheel, dict):
+            continue
+        details.append(f"{wheel.get('name')} ({wheel.get('wheel_filename_error')})")
+    raise RuntimeError(
+        "invalid wheel filenames are not allowed for validation: "
+        + "; ".join(details)
+    )
 
 
 def _ensure_single_primary_sagelite_wheel(inventory: dict[str, object]) -> None:
@@ -1575,6 +1607,9 @@ def write_validation_summary(
     third_party_wheels = inventory.get("third_party_wheels", [])
     if not isinstance(third_party_wheels, list):
         third_party_wheels = []
+    invalid_wheels = inventory.get("invalid_wheels", [])
+    if not isinstance(invalid_wheels, list):
+        invalid_wheels = []
     lines.append("- Third-party wheels:")
     for wheel in third_party_wheels:
         if not isinstance(wheel, dict):
@@ -1582,6 +1617,15 @@ def write_validation_summary(
         lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
         lines.append(f"    - {_wheel_identity_rendered(wheel)}")
     if not third_party_wheels:
+        lines.append("  - none")
+    lines.append("- Invalid wheel filenames:")
+    for wheel in invalid_wheels:
+        if not isinstance(wheel, dict):
+            continue
+        lines.append(
+            f"  - `{wheel.get('name')}`: {wheel.get('wheel_filename_error')}"
+        )
+    if not invalid_wheels:
         lines.append("  - none")
     contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]
     contains_raw_linux = inventory["contains_raw_linux_primary_sagelite_wheel"]
@@ -1594,6 +1638,10 @@ def write_validation_summary(
             (
                 "- Contains third-party wheels: "
                 f"`{inventory['contains_third_party_wheels']}`"
+            ),
+            (
+                "- Contains invalid wheel filenames: "
+                f"`{inventory['contains_invalid_wheels']}`"
             ),
             (
                 "- Contains all-needed-extra sagelite wheels: "
@@ -1625,6 +1673,7 @@ def write_validation_summary(
         [
             f"- Companion sagelite package count: `{len(companion_package_names)}`",
             f"- Third-party wheel count: `{len(third_party_wheels)}`",
+            f"- Invalid wheel filename count: `{len(invalid_wheels)}`",
             (
                 "- Missing all-needed-extra sagelite package count: "
                 f"`{len(missing_all_needed_extra_packages)}`"
@@ -2115,6 +2164,11 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--reject-invalid-wheel-filenames",
+        action="store_true",
+        help="fail before installation when a staged .whl filename is malformed",
+    )
+    parser.add_argument(
         "--require-all-needed-extra-sagelite-wheels",
         action="store_true",
         help=(
@@ -2267,6 +2321,9 @@ def main(argv: list[str] | None = None) -> int:
     strict_preflight = args.strict_repaired_wheelhouse_preflight
     if strict_preflight:
         enabled_preflights.append("strict-repaired-wheelhouse-preflight")
+    if args.reject_invalid_wheel_filenames or strict_preflight:
+        preflight_checks.append(_ensure_no_invalid_wheel_filenames)
+        enabled_preflights.append("reject-invalid-wheel-filenames")
     if args.reject_duplicate_primary_sagelite_wheels or strict_preflight:
         preflight_checks.append(_ensure_single_primary_sagelite_wheel)
         enabled_preflights.append("reject-duplicate-primary-sagelite-wheels")
