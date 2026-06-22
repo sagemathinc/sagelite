@@ -1414,6 +1414,8 @@ def test_inventory_records_invalid_wheel_filenames(tmp_path):
     assert inventory["invalid_wheels"][0]["wheel_filename_error"]
     assert "- Contains invalid wheel filenames: `True`" in summary
     assert "- Invalid wheel filename count: `1`" in summary
+    assert "- Invalid wheel filename contract failures: `not-a-wheel.whl`" in summary
+    assert "- Invalid wheel filename contract failure count: `1`" in summary
     assert f"  - `{invalid_wheel.name}`:" in summary
 
 
@@ -1477,11 +1479,21 @@ def test_reject_invalid_wheel_filenames_preflight(tmp_path):
     assert metadata["wheelhouse_inventory"]["invalid_wheels"][0]["name"] == (
         invalid_wheel.name
     )
+    assert metadata["validation_contract"]["invalid_wheel_filename_count"] == 1
+    assert metadata["validation_contract"]["invalid_wheel_filenames"][0][
+        "name"
+    ] == invalid_wheel.name
+    assert metadata["validation_contract"]["invalid_wheel_filenames"][0][
+        "wheel_filename_error"
+    ]
     assert "reject-invalid-wheel-filenames" in metadata["validation_contract"][
         "enabled_preflights"
     ]
     assert "invalid wheel filenames are not allowed" in metadata["preflight_error"]
     assert "- Contains invalid wheel filenames: `True`" in summary
+    assert "- Invalid wheel filename contract failures: `not-a-wheel.whl`" in summary
+    assert "- Invalid wheel filename contract failure count: `1`" in summary
+    assert "- Invalid wheel filename details:" in summary
     assert f"  - `{invalid_wheel.name}`:" in summary
     assert "invalid wheel filenames are not allowed" in summary
 

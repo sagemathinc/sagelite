@@ -476,6 +476,12 @@ Scheduled audit on 2026-06-21:
   dependency wheels before creating a fresh install. Focused local validation
   passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py -q`
+- Follow-up scheduled tooling work now records invalid staged wheel filenames
+  in the validation contract and renders the contract failure count and details
+  in `validation-summary.md`. Strict repaired-wheelhouse preflight artifacts
+  now expose malformed wheel inputs in both JSON and markdown without relying
+  only on the first preflight error. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

@@ -789,6 +789,28 @@ def _third_party_wheel_compatibility(
     return report
 
 
+def _invalid_wheel_filename_report(
+    inventory: dict[str, object],
+) -> list[dict[str, object]]:
+    wheels = inventory["invalid_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    report = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        report.append(
+            {
+                "name": wheel.get("name"),
+                "project_name": wheel.get("project_name"),
+                "size_bytes": wheel.get("size_bytes"),
+                "sha256": wheel.get("sha256"),
+                "wheel_filename_error": wheel.get("wheel_filename_error"),
+            }
+        )
+    return report
+
+
 def _ensure_compatible_third_party_wheels(
     inventory: dict[str, object],
     expected_python_tag: str | None,
@@ -1289,6 +1311,7 @@ def _validation_contract(
         expected_abi_tag,
         compatible_platform_tags,
     )
+    invalid_wheel_filenames = _invalid_wheel_filename_report(inventory)
     return {
         "primary_sagelite_requirement": _primary_sagelite_requirement(package),
         "primary_sagelite_wheel_requirement_satisfaction": (
@@ -1325,6 +1348,8 @@ def _validation_contract(
         "incompatible_third_party_wheels": [
             item for item in third_party_compatibility if not item["compatible"]
         ],
+        "invalid_wheel_filenames": invalid_wheel_filenames,
+        "invalid_wheel_filename_count": len(invalid_wheel_filenames),
         "enabled_preflights": enabled_preflights,
     }
 
@@ -1947,6 +1972,51 @@ def write_validation_summary(
             else "`none`"
         )
     )
+    invalid_wheel_filenames = []
+    invalid_wheel_filename_count = 0
+    if validation_contract:
+        invalid_wheel_filenames = validation_contract.get(
+            "invalid_wheel_filenames", []
+        )
+        invalid_wheel_filename_count = validation_contract.get(
+            "invalid_wheel_filename_count", 0
+        )
+    if not isinstance(invalid_wheel_filenames, list):
+        invalid_wheel_filenames = []
+    if not validation_contract:
+        invalid_wheel_filenames = _invalid_wheel_filename_report(inventory)
+    if not isinstance(invalid_wheel_filename_count, int):
+        invalid_wheel_filename_count = len(invalid_wheel_filenames)
+    if not validation_contract:
+        invalid_wheel_filename_count = len(invalid_wheel_filenames)
+    lines.append(
+        "- Invalid wheel filename contract failures: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in invalid_wheel_filenames
+                if isinstance(item, dict)
+            )
+            if invalid_wheel_filenames
+            else "`none`"
+        )
+    )
+    lines.append(
+        "- Invalid wheel filename contract failure count: "
+        f"`{invalid_wheel_filename_count}`"
+    )
+    if invalid_wheel_filenames:
+        lines.append("- Invalid wheel filename details:")
+    for item in invalid_wheel_filenames:
+        if not isinstance(item, dict):
+            continue
+        lines.append(
+            "  - "
+            f"`{item.get('name')}`: "
+            f"{item.get('wheel_filename_error')}; "
+            f"size `{item.get('size_bytes')}`; "
+            f"sha256 `{item.get('sha256')}`"
+        )
     if third_party_wheel_compatibility:
         lines.append("- Third-party compatibility details:")
     for item in third_party_wheel_compatibility:
