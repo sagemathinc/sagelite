@@ -752,6 +752,40 @@ def _third_party_wheel_compatibility(
     return report
 
 
+def _ensure_compatible_third_party_wheels(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> None:
+    incompatible = []
+    for item in _third_party_wheel_compatibility(
+        inventory,
+        expected_python_tag,
+        expected_abi_tag,
+        compatible_platform_tags,
+    ):
+        if item["compatible"]:
+            continue
+        mismatches = item.get("mismatches", [])
+        if not isinstance(mismatches, list):
+            mismatches = []
+        incompatible.append(
+            f"{item.get('name')} ({_wheel_tags_rendered(item)}; "
+            "mismatches: "
+            + ", ".join(str(mismatch) for mismatch in mismatches)
+            + ")"
+        )
+
+    if not incompatible:
+        return
+    raise RuntimeError(
+        "third-party wheels are not compatible with the requested validation "
+        "interpreter or host platform: "
+        + "; ".join(incompatible)
+    )
+
+
 def _primary_sagelite_wheel_compatibility(
     inventory: dict[str, object],
     expected_python_tag: str | None,
@@ -2117,6 +2151,15 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-compatible-third-party-wheels",
+        action="store_true",
+        help=(
+            "fail before installation unless every non-sagelite wheel has "
+            "Python, ABI, and platform tags compatible with the requested "
+            "validation interpreter and host"
+        ),
+    )
+    parser.add_argument(
         "--require-primary-sagelite-wheel-python-tag",
         action="store_true",
         help=(
@@ -2241,6 +2284,16 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-compatible-companion-sagelite-wheels")
+    if args.require_compatible_third_party_wheels:
+        preflight_checks.append(
+            lambda inventory: _ensure_compatible_third_party_wheels(
+                inventory,
+                expected_python_tag,
+                expected_abi_tag,
+                compatible_platform_tags,
+            )
+        )
+        enabled_preflights.append("require-compatible-third-party-wheels")
     if args.require_primary_sagelite_wheel_python_tag or strict_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_python_tag(

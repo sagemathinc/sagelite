@@ -511,6 +511,59 @@ def test_contract_reports_third_party_wheel_compatibility(tmp_path):
     ) in summary
 
 
+def test_require_compatible_third_party_wheels_rejects_mismatch(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    primary = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    primary.write_text("")
+    incompatible = wheelhouse / "cypari2-2.2.1-cp313-cp313-any.whl"
+    incompatible.write_text("")
+    install_dir = tmp_path / "install"
+    output_dir = tmp_path / "validation"
+    commands = []
+
+    validator._run = lambda command, env: commands.append(command)
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--install-dir",
+            str(install_dir),
+            "--output-dir",
+            str(output_dir),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-compatible-third-party-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "third-party wheels are not compatible" in metadata["preflight_error"]
+    assert incompatible.name in metadata["preflight_error"]
+    assert metadata["validation_contract"]["incompatible_third_party_wheels"][0][
+        "name"
+    ] == incompatible.name
+    assert metadata["validation_contract"]["enabled_preflights"] == [
+        "require-compatible-third-party-wheels"
+    ]
+    assert (
+        "- Enabled preflights: `require-compatible-third-party-wheels`"
+        in summary
+    )
+    assert f"- Incompatible third-party wheels: `{incompatible.name}`" in summary
+    assert "## Preflight Error" in summary
+    assert "mismatches: python, abi" in summary
+
+
 def test_stops_after_failed_step(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
