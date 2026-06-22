@@ -6,6 +6,7 @@ Create a fresh sagelite install from a wheelhouse and run installed validation.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -112,6 +113,17 @@ def _wheel_version(wheel: Path) -> str | None:
     return parts[1]
 
 
+def _wheel_file_identity(wheel: Path) -> dict[str, object]:
+    digest = hashlib.sha256()
+    with wheel.open("rb") as wheel_file:
+        for chunk in iter(lambda: wheel_file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return {
+        "size_bytes": wheel.stat().st_size,
+        "sha256": digest.hexdigest(),
+    }
+
+
 def _wheel_platform_tags(wheel: Path) -> list[str]:
     return _wheel_tags(wheel)["platform"]
 
@@ -194,6 +206,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     for wheelhouse in wheelhouses:
         for wheel in sorted(wheelhouse.glob("*.whl")):
             wheel_tags = _wheel_tags(wheel)
+            wheel_identity = _wheel_file_identity(wheel)
             is_primary_sagelite = _is_primary_sagelite_wheel(wheel)
             project_name = _wheel_project_name(wheel)
             version = _wheel_version(wheel)
@@ -204,6 +217,8 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
                     "wheelhouse": os.fspath(wheelhouse),
                     "project_name": project_name,
                     "version": version,
+                    "size_bytes": wheel_identity["size_bytes"],
+                    "sha256": wheel_identity["sha256"],
                     "python_tags": wheel_tags["python"],
                     "abi_tags": wheel_tags["abi"],
                     "platform_tags": wheel_tags["platform"],
@@ -553,6 +568,12 @@ def _wheel_tags_rendered(wheel: dict[str, object]) -> str:
         f"abi: {', '.join(str(tag) for tag in abi_tags) or 'no abi tags'}; "
         f"platform: {', '.join(str(tag) for tag in platform_tags) or 'no platform tags'}"
     )
+
+
+def _wheel_identity_rendered(wheel: dict[str, object]) -> str:
+    size = wheel.get("size_bytes")
+    sha256 = wheel.get("sha256")
+    return f"size: {size}; sha256: {sha256}"
 
 
 def _companion_sagelite_wheel_compatibility(
@@ -1338,6 +1359,7 @@ def write_validation_summary(
         if not isinstance(wheel, dict):
             continue
         lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
+        lines.append(f"    - {_wheel_identity_rendered(wheel)}")
     if not primary_sagelite_wheels:
         lines.append("  - none")
     companion_sagelite_wheels = inventory.get("companion_sagelite_wheels", [])
@@ -1348,6 +1370,7 @@ def write_validation_summary(
         if not isinstance(wheel, dict):
             continue
         lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
+        lines.append(f"    - {_wheel_identity_rendered(wheel)}")
     if not companion_sagelite_wheels:
         lines.append("  - none")
     contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]

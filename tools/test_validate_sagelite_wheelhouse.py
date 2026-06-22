@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+EMPTY_FILE_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 
 def _load_validator():
@@ -308,6 +309,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         f"- `{repaired_wheel.name}` "
         "(python: cp312; abi: cp312; platform: manylinux_2_28_x86_64)"
     ) in summary
+    assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
     assert "- Companion sagelite wheels:" in summary
     assert "- `sagelite_gap_runtime-10.9-py3-none-any.whl`" in summary
     assert "- Contains companion sagelite wheels: `True`" in summary
@@ -523,6 +525,8 @@ def test_records_raw_linux_wheelhouse_inventory(tmp_path):
             "wheelhouse": os.fspath(wheelhouse.resolve()),
             "project_name": "sagelite",
             "version": "10.9.post1",
+            "size_bytes": 0,
+            "sha256": EMPTY_FILE_SHA256,
             "python_tags": ["cp312"],
             "abi_tags": ["cp312"],
             "platform_tags": ["linux_x86_64"],
