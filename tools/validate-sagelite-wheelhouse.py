@@ -637,7 +637,7 @@ def _companion_sagelite_wheel_compatibility(
         matched_platform_tags = [
             str(tag) for tag in platform_tags if str(tag) in compatible_platforms
         ]
-        if "any" in platform_tags:
+        if "any" in platform_tags and "any" not in matched_platform_tags:
             matched_platform_tags.append("any")
         python_ok = "py3" in python_tags or (
             expected_python_tag is not None and expected_python_tag in python_tags
@@ -669,6 +669,85 @@ def _companion_sagelite_wheel_compatibility(
                 "compatible": python_ok and abi_ok and platform_ok,
                 "mismatches": mismatches,
             }
+        )
+    return report
+
+
+def _wheel_tag_compatibility(
+    wheel: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> dict[str, object]:
+    compatible_platforms = set(compatible_platform_tags)
+    python_tags = wheel.get("python_tags", [])
+    if not isinstance(python_tags, list):
+        python_tags = []
+    abi_tags = wheel.get("abi_tags", [])
+    if not isinstance(abi_tags, list):
+        abi_tags = []
+    platform_tags = wheel.get("platform_tags", [])
+    if not isinstance(platform_tags, list):
+        platform_tags = []
+
+    matched_platform_tags = [
+        str(tag) for tag in platform_tags if str(tag) in compatible_platforms
+    ]
+    if "any" in platform_tags and "any" not in matched_platform_tags:
+        matched_platform_tags.append("any")
+    python_ok = "py3" in python_tags or (
+        expected_python_tag is not None and expected_python_tag in python_tags
+    )
+    abi_ok = "none" in abi_tags or (
+        expected_abi_tag is not None and expected_abi_tag in abi_tags
+    )
+    platform_ok = bool(matched_platform_tags)
+    mismatches = []
+    if not python_ok:
+        mismatches.append("python")
+    if not abi_ok:
+        mismatches.append("abi")
+    if not platform_ok:
+        mismatches.append("platform")
+    return {
+        "name": wheel.get("name"),
+        "project_name": wheel.get("project_name"),
+        "size_bytes": wheel.get("size_bytes"),
+        "sha256": wheel.get("sha256"),
+        "python_tags": python_tags,
+        "abi_tags": abi_tags,
+        "platform_tags": platform_tags,
+        "python_compatible": python_ok,
+        "abi_compatible": abi_ok,
+        "platform_compatible": platform_ok,
+        "matched_platform_tags": matched_platform_tags,
+        "compatible": python_ok and abi_ok and platform_ok,
+        "mismatches": mismatches,
+    }
+
+
+def _third_party_wheel_compatibility(
+    inventory: dict[str, object],
+    expected_python_tag: str | None,
+    expected_abi_tag: str | None,
+    compatible_platform_tags: list[str],
+) -> list[dict[str, object]]:
+    wheels = inventory["files"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    report = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        if wheel.get("is_sagelite_project_wheel"):
+            continue
+        report.append(
+            _wheel_tag_compatibility(
+                wheel,
+                expected_python_tag,
+                expected_abi_tag,
+                compatible_platform_tags,
+            )
         )
     return report
 
@@ -1133,6 +1212,12 @@ def _validation_contract(
     primary_requirement_satisfaction = (
         _primary_sagelite_wheel_requirement_satisfaction(inventory, package)
     )
+    third_party_compatibility = _third_party_wheel_compatibility(
+        inventory,
+        expected_python_tag,
+        expected_abi_tag,
+        compatible_platform_tags,
+    )
     return {
         "primary_sagelite_requirement": _primary_sagelite_requirement(package),
         "primary_sagelite_wheel_requirement_satisfaction": (
@@ -1164,6 +1249,10 @@ def _validation_contract(
         "companion_sagelite_wheel_compatibility": companion_compatibility,
         "incompatible_companion_sagelite_wheels": [
             item for item in companion_compatibility if not item["compatible"]
+        ],
+        "third_party_wheel_compatibility": third_party_compatibility,
+        "incompatible_third_party_wheels": [
+            item for item in third_party_compatibility if not item["compatible"]
         ],
         "enabled_preflights": enabled_preflights,
     }
@@ -1682,6 +1771,81 @@ def write_validation_summary(
     if companion_wheel_compatibility:
         lines.append("- Companion compatibility details:")
     for item in companion_wheel_compatibility:
+        if not isinstance(item, dict):
+            continue
+        mismatches = item.get("mismatches", [])
+        if not isinstance(mismatches, list):
+            mismatches = []
+        matched_platform_tags = item.get("matched_platform_tags", [])
+        if not isinstance(matched_platform_tags, list):
+            matched_platform_tags = []
+        lines.append(
+            "  - "
+            f"`{item.get('name')}`: "
+            f"compatible `{item.get('compatible')}` "
+            f"(python: `{item.get('python_compatible')}`; "
+            f"abi: `{item.get('abi_compatible')}`; "
+            f"platform: `{item.get('platform_compatible')}`; "
+            "mismatches: "
+            + (
+                ", ".join(f"`{mismatch}`" for mismatch in mismatches)
+                if mismatches
+                else "`none`"
+            )
+            + ") matched platform tags: "
+            + (
+                ", ".join(f"`{tag}`" for tag in matched_platform_tags)
+                if matched_platform_tags
+                else "`none`"
+            )
+            + f"; size `{item.get('size_bytes')}`; "
+            f"sha256 `{item.get('sha256')}`"
+        )
+    incompatible_third_party_wheels = []
+    third_party_wheel_compatibility = []
+    if validation_contract:
+        third_party_wheel_compatibility = validation_contract.get(
+            "third_party_wheel_compatibility", []
+        )
+        incompatible_third_party_wheels = validation_contract.get(
+            "incompatible_third_party_wheels", []
+        )
+    if not isinstance(third_party_wheel_compatibility, list):
+        third_party_wheel_compatibility = []
+    if not isinstance(incompatible_third_party_wheels, list):
+        incompatible_third_party_wheels = []
+    compatible_third_party_wheels = [
+        item
+        for item in third_party_wheel_compatibility
+        if isinstance(item, dict) and item.get("compatible")
+    ]
+    lines.extend(
+        [
+            (
+                "- Third-party compatibility checked wheels: "
+                f"`{len(third_party_wheel_compatibility)}`"
+            ),
+            (
+                "- Third-party compatibility passed wheels: "
+                f"`{len(compatible_third_party_wheels)}`"
+            ),
+        ]
+    )
+    lines.append(
+        "- Incompatible third-party wheels: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in incompatible_third_party_wheels
+                if isinstance(item, dict)
+            )
+            if incompatible_third_party_wheels
+            else "`none`"
+        )
+    )
+    if third_party_wheel_compatibility:
+        lines.append("- Third-party compatibility details:")
+    for item in third_party_wheel_compatibility:
         if not isinstance(item, dict):
             continue
         mismatches = item.get("mismatches", [])

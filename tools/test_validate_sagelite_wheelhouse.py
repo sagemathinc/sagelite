@@ -452,6 +452,65 @@ def test_validation_summary_uses_cached_inventory(tmp_path):
     assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
 
 
+def test_contract_reports_third_party_wheel_compatibility(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    primary = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    primary.write_text("")
+    universal = wheelhouse / "packaging-24.0-py3-none-any.whl"
+    universal.write_text("")
+    incompatible = wheelhouse / "cypari2-2.2.1-cp313-cp313-any.whl"
+    incompatible.write_text("")
+    install_dir = tmp_path / "install"
+    output_dir = tmp_path / "validation"
+
+    validator._run = lambda command, env: subprocess.CompletedProcess(command, 0)
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--install-dir",
+            str(install_dir),
+            "--output-dir",
+            str(output_dir),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-primary-sagelite-wheel-python-tag",
+            "--require-primary-sagelite-wheel-abi-tag",
+        ]
+    )
+
+    assert exit_code == 0
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
+    third_party_compatibility = metadata["validation_contract"][
+        "third_party_wheel_compatibility"
+    ]
+    assert [item["name"] for item in third_party_compatibility] == [
+        incompatible.name,
+        universal.name,
+    ]
+    assert third_party_compatibility[0]["compatible"] is False
+    assert third_party_compatibility[0]["mismatches"] == ["python", "abi"]
+    assert third_party_compatibility[0]["matched_platform_tags"] == ["any"]
+    assert third_party_compatibility[1]["compatible"] is True
+    assert metadata["validation_contract"]["incompatible_third_party_wheels"] == [
+        third_party_compatibility[0]
+    ]
+    assert "- Third-party compatibility checked wheels: `2`" in summary
+    assert "- Third-party compatibility passed wheels: `1`" in summary
+    assert f"- Incompatible third-party wheels: `{incompatible.name}`" in summary
+    assert (
+        f"  - `{incompatible.name}`: compatible `False` "
+        "(python: `False`; abi: `False`; platform: `True`; "
+        "mismatches: `python`, `abi`)"
+    ) in summary
+
+
 def test_stops_after_failed_step(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"
