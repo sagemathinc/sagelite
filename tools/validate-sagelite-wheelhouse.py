@@ -270,6 +270,9 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     sagelite_project_wheels = [
         file for file in files if file["is_sagelite_project_wheel"]
     ]
+    third_party_wheels = [
+        file for file in files if not file["is_sagelite_project_wheel"]
+    ]
     companion_sagelite_wheels = [
         file
         for file in sagelite_project_wheels
@@ -344,6 +347,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "duplicate_primary_sagelite_wheel_names": (
             duplicate_primary_sagelite_wheel_names
         ),
+        "third_party_wheels": third_party_wheels,
         "companion_sagelite_wheels": companion_sagelite_wheels,
         "companion_sagelite_package_names": companion_package_names,
         "duplicate_companion_sagelite_package_names": duplicate_companion_package_names,
@@ -354,6 +358,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "missing_all_needed_extra_sagelite_packages": missing_all_needed_extra_packages,
         "contains_primary_sagelite_wheel": bool(primary_sagelite_wheels),
         "contains_companion_sagelite_wheels": bool(companion_sagelite_wheels),
+        "contains_third_party_wheels": bool(third_party_wheels),
         "contains_all_needed_extra_sagelite_wheels": not missing_all_needed_extra_packages,
         "contains_repaired_primary_sagelite_wheel": any(
             file["is_repaired_linux_wheel"] for file in primary_sagelite_wheels
@@ -1567,6 +1572,17 @@ def write_validation_summary(
         lines.append(f"    - {_wheel_identity_rendered(wheel)}")
     if not companion_sagelite_wheels:
         lines.append("  - none")
+    third_party_wheels = inventory.get("third_party_wheels", [])
+    if not isinstance(third_party_wheels, list):
+        third_party_wheels = []
+    lines.append("- Third-party wheels:")
+    for wheel in third_party_wheels:
+        if not isinstance(wheel, dict):
+            continue
+        lines.append(f"  - `{wheel.get('name')}` ({_wheel_tags_rendered(wheel)})")
+        lines.append(f"    - {_wheel_identity_rendered(wheel)}")
+    if not third_party_wheels:
+        lines.append("  - none")
     contains_repaired = inventory["contains_repaired_primary_sagelite_wheel"]
     contains_raw_linux = inventory["contains_raw_linux_primary_sagelite_wheel"]
     lines.extend(
@@ -1574,6 +1590,10 @@ def write_validation_summary(
             (
                 "- Contains companion sagelite wheels: "
                 f"`{inventory['contains_companion_sagelite_wheels']}`"
+            ),
+            (
+                "- Contains third-party wheels: "
+                f"`{inventory['contains_third_party_wheels']}`"
             ),
             (
                 "- Contains all-needed-extra sagelite wheels: "
@@ -1604,6 +1624,7 @@ def write_validation_summary(
     lines.extend(
         [
             f"- Companion sagelite package count: `{len(companion_package_names)}`",
+            f"- Third-party wheel count: `{len(third_party_wheels)}`",
             (
                 "- Missing all-needed-extra sagelite package count: "
                 f"`{len(missing_all_needed_extra_packages)}`"

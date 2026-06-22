@@ -121,6 +121,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["wheelhouse_inventory"][
         "contains_companion_sagelite_wheels"
     ] is True
+    assert metadata["wheelhouse_inventory"]["contains_third_party_wheels"] is False
+    assert metadata["wheelhouse_inventory"]["third_party_wheels"] == []
     assert [
         file["name"]
         for file in metadata["wheelhouse_inventory"]["companion_sagelite_wheels"]
@@ -342,9 +344,12 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
     assert "- Companion sagelite wheels:" in summary
     assert "- `sagelite_gap_runtime-10.9-py3-none-any.whl`" in summary
+    assert "- Third-party wheels:" in summary
     assert "- Contains companion sagelite wheels: `True`" in summary
+    assert "- Contains third-party wheels: `False`" in summary
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
     assert "- Companion sagelite package count: `1`" in summary
+    assert "- Third-party wheel count: `0`" in summary
     assert "- Missing all-needed-extra sagelite package count: `28`" in summary
     assert "- Companion compatibility checked wheels: `1`" in summary
     assert "- Companion compatibility passed wheels: `1`" in summary
@@ -490,6 +495,12 @@ def test_contract_reports_third_party_wheel_compatibility(tmp_path):
     third_party_compatibility = metadata["validation_contract"][
         "third_party_wheel_compatibility"
     ]
+    third_party_wheels = metadata["wheelhouse_inventory"]["third_party_wheels"]
+    assert [item["name"] for item in third_party_wheels] == [
+        incompatible.name,
+        universal.name,
+    ]
+    assert metadata["wheelhouse_inventory"]["contains_third_party_wheels"] is True
     assert [item["name"] for item in third_party_compatibility] == [
         incompatible.name,
         universal.name,
@@ -503,6 +514,17 @@ def test_contract_reports_third_party_wheel_compatibility(tmp_path):
     ]
     assert "- Third-party compatibility checked wheels: `2`" in summary
     assert "- Third-party compatibility passed wheels: `1`" in summary
+    assert "- Third-party wheels:" in summary
+    assert "- Contains third-party wheels: `True`" in summary
+    assert "- Third-party wheel count: `2`" in summary
+    assert (
+        f"- `{incompatible.name}` (python: cp313; abi: cp313; platform: any)"
+        in summary
+    )
+    assert (
+        f"- `{universal.name}` (python: py3; abi: none; platform: any)"
+        in summary
+    )
     assert f"- Incompatible third-party wheels: `{incompatible.name}`" in summary
     assert (
         f"  - `{incompatible.name}`: compatible `False` "
