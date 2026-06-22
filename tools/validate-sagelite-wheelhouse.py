@@ -380,6 +380,110 @@ def _ensure_companion_sagelite_wheel_requirements(
     )
 
 
+def _primary_sagelite_requirement(package: str) -> dict[str, object]:
+    try:
+        requirement = Requirement(package)
+    except InvalidRequirement as exc:
+        return {
+            "package": package,
+            "name": None,
+            "specifier": None,
+            "applies_to_sagelite": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    name = requirement.name.replace("_", "-").lower()
+    return {
+        "package": package,
+        "name": name,
+        "specifier": str(requirement.specifier),
+        "applies_to_sagelite": name == "sagelite",
+        "error": None,
+    }
+
+
+def _primary_sagelite_wheel_requirement_satisfaction(
+    inventory: dict[str, object],
+    package: str,
+) -> list[dict[str, object]]:
+    requested = _primary_sagelite_requirement(package)
+    specifier_text = requested.get("specifier")
+    applies = requested.get("applies_to_sagelite") is True
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    report = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        version = wheel.get("version")
+        satisfied = True
+        reason = "no sagelite version specifier requested"
+        if requested.get("error"):
+            satisfied = False
+            reason = "requested package requirement could not be parsed"
+        elif not applies:
+            satisfied = True
+            reason = "requested package is not sagelite"
+        elif not specifier_text:
+            satisfied = True
+            reason = "no sagelite version specifier requested"
+        elif not version:
+            satisfied = False
+            reason = "wheel version could not be parsed from filename"
+        else:
+            try:
+                parsed_version = Version(str(version))
+            except InvalidVersion:
+                satisfied = False
+                reason = "invalid wheel version"
+            else:
+                specifier = SpecifierSet(str(specifier_text))
+                satisfied = parsed_version in specifier
+                reason = (
+                    "version satisfies requested package requirement"
+                    if satisfied
+                    else "version does not satisfy requested package requirement"
+                )
+        report.append(
+            {
+                "name": wheel.get("name"),
+                "project_name": wheel.get("project_name"),
+                "version": version,
+                "requested_package": package,
+                "required_specifier": specifier_text,
+                "satisfied": satisfied,
+                "reason": reason,
+            }
+        )
+    return report
+
+
+def _ensure_primary_sagelite_wheel_requirement(
+    inventory: dict[str, object],
+    package: str,
+) -> None:
+    unsatisfied = [
+        item
+        for item in _primary_sagelite_wheel_requirement_satisfaction(
+            inventory, package
+        )
+        if not item["satisfied"]
+    ]
+    if not unsatisfied:
+        return
+    details = []
+    for item in unsatisfied:
+        details.append(
+            f"{item.get('name')} version {item.get('version')} does not satisfy "
+            f"{item.get('requested_package')}"
+        )
+    raise RuntimeError(
+        "primary sagelite wheel version does not satisfy requested package "
+        "requirement: "
+        + "; ".join(details)
+    )
+
+
 def _wheel_tags_rendered(wheel: dict[str, object]) -> str:
     python_tags = wheel.get("python_tags", [])
     if not isinstance(python_tags, list):
@@ -877,6 +981,7 @@ def _validation_platform_tags(
 def _validation_contract(
     *,
     inventory: dict[str, object],
+    package: str,
     expected_python_tag: str | None,
     expected_abi_tag: str | None,
     host_context: dict[str, object],
@@ -904,7 +1009,19 @@ def _validation_contract(
         expected_abi_tag,
         compatible_platform_tags,
     )
+    primary_requirement_satisfaction = (
+        _primary_sagelite_wheel_requirement_satisfaction(inventory, package)
+    )
     return {
+        "primary_sagelite_requirement": _primary_sagelite_requirement(package),
+        "primary_sagelite_wheel_requirement_satisfaction": (
+            primary_requirement_satisfaction
+        ),
+        "unsatisfied_primary_sagelite_wheel_requirements": [
+            item
+            for item in primary_requirement_satisfaction
+            if not item["satisfied"]
+        ],
         "expected_python_tag": expected_python_tag,
         "expected_abi_tag": expected_abi_tag,
         "expected_platform_machine": _normalized_platform_machine(
@@ -1104,8 +1221,17 @@ def write_validation_summary(
                     )
                 )
     if validation_contract:
+        primary_requirement = validation_contract.get(
+            "primary_sagelite_requirement", {}
+        )
+        if not isinstance(primary_requirement, dict):
+            primary_requirement = {}
         lines.extend(
             [
+                "- Primary sagelite requirement: "
+                f"`{primary_requirement.get('package')}`",
+                "- Primary sagelite requirement specifier: "
+                f"`{primary_requirement.get('specifier')}`",
                 "- Expected wheel Python tag: "
                 f"`{validation_contract.get('expected_python_tag')}`",
                 "- Expected wheel ABI tag: "
@@ -1280,6 +1406,44 @@ def write_validation_summary(
                 else "`none`"
             )
             + ")"
+        )
+    primary_requirement_satisfaction = []
+    unsatisfied_primary_requirements = []
+    if validation_contract:
+        primary_requirement_satisfaction = validation_contract.get(
+            "primary_sagelite_wheel_requirement_satisfaction", []
+        )
+        unsatisfied_primary_requirements = validation_contract.get(
+            "unsatisfied_primary_sagelite_wheel_requirements", []
+        )
+    if not isinstance(primary_requirement_satisfaction, list):
+        primary_requirement_satisfaction = []
+    if not isinstance(unsatisfied_primary_requirements, list):
+        unsatisfied_primary_requirements = []
+    lines.append(
+        "- Unsatisfied primary sagelite wheel requirements: "
+        + (
+            ", ".join(
+                f"`{item.get('name')}`"
+                for item in unsatisfied_primary_requirements
+                if isinstance(item, dict)
+            )
+            if unsatisfied_primary_requirements
+            else "`none`"
+        )
+    )
+    if primary_requirement_satisfaction:
+        lines.append("- Primary requirement details:")
+    for item in primary_requirement_satisfaction:
+        if not isinstance(item, dict):
+            continue
+        lines.append(
+            "  - "
+            f"`{item.get('name')}`: "
+            f"version `{item.get('version')}`; "
+            f"specifier `{item.get('required_specifier')}`; "
+            f"satisfied `{item.get('satisfied')}`; "
+            f"reason `{item.get('reason')}`"
         )
     incompatible_companion_wheels = []
     companion_wheel_compatibility = []
@@ -1552,6 +1716,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-primary-sagelite-wheel-requirement",
+        action="store_true",
+        help=(
+            "fail before installation when the primary sagelite wheel version "
+            "does not satisfy the requested --package requirement"
+        ),
+    )
+    parser.add_argument(
         "--require-compatible-companion-sagelite-wheels",
         action="store_true",
         help=(
@@ -1657,6 +1829,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.require_sagelite_companion_wheel_requirements or strict_preflight:
         preflight_checks.append(_ensure_companion_sagelite_wheel_requirements)
         enabled_preflights.append("require-sagelite-companion-wheel-requirements")
+    if args.require_primary_sagelite_wheel_requirement or strict_preflight:
+        preflight_checks.append(
+            lambda inventory: _ensure_primary_sagelite_wheel_requirement(
+                inventory,
+                args.package,
+            )
+        )
+        enabled_preflights.append("require-primary-sagelite-wheel-requirement")
     if args.require_compatible_companion_sagelite_wheels or strict_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_compatible_companion_sagelite_wheels(
@@ -1704,6 +1884,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     validation_contract = _validation_contract(
         inventory=inventory,
+        package=args.package,
         expected_python_tag=expected_python_tag,
         expected_abi_tag=expected_abi_tag,
         host_context=host_context,

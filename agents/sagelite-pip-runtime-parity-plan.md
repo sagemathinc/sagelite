@@ -364,6 +364,14 @@ Scheduled audit on 2026-06-21:
   without relying on the first preflight error alone. Focused local validation
   passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records whether staged primary
+  `sagelite` wheels satisfy the requested `--package` requirement and adds
+  `tools/validate-sagelite-wheelhouse.py --require-primary-sagelite-wheel-requirement`.
+  The strict repaired-wheelhouse preflight enables this check, so stale primary
+  wheels for pinned validation requests fail before installation and report the
+  unsatisfied requirement in both metadata and `validation-summary.md`.
+  Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

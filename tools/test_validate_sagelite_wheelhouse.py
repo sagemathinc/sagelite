@@ -287,6 +287,14 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "raw-linux: `False`; mismatches: `none`)"
     ) in summary
     assert "- Base Python tag probe attempted: `False`" in summary
+    assert "- Primary sagelite requirement: `sagelite[all-needed-extras]`" in summary
+    assert "- Primary sagelite requirement specifier: ``" in summary
+    assert "- Unsatisfied primary sagelite wheel requirements: `none`" in summary
+    assert (
+        f"  - `{repaired_wheel.name}`: version `10.9.post1`; "
+        "specifier ``; satisfied `True`; "
+        "reason `no sagelite version specifier requested`"
+    ) in summary
     assert "- Expected wheel Python tag: `cp312`" in summary
     assert "- Expected wheel ABI tag: `cp312`" in summary
     assert "`require-primary-sagelite-wheel-python-tag`" in summary
@@ -634,6 +642,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "require-all-needed-extra-sagelite-wheels",
         "reject-duplicate-companion-sagelite-wheels",
         "require-sagelite-companion-wheel-requirements",
+        "require-primary-sagelite-wheel-requirement",
         "require-compatible-companion-sagelite-wheels",
         "require-primary-sagelite-wheel-python-tag",
         "require-primary-sagelite-wheel-abi-tag",
@@ -647,6 +656,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "`require-all-needed-extra-sagelite-wheels`, "
         "`reject-duplicate-companion-sagelite-wheels`, "
         "`require-sagelite-companion-wheel-requirements`, "
+        "`require-primary-sagelite-wheel-requirement`, "
         "`require-compatible-companion-sagelite-wheels`, "
         "`require-primary-sagelite-wheel-python-tag`, "
         "`require-primary-sagelite-wheel-abi-tag`, "
@@ -951,6 +961,80 @@ def test_reject_unsatisfied_companion_sagelite_requirements_preflight(tmp_path):
     ) in summary
     assert "## Preflight Error" in summary
     assert "companion wheel versions do not satisfy" in summary
+
+
+def test_reject_unsatisfied_primary_sagelite_wheel_requirement_preflight(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    stale_primary = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    stale_primary.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-071200"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--package",
+            "sagelite==10.9.post2",
+            "--require-primary-sagelite-wheel-requirement",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-071200" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-071200" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    contract = metadata["validation_contract"]
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "primary sagelite wheel version does not satisfy" in metadata[
+        "preflight_error"
+    ]
+    assert stale_primary.name in metadata["preflight_error"]
+    assert contract["primary_sagelite_requirement"] == {
+        "package": "sagelite==10.9.post2",
+        "name": "sagelite",
+        "specifier": "==10.9.post2",
+        "applies_to_sagelite": True,
+        "error": None,
+    }
+    assert contract["unsatisfied_primary_sagelite_wheel_requirements"] == [
+        {
+            "name": stale_primary.name,
+            "project_name": "sagelite",
+            "version": "10.9.post1",
+            "requested_package": "sagelite==10.9.post2",
+            "required_specifier": "==10.9.post2",
+            "satisfied": False,
+            "reason": "version does not satisfy requested package requirement",
+        }
+    ]
+    assert (
+        "- Enabled preflights: "
+        "`require-primary-sagelite-wheel-requirement`"
+    ) in summary
+    assert "- Primary sagelite requirement: `sagelite==10.9.post2`" in summary
+    assert "- Primary sagelite requirement specifier: `==10.9.post2`" in summary
+    assert (
+        f"- Unsatisfied primary sagelite wheel requirements: `{stale_primary.name}`"
+    ) in summary
+    assert (
+        f"  - `{stale_primary.name}`: version `10.9.post1`; "
+        "specifier `==10.9.post2`; satisfied `False`; "
+        "reason `version does not satisfy requested package requirement`"
+    ) in summary
+    assert "## Preflight Error" in summary
 
 
 def test_reject_duplicate_companion_sagelite_wheels_preflight(tmp_path):
