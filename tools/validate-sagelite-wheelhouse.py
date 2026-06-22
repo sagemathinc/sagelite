@@ -56,7 +56,7 @@ RUNTIME_ENV_KEYS_TO_REMOVE = {
     "LD_LIBRARY_PATH",
     "MAXIMA",
     "PYTHONPATH",
-}
+    }
 
 
 def _timestamp() -> str:
@@ -216,6 +216,9 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
     primary_sagelite_wheels = [
         file for file in files if file["is_primary_sagelite_wheel"]
     ]
+    duplicate_primary_sagelite_wheel_names = sorted(
+        str(file["name"]) for file in primary_sagelite_wheels
+    ) if len(primary_sagelite_wheels) > 1 else []
     sagelite_project_wheels = [
         file for file in files if file["is_sagelite_project_wheel"]
     ]
@@ -289,6 +292,9 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "files": files,
         "sagelite_project_wheels": sagelite_project_wheels,
         "primary_sagelite_wheels": primary_sagelite_wheels,
+        "duplicate_primary_sagelite_wheel_names": (
+            duplicate_primary_sagelite_wheel_names
+        ),
         "companion_sagelite_wheels": companion_sagelite_wheels,
         "companion_sagelite_package_names": companion_package_names,
         "duplicate_companion_sagelite_package_names": duplicate_companion_package_names,
@@ -306,7 +312,24 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
         "contains_raw_linux_primary_sagelite_wheel": any(
             file["is_raw_linux_wheel"] for file in primary_sagelite_wheels
         ),
-    }
+}
+
+
+def _ensure_single_primary_sagelite_wheel(inventory: dict[str, object]) -> None:
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    if len(wheels) <= 1:
+        return
+    names = [
+        str(wheel.get("name"))
+        for wheel in wheels
+        if isinstance(wheel, dict) and wheel.get("name")
+    ]
+    raise RuntimeError(
+        "duplicate primary sagelite wheels are not allowed for validation: "
+        + ", ".join(names)
+    )
 
 
 def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
@@ -1356,6 +1379,11 @@ def write_validation_summary(
     )
     if not isinstance(duplicate_companion_package_names, list):
         duplicate_companion_package_names = []
+    duplicate_primary_wheel_names = inventory.get(
+        "duplicate_primary_sagelite_wheel_names", []
+    )
+    if not isinstance(duplicate_primary_wheel_names, list):
+        duplicate_primary_wheel_names = []
     lines.extend(
         [
             f"- Companion sagelite package count: `{len(companion_package_names)}`",
@@ -1370,6 +1398,14 @@ def write_validation_summary(
             "- Missing all-needed-extra sagelite packages: "
             + ", ".join(f"`{name}`" for name in missing_all_needed_extra_packages)
         )
+    lines.append(
+        "- Duplicate primary sagelite wheels: "
+        + (
+            ", ".join(f"`{name}`" for name in duplicate_primary_wheel_names)
+            if duplicate_primary_wheel_names
+            else "`none`"
+        )
+    )
     if duplicate_companion_package_names:
         lines.append(
             "- Duplicate companion sagelite packages: "
@@ -1776,6 +1812,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--reject-duplicate-primary-sagelite-wheels",
+        action="store_true",
+        help=(
+            "fail before installation when more than one primary sagelite "
+            "wheel is staged"
+        ),
+    )
+    parser.add_argument(
         "--require-sagelite-companion-wheel-requirements",
         action="store_true",
         help=(
@@ -1893,6 +1937,9 @@ def main(argv: list[str] | None = None) -> int:
     strict_preflight = args.strict_repaired_wheelhouse_preflight
     if strict_preflight:
         enabled_preflights.append("strict-repaired-wheelhouse-preflight")
+    if args.reject_duplicate_primary_sagelite_wheels or strict_preflight:
+        preflight_checks.append(_ensure_single_primary_sagelite_wheel)
+        enabled_preflights.append("reject-duplicate-primary-sagelite-wheels")
     if args.require_repaired_sagelite_wheel or strict_preflight:
         preflight_checks.append(_ensure_repaired_sagelite_wheel)
         enabled_preflights.append("require-repaired-sagelite-wheel")

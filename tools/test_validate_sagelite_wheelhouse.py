@@ -177,6 +177,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "require-primary-sagelite-wheel-abi-tag" in metadata[
         "validation_contract"
     ]["enabled_preflights"]
+    assert "reject-duplicate-primary-sagelite-wheels" not in metadata[
+        "validation_contract"
+    ]["enabled_preflights"]
     assert [
         file["name"]
         for file in metadata["wheelhouse_inventory"]["primary_sagelite_wheels"]
@@ -642,6 +645,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert raw_wheel.name in metadata["preflight_error"]
     assert enabled_preflights == [
         "strict-repaired-wheelhouse-preflight",
+        "reject-duplicate-primary-sagelite-wheels",
         "require-repaired-sagelite-wheel",
         "require-package-all-needed-extras",
         "require-all-needed-extra-sagelite-wheels",
@@ -657,6 +661,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert (
         "- Enabled preflights: "
         "`strict-repaired-wheelhouse-preflight`, "
+        "`reject-duplicate-primary-sagelite-wheels`, "
         "`require-repaired-sagelite-wheel`, "
         "`require-package-all-needed-extras`, "
         "`require-all-needed-extra-sagelite-wheels`, "
@@ -953,6 +958,110 @@ def test_require_repaired_sagelite_wheel_rejects_mixed_primary_wheels(tmp_path):
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is True
+    assert metadata["wheelhouse_inventory"]["duplicate_primary_sagelite_wheel_names"] == [
+        raw_wheel.name,
+        repaired_wheel.name,
+    ]
+
+
+def test_reject_duplicate_primary_sagelite_wheels_preflight(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    py312_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    py313_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp313-cp313-manylinux_2_28_x86_64.whl"
+    )
+    py312_wheel.write_text("")
+    py313_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-071300"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--reject-duplicate-primary-sagelite-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-071300" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-071300" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "duplicate primary sagelite wheels are not allowed" in metadata[
+        "preflight_error"
+    ]
+    assert py312_wheel.name in metadata["preflight_error"]
+    assert py313_wheel.name in metadata["preflight_error"]
+    assert metadata["wheelhouse_inventory"]["duplicate_primary_sagelite_wheel_names"] == [
+        py312_wheel.name,
+        py313_wheel.name,
+    ]
+    assert (
+        "- Enabled preflights: `reject-duplicate-primary-sagelite-wheels`"
+    ) in summary
+    assert (
+        "- Duplicate primary sagelite wheels: "
+        f"`{py312_wheel.name}`, `{py313_wheel.name}`"
+    ) in summary
+    assert "## Preflight Error" in summary
+    assert "duplicate primary sagelite wheels are not allowed" in summary
+
+
+def test_strict_repaired_wheelhouse_preflight_rejects_duplicate_primary_first(
+    tmp_path,
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    py312_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    py313_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp313-cp313-manylinux_2_28_x86_64.whl"
+    )
+    py312_wheel.write_text("")
+    py313_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-071400"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--strict-repaired-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-071400" / "install-metadata.json").read_text()
+    )
+    enabled = metadata["validation_contract"]["enabled_preflights"]
+    assert enabled[:3] == [
+        "strict-repaired-wheelhouse-preflight",
+        "reject-duplicate-primary-sagelite-wheels",
+        "require-repaired-sagelite-wheel",
+    ]
+    assert "duplicate primary sagelite wheels are not allowed" in metadata[
+        "preflight_error"
+    ]
 
 
 def test_inventory_records_complete_all_needed_extra_companion_coverage(tmp_path):

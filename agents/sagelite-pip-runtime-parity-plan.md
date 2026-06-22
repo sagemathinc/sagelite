@@ -389,6 +389,15 @@ Scheduled audit on 2026-06-21:
   manylinux/musllinux/`any` tag satisfied the contract. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records duplicate staged primary
+  `sagelite` wheels in wheelhouse inventory metadata and renders them in
+  `validation-summary.md`. The new
+  `tools/validate-sagelite-wheelhouse.py --reject-duplicate-primary-sagelite-wheels`
+  preflight rejects ambiguous primary wheelhouses before installation, and the
+  strict repaired-wheelhouse profile enables this check before the repaired
+  wheel check so mixed or multi-ABI proof inputs fail with a direct duplicate
+  primary diagnosis. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
