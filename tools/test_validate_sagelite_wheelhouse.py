@@ -864,6 +864,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "require-sagelite-companion-wheel-requirements",
         "require-primary-sagelite-wheel-requirement",
         "require-compatible-companion-sagelite-wheels",
+        "require-compatible-third-party-wheels",
         "require-primary-sagelite-wheel-python-tag",
         "require-primary-sagelite-wheel-abi-tag",
         "require-primary-sagelite-wheel-platform-machine",
@@ -881,6 +882,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "`require-sagelite-companion-wheel-requirements`, "
         "`require-primary-sagelite-wheel-requirement`, "
         "`require-compatible-companion-sagelite-wheels`, "
+        "`require-compatible-third-party-wheels`, "
         "`require-primary-sagelite-wheel-python-tag`, "
         "`require-primary-sagelite-wheel-abi-tag`, "
         "`require-primary-sagelite-wheel-platform-machine`, "
@@ -939,6 +941,62 @@ def test_strict_repaired_wheelhouse_preflight_rejects_narrow_package(tmp_path):
     assert "requested package extras: none" in metadata["preflight_error"]
     assert "- Primary sagelite requirement extras: `none`" in summary
     assert "- Primary sagelite requests all-needed-extras: `False`" in summary
+    assert "## Preflight Error" in summary
+
+
+def test_strict_repaired_wheelhouse_preflight_rejects_third_party_mismatch(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    for package in validator._all_needed_extra_sagelite_packages():
+        version = _companion_version(package)
+        wheel_name = package.replace("-", "_") + f"-{version}-py3-none-any.whl"
+        (wheelhouse / wheel_name).write_text("")
+    incompatible = wheelhouse / "cypari2-2.2.1-cp313-cp313-any.whl"
+    incompatible.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-081800"
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--strict-repaired-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-081800" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-081800" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    assert "third-party wheels are not compatible" in metadata["preflight_error"]
+    assert incompatible.name in metadata["preflight_error"]
+    assert "require-compatible-third-party-wheels" in metadata[
+        "validation_contract"
+    ]["enabled_preflights"]
+    assert metadata["validation_contract"]["incompatible_third_party_wheels"][0][
+        "name"
+    ] == incompatible.name
+    assert f"- Incompatible third-party wheels: `{incompatible.name}`" in summary
     assert "## Preflight Error" in summary
 
 

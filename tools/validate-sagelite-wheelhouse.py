@@ -2362,7 +2362,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-compatible-companion-sagelite-wheels")
-    if args.require_compatible_third_party_wheels:
+    if args.require_compatible_third_party_wheels or strict_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_compatible_third_party_wheels(
                 inventory,

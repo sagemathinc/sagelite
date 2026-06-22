@@ -108,8 +108,9 @@ updated after each step with command result phase, status, exit code, and
 elapsed time so interrupted or failed scheduled runs still identify the failing
 phase. Use `--strict-repaired-wheelhouse-preflight` for authoritative
 manylinux/CIBW proof runs so raw, mixed-ABI, wrong-platform, duplicate, stale,
-or incomplete sagelite wheelhouses fail during metadata-recorded preflight
-instead of being mistaken for repaired-wheel evidence.
+incomplete sagelite wheelhouses, or incompatible third-party dependency wheels
+fail during metadata-recorded preflight instead of being mistaken for
+repaired-wheel evidence.
 
 Example:
 

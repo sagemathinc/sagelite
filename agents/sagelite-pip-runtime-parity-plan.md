@@ -452,8 +452,7 @@ Scheduled audit on 2026-06-21:
   which turns the existing third-party wheel compatibility report into an
   explicit preflight gate for validation jobs that want to reject wrong-Python,
   wrong-ABI, or wrong-platform third-party dependency wheels before creating a
-  fresh install. This remains opt-in and is not enabled by the strict
-  sagelite repaired-wheelhouse profile. Focused local validation passed with:
+  fresh install. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py -q`
 - Follow-up scheduled tooling work now records non-sagelite third-party wheels
   as explicit wheelhouse inventory metadata and renders them in
@@ -470,6 +469,13 @@ Scheduled audit on 2026-06-21:
   preflight diagnosis instead of a later pip install error. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now enables
+  `--require-compatible-third-party-wheels` inside
+  `--strict-repaired-wheelhouse-preflight`, so authoritative CIBW proof
+  wheelhouses reject wrong-Python, wrong-ABI, or wrong-platform third-party
+  dependency wheels before creating a fresh install. Focused local validation
+  passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py -q`
 
 ## Reality status
 
