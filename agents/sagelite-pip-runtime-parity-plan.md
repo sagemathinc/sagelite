@@ -426,6 +426,13 @@ Scheduled audit on 2026-06-21:
   artifacts can now be correlated with CI logs without relying only on elapsed
   seconds. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records top-level wheelhouse validation
+  start time, finish time, and elapsed seconds in `install-metadata.json` and
+  renders them near the top of `validation-summary.md`. Preflight failures,
+  failed command steps, running artifacts, and successful proof runs now expose
+  run-level timing without reconstructing it from per-step records. Focused
+  local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

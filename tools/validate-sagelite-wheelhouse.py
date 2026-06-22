@@ -1217,6 +1217,9 @@ def write_install_metadata(
     exit_code: int | None = None,
     command_results: list[dict[str, object]] | None = None,
     preflight_error: str | None = None,
+    validation_started_at_utc: str | None = None,
+    validation_finished_at_utc: str | None = None,
+    validation_elapsed_seconds: float | None = None,
 ) -> Path:
     path = output_dir / "install-metadata.json"
     environment = {
@@ -1240,6 +1243,9 @@ def write_install_metadata(
         "commands": commands,
         "status": status,
         "exit_code": exit_code,
+        "validation_started_at_utc": validation_started_at_utc,
+        "validation_finished_at_utc": validation_finished_at_utc,
+        "validation_elapsed_seconds": validation_elapsed_seconds,
         "preflight_error": preflight_error,
         "command_results": command_results or [],
         "environment": environment,
@@ -1267,6 +1273,9 @@ def write_validation_summary(
     preflight_error: str | None = None,
     host_context: dict[str, object] | None = None,
     validation_contract: dict[str, object] | None = None,
+    validation_started_at_utc: str | None = None,
+    validation_finished_at_utc: str | None = None,
+    validation_elapsed_seconds: float | None = None,
 ) -> Path:
     path = output_dir / "validation-summary.md"
     inventory = wheelhouse_inventory(wheelhouses)
@@ -1275,6 +1284,9 @@ def write_validation_summary(
         "",
         f"- Status: `{status}`",
         f"- Exit code: `{exit_code}`",
+        f"- Started at: `{validation_started_at_utc}`",
+        f"- Finished at: `{validation_finished_at_utc}`",
+        f"- Elapsed seconds: `{validation_elapsed_seconds}`",
         f"- Package: `{package}`",
         f"- Install dir: `{install_dir}`",
     ]
@@ -1997,6 +2009,8 @@ def main(argv: list[str] | None = None) -> int:
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
+    validation_started_at_utc = _utc_timestamp()
+    validation_started = time.perf_counter()
 
     commands = [
         build_venv_command(args.python, install_dir),
@@ -2110,6 +2124,10 @@ def main(argv: list[str] | None = None) -> int:
         try:
             check(inventory)
         except RuntimeError as exc:
+            validation_finished_at_utc = _utc_timestamp()
+            validation_elapsed_seconds = round(
+                time.perf_counter() - validation_started, 3
+            )
             metadata_path = write_install_metadata(
                 output_dir,
                 label=label,
@@ -2126,6 +2144,9 @@ def main(argv: list[str] | None = None) -> int:
                 status="failed",
                 exit_code=2,
                 preflight_error=str(exc),
+                validation_started_at_utc=validation_started_at_utc,
+                validation_finished_at_utc=validation_finished_at_utc,
+                validation_elapsed_seconds=validation_elapsed_seconds,
             )
             summary_path = write_validation_summary(
                 output_dir,
@@ -2138,6 +2159,9 @@ def main(argv: list[str] | None = None) -> int:
                 preflight_error=str(exc),
                 host_context=host_context,
                 validation_contract=validation_contract,
+                validation_started_at_utc=validation_started_at_utc,
+                validation_finished_at_utc=validation_finished_at_utc,
+                validation_elapsed_seconds=validation_elapsed_seconds,
             )
             print(str(exc), file=sys.stderr)
             print(f"metadata: {metadata_path}")
@@ -2157,6 +2181,8 @@ def main(argv: list[str] | None = None) -> int:
         host_context=host_context,
         validation_contract=validation_contract,
         status="running",
+        validation_started_at_utc=validation_started_at_utc,
+        validation_elapsed_seconds=round(time.perf_counter() - validation_started, 3),
     )
     summary_path = write_validation_summary(
         output_dir,
@@ -2168,6 +2194,8 @@ def main(argv: list[str] | None = None) -> int:
         exit_code=None,
         host_context=host_context,
         validation_contract=validation_contract,
+        validation_started_at_utc=validation_started_at_utc,
+        validation_elapsed_seconds=round(time.perf_counter() - validation_started, 3),
     )
     command_results: list[dict[str, object]] = []
     for index, command in enumerate(commands, start=1):
@@ -2203,6 +2231,11 @@ def main(argv: list[str] | None = None) -> int:
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
+            validation_started_at_utc=validation_started_at_utc,
+            validation_finished_at_utc=finished_at if result.returncode else None,
+            validation_elapsed_seconds=round(
+                time.perf_counter() - validation_started, 3
+            ),
         )
         summary_path = write_validation_summary(
             output_dir,
@@ -2215,12 +2248,19 @@ def main(argv: list[str] | None = None) -> int:
             command_results=command_results,
             host_context=host_context,
             validation_contract=validation_contract,
+            validation_started_at_utc=validation_started_at_utc,
+            validation_finished_at_utc=finished_at if result.returncode else None,
+            validation_elapsed_seconds=round(
+                time.perf_counter() - validation_started, 3
+            ),
         )
         if result.returncode:
             print(f"metadata: {metadata_path}")
             print(f"summary: {summary_path}")
             return result.returncode
 
+    validation_finished_at_utc = _utc_timestamp()
+    validation_elapsed_seconds = round(time.perf_counter() - validation_started, 3)
     metadata_path = write_install_metadata(
         output_dir,
         label=label,
@@ -2237,6 +2277,9 @@ def main(argv: list[str] | None = None) -> int:
         status="passed",
         exit_code=0,
         command_results=command_results,
+        validation_started_at_utc=validation_started_at_utc,
+        validation_finished_at_utc=validation_finished_at_utc,
+        validation_elapsed_seconds=validation_elapsed_seconds,
     )
     summary_path = write_validation_summary(
         output_dir,
@@ -2249,6 +2292,9 @@ def main(argv: list[str] | None = None) -> int:
         command_results=command_results,
         host_context=host_context,
         validation_contract=validation_contract,
+        validation_started_at_utc=validation_started_at_utc,
+        validation_finished_at_utc=validation_finished_at_utc,
+        validation_elapsed_seconds=validation_elapsed_seconds,
     )
     print(f"install: {install_dir}")
     print(f"validation: {output_dir}")

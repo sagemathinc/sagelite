@@ -199,6 +199,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     ] == [repaired_wheel.name]
     assert metadata["status"] == "passed"
     assert metadata["exit_code"] == 0
+    assert metadata["validation_started_at_utc"].endswith("Z")
+    assert metadata["validation_finished_at_utc"].endswith("Z")
+    assert isinstance(metadata["validation_elapsed_seconds"], float)
     assert metadata["environment"]["PYTHONNOUSERSITE"] == "1"
     assert metadata["environment"]["PYTHONPATH"] is None
     assert metadata["environment"]["LD_LIBRARY_PATH"] is None
@@ -300,6 +303,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "# Sagelite wheelhouse validation: cibw-proof" in summary
     assert "- Status: `passed`" in summary
     assert "- Exit code: `0`" in summary
+    assert "- Started at: `" in summary
+    assert "- Finished at: `" in summary
+    assert "- Elapsed seconds: `" in summary
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
@@ -442,6 +448,9 @@ def test_stops_after_failed_step(tmp_path):
     )
     assert metadata["status"] == "failed"
     assert metadata["exit_code"] == 12
+    assert metadata["validation_started_at_utc"].endswith("Z")
+    assert metadata["validation_finished_at_utc"].endswith("Z")
+    assert isinstance(metadata["validation_elapsed_seconds"], float)
     assert metadata["commands"] == commands + [
         [
             os.fspath(tmp_path / "install-20260621-030405" / "bin" / "python"),
@@ -609,6 +618,9 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
     ).read_text(encoding="utf-8")
     assert metadata["status"] == "failed"
     assert metadata["exit_code"] == 2
+    assert metadata["validation_started_at_utc"].endswith("Z")
+    assert metadata["validation_finished_at_utc"].endswith("Z")
+    assert isinstance(metadata["validation_elapsed_seconds"], float)
     assert "repaired sagelite wheel is required" in metadata["preflight_error"]
     assert raw_wheel.name in metadata["preflight_error"]
     assert metadata["command_results"] == []
