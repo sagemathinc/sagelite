@@ -372,6 +372,15 @@ Scheduled audit on 2026-06-21:
   unsatisfied requirement in both metadata and `validation-summary.md`.
   Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records requested `sagelite` extras in
+  the wheelhouse validation contract and adds
+  `tools/validate-sagelite-wheelhouse.py --require-package-all-needed-extras`.
+  The strict repaired-wheelhouse preflight enables this check, so
+  authoritative proof runs fail before installation unless the requested
+  package installs `sagelite[all-needed-extras]`, preventing narrow runtime
+  installs from being mistaken for full parity evidence. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

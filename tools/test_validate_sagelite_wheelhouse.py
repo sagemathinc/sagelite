@@ -639,6 +639,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert enabled_preflights == [
         "strict-repaired-wheelhouse-preflight",
         "require-repaired-sagelite-wheel",
+        "require-package-all-needed-extras",
         "require-all-needed-extra-sagelite-wheels",
         "reject-duplicate-companion-sagelite-wheels",
         "require-sagelite-companion-wheel-requirements",
@@ -653,6 +654,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "- Enabled preflights: "
         "`strict-repaired-wheelhouse-preflight`, "
         "`require-repaired-sagelite-wheel`, "
+        "`require-package-all-needed-extras`, "
         "`require-all-needed-extra-sagelite-wheels`, "
         "`reject-duplicate-companion-sagelite-wheels`, "
         "`require-sagelite-companion-wheel-requirements`, "
@@ -665,6 +667,105 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     ) in summary
     assert "- Contains raw Linux primary sagelite wheel: `True`" in summary
     assert "## Preflight Error" in summary
+
+
+def test_strict_repaired_wheelhouse_preflight_rejects_narrow_package(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-081700"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--package",
+            "sagelite",
+            "--strict-repaired-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-081700" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-081700" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    contract = metadata["validation_contract"]
+    assert contract["primary_sagelite_requirement"] == {
+        "package": "sagelite",
+        "name": "sagelite",
+        "extras": [],
+        "specifier": "",
+        "applies_to_sagelite": True,
+        "requests_all_needed_extras": False,
+        "error": None,
+    }
+    assert "strict repaired-wheelhouse validation must install" in metadata[
+        "preflight_error"
+    ]
+    assert "requested package extras: none" in metadata["preflight_error"]
+    assert "- Primary sagelite requirement extras: `none`" in summary
+    assert "- Primary sagelite requests all-needed-extras: `False`" in summary
+    assert "## Preflight Error" in summary
+
+
+def test_require_package_all_needed_extras_allows_default_package(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    commands = []
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
+    validator._timestamp = lambda: "20260621-081900"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-package-all-needed-extras",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-081900" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-081900" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    contract = metadata["validation_contract"]
+    assert contract["primary_sagelite_requirement"]["extras"] == [
+        "all-needed-extras"
+    ]
+    assert contract["primary_sagelite_requirement"][
+        "requests_all_needed_extras"
+    ] is True
+    assert metadata["preflight_error"] is None
+    assert "- Primary sagelite requirement extras: `all-needed-extras`" in summary
+    assert "- Primary sagelite requests all-needed-extras: `True`" in summary
 
 
 def test_require_repaired_sagelite_wheel_rejects_missing_primary_wheel(tmp_path):
@@ -1005,8 +1106,10 @@ def test_reject_unsatisfied_primary_sagelite_wheel_requirement_preflight(tmp_pat
     assert contract["primary_sagelite_requirement"] == {
         "package": "sagelite==10.9.post2",
         "name": "sagelite",
+        "extras": [],
         "specifier": "==10.9.post2",
         "applies_to_sagelite": True,
+        "requests_all_needed_extras": False,
         "error": None,
     }
     assert contract["unsatisfied_primary_sagelite_wheel_requirements"] == [

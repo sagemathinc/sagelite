@@ -387,18 +387,49 @@ def _primary_sagelite_requirement(package: str) -> dict[str, object]:
         return {
             "package": package,
             "name": None,
+            "extras": [],
             "specifier": None,
             "applies_to_sagelite": False,
+            "requests_all_needed_extras": False,
             "error": f"{type(exc).__name__}: {exc}",
         }
     name = requirement.name.replace("_", "-").lower()
+    extras = sorted(requirement.extras)
     return {
         "package": package,
         "name": name,
+        "extras": extras,
         "specifier": str(requirement.specifier),
         "applies_to_sagelite": name == "sagelite",
+        "requests_all_needed_extras": "all-needed-extras" in extras,
         "error": None,
     }
+
+
+def _ensure_package_requests_all_needed_extras(package: str) -> None:
+    requested = _primary_sagelite_requirement(package)
+    if requested.get("error"):
+        raise RuntimeError(
+            "requested package requirement could not be parsed for "
+            "all-needed-extras validation: "
+            + str(requested.get("error"))
+        )
+    if requested.get("applies_to_sagelite") is not True:
+        raise RuntimeError(
+            "all-needed-extras validation requires a sagelite package "
+            f"requirement, but requested package is {package!r}"
+        )
+    if requested.get("requests_all_needed_extras") is True:
+        return
+    extras = requested.get("extras", [])
+    if not isinstance(extras, list):
+        extras = []
+    rendered_extras = ", ".join(str(extra) for extra in extras) or "none"
+    raise RuntimeError(
+        "strict repaired-wheelhouse validation must install "
+        "sagelite[all-needed-extras]; requested package extras: "
+        f"{rendered_extras}"
+    )
 
 
 def _primary_sagelite_wheel_requirement_satisfaction(
@@ -1230,8 +1261,21 @@ def write_validation_summary(
             [
                 "- Primary sagelite requirement: "
                 f"`{primary_requirement.get('package')}`",
+                "- Primary sagelite requirement extras: "
+                + (
+                    ", ".join(
+                        f"`{extra}`"
+                        for extra in primary_requirement.get("extras", [])
+                        if isinstance(extra, str)
+                    )
+                    if isinstance(primary_requirement.get("extras"), list)
+                    and primary_requirement.get("extras")
+                    else "`none`"
+                ),
                 "- Primary sagelite requirement specifier: "
                 f"`{primary_requirement.get('specifier')}`",
+                "- Primary sagelite requests all-needed-extras: "
+                f"`{primary_requirement.get('requests_all_needed_extras')}`",
                 "- Expected wheel Python tag: "
                 f"`{validation_contract.get('expected_python_tag')}`",
                 "- Expected wheel ABI tag: "
@@ -1724,6 +1768,14 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-package-all-needed-extras",
+        action="store_true",
+        help=(
+            "fail before installation unless --package requests "
+            "sagelite[all-needed-extras]"
+        ),
+    )
+    parser.add_argument(
         "--require-compatible-companion-sagelite-wheels",
         action="store_true",
         help=(
@@ -1820,6 +1872,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.require_repaired_sagelite_wheel or strict_preflight:
         preflight_checks.append(_ensure_repaired_sagelite_wheel)
         enabled_preflights.append("require-repaired-sagelite-wheel")
+    if args.require_package_all_needed_extras or strict_preflight:
+        preflight_checks.append(
+            lambda inventory: _ensure_package_requests_all_needed_extras(args.package)
+        )
+        enabled_preflights.append("require-package-all-needed-extras")
     if args.require_all_needed_extra_sagelite_wheels or strict_preflight:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
         enabled_preflights.append("require-all-needed-extra-sagelite-wheels")
