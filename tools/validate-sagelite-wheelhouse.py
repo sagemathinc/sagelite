@@ -142,6 +142,7 @@ def _wheel_filename_error(wheel: Path) -> str | None:
 def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, object]:
     digest = hashlib.sha256()
     total_size = 0
+    valid_filename_count = 0
     for file in sorted(
         files,
         key=lambda item: (
@@ -153,6 +154,8 @@ def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, obje
         size = file.get("size_bytes")
         if isinstance(size, int):
             total_size += size
+        if file.get("valid_wheel_filename") is True:
+            valid_filename_count += 1
         digest.update(str(file.get("name")).encode("utf-8"))
         digest.update(b"\0")
         digest.update(str(file.get("size_bytes")).encode("utf-8"))
@@ -161,6 +164,8 @@ def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, obje
         digest.update(b"\n")
     return {
         "wheel_count": len(files),
+        "valid_wheel_filename_count": valid_filename_count,
+        "invalid_wheel_filename_count": len(files) - valid_filename_count,
         "total_size_bytes": total_size,
         "sha256": digest.hexdigest(),
     }
@@ -1596,6 +1601,14 @@ def write_validation_summary(
             (
                 "- Staged wheel count: "
                 f"`{wheelhouse_input_identity.get('wheel_count')}`"
+            ),
+            (
+                "- Staged valid wheel filename count: "
+                f"`{wheelhouse_input_identity.get('valid_wheel_filename_count')}`"
+            ),
+            (
+                "- Staged invalid wheel filename count: "
+                f"`{wheelhouse_input_identity.get('invalid_wheel_filename_count')}`"
             ),
             (
                 "- Staged wheel total bytes: "

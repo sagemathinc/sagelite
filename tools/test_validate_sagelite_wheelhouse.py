@@ -109,6 +109,12 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "wheel_count"
     ] == 2
     assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "valid_wheel_filename_count"
+    ] == 2
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "invalid_wheel_filename_count"
+    ] == 0
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
         "total_size_bytes"
     ] == 0
     assert (
@@ -312,6 +318,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
     assert "- Staged wheel count: `2`" in summary
+    assert "- Staged valid wheel filename count: `2`" in summary
+    assert "- Staged invalid wheel filename count: `0`" in summary
     assert "- Staged wheel total bytes: `0`" in summary
     assert "- Staged wheelhouse SHA256: `" in summary
     assert "- Primary compatibility checked wheels: `1`" in summary
@@ -453,6 +461,8 @@ def test_validation_summary_uses_cached_inventory(tmp_path):
 
     summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
     assert "- Staged wheel count: `1`" in summary
+    assert "- Staged valid wheel filename count: `1`" in summary
+    assert "- Staged invalid wheel filename count: `0`" in summary
     assert f"- `{wheel.name}` (python: cp312; abi: cp312;" in summary
     assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
 
@@ -1380,6 +1390,8 @@ def test_inventory_records_stable_wheelhouse_input_identity(tmp_path):
 
     assert identity == reversed_identity
     assert identity["wheel_count"] == 2
+    assert identity["valid_wheel_filename_count"] == 2
+    assert identity["invalid_wheel_filename_count"] == 0
     assert identity["total_size_bytes"] == len("primary") + len("companion")
     assert len(identity["sha256"]) == 64
 
@@ -1407,12 +1419,17 @@ def test_inventory_records_invalid_wheel_filenames(tmp_path):
     summary = (summary_dir / "validation-summary.md").read_text(encoding="utf-8")
 
     assert inventory["contains_invalid_wheels"] is True
+    assert inventory["wheelhouse_input_identity"]["wheel_count"] == 1
+    assert inventory["wheelhouse_input_identity"]["valid_wheel_filename_count"] == 0
+    assert inventory["wheelhouse_input_identity"]["invalid_wheel_filename_count"] == 1
     assert [wheel["name"] for wheel in inventory["invalid_wheels"]] == [
         invalid_wheel.name
     ]
     assert inventory["invalid_wheels"][0]["valid_wheel_filename"] is False
     assert inventory["invalid_wheels"][0]["wheel_filename_error"]
     assert "- Contains invalid wheel filenames: `True`" in summary
+    assert "- Staged valid wheel filename count: `0`" in summary
+    assert "- Staged invalid wheel filename count: `1`" in summary
     assert "- Invalid wheel filename count: `1`" in summary
     assert "- Invalid wheel filename contract failures: `not-a-wheel.whl`" in summary
     assert "- Invalid wheel filename contract failure count: `1`" in summary

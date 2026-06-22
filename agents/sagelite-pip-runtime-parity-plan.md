@@ -482,6 +482,12 @@ Scheduled audit on 2026-06-21:
   now expose malformed wheel inputs in both JSON and markdown without relying
   only on the first preflight error. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now includes valid and invalid wheel
+  filename counts in the aggregate wheelhouse input identity and renders those
+  counts near the top of `validation-summary.md`. Malformed proof inputs are
+  now visible in the compact fingerprint block as well as in the detailed
+  invalid-filename section. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
