@@ -1267,6 +1267,7 @@ def write_validation_summary(
     package: str,
     install_dir: Path,
     wheelhouses: list[Path],
+    inventory: dict[str, object] | None = None,
     status: str,
     exit_code: int | None,
     command_results: list[dict[str, object]] | None = None,
@@ -1278,7 +1279,8 @@ def write_validation_summary(
     validation_elapsed_seconds: float | None = None,
 ) -> Path:
     path = output_dir / "validation-summary.md"
-    inventory = wheelhouse_inventory(wheelhouses)
+    if inventory is None:
+        inventory = wheelhouse_inventory(wheelhouses)
     lines = [
         f"# Sagelite wheelhouse validation: {label}",
         "",
@@ -2154,6 +2156,7 @@ def main(argv: list[str] | None = None) -> int:
                 package=args.package,
                 install_dir=install_dir,
                 wheelhouses=wheelhouses,
+                inventory=inventory,
                 status="failed",
                 exit_code=2,
                 preflight_error=str(exc),
@@ -2190,6 +2193,7 @@ def main(argv: list[str] | None = None) -> int:
         package=args.package,
         install_dir=install_dir,
         wheelhouses=wheelhouses,
+        inventory=inventory,
         status="running",
         exit_code=None,
         host_context=host_context,
@@ -2243,6 +2247,7 @@ def main(argv: list[str] | None = None) -> int:
             package=args.package,
             install_dir=install_dir,
             wheelhouses=wheelhouses,
+            inventory=inventory,
             status="running" if result.returncode == 0 else "failed",
             exit_code=None if result.returncode == 0 else result.returncode,
             command_results=command_results,
@@ -2287,6 +2292,7 @@ def main(argv: list[str] | None = None) -> int:
         package=args.package,
         install_dir=install_dir,
         wheelhouses=wheelhouses,
+        inventory=inventory,
         status="passed",
         exit_code=0,
         command_results=command_results,

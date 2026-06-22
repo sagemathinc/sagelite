@@ -424,6 +424,34 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
     ]
 
 
+def test_validation_summary_uses_cached_inventory(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    wheel = wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    wheel.write_text("")
+    inventory = validator.wheelhouse_inventory([wheelhouse])
+    wheel.unlink()
+    output_dir = tmp_path / "validation"
+    output_dir.mkdir()
+
+    validator.write_validation_summary(
+        output_dir,
+        label="cached-inventory",
+        package="sagelite[all-needed-extras]",
+        install_dir=tmp_path / "install",
+        wheelhouses=[wheelhouse],
+        inventory=inventory,
+        status="running",
+        exit_code=None,
+    )
+
+    summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
+    assert "- Staged wheel count: `1`" in summary
+    assert f"- `{wheel.name}` (python: cp312; abi: cp312;" in summary
+    assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
+
+
 def test_stops_after_failed_step(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"

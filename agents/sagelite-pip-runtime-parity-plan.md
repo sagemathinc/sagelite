@@ -433,6 +433,13 @@ Scheduled audit on 2026-06-21:
   run-level timing without reconstructing it from per-step records. Focused
   local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now reuses the cached wheelhouse inventory
+  when rewriting `validation-summary.md` during a validation run, instead of
+  re-scanning and re-hashing the staged wheelhouse for every running/failed
+  step update. This keeps large CIBW proof artifacts cheaper to update while
+  preserving the existing standalone summary-writer fallback. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
