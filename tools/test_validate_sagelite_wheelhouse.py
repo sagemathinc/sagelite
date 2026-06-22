@@ -289,6 +289,14 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         isinstance(result["elapsed_seconds"], float)
         for result in metadata["command_results"]
     )
+    assert all(
+        result["started_at_utc"].endswith("Z")
+        for result in metadata["command_results"]
+    )
+    assert all(
+        result["finished_at_utc"].endswith("Z")
+        for result in metadata["command_results"]
+    )
     assert "# Sagelite wheelhouse validation: cibw-proof" in summary
     assert "- Status: `passed`" in summary
     assert "- Exit code: `0`" in summary
@@ -347,6 +355,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Required native import modules: `19`" in summary
     assert "`libntl`" in summary
     assert "### 5. run installed doctest validation: passed" in summary
+    assert "- Started at: `" in summary
+    assert "- Finished at: `" in summary
     assert "--optional sage,optional,external" in summary
 
 
@@ -470,6 +480,10 @@ def test_stops_after_failed_step(tmp_path):
         0,
         12,
     ]
+    assert all(
+        "started_at_utc" in result and "finished_at_utc" in result
+        for result in metadata["command_results"]
+    )
     assert [result["command"] for result in metadata["command_results"]] == commands
     assert [result["phase"] for result in metadata["command_results"]] == [
         "create virtual environment",

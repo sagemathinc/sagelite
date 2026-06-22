@@ -420,6 +420,12 @@ Scheduled audit on 2026-06-21:
   the exact wheel files whose tags passed or failed, not just the inventory
   section. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records UTC start and finish timestamps
+  for each wheelhouse validation step in `install-metadata.json` and renders
+  those times in `validation-summary.md`. Interrupted or slow CIBW proof
+  artifacts can now be correlated with CI logs without relying only on elapsed
+  seconds. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

@@ -18,7 +18,7 @@ import sys
 import sysconfig
 import time
 import tomllib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from packaging.requirements import InvalidRequirement, Requirement
@@ -62,6 +62,12 @@ RUNTIME_ENV_KEYS_TO_REMOVE = {
 
 def _timestamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
+def _utc_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace(
+        "+00:00", "Z"
+    )
 
 
 def _run(command: list[str], env: dict[str, str]) -> subprocess.CompletedProcess[str]:
@@ -1737,6 +1743,8 @@ def write_validation_summary(
                     ),
                     "",
                     f"- Return code: `{result.get('returncode')}`",
+                    f"- Started at: `{result.get('started_at_utc')}`",
+                    f"- Finished at: `{result.get('finished_at_utc')}`",
                     f"- Elapsed seconds: `{result.get('elapsed_seconds')}`",
                     "",
                     "```bash",
@@ -2163,14 +2171,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     command_results: list[dict[str, object]] = []
     for index, command in enumerate(commands, start=1):
+        started_at = _utc_timestamp()
         started = time.perf_counter()
         result = _run(command, env)
+        finished_at = _utc_timestamp()
         command_results.append(
             {
                 "index": index,
                 "phase": command_phases[index - 1],
                 "command": command,
                 "returncode": result.returncode,
+                "started_at_utc": started_at,
+                "finished_at_utc": finished_at,
                 "elapsed_seconds": round(time.perf_counter() - started, 3),
                 "status": "passed" if result.returncode == 0 else "failed",
             }
