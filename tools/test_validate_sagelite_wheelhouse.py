@@ -105,6 +105,16 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["wheelhouse_inventory"][
         "contains_repaired_primary_sagelite_wheel"
     ] is True
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "wheel_count"
+    ] == 2
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "total_size_bytes"
+    ] == 0
+    assert (
+        len(metadata["wheelhouse_inventory"]["wheelhouse_input_identity"]["sha256"])
+        == 64
+    )
     assert metadata["wheelhouse_inventory"][
         "contains_raw_linux_primary_sagelite_wheel"
     ] is False
@@ -283,6 +293,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Base Python: `/opt/python/cp312/bin/python`" in summary
     assert "- Resolved base Python: `None`" in summary
     assert "- Controller Python:" in summary
+    assert "- Staged wheel count: `2`" in summary
+    assert "- Staged wheel total bytes: `0`" in summary
+    assert "- Staged wheelhouse SHA256: `" in summary
     assert "- Primary compatibility checked wheels: `1`" in summary
     assert "- Primary compatibility passed wheels: `1`" in summary
     assert "- Incompatible primary sagelite wheels: `none`" in summary
@@ -1089,6 +1102,32 @@ def test_inventory_records_complete_all_needed_extra_companion_coverage(tmp_path
     assert inventory["missing_all_needed_extra_sagelite_packages"] == []
     assert inventory["duplicate_companion_sagelite_package_names"] == []
     assert inventory["unsatisfied_companion_sagelite_requirements"] == []
+
+
+def test_inventory_records_stable_wheelhouse_input_identity(tmp_path):
+    validator = _load_validator()
+    first_wheelhouse = tmp_path / "first-wheelhouse"
+    second_wheelhouse = tmp_path / "second-wheelhouse"
+    first_wheelhouse.mkdir()
+    second_wheelhouse.mkdir()
+    primary = first_wheelhouse / (
+        "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    )
+    companion = second_wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl"
+    primary.write_text("primary")
+    companion.write_text("companion")
+
+    identity = validator.wheelhouse_inventory(
+        [first_wheelhouse, second_wheelhouse]
+    )["wheelhouse_input_identity"]
+    reversed_identity = validator.wheelhouse_inventory(
+        [second_wheelhouse, first_wheelhouse]
+    )["wheelhouse_input_identity"]
+
+    assert identity == reversed_identity
+    assert identity["wheel_count"] == 2
+    assert identity["total_size_bytes"] == len("primary") + len("companion")
+    assert len(identity["sha256"]) == 64
 
 
 def test_inventory_records_duplicate_companion_packages(tmp_path):

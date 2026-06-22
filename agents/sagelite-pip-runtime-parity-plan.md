@@ -405,6 +405,14 @@ Scheduled audit on 2026-06-21:
   wheel files validated even when filenames are reused across uploads or
   scratch directories. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records an aggregate staged wheelhouse
+  input identity in validation inventory metadata and summaries: total staged
+  wheel count, total staged wheel bytes, and a deterministic SHA256 over the
+  staged wheel filename/size/file-digest multiset. This gives CIBW proof
+  artifacts a compact reproducibility fingerprint for the complete wheelhouse
+  input set, not just the primary and companion sagelite rows. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

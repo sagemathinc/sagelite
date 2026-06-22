@@ -124,6 +124,33 @@ def _wheel_file_identity(wheel: Path) -> dict[str, object]:
     }
 
 
+def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, object]:
+    digest = hashlib.sha256()
+    total_size = 0
+    for file in sorted(
+        files,
+        key=lambda item: (
+            str(item.get("name")),
+            str(item.get("size_bytes")),
+            str(item.get("sha256")),
+        ),
+    ):
+        size = file.get("size_bytes")
+        if isinstance(size, int):
+            total_size += size
+        digest.update(str(file.get("name")).encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(file.get("size_bytes")).encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(str(file.get("sha256")).encode("utf-8"))
+        digest.update(b"\n")
+    return {
+        "wheel_count": len(files),
+        "total_size_bytes": total_size,
+        "sha256": digest.hexdigest(),
+    }
+
+
 def _wheel_platform_tags(wheel: Path) -> list[str]:
     return _wheel_tags(wheel)["platform"]
 
@@ -305,6 +332,7 @@ def wheelhouse_inventory(wheelhouses: list[Path]) -> dict[str, object]:
             )
     return {
         "files": files,
+        "wheelhouse_input_identity": _wheelhouse_input_identity(files),
         "sagelite_project_wheels": sagelite_project_wheels,
         "primary_sagelite_wheels": primary_sagelite_wheels,
         "duplicate_primary_sagelite_wheel_names": (
@@ -1351,6 +1379,25 @@ def write_validation_summary(
         )
     lines.append("- Wheelhouses:")
     lines.extend(f"  - `{wheelhouse}`" for wheelhouse in wheelhouses)
+    wheelhouse_input_identity = inventory.get("wheelhouse_input_identity", {})
+    if not isinstance(wheelhouse_input_identity, dict):
+        wheelhouse_input_identity = {}
+    lines.extend(
+        [
+            (
+                "- Staged wheel count: "
+                f"`{wheelhouse_input_identity.get('wheel_count')}`"
+            ),
+            (
+                "- Staged wheel total bytes: "
+                f"`{wheelhouse_input_identity.get('total_size_bytes')}`"
+            ),
+            (
+                "- Staged wheelhouse SHA256: "
+                f"`{wheelhouse_input_identity.get('sha256')}`"
+            ),
+        ]
+    )
     primary_sagelite_wheels = inventory.get("primary_sagelite_wheels", [])
     if not isinstance(primary_sagelite_wheels, list):
         primary_sagelite_wheels = []
