@@ -556,15 +556,18 @@ def _companion_sagelite_wheel_compatibility(
         if not isinstance(platform_tags, list):
             platform_tags = []
 
+        matched_platform_tags = [
+            str(tag) for tag in platform_tags if str(tag) in compatible_platforms
+        ]
+        if "any" in platform_tags:
+            matched_platform_tags.append("any")
         python_ok = "py3" in python_tags or (
             expected_python_tag is not None and expected_python_tag in python_tags
         )
         abi_ok = "none" in abi_tags or (
             expected_abi_tag is not None and expected_abi_tag in abi_tags
         )
-        platform_ok = "any" in platform_tags or any(
-            str(tag) in compatible_platforms for tag in platform_tags
-        )
+        platform_ok = bool(matched_platform_tags)
         mismatches = []
         if not python_ok:
             mismatches.append("python")
@@ -582,6 +585,7 @@ def _companion_sagelite_wheel_compatibility(
                 "python_compatible": python_ok,
                 "abi_compatible": abi_ok,
                 "platform_compatible": platform_ok,
+                "matched_platform_tags": matched_platform_tags,
                 "compatible": python_ok and abi_ok and platform_ok,
                 "mismatches": mismatches,
             }
@@ -613,11 +617,14 @@ def _primary_sagelite_wheel_compatibility(
         if not isinstance(platform_tags, list):
             platform_tags = []
 
+        matched_platform_tags = [
+            str(tag) for tag in platform_tags if str(tag) in compatible_platforms
+        ]
         python_ok = (
             expected_python_tag is not None and expected_python_tag in python_tags
         )
         abi_ok = expected_abi_tag is not None and expected_abi_tag in abi_tags
-        platform_ok = any(str(tag) in compatible_platforms for tag in platform_tags)
+        platform_ok = bool(matched_platform_tags)
         repaired_linux = bool(wheel.get("is_repaired_linux_wheel"))
         raw_linux = bool(wheel.get("is_raw_linux_wheel"))
         mismatches = []
@@ -639,6 +646,7 @@ def _primary_sagelite_wheel_compatibility(
                 "python_compatible": python_ok,
                 "abi_compatible": abi_ok,
                 "platform_compatible": platform_ok,
+                "matched_platform_tags": matched_platform_tags,
                 "repaired_linux": repaired_linux,
                 "raw_linux": raw_linux,
                 "compatible": python_ok and abi_ok and platform_ok and repaired_linux,
@@ -1434,6 +1442,9 @@ def write_validation_summary(
         mismatches = item.get("mismatches", [])
         if not isinstance(mismatches, list):
             mismatches = []
+        matched_platform_tags = item.get("matched_platform_tags", [])
+        if not isinstance(matched_platform_tags, list):
+            matched_platform_tags = []
         lines.append(
             "  - "
             f"`{item.get('name')}`: "
@@ -1449,7 +1460,12 @@ def write_validation_summary(
                 if mismatches
                 else "`none`"
             )
-            + ")"
+            + ") matched platform tags: "
+            + (
+                ", ".join(f"`{tag}`" for tag in matched_platform_tags)
+                if matched_platform_tags
+                else "`none`"
+            )
         )
     primary_requirement_satisfaction = []
     unsatisfied_primary_requirements = []
@@ -1539,6 +1555,9 @@ def write_validation_summary(
         mismatches = item.get("mismatches", [])
         if not isinstance(mismatches, list):
             mismatches = []
+        matched_platform_tags = item.get("matched_platform_tags", [])
+        if not isinstance(matched_platform_tags, list):
+            matched_platform_tags = []
         lines.append(
             "  - "
             f"`{item.get('name')}`: "
@@ -1552,7 +1571,12 @@ def write_validation_summary(
                 if mismatches
                 else "`none`"
             )
-            + ")"
+            + ") matched platform tags: "
+            + (
+                ", ".join(f"`{tag}`" for tag in matched_platform_tags)
+                if matched_platform_tags
+                else "`none`"
+            )
         )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]

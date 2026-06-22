@@ -381,6 +381,14 @@ Scheduled audit on 2026-06-21:
   installs from being mistaken for full parity evidence. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now records the exact platform tags that
+  made each primary and companion sagelite wheel compatible with the requested
+  validation interpreter and host. `validation-summary.md` renders those
+  matched tags beside each wheel compatibility row, so repaired-wheel proof
+  artifacts show not only that platform compatibility passed but which
+  manylinux/musllinux/`any` tag satisfied the contract. Focused local
+  validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

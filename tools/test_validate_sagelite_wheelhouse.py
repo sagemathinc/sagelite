@@ -163,6 +163,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
             "python_compatible": True,
             "abi_compatible": True,
             "platform_compatible": True,
+            "matched_platform_tags": ["manylinux_2_28_x86_64"],
             "repaired_linux": True,
             "raw_linux": False,
             "compatible": True,
@@ -286,6 +287,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "(python: `True`; abi: `True`; platform: `True`; repaired: `True`; "
         "raw-linux: `False`; mismatches: `none`)"
     ) in summary
+    assert "matched platform tags: `manylinux_2_28_x86_64`" in summary
     assert "- Base Python tag probe attempted: `False`" in summary
     assert "- Primary sagelite requirement: `sagelite[all-needed-extras]`" in summary
     assert "- Primary sagelite requirement specifier: ``" in summary
@@ -315,6 +317,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`: compatible `True` "
         "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
     ) in summary
+    assert "matched platform tags: `any`" in summary
     assert "`sagelite-maxima-runtime`" in summary
     assert "- Contains repaired primary sagelite wheel: `True`" in summary
     assert "## Native Wheel Catalog" in summary
@@ -596,6 +599,7 @@ def test_require_repaired_sagelite_wheel_rejects_raw_wheelhouse(tmp_path):
         "(python: `True`; abi: `True`; platform: `True`; repaired: `False`; "
         "raw-linux: `True`; mismatches: `repaired`)"
     ) in summary
+    assert "matched platform tags: `linux_x86_64`" in summary
     assert "## Native Wheel Catalog" in summary
     assert "## Preflight Error" in summary
     assert "repaired sagelite wheel is required" in summary
@@ -1242,6 +1246,7 @@ def test_require_compatible_companion_sagelite_wheels_rejects_mismatch(
     assert incompatibility["python_compatible"] is False
     assert incompatibility["abi_compatible"] is False
     assert incompatibility["platform_compatible"] is True
+    assert incompatibility["matched_platform_tags"] == ["manylinux_2_28_x86_64"]
     assert incompatibility["mismatches"] == ["python", "abi"]
     assert (
         f"- `{mismatched_companion.name}` "
@@ -1256,6 +1261,7 @@ def test_require_compatible_companion_sagelite_wheels_rejects_mismatch(
         "(python: `False`; abi: `False`; platform: `True`; "
         "mismatches: `python`, `abi`)"
     ) in summary
+    assert "matched platform tags: `manylinux_2_28_x86_64`" in summary
     assert "- Companion compatibility checked wheels: `1`" in summary
     assert "- Companion compatibility passed wheels: `0`" in summary
     assert "## Preflight Error" in summary
@@ -1313,6 +1319,13 @@ def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
     assert metadata["validation_contract"][
         "incompatible_companion_sagelite_wheels"
     ] == []
+    companion_compatibility = metadata["validation_contract"][
+        "companion_sagelite_wheel_compatibility"
+    ]
+    assert companion_compatibility[0]["matched_platform_tags"] == ["any"]
+    assert companion_compatibility[1]["matched_platform_tags"] == [
+        "manylinux_2_28_x86_64"
+    ]
     summary = (
         tmp_path / "validation-20260621-072100" / "validation-summary.md"
     ).read_text(encoding="utf-8")
@@ -1551,6 +1564,7 @@ def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch
     assert primary_compatibility[0]["python_compatible"] is True
     assert primary_compatibility[0]["abi_compatible"] is True
     assert primary_compatibility[0]["platform_compatible"] is False
+    assert primary_compatibility[0]["matched_platform_tags"] == []
     assert primary_compatibility[0]["repaired_linux"] is True
     assert primary_compatibility[0]["compatible"] is False
     assert primary_compatibility[0]["mismatches"] == ["platform"]
@@ -1674,6 +1688,9 @@ def test_platform_tag_preflight_uses_base_python_probe_tags(tmp_path, monkeypatc
         "manylinux_2_17_x86_64",
         "linux_x86_64",
     ]
+    assert contract["primary_sagelite_wheel_compatibility"][0][
+        "matched_platform_tags"
+    ] == ["manylinux_2_17_x86_64"]
     assert metadata["status"] == "passed"
     assert metadata["preflight_error"] is None
     assert (
