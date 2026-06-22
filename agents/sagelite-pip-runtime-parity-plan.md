@@ -413,6 +413,13 @@ Scheduled audit on 2026-06-21:
   input set, not just the primary and companion sagelite rows. Focused local
   validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now carries each primary and companion
+  sagelite wheel's file size and SHA256 digest into the validation contract's
+  compatibility rows and renders those identities in the primary/companion
+  compatibility details. This makes the compatibility contract itself identify
+  the exact wheel files whose tags passed or failed, not just the inventory
+  section. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 

@@ -651,6 +651,8 @@ def _companion_sagelite_wheel_compatibility(
             {
                 "name": wheel.get("name"),
                 "project_name": wheel.get("project_name"),
+                "size_bytes": wheel.get("size_bytes"),
+                "sha256": wheel.get("sha256"),
                 "python_tags": python_tags,
                 "abi_tags": abi_tags,
                 "platform_tags": platform_tags,
@@ -712,6 +714,8 @@ def _primary_sagelite_wheel_compatibility(
             {
                 "name": wheel.get("name"),
                 "project_name": wheel.get("project_name"),
+                "size_bytes": wheel.get("size_bytes"),
+                "sha256": wheel.get("sha256"),
                 "python_tags": python_tags,
                 "abi_tags": abi_tags,
                 "platform_tags": platform_tags,
@@ -1572,6 +1576,8 @@ def write_validation_summary(
                 if matched_platform_tags
                 else "`none`"
             )
+            + f"; size `{item.get('size_bytes')}`; "
+            f"sha256 `{item.get('sha256')}`"
         )
     primary_requirement_satisfaction = []
     unsatisfied_primary_requirements = []
@@ -1683,6 +1689,8 @@ def write_validation_summary(
                 if matched_platform_tags
                 else "`none`"
             )
+            + f"; size `{item.get('size_bytes')}`; "
+            f"sha256 `{item.get('sha256')}`"
         )
     native_catalog = sagelite_native_wheel_catalog.catalog()
     required_meson_options = native_catalog["required_meson_options"]

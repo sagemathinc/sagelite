@@ -168,6 +168,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         {
             "name": repaired_wheel.name,
             "project_name": "sagelite",
+            "size_bytes": 0,
+            "sha256": EMPTY_FILE_SHA256,
             "python_tags": ["cp312"],
             "abi_tags": ["cp312"],
             "platform_tags": ["manylinux_2_28_x86_64"],
@@ -305,6 +307,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "raw-linux: `False`; mismatches: `none`)"
     ) in summary
     assert "matched platform tags: `manylinux_2_28_x86_64`" in summary
+    assert f"sha256 `{EMPTY_FILE_SHA256}`" in summary
     assert "- Base Python tag probe attempted: `False`" in summary
     assert "- Primary sagelite requirement: `sagelite[all-needed-extras]`" in summary
     assert "- Primary sagelite requirement specifier: ``" in summary
