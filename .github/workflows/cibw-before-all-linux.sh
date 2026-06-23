@@ -4,7 +4,7 @@ set -euxo pipefail
 
 export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
-TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages gfan singular ecl maxima lcalc eclib libbraiding libhomfly nauty symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib}"
+TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 # Some Sage package names describe system tools and cannot be built as SPKGs.
 system_spkgs=($SPKGS)
@@ -12,7 +12,7 @@ system_tool_targets=()
 native_targets=()
 for target in $TARGETS_PRE; do
   case "${target}" in
-    graphviz)
+    graphviz|dvipng|poppler)
       system_tool_targets+=("${target}")
       ;;
     *)
@@ -61,29 +61,46 @@ echo "Installing bootstrap prerequisites inside cibuildwheel container"
   exit 1
 )
 
-tool_packages=(ccache)
+tool_packages_debian=(ccache)
+tool_packages_fedora=(ccache)
+tool_packages_alpine=(ccache)
 for target in "${system_tool_targets[@]}"; do
   case "${target}" in
     graphviz)
-      tool_packages+=(graphviz)
+      tool_packages_debian+=(graphviz)
+      tool_packages_fedora+=(graphviz)
+      tool_packages_alpine+=(graphviz)
+      ;;
+    dvipng)
+      tool_packages_debian+=(dvipng)
+      tool_packages_fedora+=(texlive-dvipng)
+      tool_packages_alpine+=(texlive-dvipng)
+      ;;
+    poppler)
+      tool_packages_debian+=(poppler-utils)
+      tool_packages_fedora+=(poppler-utils)
+      tool_packages_alpine+=(poppler-utils)
       ;;
   esac
 done
 
-echo "Installing build tool packages inside cibuildwheel container: ${tool_packages[*]}"
 if command -v apt-get >/dev/null 2>&1; then
+  echo "Installing build tool packages inside cibuildwheel container: ${tool_packages_debian[*]}"
   env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH apt-get update
   env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${tool_packages[@]}"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${tool_packages_debian[@]}"
 elif command -v dnf >/dev/null 2>&1; then
+  echo "Installing build tool packages inside cibuildwheel container: ${tool_packages_fedora[*]}"
   env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
-    dnf install -y --setopt=install_weak_deps=False "${tool_packages[@]}"
+    dnf install -y --setopt=install_weak_deps=False "${tool_packages_fedora[@]}"
 elif command -v yum >/dev/null 2>&1; then
+  echo "Installing build tool packages inside cibuildwheel container: ${tool_packages_fedora[*]}"
   env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
-    yum install -y "${tool_packages[@]}"
+    yum install -y "${tool_packages_fedora[@]}"
 elif command -v apk >/dev/null 2>&1; then
+  echo "Installing build tool packages inside cibuildwheel container: ${tool_packages_alpine[*]}"
   env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
-    apk add --no-cache "${tool_packages[@]}"
+    apk add --no-cache "${tool_packages_alpine[@]}"
 else
   echo "No known package manager available for installing build tool packages" >&2
   exit 1

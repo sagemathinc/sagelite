@@ -4010,12 +4010,55 @@ def test_gfan_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
-def test_gfan_runtime_is_staged_for_linux_release_wheels():
+def _linux_before_all_default_targets() -> set[str]:
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
-    release = (ROOT / ".github/workflows/release.yml").read_text()
+    marker = 'TARGETS_PRE="${TARGETS_PRE:-'
+    return set(before_all.split(marker, 1)[1].split('}"', 1)[0].split())
 
-    assert " gap gap_packages gfan singular " in before_all
-    assert " gap gap_packages gap3 gfan singular " in release
+
+def _linux_release_targets() -> set[str]:
+    release = (ROOT / ".github/workflows/release.yml").read_text()
+    for line in release.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("TARGETS_PRE: "):
+            return set(stripped.split("TARGETS_PRE: ", 1)[1].split())
+    raise AssertionError("release TARGETS_PRE not found")
+
+
+def test_runtime_companion_targets_are_staged_for_linux_release_wheels():
+    required_targets = {
+        "benzene",
+        "buckygen",
+        "csdp",
+        "dvipng",
+        "fplll",
+        "gfan",
+        "latte_int",
+        "lie",
+        "lrslib",
+        "msolve",
+        "pdf2svg",
+        "plantri",
+        "poppler",
+        "sympow",
+        "tachyon",
+        "tides",
+        "topcom",
+    }
+
+    assert required_targets <= _linux_before_all_default_targets()
+    assert required_targets <= _linux_release_targets()
+
+
+def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    assert "graphviz|dvipng|poppler)" in before_all
+    assert "tool_packages_fedora+=(texlive-dvipng)" in before_all
+    assert "tool_packages_fedora+=(poppler-utils)" in before_all
+    assert "[ -x /usr/bin/dvipng ]" in repair
+    assert "[ -x /usr/bin/pdftocairo ]" in repair
 
 
 def test_nauty_runtime_is_exposed_by_sagelite_extras():

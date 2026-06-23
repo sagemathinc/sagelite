@@ -440,8 +440,11 @@ build_dvipng_runtime_companion() {
   esac
 
   local dvipng_bindir="$prefix/bin"
+  if [ ! -x "$dvipng_bindir/dvipng" ] && [ -x /usr/bin/dvipng ]; then
+    dvipng_bindir="/usr/bin"
+  fi
   if [ ! -x "$dvipng_bindir/dvipng" ]; then
-    echo "dvipng executable not found under $dvipng_bindir; searched prefix contents:" >&2
+    echo "dvipng executable not found under $prefix/bin or /usr/bin; searched prefix contents:" >&2
     find "$prefix" -maxdepth 4 -name dvipng -print >&2 || true
     exit 1
   fi
