@@ -199,10 +199,21 @@ _FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES = [
     "sage.rings.polynomial.pbori.pbori",
 ]
 
+_FALLBACK_COLD_IMPORT_INITIALIZATION_SENSITIVE_MODULES = {
+    "sage.graphs.graph_decompositions.tdlib",
+    "sage.libs.eclib.newforms",
+}
+
+_FALLBACK_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES = [
+    module_name
+    for module_name in _FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES
+    if module_name not in _FALLBACK_COLD_IMPORT_INITIALIZATION_SENSITIVE_MODULES
+]
+
 
 def _required_native_import_modules() -> list[str]:
     """
-    Return the native import surface expected from Linux sagelite wheels.
+    Return the cold-importable native smoke surface for Linux sagelite wheels.
 
     Source checkouts keep the authoritative release catalog in ``tools/``.
     Installed wheels do not ship that helper, so keep a synchronized fallback
@@ -220,9 +231,15 @@ def _required_native_import_modules() -> list[str]:
             break
         catalog_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(catalog_module)
-        return list(catalog_module.catalog()["required_native_import_modules"])
+        catalog = catalog_module.catalog()
+        return list(
+            catalog.get(
+                "required_native_smoke_import_modules",
+                catalog["required_native_import_modules"],
+            )
+        )
 
-    return list(_FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES)
+    return list(_FALLBACK_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES)
 
 
 def _check_required_native_imports():

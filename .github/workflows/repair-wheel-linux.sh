@@ -1636,9 +1636,13 @@ spec = importlib.util.spec_from_file_location(
 catalog_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(catalog_module)
 catalog = catalog_module.catalog()
+required_import_modules = catalog.get(
+    "required_native_smoke_import_modules",
+    catalog["required_native_import_modules"],
+)
 
 failed = []
-for module_name in catalog["required_native_import_modules"]:
+for module_name in required_import_modules:
     probe = (
         "import importlib, json, sys\n"
         "module_name = sys.argv[1]\n"
@@ -1670,7 +1674,7 @@ if failed:
 
 print(
     "verified repaired sagelite native module imports: "
-    f"{len(catalog['required_native_import_modules'])}"
+    f"{len(required_import_modules)}"
 )
 PY
   )

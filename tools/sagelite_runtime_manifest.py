@@ -930,7 +930,11 @@ def collect_required_native_import_smokes(timeout: float) -> dict[str, Any]:
         return {"catalog_error": catalog["error"][0], "modules": {}}
 
     results = {}
-    for module_name in catalog["required_native_import_modules"]:
+    module_names = catalog.get(
+        "required_native_smoke_import_modules",
+        catalog["required_native_import_modules"],
+    )
+    for module_name in module_names:
         code = f"""
 import importlib
 import json

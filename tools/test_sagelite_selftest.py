@@ -384,6 +384,9 @@ def test_selftest_native_import_fallback_matches_catalog():
     selftest = _load_selftest()
     catalog = _load_native_catalog()
 
+    assert selftest._FALLBACK_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES == (
+        catalog.REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
+    )
     assert selftest._FALLBACK_REQUIRED_NATIVE_IMPORT_MODULES == (
         catalog.REQUIRED_NATIVE_IMPORT_MODULES
     )

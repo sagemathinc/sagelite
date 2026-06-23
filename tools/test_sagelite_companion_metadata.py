@@ -38,6 +38,9 @@ def test_native_wheel_catalog_exports_stable_json(capsys):
         "required_native_extension_prefixes": RELEASE_REQUIRED_NATIVE_EXTENSION_PREFIXES,
         "required_native_library_prefixes": RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES,
         "required_native_import_modules": RELEASE_REQUIRED_NATIVE_IMPORT_MODULES,
+        "required_native_smoke_import_modules": (
+            RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
+        ),
     }
     assert "coxeter3" in payload["required_meson_options"]
     assert "sage/libs/coxeter3/coxeter." in (
@@ -48,6 +51,15 @@ def test_native_wheel_catalog_exports_stable_json(capsys):
     assert "libntl" in payload["required_native_library_prefixes"]
     assert "sage.libs.coxeter3.coxeter" in payload["required_native_import_modules"]
     assert "sage.libs.ntl.error" in payload["required_native_import_modules"]
+    assert "sage.libs.coxeter3.coxeter" in (
+        payload["required_native_smoke_import_modules"]
+    )
+    assert "sage.graphs.graph_decompositions.tdlib" in (
+        payload["required_native_import_modules"]
+    )
+    assert "sage.graphs.graph_decompositions.tdlib" not in (
+        payload["required_native_smoke_import_modules"]
+    )
 
 
 RUNTIME_PACKAGE_DATA = {
@@ -676,6 +688,9 @@ RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES = (
 )
 RELEASE_REQUIRED_NATIVE_IMPORT_MODULES = (
     NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_IMPORT_MODULES
+)
+RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES = (
+    NATIVE_WHEEL_CATALOG.REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
 )
 
 
@@ -3722,7 +3737,7 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "libntl" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
     assert "libplanarity" in RELEASE_REQUIRED_NATIVE_LIBRARY_PREFIXES
 
-    assert 'catalog["required_native_import_modules"]' in repair_text
+    assert "required_native_smoke_import_modules" in repair_text
     assert "expected repaired sagelite native modules to import" in repair_text
     assert "--target \"$repaired_site\"" in repair_text
     assert "sage.libs.coxeter3.coxeter" in RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
@@ -3735,6 +3750,11 @@ def test_linux_repair_validates_required_optional_native_extensions():
     assert "sage.rings.polynomial.pbori.pbori" in (
         RELEASE_REQUIRED_NATIVE_IMPORT_MODULES
     )
+    assert "sage.libs.coxeter3.coxeter" in RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
+    assert "sage.graphs.graph_decompositions.tdlib" not in (
+        RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
+    )
+    assert "sage.libs.eclib.newforms" not in RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES
 
 
 def test_staged_wheel_index_validation_collects_runtime_summary_by_default():

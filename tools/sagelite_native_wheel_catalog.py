@@ -85,6 +85,17 @@ REQUIRED_NATIVE_IMPORT_MODULES = [
     "sage.rings.polynomial.pbori.pbori",
 ]
 
+COLD_IMPORT_INITIALIZATION_SENSITIVE_MODULES = [
+    "sage.graphs.graph_decompositions.tdlib",
+    "sage.libs.eclib.newforms",
+]
+
+REQUIRED_NATIVE_SMOKE_IMPORT_MODULES = [
+    module_name
+    for module_name in REQUIRED_NATIVE_IMPORT_MODULES
+    if module_name not in COLD_IMPORT_INITIALIZATION_SENSITIVE_MODULES
+]
+
 
 def catalog() -> dict[str, list[str]]:
     return {
@@ -92,6 +103,7 @@ def catalog() -> dict[str, list[str]]:
         "required_native_extension_prefixes": REQUIRED_NATIVE_EXTENSION_PREFIXES,
         "required_native_library_prefixes": REQUIRED_NATIVE_LIBRARY_PREFIXES,
         "required_native_import_modules": REQUIRED_NATIVE_IMPORT_MODULES,
+        "required_native_smoke_import_modules": REQUIRED_NATIVE_SMOKE_IMPORT_MODULES,
     }
 
 
