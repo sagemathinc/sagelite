@@ -52,8 +52,13 @@ download_gzip() {
   local url="$1"
   local output="$2"
   local tmp_output="$output.tmp"
+  local curl_bin="/usr/bin/curl"
+  if [ ! -x "$curl_bin" ]; then
+    curl_bin="curl"
+  fi
   rm -f "$tmp_output" "$output"
-  curl --fail --location --retry 5 --retry-delay 5 \
+  echo "Downloading gzip payload with $curl_bin: $url"
+  "$curl_bin" --fail --location --retry 5 --retry-delay 5 \
     --user-agent "sagelite-ci/1.0 (+https://github.com/sagemathinc/sagelite)" \
     --header "Accept: application/gzip, application/octet-stream, */*" \
     --output "$tmp_output" "$url"
