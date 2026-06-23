@@ -4064,10 +4064,12 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 
-    assert "graphviz|dvipng|poppler)" in before_all
+    assert "graphviz|dvipng|pdf2svg|poppler)" in before_all
     assert "tool_packages_fedora+=(texlive-dvipng)" in before_all
+    assert "tool_packages_fedora+=(pdf2svg)" in before_all
     assert "tool_packages_fedora+=(poppler-utils)" in before_all
     assert "[ -x /usr/bin/dvipng ]" in repair
+    assert "[ -x /usr/bin/pdf2svg ]" in repair
     assert "[ -x /usr/bin/pdftocairo ]" in repair
 
 

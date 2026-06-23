@@ -12,7 +12,7 @@ system_tool_targets=()
 native_targets=()
 for target in $TARGETS_PRE; do
   case "${target}" in
-    graphviz|dvipng|poppler)
+    graphviz|dvipng|pdf2svg|poppler)
       system_tool_targets+=("${target}")
       ;;
     *)
@@ -75,6 +75,11 @@ for target in "${system_tool_targets[@]}"; do
       tool_packages_debian+=(dvipng)
       tool_packages_fedora+=(texlive-dvipng)
       tool_packages_alpine+=(texlive-dvipng)
+      ;;
+    pdf2svg)
+      tool_packages_debian+=(pdf2svg)
+      tool_packages_fedora+=(pdf2svg)
+      tool_packages_alpine+=(pdf2svg)
       ;;
     poppler)
       tool_packages_debian+=(poppler-utils)

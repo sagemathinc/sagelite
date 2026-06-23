@@ -1012,8 +1012,11 @@ build_pdf2svg_runtime_companion() {
   esac
 
   local pdf2svg_bindir="$prefix/bin"
+  if [ ! -x "$pdf2svg_bindir/pdf2svg" ] && [ -x /usr/bin/pdf2svg ]; then
+    pdf2svg_bindir="/usr/bin"
+  fi
   if [ ! -x "$pdf2svg_bindir/pdf2svg" ]; then
-    echo "pdf2svg executable not found under $pdf2svg_bindir; searched prefix contents:" >&2
+    echo "pdf2svg executable not found under $prefix/bin or /usr/bin; searched prefix contents:" >&2
     find "$prefix" -maxdepth 4 -name pdf2svg -print >&2 || true
     exit 1
   fi
