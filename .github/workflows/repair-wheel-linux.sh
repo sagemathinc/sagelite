@@ -57,8 +57,8 @@ download_gzip() {
     curl_bin="curl"
   fi
   rm -f "$tmp_output" "$output"
-  echo "Downloading gzip payload with $curl_bin: $url"
-  "$curl_bin" --fail --location --retry 5 --retry-delay 5 \
+  echo "Downloading gzip payload with $curl_bin and system libraries: $url"
+  env -u LD_LIBRARY_PATH "$curl_bin" --fail --location --retry 5 --retry-delay 5 \
     --user-agent "sagelite-ci/1.0 (+https://github.com/sagemathinc/sagelite)" \
     --header "Accept: application/gzip, application/octet-stream, */*" \
     --output "$tmp_output" "$url"
