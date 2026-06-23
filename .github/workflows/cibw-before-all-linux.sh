@@ -145,6 +145,24 @@ if [ -x "${sage_prefix}/bin/python3" ] && ! "${sage_prefix}/bin/python3" -m pip 
   rm -f "${sage_prefix}"/var/lib/sage/installed/pip-*
 fi
 
+if [ -x "${sage_prefix}/bin/python3" ]; then
+  while IFS=: read -r spkg module; do
+    if ! "${sage_prefix}/bin/python3" -c "import ${module}" >/dev/null 2>&1; then
+      echo "Removing stale ${spkg} install markers from ${sage_prefix}"
+      rm -f "${sage_prefix}"/var/lib/sage/installed/"${spkg}"-*
+    fi
+  done <<'EOF'
+flit_core:flit_core
+meson:mesonbuild
+meson_python:mesonpy
+ninja_build:ninja
+pyproject_metadata:pyproject_metadata
+python_build:build
+setuptools:setuptools
+wheel:wheel
+EOF
+fi
+
 # Python SPKG builds in TARGETS_PRE inherit PIP_CONSTRAINT from CIBW_ENVIRONMENT.
 # Prepare the constraints file before make starts so build isolation can use it.
 printf 'sage_setup @ file://%s/pkgs/sage-setup\n' "$(pwd)" > constraints.txt
