@@ -3714,6 +3714,10 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
     assert 'sagelite_ecl_library="$tmpdir/$ecl_soname"' in repair_text
     assert "with zipfile.ZipFile(wheel_path) as wheel:" in repair_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text
+    assert "'*/share/maxima*/*/src'" not in repair_text
+    assert "'*/share/maxima/*/src/maxima-package.lisp'" in repair_text
+    assert "'*/share/maxima-sage/*/src/maxima-package.lisp'" in repair_text
+    assert "sed 's#/src/maxima-package\\.lisp$##'" in repair_text
 
 
 def test_linux_repair_validates_required_optional_native_extensions():

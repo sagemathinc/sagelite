@@ -1186,8 +1186,11 @@ build_maxima_runtime_companion() {
 
   local maxima_prefix
   maxima_prefix="$(
-    find "$prefix" -path '*/share/maxima*/*/src' -type d -print |
-      sed 's#/src$##' |
+    find "$prefix" \
+      \( -path '*/share/maxima/*/src/maxima-package.lisp' \
+         -o -path '*/share/maxima-sage/*/src/maxima-package.lisp' \) \
+      -type f -print |
+      sed 's#/src/maxima-package\.lisp$##' |
       sort -V |
       tail -1
   )"
@@ -1205,7 +1208,7 @@ build_maxima_runtime_companion() {
      [ -z "$maxima_ecldir" ]; then
     echo "Maxima runtime not found under $prefix; searched prefix contents:" >&2
     find "$prefix" -maxdepth 6 \
-      \( -name maxima.fas -o -path '*/share/maxima*/*/src' \
+      \( -name maxima.fas -o -name maxima-package.lisp \
          -o -path '*/binary-ecl/maxima' -o -name 'ecl-*' \) \
       -print >&2 || true
     exit 1
