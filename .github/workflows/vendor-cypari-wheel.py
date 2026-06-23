@@ -6,6 +6,7 @@ import argparse
 import base64
 import csv
 import hashlib
+import re
 import shutil
 import sys
 import tempfile
@@ -57,26 +58,51 @@ def reject_private_pari_runtime(src_root: Path) -> None:
         )
 
 
+_PARI_LIBRARY_RE = re.compile(rb"libpari[^\0/\s]*\.so(?:[^\0/\s]*)?")
+_SAGE_PARI_SONAME_PREFIXES = ("libpari-gmp-tls.so", "libpari-gmp.so", "libpari.so")
+
+
+def is_private_pari_soname(name: str) -> bool:
+    """Return whether a PARI soname looks like an auditwheel-private copy."""
+    return name.startswith("libpari-") and not name.startswith(
+        _SAGE_PARI_SONAME_PREFIXES
+    )
+
+
+def private_pari_sonames_in_extension(extension: Path) -> list[str]:
+    try:
+        payload = extension.read_bytes()
+    except OSError:
+        return []
+
+    names = {
+        match.group(0).decode("ascii", errors="ignore")
+        for match in _PARI_LIBRARY_RE.finditer(payload)
+    }
+    return sorted(name for name in names if is_private_pari_soname(name))
+
+
 def reject_private_pari_extension_dependencies(src_root: Path) -> None:
     """
     Reject cypari2 extension modules that still name an auditwheel-private PARI.
 
-    Source-built cypari2 should link to the ordinary ``libpari.so`` from the
-    Sage prefix.  Prebuilt wheels often depend on a hashed ``libpari-*.so``;
-    copying such an extension into sagelite can later load a second PARI
-    runtime even if the companion ``cypari2.libs`` directory was pruned.
+    Source-built cypari2 should link to Sage's normal PARI sonames, for
+    example ``libpari-gmp-tls.so``.  Prebuilt wheels often depend on a hashed
+    ``libpari-*.so``; copying such an extension into sagelite can later load a
+    second PARI runtime even if the companion ``cypari2.libs`` directory was
+    pruned.
     """
-    offenders = []
+    offenders: list[tuple[Path, list[str]]] = []
     for extension in sorted((src_root / "cypari2").glob("*.so")):
-        try:
-            payload = extension.read_bytes()
-        except OSError:
-            continue
-        if b"libpari-" in payload:
-            offenders.append(extension)
+        private_sonames = private_pari_sonames_in_extension(extension)
+        if private_sonames:
+            offenders.append((extension, private_sonames))
 
     if offenders:
-        joined = "\n".join(str(path) for path in offenders)
+        joined = "\n".join(
+            f"{path}: {', '.join(private_sonames)}"
+            for path, private_sonames in offenders
+        )
         raise SystemExit(
             "refusing to vendor cypari2 extension modules that still depend "
             "on an auditwheel-private PARI runtime. Build cypari2 from source "
