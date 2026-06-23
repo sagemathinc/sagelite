@@ -68,8 +68,10 @@ else
   cp config.status prefix/
 fi
 
-MAKE="make -j6" make V=0 ${TARGETS_PRE}
-
+# Python SPKG builds in TARGETS_PRE inherit PIP_CONSTRAINT from CIBW_ENVIRONMENT.
+# Prepare the constraints file before make starts so build isolation can use it.
 printf 'sage_setup @ file://%s/pkgs/sage-setup\n' "$(pwd)" > constraints.txt
 echo "Prepared constraints.txt:"
 cat constraints.txt
+
+MAKE="make -j6" make V=0 ${TARGETS_PRE}
