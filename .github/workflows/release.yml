@@ -613,7 +613,7 @@ jobs:
       # SPKGs to install as system packages
       SPKGS: _bootstrap _prereq
       # Non-Python Sage packages and system tools to stage before wheel builds
-      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler flatter sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides
+      TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima fricas jmol kenzo lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler flatter imagemagick sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides
       # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
       # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.

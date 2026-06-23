@@ -12,6 +12,59 @@ dest_dir="$2"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
+build_companion_wheel() {
+  local package="$1"
+  shift
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/$package"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  env -u PIP_CONSTRAINT "$@" "$python_bin" -m build \
+    --wheel \
+    --no-isolation \
+    --outdir "$output_dir" \
+    "$companion_dir"
+  ls -lh "$output_dir"
+}
+
+download_sage_spkg() {
+  local package="$1"
+  local tarball
+  tarball="$(
+    env -u PIP_CONSTRAINT PYTHONPATH=build build/bin/sage-package download "$package" |
+      tail -n 1
+  )"
+  if [ -z "$tarball" ] || [ ! -f "$tarball" ]; then
+    echo "Sage package download did not produce a tarball for $package: $tarball" >&2
+    exit 1
+  fi
+  printf '%s\n' "$tarball"
+}
+
+download_gzip() {
+  local url="$1"
+  local output="$2"
+  local tmp_output="$output.tmp"
+  rm -f "$tmp_output" "$output"
+  curl --fail --location --retry 5 --retry-all-errors --retry-delay 5 \
+    --user-agent "sagelite-ci/1.0 (+https://github.com/sagemathinc/sagelite)" \
+    --header "Accept: application/gzip, application/octet-stream, */*" \
+    --output "$tmp_output" "$url"
+  if ! gzip -t "$tmp_output"; then
+    echo "Downloaded gzip payload is invalid: $url" >&2
+    head -c 512 "$tmp_output" >&2 || true
+    exit 1
+  fi
+  mv "$tmp_output" "$output"
+}
+
 build_gap_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1178,6 +1231,200 @@ build_tides_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_ecl_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local ecl_dir
+  ecl_dir="$(
+    find "$prefix/lib" -maxdepth 1 -type d -name 'ecl-*' -print |
+      sort -V |
+      tail -1
+  )"
+  if [ ! -x "$prefix/bin/ecl" ] ||
+     [ ! -x "$prefix/bin/ecl-config" ] ||
+     [ ! -f "$prefix/include/ecl/ecl.h" ] ||
+     [ -z "$ecl_dir" ]; then
+    echo "ECL runtime not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \
+      \( -name ecl -o -name ecl-config -o -name ecl.h -o -name 'ecl-*' \) \
+      -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-ecl-runtime \
+    "SAGELITE_ECL_PREFIX=$prefix" \
+    "SAGELITE_ECL_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
+}
+
+build_fricas_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  if [ ! -x "$prefix/bin/fricas" ] ||
+     [ ! -d "$prefix/lib/fricas" ]; then
+    echo "FriCAS runtime not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 \( -name fricas -o -path '*/lib/fricas' \) -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-fricas-runtime \
+    "SAGELITE_FRICAS_PREFIX=$prefix" \
+    "SAGELITE_FRICAS_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
+}
+
+build_imagemagick_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local imagemagick_bindir=""
+  local candidate
+  for candidate in "$prefix/bin" /usr/bin /usr/local/bin; do
+    if [ -x "$candidate/magick" ] || [ -x "$candidate/convert" ]; then
+      imagemagick_bindir="$candidate"
+      break
+    fi
+  done
+  if [ -z "$imagemagick_bindir" ]; then
+    echo "ImageMagick executable not found under $prefix/bin, /usr/bin, or /usr/local/bin" >&2
+    find "$prefix" -maxdepth 4 \( -name magick -o -name convert \) -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-imagemagick-runtime \
+    "SAGELITE_IMAGEMAGICK_BINDIR=$imagemagick_bindir" \
+    "SAGELITE_IMAGEMAGICK_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
+}
+
+build_jmol_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local jmol_dir="$prefix/share/jmol"
+  if { [ ! -f "$jmol_dir/Jmol.jar" ] || [ ! -f "$jmol_dir/JmolData.jar" ]; } &&
+     { [ ! -f "$jmol_dir/src/Jmol.jar" ] || [ ! -f "$jmol_dir/src/JmolData.jar" ]; }; then
+    echo "Jmol runtime jars not found under $jmol_dir; searched prefix contents:" >&2
+    find "$prefix/share" -maxdepth 5 \( -name Jmol.jar -o -name JmolData.jar \) -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-jmol-runtime \
+    "SAGELITE_JMOL_DIR=$jmol_dir"
+}
+
+build_kenzo_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local kenzo_fas="$prefix/lib/ecl/kenzo.fas"
+  if [ ! -f "$kenzo_fas" ]; then
+    echo "Kenzo ECL image not found under $kenzo_fas; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 -name kenzo.fas -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-kenzo-runtime \
+    "SAGELITE_KENZO_FAS=$kenzo_fas" \
+    "SAGELITE_KENZO_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
+}
+
+build_database_cremona_ellcurve_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir cremona_db
+  tarball="$(download_sage_spkg database_cremona_ellcurve)"
+  extract_dir="$tmpdir/cremona-ellcurve"
+  rm -rf "$extract_dir"
+  mkdir -p "$extract_dir"
+  tar -xf "$tarball" -C "$extract_dir"
+  cremona_db="$(find "$extract_dir" -type f -name cremona.db -print -quit)"
+  if [ -z "$cremona_db" ] || [ ! -f "$cremona_db" ]; then
+    echo "Cremona elliptic-curve database not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 4 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-database-cremona-ellcurve \
+    "SAGELITE_CREMONA_ELLCURVE_DB=$cremona_db"
+}
+
+build_database_polytopes_4d_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg polytopes_db_4d)"
+
+  build_companion_wheel \
+    sagelite-database-polytopes-4d \
+    "SAGELITE_POLYTOPES_4D_SPKG=$tarball"
+}
+
+build_database_sloane_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local sloane_dir="$tmpdir/sloane"
+  mkdir -p "$sloane_dir"
+  download_gzip https://oeis.org/stripped.gz "$sloane_dir/stripped.gz"
+  download_gzip https://oeis.org/names.gz "$sloane_dir/names.gz"
+
+  build_companion_wheel \
+    sagelite-database-sloane \
+    "SAGELITE_SLOANE_STRIPPED_GZ=$sloane_dir/stripped.gz" \
+    "SAGELITE_SLOANE_NAMES_GZ=$sloane_dir/names.gz"
+}
+
+build_database_stein_watkins_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir stein_watkins_dir
+  tarball="$(download_sage_spkg database_stein_watkins)"
+  extract_dir="$tmpdir/stein-watkins"
+  rm -rf "$extract_dir"
+  mkdir -p "$extract_dir"
+  tar -xf "$tarball" -C "$extract_dir"
+  stein_watkins_dir="$(
+    find "$extract_dir" -type f -name '*.bz2' -print -quit |
+      sed 's#/[^/]*$##'
+  )"
+  if [ -z "$stein_watkins_dir" ] || [ ! -d "$stein_watkins_dir" ]; then
+    echo "Stein-Watkins database directory not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 4 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-database-stein-watkins \
+    "SAGELITE_STEIN_WATKINS_DIR=$stein_watkins_dir"
+}
+
 build_maxima_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1806,6 +2053,15 @@ build_poppler_runtime_companion
 build_qepcad_runtime_companion
 build_tachyon_runtime_companion
 build_tides_runtime_companion
+build_ecl_runtime_companion
+build_fricas_runtime_companion
+build_imagemagick_runtime_companion
+build_jmol_runtime_companion
+build_kenzo_runtime_companion
+build_database_cremona_ellcurve_companion
+build_database_polytopes_4d_companion
+build_database_sloane_companion
+build_database_stein_watkins_companion
 build_maxima_runtime_companion
 build_meataxe_runtime_companion
 build_nauty_runtime_companion

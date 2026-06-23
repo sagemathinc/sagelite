@@ -3824,13 +3824,20 @@ def test_all_needed_extras_match_installed_validation_plan():
     validation_requirements = set(extras["all-needed-extras"])
 
     assert "sagelite-maxima-runtime >=10.9.post13,<10.10" in validation_requirements
+    assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in validation_requirements
+    assert "sagelite-database-polytopes-4d >=10.9,<10.10" in validation_requirements
+    assert "sagelite-database-sloane >=10.9,<10.10" in validation_requirements
+    assert "sagelite-database-stein-watkins >=10.9,<10.10" in validation_requirements
+    assert "sagelite-ecl-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
+    assert "sagelite-imagemagick-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
-    assert "sagelite-database-stein-watkins >=10.9,<10.10" in validation_requirements
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():
@@ -4045,9 +4052,14 @@ def test_runtime_companion_targets_are_staged_for_linux_release_wheels():
         "buckygen",
         "csdp",
         "dvipng",
+        "ecl",
         "flatter",
         "fplll",
+        "fricas",
         "gfan",
+        "imagemagick",
+        "jmol",
+        "kenzo",
         "latte_int",
         "lie",
         "lrslib",
@@ -4069,9 +4081,11 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 
-    assert "graphviz|dvipng|flatter|pdf2svg|poppler)" in before_all
+    assert "graphviz|dvipng|flatter|imagemagick|pdf2svg|poppler)" in before_all
+    assert "tool_packages_debian=(ccache curl)" in before_all
     assert "tool_packages_fedora+=(texlive-dvipng)" in before_all
     assert "tool_packages_fedora+=(eigen3-devel)" in before_all
+    assert "tool_packages_fedora+=(ImageMagick)" in before_all
     assert "tool_packages_fedora+=(git gcc pkgconf-pkg-config poppler-glib-devel cairo-devel glib2-devel)" in before_all
     assert "tool_packages_fedora+=(poppler-utils)" in before_all
     assert "git clone https://github.com/dawbarton/pdf2svg.git" in before_all
@@ -4080,6 +4094,39 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     assert "[ -x /usr/bin/dvipng ]" in repair
     assert "[ -x /usr/bin/pdf2svg ]" in repair
     assert "[ -x /usr/bin/pdftocairo ]" in repair
+    assert '[ -x "$candidate/magick" ] || [ -x "$candidate/convert" ]' in repair
+
+
+def test_linux_repair_builds_all_needed_extra_companion_wheels():
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    required_calls = [
+        "build_database_cremona_ellcurve_companion",
+        "build_database_polytopes_4d_companion",
+        "build_database_sloane_companion",
+        "build_database_stein_watkins_companion",
+        "build_ecl_runtime_companion",
+        "build_fricas_runtime_companion",
+        "build_imagemagick_runtime_companion",
+        "build_jmol_runtime_companion",
+        "build_kenzo_runtime_companion",
+    ]
+    for call in required_calls:
+        assert f"\n{call}\n" in repair
+
+    assert (
+        repair.index("\nbuild_ecl_runtime_companion\n")
+        < repair.index("\nbuild_maxima_runtime_companion\n")
+    )
+    assert "download_sage_spkg database_cremona_ellcurve" in repair
+    assert "download_sage_spkg polytopes_db_4d" in repair
+    assert "download_sage_spkg database_stein_watkins" in repair
+    assert "https://oeis.org/stripped.gz" in repair
+    assert "https://oeis.org/names.gz" in repair
+    assert "SAGELITE_ECL_PREFIX=$prefix" in repair
+    assert "SAGELITE_FRICAS_PREFIX=$prefix" in repair
+    assert "SAGELITE_JMOL_DIR=$jmol_dir" in repair
+    assert "SAGELITE_KENZO_FAS=$kenzo_fas" in repair
 
 
 def test_nauty_runtime_is_exposed_by_sagelite_extras():
