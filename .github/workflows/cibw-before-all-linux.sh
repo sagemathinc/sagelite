@@ -8,11 +8,12 @@ TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 # Some Sage package names describe system tools and cannot be built as SPKGs.
 system_spkgs=($SPKGS)
+system_tool_targets=()
 native_targets=()
 for target in $TARGETS_PRE; do
   case "${target}" in
     graphviz)
-      system_spkgs+=("${target}")
+      system_tool_targets+=("${target}")
       ;;
     *)
       native_targets+=("${target}")
@@ -20,6 +21,7 @@ for target in $TARGETS_PRE; do
   esac
 done
 echo "System-package SPKGs: ${system_spkgs[*]}"
+echo "System tool targets: ${system_tool_targets[*]:-(none)}"
 echo "Native Sage targets: ${native_targets[*]}"
 sage_python_version="$("${SAGE_PYTHON}" - <<'PY'
 import sysconfig
@@ -58,18 +60,27 @@ echo "Installing bootstrap prerequisites inside cibuildwheel container"
   exit 1
 )
 
-echo "Installing ccache inside cibuildwheel container"
+tool_packages=(ccache)
+for target in "${system_tool_targets[@]}"; do
+  case "${target}" in
+    graphviz)
+      tool_packages+=(graphviz)
+      ;;
+  esac
+done
+
+echo "Installing build tool packages inside cibuildwheel container: ${tool_packages[*]}"
 if command -v apt-get >/dev/null 2>&1; then
   apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y ccache
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${tool_packages[@]}"
 elif command -v dnf >/dev/null 2>&1; then
-  dnf install -y ccache
+  dnf install -y --setopt=install_weak_deps=False "${tool_packages[@]}"
 elif command -v yum >/dev/null 2>&1; then
-  yum install -y ccache
+  yum install -y "${tool_packages[@]}"
 elif command -v apk >/dev/null 2>&1; then
-  apk add --no-cache ccache
+  apk add --no-cache "${tool_packages[@]}"
 else
-  echo "No known package manager available for installing ccache" >&2
+  echo "No known package manager available for installing build tool packages" >&2
   exit 1
 fi
 
