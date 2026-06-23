@@ -174,6 +174,17 @@ pyproject_metadata:pyproject_metadata
 python_build:build
 setuptools:setuptools
 wheel:wheel
+cypari:cypari2
+cysignals:cysignals
+cython:Cython
+gmpy2:gmpy2
+jupyter_core:jupyter_core
+memory_allocator:memory_allocator
+numpy:numpy
+pkgconfig:pkgconfig
+pplpy:ppl
+requests:requests
+typing_extensions:typing_extensions
 EOF
 fi
 
