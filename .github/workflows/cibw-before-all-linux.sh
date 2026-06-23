@@ -148,7 +148,7 @@ fi
 python_module_available() {
   (
     cd /
-    env -u PYTHONPATH "${sage_prefix}/bin/python3" - "$1" <<'PY'
+    PYTHONPATH="${sage_site_packages}" "${sage_prefix}/bin/python3" - "$1" <<'PY'
 import importlib.util
 import sys
 
