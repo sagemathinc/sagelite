@@ -572,11 +572,17 @@ build_graphviz_runtime_companion() {
     *) return 0 ;;
   esac
 
-  local graphviz_bindir="$prefix/bin"
-  if [ ! -x "$graphviz_bindir/dot" ] ||
-     [ ! -x "$graphviz_bindir/neato" ] ||
-     [ ! -x "$graphviz_bindir/twopi" ]; then
-    echo "Skipping Graphviz runtime companion; Graphviz executables not found under $graphviz_bindir" >&2
+  local graphviz_bindir=""
+  for candidate in "$prefix/bin" /usr/bin /usr/local/bin; do
+    if [ -x "$candidate/dot" ] &&
+       [ -x "$candidate/neato" ] &&
+       [ -x "$candidate/twopi" ]; then
+      graphviz_bindir="$candidate"
+      break
+    fi
+  done
+  if [ -z "$graphviz_bindir" ]; then
+    echo "Skipping Graphviz runtime companion; Graphviz executables not found under $prefix/bin, /usr/bin, or /usr/local/bin" >&2
     return 0
   fi
 

@@ -6,6 +6,21 @@ export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
 TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
+# Some Sage package names describe system tools and cannot be built as SPKGs.
+system_spkgs=($SPKGS)
+native_targets=()
+for target in $TARGETS_PRE; do
+  case "${target}" in
+    graphviz)
+      system_spkgs+=("${target}")
+      ;;
+    *)
+      native_targets+=("${target}")
+      ;;
+  esac
+done
+echo "System-package SPKGs: ${system_spkgs[*]}"
+echo "Native Sage targets: ${native_targets[*]}"
 sage_python_version="$("${SAGE_PYTHON}" - <<'PY'
 import sysconfig
 
@@ -33,11 +48,11 @@ export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
-  $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian $SPKGS))
+  $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian "${system_spkgs[@]}"))
 ) || (
-  $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora $SPKGS | sed s/pkg-config/pkgconfig/))
+  $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora "${system_spkgs[@]}" | sed s/pkg-config/pkgconfig/))
 ) || (
-  $(sage-print-system-package-command alpine --yes --no-install-recommends install $(sage-get-system-packages alpine $SPKGS))
+  $(sage-print-system-package-command alpine --yes --no-install-recommends install $(sage-get-system-packages alpine "${system_spkgs[@]}"))
 ) || (
   echo "No known package manager path succeeded" >&2
   exit 1
@@ -118,4 +133,6 @@ printf 'sage_setup @ file://%s/pkgs/sage-setup\n' "$(pwd)" > constraints.txt
 echo "Prepared constraints.txt:"
 cat constraints.txt
 
-MAKE="make -j6" make V=0 ${TARGETS_PRE}
+if [ "${#native_targets[@]}" -gt 0 ]; then
+  MAKE="make -j6" make V=0 "${native_targets[@]}"
+fi
