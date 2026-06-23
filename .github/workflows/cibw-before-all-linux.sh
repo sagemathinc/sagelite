@@ -59,6 +59,35 @@ fi
 
 mkdir -p "${CCACHE_DIR:?CCACHE_DIR must be set}"
 ccache --version
+ccache_binary="$(command -v ccache)"
+cat > build/bin/ccache <<EOF
+#!/usr/bin/env bash
+
+set -e
+
+if [ -n "\${LD_LIBRARY_PATH:-}" ]; then
+  sanitized_ld_library_path=""
+  old_ifs="\${IFS}"
+  IFS=:
+  for library_path in \${LD_LIBRARY_PATH}; do
+    case "\${library_path}" in
+      /host/sage-*/lib|/project/prefix/lib)
+        continue
+        ;;
+    esac
+    if [ -z "\${sanitized_ld_library_path}" ]; then
+      sanitized_ld_library_path="\${library_path}"
+    else
+      sanitized_ld_library_path="\${sanitized_ld_library_path}:\${library_path}"
+    fi
+  done
+  IFS="\${old_ifs}"
+  export LD_LIBRARY_PATH="\${sanitized_ld_library_path}"
+fi
+
+exec "${ccache_binary}" "\$@"
+EOF
+chmod +x build/bin/ccache
 
 # fflas-ffpack autotuning can throw FFPACK::CharpolyFailed in CI.
 # The installed library works with default thresholds; avoid making wheel
