@@ -1608,6 +1608,13 @@ PY
   local repaired_site
   repaired_site="$tmpdir/repaired-sagelite-site"
   env -u PIP_CONSTRAINT "$python_bin" -m pip install \
+    --target "$repaired_site" \
+    cysignals \
+    gmpy2 \
+    memory_allocator \
+    numpy \
+    platformdirs
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install \
     --no-deps \
     --target "$repaired_site" \
     "$repaired_sagelite_wheel"
