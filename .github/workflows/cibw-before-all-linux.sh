@@ -4,7 +4,7 @@ set -euxo pipefail
 
 export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
-TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides}"
+TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler flatter sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
 # Some Sage package names describe system tools and cannot be built as SPKGs.
 system_spkgs=($SPKGS)
@@ -12,7 +12,7 @@ system_tool_targets=()
 native_targets=()
 for target in $TARGETS_PRE; do
   case "${target}" in
-    graphviz|dvipng|pdf2svg|poppler)
+    graphviz|dvipng|flatter|pdf2svg|poppler)
       system_tool_targets+=("${target}")
       ;;
     *)
@@ -76,6 +76,11 @@ for target in "${system_tool_targets[@]}"; do
       tool_packages_debian+=(dvipng)
       tool_packages_fedora+=(texlive-dvipng)
       tool_packages_alpine+=(texlive-dvipng)
+      ;;
+    flatter)
+      tool_packages_debian+=(libeigen3-dev)
+      tool_packages_fedora+=(eigen3-devel)
+      tool_packages_alpine+=(eigen-dev)
       ;;
     pdf2svg)
       tool_packages_debian+=(pdf2svg)

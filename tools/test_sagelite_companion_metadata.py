@@ -4041,6 +4041,7 @@ def test_runtime_companion_targets_are_staged_for_linux_release_wheels():
         "buckygen",
         "csdp",
         "dvipng",
+        "flatter",
         "fplll",
         "gfan",
         "latte_int",
@@ -4064,8 +4065,9 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 
-    assert "graphviz|dvipng|pdf2svg|poppler)" in before_all
+    assert "graphviz|dvipng|flatter|pdf2svg|poppler)" in before_all
     assert "tool_packages_fedora+=(texlive-dvipng)" in before_all
+    assert "tool_packages_fedora+=(eigen3-devel)" in before_all
     assert "tool_packages_fedora+=(git gcc pkgconf-pkg-config poppler-glib-devel cairo-devel glib2-devel)" in before_all
     assert "tool_packages_fedora+=(poppler-utils)" in before_all
     assert "git clone https://github.com/dawbarton/pdf2svg.git" in before_all
