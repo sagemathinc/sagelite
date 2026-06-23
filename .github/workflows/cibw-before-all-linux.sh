@@ -72,7 +72,7 @@ fi
 if [ -x ./config.status ]; then
   ./config.status
 else
-  ./configure --enable-build-as-root --with-python="${SAGE_PYTHON}" --prefix="/host/sage-${AUDITWHEEL_PLAT}"
+  ./configure --disable-doc --enable-build-as-root --with-python="${SAGE_PYTHON}" --prefix="/host/sage-${AUDITWHEEL_PLAT}"
   cp config.status prefix/
 fi
 
