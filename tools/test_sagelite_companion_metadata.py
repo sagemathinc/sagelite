@@ -4066,8 +4066,11 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
 
     assert "graphviz|dvipng|pdf2svg|poppler)" in before_all
     assert "tool_packages_fedora+=(texlive-dvipng)" in before_all
-    assert "tool_packages_fedora+=(pdf2svg)" in before_all
+    assert "tool_packages_fedora+=(git gcc pkgconf-pkg-config poppler-glib-devel cairo-devel glib2-devel)" in before_all
     assert "tool_packages_fedora+=(poppler-utils)" in before_all
+    assert "git clone https://github.com/dawbarton/pdf2svg.git" in before_all
+    assert "2371ca32926354227f58ce6cab18a7bd54136252" in before_all
+    assert 'cc -O2 -o "$install_prefix/bin/pdf2svg"' in before_all
     assert "[ -x /usr/bin/dvipng ]" in repair
     assert "[ -x /usr/bin/pdf2svg ]" in repair
     assert "[ -x /usr/bin/pdftocairo ]" in repair

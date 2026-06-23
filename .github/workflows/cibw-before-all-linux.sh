@@ -30,6 +30,7 @@ print(sysconfig.get_python_version())
 PY
 )"
 sage_site_packages="/host/sage-${AUDITWHEEL_PLAT}/lib/python${sage_python_version}/site-packages"
+sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
 
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
@@ -78,7 +79,7 @@ for target in "${system_tool_targets[@]}"; do
       ;;
     pdf2svg)
       tool_packages_debian+=(pdf2svg)
-      tool_packages_fedora+=(pdf2svg)
+      tool_packages_fedora+=(git gcc pkgconf-pkg-config poppler-glib-devel cairo-devel glib2-devel)
       tool_packages_alpine+=(pdf2svg)
       ;;
     poppler)
@@ -110,6 +111,34 @@ else
   echo "No known package manager available for installing build tool packages" >&2
   exit 1
 fi
+
+build_pdf2svg_system_tool() {
+  local install_prefix="$1"
+  if command -v pdf2svg >/dev/null 2>&1; then
+    return 0
+  fi
+  if [ -x "$install_prefix/bin/pdf2svg" ]; then
+    return 0
+  fi
+
+  local build_root source_dir
+  build_root="$(mktemp -d)"
+  source_dir="$build_root/pdf2svg-src"
+  git clone https://github.com/dawbarton/pdf2svg.git "$source_dir"
+  git -C "$source_dir" checkout 2371ca32926354227f58ce6cab18a7bd54136252
+  mkdir -p "$install_prefix/bin"
+  cc -O2 -o "$install_prefix/bin/pdf2svg" "$source_dir/pdf2svg.c" \
+    $(pkg-config --cflags --libs poppler-glib cairo)
+  rm -rf "$build_root"
+}
+
+for target in "${system_tool_targets[@]}"; do
+  case "${target}" in
+    pdf2svg)
+      build_pdf2svg_system_tool "$sage_prefix"
+      ;;
+  esac
+done
 
 mkdir -p "${CCACHE_DIR:?CCACHE_DIR must be set}"
 ccache --version
@@ -161,7 +190,6 @@ else
   cp config.status prefix/
 fi
 
-sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
 if [ -x "${sage_prefix}/bin/python3" ] && ! env -u PYTHONPATH "${sage_prefix}/bin/python3" -m pip --version >/dev/null 2>&1; then
   echo "Removing stale pip install markers from ${sage_prefix}"
   rm -f "${sage_prefix}"/var/lib/sage/installed/pip-*
