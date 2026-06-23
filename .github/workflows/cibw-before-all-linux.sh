@@ -46,8 +46,6 @@ env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m pip install --upgrade \
   cython \
   'cysignals>=1.12.1'
 
-export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
-
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
   $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian "${system_spkgs[@]}"))
@@ -115,6 +113,8 @@ fi
 exec "${ccache_binary}" "\$@"
 EOF
 chmod +x build/bin/ccache
+
+export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 
 # fflas-ffpack autotuning can throw FFPACK::CharpolyFailed in CI.
 # The installed library works with default thresholds; avoid making wheel
