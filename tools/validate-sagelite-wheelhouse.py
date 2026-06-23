@@ -143,6 +143,10 @@ def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, obje
     digest = hashlib.sha256()
     total_size = 0
     valid_filename_count = 0
+    sagelite_project_count = 0
+    primary_sagelite_count = 0
+    companion_sagelite_count = 0
+    third_party_count = 0
     for file in sorted(
         files,
         key=lambda item: (
@@ -156,6 +160,14 @@ def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, obje
             total_size += size
         if file.get("valid_wheel_filename") is True:
             valid_filename_count += 1
+        if file.get("is_sagelite_project_wheel") is True:
+            sagelite_project_count += 1
+            if file.get("is_primary_sagelite_wheel") is True:
+                primary_sagelite_count += 1
+            else:
+                companion_sagelite_count += 1
+        else:
+            third_party_count += 1
         digest.update(str(file.get("name")).encode("utf-8"))
         digest.update(b"\0")
         digest.update(str(file.get("size_bytes")).encode("utf-8"))
@@ -166,6 +178,10 @@ def _wheelhouse_input_identity(files: list[dict[str, object]]) -> dict[str, obje
         "wheel_count": len(files),
         "valid_wheel_filename_count": valid_filename_count,
         "invalid_wheel_filename_count": len(files) - valid_filename_count,
+        "sagelite_project_wheel_count": sagelite_project_count,
+        "primary_sagelite_wheel_count": primary_sagelite_count,
+        "companion_sagelite_wheel_count": companion_sagelite_count,
+        "third_party_wheel_count": third_party_count,
         "total_size_bytes": total_size,
         "sha256": digest.hexdigest(),
     }
@@ -1609,6 +1625,22 @@ def write_validation_summary(
             (
                 "- Staged invalid wheel filename count: "
                 f"`{wheelhouse_input_identity.get('invalid_wheel_filename_count')}`"
+            ),
+            (
+                "- Staged sagelite project wheel count: "
+                f"`{wheelhouse_input_identity.get('sagelite_project_wheel_count')}`"
+            ),
+            (
+                "- Staged primary sagelite wheel count: "
+                f"`{wheelhouse_input_identity.get('primary_sagelite_wheel_count')}`"
+            ),
+            (
+                "- Staged companion sagelite wheel count: "
+                f"`{wheelhouse_input_identity.get('companion_sagelite_wheel_count')}`"
+            ),
+            (
+                "- Staged third-party wheel count: "
+                f"`{wheelhouse_input_identity.get('third_party_wheel_count')}`"
             ),
             (
                 "- Staged wheel total bytes: "

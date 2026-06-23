@@ -115,6 +115,18 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
         "invalid_wheel_filename_count"
     ] == 0
     assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "sagelite_project_wheel_count"
+    ] == 2
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "primary_sagelite_wheel_count"
+    ] == 1
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "companion_sagelite_wheel_count"
+    ] == 1
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
+        "third_party_wheel_count"
+    ] == 0
+    assert metadata["wheelhouse_inventory"]["wheelhouse_input_identity"][
         "total_size_bytes"
     ] == 0
     assert (
@@ -320,6 +332,10 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Staged wheel count: `2`" in summary
     assert "- Staged valid wheel filename count: `2`" in summary
     assert "- Staged invalid wheel filename count: `0`" in summary
+    assert "- Staged sagelite project wheel count: `2`" in summary
+    assert "- Staged primary sagelite wheel count: `1`" in summary
+    assert "- Staged companion sagelite wheel count: `1`" in summary
+    assert "- Staged third-party wheel count: `0`" in summary
     assert "- Staged wheel total bytes: `0`" in summary
     assert "- Staged wheelhouse SHA256: `" in summary
     assert "- Primary compatibility checked wheels: `1`" in summary
@@ -463,6 +479,7 @@ def test_validation_summary_uses_cached_inventory(tmp_path):
     assert "- Staged wheel count: `1`" in summary
     assert "- Staged valid wheel filename count: `1`" in summary
     assert "- Staged invalid wheel filename count: `0`" in summary
+    assert "- Staged primary sagelite wheel count: `1`" in summary
     assert f"- `{wheel.name}` (python: cp312; abi: cp312;" in summary
     assert f"- size: 0; sha256: {EMPTY_FILE_SHA256}" in summary
 
@@ -1392,8 +1409,33 @@ def test_inventory_records_stable_wheelhouse_input_identity(tmp_path):
     assert identity["wheel_count"] == 2
     assert identity["valid_wheel_filename_count"] == 2
     assert identity["invalid_wheel_filename_count"] == 0
+    assert identity["sagelite_project_wheel_count"] == 2
+    assert identity["primary_sagelite_wheel_count"] == 1
+    assert identity["companion_sagelite_wheel_count"] == 1
+    assert identity["third_party_wheel_count"] == 0
     assert identity["total_size_bytes"] == len("primary") + len("companion")
     assert len(identity["sha256"]) == 64
+
+
+def test_inventory_identity_counts_wheel_categories(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (wheelhouse / "sagelite_gap_runtime-10.9-py3-none-any.whl").write_text("")
+    (wheelhouse / "packaging-24.0-py3-none-any.whl").write_text("")
+
+    identity = validator.wheelhouse_inventory([wheelhouse])[
+        "wheelhouse_input_identity"
+    ]
+
+    assert identity["wheel_count"] == 3
+    assert identity["sagelite_project_wheel_count"] == 2
+    assert identity["primary_sagelite_wheel_count"] == 1
+    assert identity["companion_sagelite_wheel_count"] == 1
+    assert identity["third_party_wheel_count"] == 1
 
 
 def test_inventory_records_invalid_wheel_filenames(tmp_path):

@@ -488,6 +488,13 @@ Scheduled audit on 2026-06-21:
   now visible in the compact fingerprint block as well as in the detailed
   invalid-filename section. Focused local validation passed with:
   - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
+- Follow-up scheduled tooling work now includes staged wheel category counts
+  in the aggregate wheelhouse input identity and renders them near the top of
+  `validation-summary.md`: sagelite project wheels, primary sagelite wheels,
+  companion sagelite wheels, and third-party wheels. This makes the compact
+  CIBW proof fingerprint show the broad shape of the staged input set before
+  the detailed inventory sections. Focused local validation passed with:
+  - `PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=tools tools/test_validate_sagelite_wheelhouse.py tools/test_sagelite_runtime_manifest.py tools/test_run_installed_wheel_doctests.py tools/test_analyze_doctest_log.py -q`
 
 ## Reality status
 
