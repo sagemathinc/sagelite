@@ -48,11 +48,14 @@ env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m pip install --upgrade \
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
-  $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian "${system_spkgs[@]}"))
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian "${system_spkgs[@]}"))
 ) || (
-  $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora "${system_spkgs[@]}" | sed s/pkg-config/pkgconfig/) | sed 's/^dnf install -y /dnf install -y --setopt=install_weak_deps=False /')
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora "${system_spkgs[@]}" | sed s/pkg-config/pkgconfig/) | sed 's/^dnf install -y /dnf install -y --setopt=install_weak_deps=False /')
 ) || (
-  $(sage-print-system-package-command alpine --yes --no-install-recommends install $(sage-get-system-packages alpine "${system_spkgs[@]}"))
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    $(sage-print-system-package-command alpine --yes --no-install-recommends install $(sage-get-system-packages alpine "${system_spkgs[@]}"))
 ) || (
   echo "No known package manager path succeeded" >&2
   exit 1
@@ -69,14 +72,18 @@ done
 
 echo "Installing build tool packages inside cibuildwheel container: ${tool_packages[*]}"
 if command -v apt-get >/dev/null 2>&1; then
-  apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${tool_packages[@]}"
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH apt-get update
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${tool_packages[@]}"
 elif command -v dnf >/dev/null 2>&1; then
-  dnf install -y --setopt=install_weak_deps=False "${tool_packages[@]}"
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    dnf install -y --setopt=install_weak_deps=False "${tool_packages[@]}"
 elif command -v yum >/dev/null 2>&1; then
-  yum install -y "${tool_packages[@]}"
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    yum install -y "${tool_packages[@]}"
 elif command -v apk >/dev/null 2>&1; then
-  apk add --no-cache "${tool_packages[@]}"
+  env -u PYTHONPATH -u PIP_CONSTRAINT -u PIP_FIND_LINKS -u LD_LIBRARY_PATH \
+    apk add --no-cache "${tool_packages[@]}"
 else
   echo "No known package manager available for installing build tool packages" >&2
   exit 1
