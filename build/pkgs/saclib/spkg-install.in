@@ -1,9 +1,13 @@
 cd src
 
+# CIBW sets CC to values such as "ccache cc"; pass that through to make as
+# one variable assignment instead of splitting off an accidental make target.
+sed -i.bak 's/make  CC=$CC/make  CC="$CC"/g' bin/mklib
+
 saclib=$(pwd -P)
 export saclib
 bin/sconf && bin/mkproto && bin/mkmake && bin/mklib all
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ] || [ ! -s lib/saclibo.a ] || [ ! -s lib/saclibd.a ]; then
    echo >&2 "Error building saclib."
    exit 1
 fi
@@ -13,4 +17,3 @@ fi
 cd ..
 rm -rf $SAGE_LOCAL/lib/saclib
 mv src $SAGE_LOCAL/lib/saclib
-
