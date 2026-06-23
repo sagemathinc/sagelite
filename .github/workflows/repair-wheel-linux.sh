@@ -1612,6 +1612,7 @@ PY
     cysignals \
     gmpy2 \
     memory_allocator \
+    mpmath \
     numpy \
     platformdirs
   env -u PIP_CONSTRAINT "$python_bin" -m pip install \
@@ -1634,6 +1635,9 @@ spec = importlib.util.spec_from_file_location(
 catalog_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(catalog_module)
 catalog = catalog_module.catalog()
+
+for prerequisite in ["sage.rings.integer_ring"]:
+    importlib.import_module(prerequisite)
 
 failed = []
 for module_name in catalog["required_native_import_modules"]:
