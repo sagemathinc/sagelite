@@ -2948,6 +2948,16 @@ def test_flatter_runtime_declares_console_script():
     }
 
 
+def test_flatter_runtime_repair_builds_pinned_source_fallback():
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    assert "git clone https://github.com/keeganryan/flatter.git" in repair
+    assert "d2b8026f29b4a69e987b15d4b240f8a5053275d3" in repair
+    assert 'CMAKE_PREFIX_PATH="$prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"' in repair
+    assert 'SAGELITE_FLATTER_BINDIR="$flatter_bindir"' in repair
+    assert 'LD_LIBRARY_PATH="$flatter_runtime_prefix/lib:$prefix/lib' in repair
+
+
 def test_frobby_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-frobby-runtime")
 

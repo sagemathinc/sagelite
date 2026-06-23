@@ -711,6 +711,24 @@ build_msolve_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_flatter_from_source() {
+  local install_prefix="$1"
+  local source_dir="$tmpdir/flatter-src"
+  local build_dir="$tmpdir/flatter-build"
+
+  rm -rf "$source_dir" "$build_dir" "$install_prefix"
+  git clone https://github.com/keeganryan/flatter.git "$source_dir"
+  git -C "$source_dir" checkout d2b8026f29b4a69e987b15d4b240f8a5053275d3
+  CMAKE_PREFIX_PATH="$prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" \
+  PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$prefix/share/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" \
+  LD_LIBRARY_PATH="$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+    cmake -S "$source_dir" -B "$build_dir" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX="$install_prefix"
+  cmake --build "$build_dir" --parallel 2
+  cmake --install "$build_dir"
+}
+
 build_flatter_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -718,6 +736,12 @@ build_flatter_runtime_companion() {
   esac
 
   local flatter_bindir="$prefix/bin"
+  local flatter_runtime_prefix="$prefix"
+  if [ ! -x "$flatter_bindir/flatter" ]; then
+    flatter_runtime_prefix="$tmpdir/flatter-prefix"
+    build_flatter_from_source "$flatter_runtime_prefix"
+    flatter_bindir="$flatter_runtime_prefix/bin"
+  fi
   if [ ! -x "$flatter_bindir/flatter" ]; then
     echo "flatter executable not found under $flatter_bindir; searched prefix contents:" >&2
     find "$prefix" -maxdepth 4 -name flatter -print >&2 || true
@@ -736,6 +760,7 @@ build_flatter_runtime_companion() {
   mkdir -p "$output_dir"
   SAGELITE_FLATTER_BINDIR="$flatter_bindir" \
   SAGELITE_FLATTER_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+  LD_LIBRARY_PATH="$flatter_runtime_prefix/lib:$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \
       --no-isolation \
