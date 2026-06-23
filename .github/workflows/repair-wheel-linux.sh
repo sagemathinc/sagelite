@@ -1624,8 +1624,9 @@ PY
     PYTHONNOUSERSITE=1 \
     PYTHONPATH="$repaired_site" \
       "$python_bin" - "$native_catalog" <<'PY'
-import importlib
 import importlib.util
+import os
+import subprocess
 import sys
 
 catalog_path = sys.argv[1]
@@ -1636,15 +1637,30 @@ catalog_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(catalog_module)
 catalog = catalog_module.catalog()
 
-for prerequisite in ["sage.rings.integer_ring"]:
-    importlib.import_module(prerequisite)
-
 failed = []
 for module_name in catalog["required_native_import_modules"]:
-    try:
-        importlib.import_module(module_name)
-    except Exception as exc:  # noqa: BLE001 - report every broken import together
-        failed.append(f"{module_name}: {type(exc).__name__}: {exc}")
+    probe = (
+        "import importlib, json, sys\n"
+        "module_name = sys.argv[1]\n"
+        "module = importlib.import_module(module_name)\n"
+        "print(json.dumps({\n"
+        "    'module': module_name,\n"
+        "    'file': getattr(module, '__file__', None),\n"
+        "    'package': getattr(module, '__package__', None),\n"
+        "}))\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe, module_name],
+        env={**os.environ, "PYTHONNOUSERSITE": "1"},
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        if len(detail) > 4000:
+            detail = detail[-4000:]
+        failed.append(f"{module_name}: exit {result.returncode}: {detail}")
 
 if failed:
     raise SystemExit(
