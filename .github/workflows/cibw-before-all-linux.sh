@@ -13,7 +13,6 @@ print(sysconfig.get_python_version())
 PY
 )"
 sage_site_packages="/host/sage-${AUDITWHEEL_PLAT}/lib/python${sage_python_version}/site-packages"
-export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
@@ -22,13 +21,15 @@ EOF
 chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
 
-env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m ensurepip --upgrade || true
-env -u PIP_CONSTRAINT "${SAGE_PYTHON}" -m pip install --upgrade \
+env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m ensurepip --upgrade || true
+env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m pip install --upgrade \
   pip \
   setuptools \
   wheel \
   cython \
   'cysignals>=1.12.1'
+
+export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 
 echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
