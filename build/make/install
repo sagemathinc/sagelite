@@ -25,7 +25,13 @@ if [ -z "${SAGE_ORIG_PATH_SET}" ]; then
 fi
 export PATH="$SAGE_ROOT/build/bin:$SAGE_SRC/bin:$SAGE_LOCAL/bin:$PATH"
 
-export PYTHONPATH="$SAGE_LOCAL"
+sage_python_version="$("$SAGE_PYTHON" - <<'PY'
+import sysconfig
+
+print(sysconfig.get_python_version())
+PY
+)"
+export PYTHONPATH="$SAGE_LOCAL:$SAGE_LOCAL/lib/python${sage_python_version}/site-packages"
 
 sage_num_threads_array=$(sage-build-num-threads 2>/dev/null || echo 1 2 1)
 sage_num_threads_array="${sage_num_threads_array% *}" # strip third item
