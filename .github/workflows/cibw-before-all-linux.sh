@@ -76,6 +76,12 @@ else
   cp config.status prefix/
 fi
 
+sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
+if [ -x "${sage_prefix}/bin/python3" ] && ! "${sage_prefix}/bin/python3" -m pip --version >/dev/null 2>&1; then
+  echo "Removing stale pip install markers from ${sage_prefix}"
+  rm -f "${sage_prefix}"/var/lib/sage/installed/pip-*
+fi
+
 # Python SPKG builds in TARGETS_PRE inherit PIP_CONSTRAINT from CIBW_ENVIRONMENT.
 # Prepare the constraints file before make starts so build isolation can use it.
 printf 'sage_setup @ file://%s/pkgs/sage-setup\n' "$(pwd)" > constraints.txt
