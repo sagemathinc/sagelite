@@ -4010,6 +4010,14 @@ def test_gfan_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_gfan_runtime_is_staged_for_linux_release_wheels():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+    release = (ROOT / ".github/workflows/release.yml").read_text()
+
+    assert " gap gap_packages gfan singular " in before_all
+    assert " gap gap_packages gap3 gfan singular " in release
+
+
 def test_nauty_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
