@@ -140,14 +140,28 @@ else
 fi
 
 sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
-if [ -x "${sage_prefix}/bin/python3" ] && ! "${sage_prefix}/bin/python3" -m pip --version >/dev/null 2>&1; then
+if [ -x "${sage_prefix}/bin/python3" ] && ! env -u PYTHONPATH "${sage_prefix}/bin/python3" -m pip --version >/dev/null 2>&1; then
   echo "Removing stale pip install markers from ${sage_prefix}"
   rm -f "${sage_prefix}"/var/lib/sage/installed/pip-*
 fi
 
+python_module_available() {
+  (
+    cd /
+    env -u PYTHONPATH "${sage_prefix}/bin/python3" - "$1" <<'PY'
+import importlib.util
+import sys
+
+spec = importlib.util.find_spec(sys.argv[1])
+if spec is None or spec.origin in (None, "namespace"):
+    raise SystemExit(1)
+PY
+  )
+}
+
 if [ -x "${sage_prefix}/bin/python3" ]; then
   while IFS=: read -r spkg module; do
-    if ! "${sage_prefix}/bin/python3" -c "import ${module}" >/dev/null 2>&1; then
+    if ! python_module_available "${module}" >/dev/null 2>&1; then
       echo "Removing stale ${spkg} install markers from ${sage_prefix}"
       rm -f "${sage_prefix}"/var/lib/sage/installed/"${spkg}"-*
     fi
