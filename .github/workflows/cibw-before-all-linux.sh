@@ -6,6 +6,14 @@ export PATH="$(pwd)/build/bin:$PATH"
 SPKGS="${SPKGS:-_bootstrap _prereq}"
 TARGETS_PRE="${TARGETS_PRE:-gmp mpfr mpc mpfi openblas gsl libgd pari flint m4ri m4rie brial ecm fflas_ffpack linbox gap gap_packages singular ecl maxima lcalc eclib libbraiding libhomfly nauty symmetrica cliquer planarity glpk bliss coxeter3 mcqd meataxe sirocco tdlib}"
 SAGE_PYTHON="${SAGE_PYTHON:-/opt/python/cp312-cp312/bin/python3}"
+sage_python_version="$("${SAGE_PYTHON}" - <<'PY'
+import sysconfig
+
+print(sysconfig.get_python_version())
+PY
+)"
+sage_site_packages="/host/sage-${AUDITWHEEL_PLAT}/lib/python${sage_python_version}/site-packages"
+export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
