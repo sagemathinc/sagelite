@@ -52,7 +52,7 @@ echo "Installing bootstrap prerequisites inside cibuildwheel container"
 (
   $(sage-print-system-package-command debian --yes --no-install-recommends install $(sage-get-system-packages debian "${system_spkgs[@]}"))
 ) || (
-  $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora "${system_spkgs[@]}" | sed s/pkg-config/pkgconfig/))
+  $(sage-print-system-package-command fedora --yes --no-install-recommends install $(sage-get-system-packages fedora "${system_spkgs[@]}" | sed s/pkg-config/pkgconfig/) | sed 's/^dnf install -y /dnf install -y --setopt=install_weak_deps=False /')
 ) || (
   $(sage-print-system-package-command alpine --yes --no-install-recommends install $(sage-get-system-packages alpine "${system_spkgs[@]}"))
 ) || (
