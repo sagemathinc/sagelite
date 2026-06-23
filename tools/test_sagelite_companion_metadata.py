@@ -4123,6 +4123,8 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
     assert "download_sage_spkg database_stein_watkins" in repair
     assert "https://oeis.org/stripped.gz" in repair
     assert "https://oeis.org/names.gz" in repair
+    assert "curl --help all" in repair
+    assert "curl_retry_args+=(--retry-all-errors)" in repair
     assert "SAGELITE_ECL_PREFIX=$prefix" in repair
     assert "SAGELITE_FRICAS_PREFIX=$prefix" in repair
     assert "SAGELITE_JMOL_DIR=$jmol_dir" in repair

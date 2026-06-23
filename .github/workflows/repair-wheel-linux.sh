@@ -52,8 +52,12 @@ download_gzip() {
   local url="$1"
   local output="$2"
   local tmp_output="$output.tmp"
+  local curl_retry_args=(--retry 5 --retry-delay 5)
+  if curl --help all 2>/dev/null | grep -q -- '--retry-all-errors'; then
+    curl_retry_args+=(--retry-all-errors)
+  fi
   rm -f "$tmp_output" "$output"
-  curl --fail --location --retry 5 --retry-all-errors --retry-delay 5 \
+  curl --fail --location "${curl_retry_args[@]}" \
     --user-agent "sagelite-ci/1.0 (+https://github.com/sagemathinc/sagelite)" \
     --header "Accept: application/gzip, application/octet-stream, */*" \
     --output "$tmp_output" "$url"
