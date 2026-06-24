@@ -82,6 +82,45 @@ acceptable output variants, tolerances, or ordering differences.
 
 Known facts from the latest investigation:
 
+- Spot-utah CPython 3.12 wheelhouse proof on 2026-06-24:
+  - Remote run directory:
+    `/mnt/cocalc/sage/runs/cp312-proof-20260623-053507-9a6ed5c3c6c`
+  - Staged validation wheelhouse passed strict repaired-wheelhouse preflights
+    for `sagelite[all-needed-extras]`: one primary repaired `sagelite`
+    wheel, 81 sagelite companion/runtime/data wheels, 111 third-party wheels,
+    and no missing requested sagelite dependency wheels.
+  - Fresh install from the staged wheelhouse with `--no-index` succeeded, and
+    `pip check` passed.
+  - Installed `sage.cli.selftest` passed after the companion runtime work for
+    GAP/4ti2/PARI GP/SYMPOW and the stable SYMPOW L-value selftest.
+  - Full installed doctest validation still failed:
+    91 failed modules out of 2643 seen. The analyzer artifacts are:
+    `/mnt/cocalc/sage/runs/cp312-proof-20260623-053507-9a6ed5c3c6c/full-validation/full-doctest-20260624-034614/doctest-installed-full-doctest-20260624-034614-20260624-035011.analysis.md`
+    and the validation summary is:
+    `/mnt/cocalc/sage/runs/cp312-proof-20260623-053507-9a6ed5c3c6c/full-validation/full-doctest-20260624-034614/validation-summary.md`.
+  - Main current blocker classes from that full run:
+    native shared-library load failures in companion binaries such as GIAC and
+    LattE, Graphviz `LD_LIBRARY_PATH` leakage into system tools,
+    QEPCAD protocol/output/timeouts, TIDES compile/link failures, SYMPOW
+    modular-degree/analytic-rank failures, msolve output parsing, NumPy 2.5
+    contiguity behavior in numerical modular forms, installed-path doctest
+    assumptions, and symbolic output drift from Maxima/SymPy/FriCAS.
+  - Installed pytest found four failures in `sage/env_test.py`, all caused by
+    the test fixture not clearing FPLLL strategy environment variables that
+    are bootstrapped at import time when `sagelite-fplll-data` is installed.
+    Commit `129b13c614c runtime: isolate FPLLL env tests` fixes the fixture.
+    Focused validation passed locally with
+    `PYTHONPATH=src PYTHONNOUSERSITE=1 .venv/bin/python -m pytest --confcutdir=src/sage src/sage/env_test.py -q`
+    and on the remote validation venv by running the patched test file against
+    the installed package: 107 passed.
+  - The current direction remains valid and does not require new hardware.
+    The `spot-utah` host is useful enough for clean wheelhouse validation and
+    containerized rebuilds. The next high-leverage fixes should target native
+    dependency closure for GIAC/LattE-style companion binaries, library-path
+    hygiene so companion private libraries do not affect `/usr/bin/*`, and the
+    largest interactive runtime protocol failures before spending time on
+    mathematically acceptable doctest output updates.
+
 - A local raw wheel can be built with `sage.libs.braiding` and
   `sage.rings.polynomial.pbori.pbori` included when `brial` and
   `libbraiding` are enabled.
