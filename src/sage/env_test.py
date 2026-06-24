@@ -71,6 +71,8 @@ def clean_runtime_environment(monkeypatch):
         "PATH",
     ]
     before = {key: env.os.environ.get(key) for key in keys}
+    for key in keys:
+        monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(env.importlib_metadata, "entry_points", lambda **kwargs: [])
     monkeypatch.setattr(env, "_sagelite_gap_package_root_paths", lambda: set())
     yield
