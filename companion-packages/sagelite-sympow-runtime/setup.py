@@ -92,6 +92,22 @@ def _find_libdir(executable: Path) -> Path | None:
     return None
 
 
+def _copy_standard_gp_scripts(datafiles: Path, target: Path) -> None:
+    missing = []
+    for name in ("standard1.gp", "standard2.gp", "standard3.gp"):
+        source = datafiles.parent / name
+        if source.is_file():
+            shutil.copy2(source, target / name)
+        else:
+            missing.append(source)
+    if missing:
+        details = "\n  ".join(os.fspath(path) for path in missing)
+        raise RuntimeError(
+            "could not find SYMPOW GP helper script(s):\n"
+            f"  {details}"
+        )
+
+
 def _patch_new_data_script(script: Path) -> None:
     text = script.read_text()
     text = text.replace("GP=$2\n", "GP=${SYMPOW_GP:-$2}\n")
@@ -138,7 +154,7 @@ class build_py(_build_py):
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
             'SYMPOW_PKGDATADIR="${SYMPOW_PKGDATADIR:-$HERE/../datafiles}"\n'
             'SYMPOW_PKGLIBDIR="${SYMPOW_PKGLIBDIR:-$HERE/../lib/sympow}"\n'
-            'SYMPOW_CACHEDIR="${SYMPOW_CACHEDIR:-${XDG_CACHE_HOME:-${HOME:-/tmp}}/sagelite-sympow}"\n'
+            'SYMPOW_CACHEDIR="${SYMPOW_CACHEDIR:-${XDG_CACHE_HOME:-/tmp}/sagelite-sympow}"\n'
             'SYMPOW_PKGCACHEDIR="${SYMPOW_PKGCACHEDIR:-$SYMPOW_CACHEDIR}"\n'
             'if [ -z "${SYMPOW_GP:-}" ]; then\n'
             '  if [ -n "${SAGE_GP_COMMAND:-}" ]; then\n'
@@ -149,7 +165,7 @@ class build_py(_build_py):
             '    SYMPOW_GP="$(command -v gp)"\n'
             "  fi\n"
             "fi\n"
-            'mkdir -p "$SYMPOW_CACHEDIR"\n'
+            'mkdir -p "$SYMPOW_CACHEDIR/sympow" "$SYMPOW_PKGCACHEDIR/sympow"\n'
             "export LD_LIBRARY_PATH SYMPOW_PKGDATADIR SYMPOW_PKGLIBDIR SYMPOW_CACHEDIR SYMPOW_PKGCACHEDIR SYMPOW_GP\n"
             'cd "$HERE/.." || exit 127\n'
             'exec "$HERE/sympow-real" "$@"\n'
@@ -161,6 +177,7 @@ class build_py(_build_py):
         datafiles = _find_datafiles(source)
         if datafiles is not None:
             shutil.copytree(datafiles, data_target, ignore_dangling_symlinks=True)
+            _copy_standard_gp_scripts(datafiles, data_target)
 
         libdir = _find_libdir(source)
         if libdir is not None:
