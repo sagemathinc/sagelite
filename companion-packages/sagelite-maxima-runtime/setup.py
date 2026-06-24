@@ -362,6 +362,29 @@ def _environment_path(name: str) -> Path | None:
     return path
 
 
+def _target_ecl_library() -> Path | None:
+    path = _environment_path("SAGELITE_MAXIMA_ECL_LIBRARY")
+    if path is None:
+        return None
+    if not path.is_file():
+        raise RuntimeError(f"SAGELITE_MAXIMA_ECL_LIBRARY does not name a file: {path}")
+    return path.resolve()
+
+
+def _copy_target_ecl_runtime(runtime_library_dir: Path) -> None:
+    """
+    Copy the auditwheel-renamed ECL runtime used by the sagelite wheel.
+
+    Production builds rewrite copied ECL images to depend on the repaired
+    sagelite ECL SONAME.  The standalone Maxima launcher must be able to load
+    that SONAME too, not only the original Sage build-prefix ``libecl.so``.
+    """
+    library = _target_ecl_library()
+    if library is None:
+        return
+    shutil.copy2(library, runtime_library_dir / library.name)
+
+
 def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
     """
     Return ECL libraries that copied images must be loadable against.
@@ -380,12 +403,8 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
 
     targets = {"copied ECL runtime": ecl_libraries}
 
-    path = _environment_path("SAGELITE_MAXIMA_ECL_LIBRARY")
+    path = _target_ecl_library()
     if path is not None:
-        if not path.is_file():
-            raise RuntimeError(
-                f"SAGELITE_MAXIMA_ECL_LIBRARY does not name a file: {path}"
-            )
         targets["sagelite ECL runtime"] = [path]
     elif os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1":
         system_libraries = _system_ecl_libraries()
@@ -405,6 +424,52 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
         )
 
     return targets
+
+
+def _patch_ecl_consumer(path: Path, rpath: str) -> None:
+    ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
+    allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
+
+    try:
+        needed = subprocess.run(
+            ["patchelf", "--print-needed", os.fspath(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        ecl_needed = [name for name in needed if name.startswith("libecl")]
+        if ecl_needed and not ecl_soname:
+            if allow_system_ecl:
+                subprocess.run(
+                    ["patchelf", "--remove-rpath", os.fspath(path)], check=True
+                )
+                return
+            raise RuntimeError(
+                f"{path} depends on {', '.join(ecl_needed)} but "
+                "SAGELITE_MAXIMA_ECL_SONAME is not set. Build production "
+                "Maxima runtime wheels from the repaired sagelite wheel and "
+                "set SAGELITE_MAXIMA_ECL_SONAME to its bundled ECL SONAME, "
+                "or set SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 for an explicit "
+                "system-ECL test build."
+            )
+        for original in needed:
+            if not original.startswith("libecl") or original == ecl_soname:
+                continue
+            subprocess.run(
+                [
+                    "patchelf",
+                    "--replace-needed",
+                    original,
+                    ecl_soname,
+                    os.fspath(path),
+                ],
+                check=True,
+            )
+        subprocess.run(["patchelf", "--set-rpath", rpath, os.fspath(path)], check=True)
+    except FileNotFoundError as err:
+        raise RuntimeError(
+            "patchelf is required to validate or patch Maxima ECL images"
+        ) from err
 
 
 def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> None:
@@ -503,52 +568,11 @@ def _patch_ecl_fas(path: Path) -> None:
     relative runtime search path so support images such as ``sockets.fas`` can
     resolve bundled auxiliary ECL libraries such as ``libgc``.
     """
-    ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
-    allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
+    _patch_ecl_consumer(path, "$ORIGIN/../runtime")
 
-    try:
-        needed = subprocess.run(
-            ["patchelf", "--print-needed", os.fspath(path)],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.splitlines()
-        ecl_needed = [name for name in needed if name.startswith("libecl")]
-        if ecl_needed and not ecl_soname:
-            if allow_system_ecl:
-                subprocess.run(
-                    ["patchelf", "--remove-rpath", os.fspath(path)], check=True
-                )
-                return
-            raise RuntimeError(
-                f"{path} depends on {', '.join(ecl_needed)} but "
-                "SAGELITE_MAXIMA_ECL_SONAME is not set. Build production "
-                "Maxima runtime wheels from the repaired sagelite wheel and "
-                "set SAGELITE_MAXIMA_ECL_SONAME to its bundled ECL SONAME, "
-                "or set SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 for an explicit "
-                "system-ECL test build."
-            )
-        for original in needed:
-            if not original.startswith("libecl") or original == ecl_soname:
-                continue
-            subprocess.run(
-                [
-                    "patchelf",
-                    "--replace-needed",
-                    original,
-                    ecl_soname,
-                    os.fspath(path),
-                ],
-                check=True,
-            )
-        subprocess.run(
-            ["patchelf", "--set-rpath", "$ORIGIN/../runtime", os.fspath(path)],
-            check=True,
-        )
-    except FileNotFoundError as err:
-        raise RuntimeError(
-            "patchelf is required to validate or patch Maxima ECL images"
-        ) from err
+
+def _patch_maxima_executable(path: Path) -> None:
+    _patch_ecl_consumer(path, "$ORIGIN/../../../runtime")
 
 
 def _copy_maxima_info_indexes(maxima_prefix: Path, target: Path) -> None:
@@ -629,6 +653,9 @@ class build_py(_build_py):
             )
         for library in libraries:
             shutil.copy2(library, runtime_target / library.name)
+        _copy_target_ecl_runtime(runtime_target)
+        if maxima_images_dir is not None:
+            _patch_maxima_executable(images_target / "binary-ecl" / "maxima")
         _validate_copied_ecl_images(ecl_target, runtime_target)
 
         if maxima_images_dir is not None:

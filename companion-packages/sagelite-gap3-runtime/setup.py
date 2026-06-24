@@ -54,6 +54,26 @@ def _ignore_gap3_files(directory: str, names: list[str]) -> set[str]:
     return ignored
 
 
+def _write_gap3_launcher(gap3_root: Path) -> None:
+    launcher = gap3_root / "bin" / "gap.sh"
+    launcher.write_text(
+        """#!/bin/sh
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+GAP_DIR=$(dirname "$HERE")
+SAGE_LOCAL="${SAGE_LOCAL:-$GAP_DIR}"
+export SAGE_LOCAL
+ARCH=$(getconf LONG_BIT 2>/dev/null || echo 64)
+if [ "$ARCH" = "32" ]; then
+    GAP_MEM=512m
+else
+    GAP_MEM=1024m
+fi
+exec "$HERE/gap3" -m "$GAP_MEM" -l "$GAP_DIR/lib/" -h "$GAP_DIR/doc/" "$@"
+""",
+    )
+    launcher.chmod(0o755)
+
+
 class build_py(_build_py):
     def run(self):
         gap3_root = _find_gap3_root()
@@ -65,6 +85,7 @@ class build_py(_build_py):
             ignore=_ignore_gap3_files,
             ignore_dangling_symlinks=True,
         )
+        _write_gap3_launcher(target)
 
         super().run()
 

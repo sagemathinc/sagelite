@@ -3543,11 +3543,16 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "def _system_ecl_libraries" in setup_text
     assert "def _validation_targets" in setup_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY" in setup_text
+    assert "def _copy_target_ecl_runtime" in setup_text
+    assert "def _patch_maxima_executable" in setup_text
+    assert "_copy_target_ecl_runtime(runtime_target)" in setup_text
+    assert '_patch_maxima_executable(images_target / "binary-ecl" / "maxima")' in setup_text
     assert "system ECL runtime" in setup_text
     assert '"FE"' in setup_text
     assert "--remove-rpath" in setup_text
     assert "--set-rpath" in setup_text
     assert '"$ORIGIN/../runtime"' in setup_text
+    assert '"$ORIGIN/../../../runtime"' in setup_text
     assert '"libgc.so"' in setup_text
     assert '"libffi.so"' in setup_text
 
@@ -3959,6 +3964,8 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-ecl-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
+    for requirement in extras["gap_packages"]:
+        assert requirement in validation_requirements
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
     assert "sagelite-imagemagick-runtime >=10.9,<10.10" in validation_requirements
@@ -4235,6 +4242,7 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
         "build_database_stein_watkins_companion",
         "build_ecl_runtime_companion",
         "build_fricas_runtime_companion",
+        "build_gap_package_companions",
         "build_imagemagick_runtime_companion",
         "build_jmol_runtime_companion",
         "build_kenzo_runtime_companion",

@@ -134,6 +134,69 @@ build_gap_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_gap_package_companions() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local gap_roots
+  gap_roots="$(
+    find "$prefix" -path '*/lib/init.g' -print |
+      while IFS= read -r init_file; do
+        gap_root="${init_file%/lib/init.g}"
+        if [ -f "$gap_root/lib/system.g" ] &&
+           [ -f "$gap_root/lib/package.gi" ]; then
+          printf '%s\n' "$gap_root"
+        fi
+      done |
+      sort -u |
+      paste -sd ';' -
+  )"
+  if [ -z "$gap_roots" ]; then
+    echo "GAP 4 root not found for GAP package companions under $prefix" >&2
+    find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g \) -print >&2 || true
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  local packages=(
+    atlasrep
+    ctbllib
+    design
+    gapdoc
+    grape
+    guava
+    hap
+    polenta
+    polycyclic
+    primgrp
+    qpa
+    quagroup
+    repsn
+    smallgrp
+    tomlib
+    transgrp
+  )
+  local project_dir="/project"
+  local companion_dir
+  for package in "${packages[@]}"; do
+    companion_dir="$project_dir/companion-packages/sagelite-gap-package-$package"
+    if [ ! -d "$companion_dir" ]; then
+      echo "GAP package companion not found: $companion_dir" >&2
+      exit 1
+    fi
+    SAGELITE_GAP_ROOTS="$gap_roots" \
+    SAGELITE_GAP_GUAVA_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+      env -u PIP_CONSTRAINT "$python_bin" -m build \
+        --wheel \
+        --no-isolation \
+        --outdir "$dest_dir" \
+        "$companion_dir"
+  done
+  ls -lh "$dest_dir"
+}
+
 build_gap3_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -497,6 +560,7 @@ build_csdp_runtime_companion() {
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_CSDP_BINDIR="$csdp_bindir" \
+  SAGELITE_CSDP_LIBDIR="$prefix/lib" \
   SAGELITE_CSDP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \
@@ -2344,6 +2408,7 @@ build_database_odlyzko_zeta_companion
 build_database_polytopes_companion
 build_database_symbolic_data_companion
 build_gap_runtime_companion
+build_gap_package_companions
 build_gap3_runtime_companion
 build_gfan_runtime_companion
 build_giac_runtime_companion

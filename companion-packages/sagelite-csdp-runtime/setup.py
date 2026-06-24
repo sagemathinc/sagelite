@@ -25,6 +25,19 @@ def _candidate_bindirs() -> list[Path]:
     return dirs
 
 
+def _candidate_libdirs(executable: Path) -> list[Path]:
+    dirs = []
+    for variable in ("SAGELITE_CSDP_LIBDIR", "CSDP_LIBDIR"):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "lib")
+    dirs.append(executable.parent.parent / "lib")
+    dirs.extend([Path("/usr/lib"), Path("/usr/local/lib")])
+    dirs.extend(Path("/usr/lib").glob("*-linux-gnu"))
+    return dirs
+
+
 def _find_executable() -> Path:
     for bindir in _candidate_bindirs():
         for executable in ("theta", "csdp-theta"):
@@ -39,26 +52,70 @@ def _find_executable() -> Path:
     )
 
 
-def _runtime_libraries(executable: Path) -> list[Path]:
+def _ldd_libraries(path: Path) -> list[tuple[str, Path | None]]:
     output = subprocess.run(
-        ["ldd", os.fspath(executable)],
+        ["ldd", os.fspath(path)],
         check=True,
         capture_output=True,
         text=True,
     ).stdout
-    libraries = []
+    libraries: list[tuple[str, Path | None]] = []
     for line in output.splitlines():
         if "=>" not in line:
             continue
         name, rest = line.split("=>", 1)
         name = name.strip()
         path = rest.strip().split(maxsplit=1)[0]
-        if (
-            name.startswith(("libcsdp", "libgmp", "libblas", "liblapack"))
-            and path != "not"
-        ):
-            libraries.append(Path(path))
+        if path == "not":
+            libraries.append((name, None))
+        else:
+            libraries.append((name, Path(path)))
     return libraries
+
+
+def _find_library(name: str, executable: Path) -> Path:
+    for directory in _candidate_libdirs(executable):
+        for candidate in (directory / name, *directory.glob(f"{name}*")):
+            if candidate.is_file() or candidate.is_symlink():
+                return candidate
+    searched = "\n  ".join(
+        os.fspath(directory / name) for directory in _candidate_libdirs(executable)
+    )
+    raise RuntimeError(
+        f"could not find CSDP runtime library {name}. "
+        "Set SAGELITE_CSDP_LIBDIR to the Sage-built lib directory.\n"
+        f"Searched:\n  {searched}"
+    )
+
+
+def _runtime_libraries(executable: Path) -> list[Path]:
+    prefixes = (
+        "libsdp",
+        "libgmp",
+        "libblas",
+        "liblapack",
+        "libopenblas",
+        "libgfortran",
+        "libquadmath",
+    )
+    libraries: dict[str, Path] = {}
+    pending = [executable]
+    seen = set()
+    while pending:
+        path = pending.pop()
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        for name, library in _ldd_libraries(resolved):
+            if not name.startswith(prefixes):
+                continue
+            if library is None:
+                library = _find_library(name, executable)
+            if library.name not in libraries:
+                libraries[library.name] = library
+                pending.append(library)
+    return sorted(libraries.values())
 
 
 class build_py(_build_py):
