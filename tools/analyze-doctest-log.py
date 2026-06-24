@@ -755,8 +755,6 @@ def parse_log(log_path: Path) -> dict[str, ModuleResult]:
                     module,
                     ModuleResult(module=module, path=match.group("path")),
                 )
-                if current.status == "passed":
-                    current.status = "failed"
                 capture_traceback = False
                 continue
 
@@ -775,7 +773,6 @@ def parse_log(log_path: Path) -> dict[str, ModuleResult]:
                 continue
 
             if stripped.startswith("Warning:"):
-                current.status = "failed"
                 current.traceback_lines.append(stripped)
                 capture_traceback = True
                 continue

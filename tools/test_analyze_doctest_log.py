@@ -565,7 +565,9 @@ Check ran for 0.00s cpu, 0.00s wall
     assert result.category == "performance-only"
     assert result.fingerprint == "slow-doctest"
     assert result.traceback_lines[0] == "Warning: slow doctest:"
-    assert report["fingerprint_counts"] == {"slow-doctest": 1}
+    assert result.status == "passed"
+    assert report["totals"]["modules_failed"] == 0
+    assert report["fingerprint_counts"] == {}
 
 
 def test_report_identifies_doctest_dependency_warning(tmp_path):
@@ -586,6 +588,7 @@ Warning: Variable 'OL' referenced here was set only in doctest marked '# needs s
 
     assert result.category == "core-supported"
     assert result.fingerprint == "doctest-dependency-warning"
+    assert result.status == "passed"
 
 
 def test_warning_does_not_override_failed_example(tmp_path):
