@@ -160,6 +160,24 @@ def _runtime_libraries(executables: list[Path]) -> list[Path]:
     return sorted(libraries.values())
 
 
+def _write_wrapper(path: Path, real_name: str) -> None:
+    path.write_text(
+        "#!/bin/sh\n"
+        'DIR=$(dirname "$0")\n'
+        'HERE=$(CDPATH= cd "$DIR" && pwd)\n'
+        'export LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+        f'exec "$HERE/{real_name}" "$@"\n',
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
+
+
+def _copy_wrapped_executable(source: Path, target: Path) -> None:
+    real_name = f"{target.name}-real"
+    shutil.copy2(source, target.with_name(real_name))
+    _write_wrapper(target, real_name)
+
+
 class build_py(_build_py):
     def run(self):
         bindir = _find_bindir()
@@ -173,17 +191,17 @@ class build_py(_build_py):
         for program in PROGRAMS:
             source = _program_path(bindir, program)
             if source is not None:
-                shutil.copy2(source, target / program)
+                _copy_wrapped_executable(source, target / program)
                 executables.append(source.resolve())
         for source in bindir.glob("4ti2-*"):
             if source.is_file():
-                shutil.copy2(source, target / source.name)
+                _copy_wrapped_executable(source, target / source.name)
                 executables.append(source.resolve())
         libexecdir = _find_libexecdir()
         if libexecdir is not None:
             for source in libexecdir.glob("4ti2*"):
                 if source.is_file():
-                    shutil.copy2(source, target / source.name)
+                    _copy_wrapped_executable(source, target / source.name)
                     executables.append(source.resolve())
         for library in _runtime_libraries(executables):
             shutil.copy2(library, lib_target / library.name)

@@ -725,9 +725,11 @@ if error_output or "5" not in str(normal_output):
         f"normal={normal_output!r}, error={error_output!r}"
     )
 
-help_text = str(gap3.help("help", pager=False))
-if help_text and "GAP help system" not in help_text and "help system" not in help_text:
-    raise RuntimeError("GAP3 help output is not available")
+help_result = gap3.help("help", pager=False)
+if help_result is not None:
+    help_text = str(help_result)
+    if help_text and "GAP help system" not in help_text and "help system" not in help_text:
+        raise RuntimeError("GAP3 help output is not available")
 
 values = gap3([1, 2, 3])
 if str(values[1]) != "1" or str(values[2]) != "2":

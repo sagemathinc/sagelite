@@ -1492,8 +1492,8 @@ jobs:
         run: |
           set -euo pipefail
           find gap-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
-          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post3-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
-          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post4-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find gap-runtime-dist -maxdepth 1 -type f -name "sagelite_gap_runtime-10.9.post4-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
           test "$(find gap-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
 
       - uses: pypa/gh-action-pypi-publish@release/v1
@@ -1851,8 +1851,8 @@ jobs:
         run: |
           set -euo pipefail
           find four-ti-2-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
-          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9.post1-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
-          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9.post1-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9.post2-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "sagelite_4ti2_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl" | wc -l)" -eq 1
           test "$(find four-ti-2-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 2
 
       - uses: pypa/gh-action-pypi-publish@release/v1

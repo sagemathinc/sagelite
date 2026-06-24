@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from setuptools import setup
@@ -56,6 +57,33 @@ def _candidate_gap_bindirs() -> list[Path]:
     if os.environ.get("SAGE_LOCAL"):
         dirs.append(Path(os.environ["SAGE_LOCAL"]) / "bin")
     dirs.extend([Path("/usr/bin"), Path("/usr/local/bin")])
+    return dirs
+
+
+RUNTIME_LIBRARY_PREFIXES = (
+    "libgap",
+    "libgmp",
+    "libgmpxx",
+    "libreadline",
+    "libtinfo",
+    "libncurses",
+    "libz",
+    "libpcre2",
+    "libatomic",
+)
+
+
+def _candidate_gap_libdirs() -> list[Path]:
+    dirs = []
+    for variable in ("SAGELITE_GAP_LIBDIR", "GAP_LIBDIR"):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "lib")
+    for bindir in _candidate_gap_bindirs():
+        dirs.append(bindir.parent / "lib")
+        dirs.append(bindir.parent / "lib64")
+    dirs.extend([Path("/usr/lib64"), Path("/usr/lib"), Path("/usr/local/lib")])
     return dirs
 
 
@@ -127,6 +155,67 @@ def _ignore_gap_files(directory: str, names: list[str]) -> set[str]:
     return ignored
 
 
+def _linked_libraries(path: Path) -> list[Path]:
+    try:
+        output = subprocess.run(
+            ["ldd", os.fspath(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    except subprocess.CalledProcessError:
+        return []
+
+    libraries = []
+    for line in output.splitlines():
+        if "=>" not in line:
+            continue
+        name, rest = line.split("=>", 1)
+        name = name.strip()
+        library_path = rest.strip().split(maxsplit=1)[0]
+        if name.startswith(RUNTIME_LIBRARY_PREFIXES) and library_path != "not":
+            libraries.append(Path(library_path))
+    return libraries
+
+
+def _runtime_libraries(executable: Path) -> list[Path]:
+    libraries: dict[str, Path] = {}
+    pending = [executable]
+    seen: set[Path] = set()
+    for libdir in _candidate_gap_libdirs():
+        if not libdir.is_dir():
+            continue
+        for prefix in RUNTIME_LIBRARY_PREFIXES:
+            for library in libdir.glob(f"{prefix}*.so*"):
+                if library.is_file() or library.is_symlink():
+                    pending.append(library.resolve())
+
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        if path.name.startswith(RUNTIME_LIBRARY_PREFIXES):
+            libraries.setdefault(path.name, path)
+        for library in _linked_libraries(path):
+            previous = libraries.setdefault(library.name, library)
+            if previous == library:
+                pending.append(library)
+    return sorted(libraries.values())
+
+
+def _write_wrapper(path: Path, real_name: str) -> None:
+    path.write_text(
+        "#!/bin/sh\n"
+        'DIR=$(dirname "$0")\n'
+        'HERE=$(CDPATH= cd "$DIR" && pwd)\n'
+        'export LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+        f'exec "$HERE/{real_name}" "$@"\n',
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
+
+
 class build_py(_build_py):
     def run(self):
         gap_roots = _find_gap_roots()
@@ -144,8 +233,13 @@ class build_py(_build_py):
         gap_executable = _find_gap_executable()
         if gap_executable is not None:
             bin_target = target / "bin"
+            lib_target = target / "lib"
             bin_target.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(gap_executable, bin_target / "gap")
+            lib_target.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(gap_executable, bin_target / "gap-real")
+            _write_wrapper(bin_target / "gap", "gap-real")
+            for library in _runtime_libraries(gap_executable):
+                shutil.copy2(library, lib_target / library.name)
 
         super().run()
 
