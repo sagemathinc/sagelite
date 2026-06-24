@@ -2447,7 +2447,7 @@ def test_gap_runtime_requires_gap4_roots_and_keeps_package_roots(
     repair_text = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
     gap_builder = repair_text[
         repair_text.index("build_gap_runtime_companion()") :
-        repair_text.index("\nbuild_gap3_runtime_companion()")
+        repair_text.index("\nbuild_gap_package_companions()")
     ]
 
     core_root = tmp_path / "data" / "gap0"
@@ -4249,6 +4249,9 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
     ]
     for call in required_calls:
         assert f"\n{call}\n" in repair
+    assert "gap_package_roots" in repair
+    assert "PackageInfo.g" in repair
+    assert 'SAGELITE_GAP_ROOTS="$gap_package_roots"' in repair
 
 
 def test_linux_repair_builds_requested_base_dependency_companion_wheels():

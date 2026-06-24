@@ -140,20 +140,14 @@ build_gap_package_companions() {
     *) return 0 ;;
   esac
 
-  local gap_roots
-  gap_roots="$(
-    find "$prefix" -path '*/lib/init.g' -print |
-      while IFS= read -r init_file; do
-        gap_root="${init_file%/lib/init.g}"
-        if [ -f "$gap_root/lib/system.g" ] &&
-           [ -f "$gap_root/lib/package.gi" ]; then
-          printf '%s\n' "$gap_root"
-        fi
-      done |
+  local gap_package_roots
+  gap_package_roots="$(
+    find "$prefix" -path '*/pkg/*/PackageInfo.g' -print |
+      sed 's#/pkg/.*##' |
       sort -u |
       paste -sd ';' -
   )"
-  if [ -z "$gap_roots" ]; then
+  if [ -z "$gap_package_roots" ]; then
     echo "GAP 4 root not found for GAP package companions under $prefix" >&2
     find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g \) -print >&2 || true
     exit 1
@@ -186,7 +180,7 @@ build_gap_package_companions() {
       echo "GAP package companion not found: $companion_dir" >&2
       exit 1
     fi
-    SAGELITE_GAP_ROOTS="$gap_roots" \
+    SAGELITE_GAP_ROOTS="$gap_package_roots" \
     SAGELITE_GAP_GUAVA_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
       env -u PIP_CONSTRAINT "$python_bin" -m build \
         --wheel \
