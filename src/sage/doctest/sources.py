@@ -107,20 +107,27 @@ def get_basename(path):
     # the directory structure
     dev = SAGE_SRC
     sp = SAGE_LIB
-    if path.startswith(dev):
+    if dev and path.startswith(dev):
         # there will be a branch name
         i = path.find(os.path.sep, len(dev))
         if i == -1:
             # this source is the whole library....
             return path
         root = path[:i]
-    elif path.startswith(sp):
+    elif sp and path.startswith(sp):
         root = path[:len(sp)]
     else:
-        # If this file is in some python package we can see how deep
-        # it goes.
-        while is_package_or_sage_namespace_package_dir(root):
-            root = os.path.dirname(root)
+        import sage
+        for sage_dir in sage.__path__:
+            sage_dir = os.path.abspath(sage_dir)
+            if path == sage_dir or path.startswith(sage_dir + os.path.sep):
+                root = os.path.dirname(sage_dir)
+                break
+        else:
+            # If this file is in some python package we can see how deep
+            # it goes.
+            while is_package_or_sage_namespace_package_dir(root):
+                root = os.path.dirname(root)
     fully_qualified_path, ext = os.path.splitext(path[len(root) + 1:])
     if os.path.split(path)[1] == '__init__.py':
         fully_qualified_path = fully_qualified_path[:-9]

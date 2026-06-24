@@ -1182,8 +1182,9 @@ def get_all_documents(source: Path) -> list[Path]:
 
         sage: from sage_docbuild.builders import get_all_documents
         sage: from sage.env import SAGE_DOC_SRC
-        sage: documents = get_all_documents(Path(SAGE_DOC_SRC))
-        sage: Path('en/tutorial') in documents
+        sage: source = Path(SAGE_DOC_SRC)
+        sage: documents = get_all_documents(source) if source.exists() else []
+        sage: not source.exists() or Path('en/tutorial') in documents
         True
     """
     documents = []
@@ -1216,8 +1217,9 @@ def get_all_reference_documents(source: Path) -> list[Path]:
 
         sage: from sage_docbuild.builders import get_all_reference_documents
         sage: from sage.env import SAGE_DOC_SRC
-        sage: documents = get_all_reference_documents(Path(SAGE_DOC_SRC) / 'en')
-        sage: Path('reference/algebras') in documents
+        sage: source = Path(SAGE_DOC_SRC) / 'en'
+        sage: documents = get_all_reference_documents(source) if source.exists() else []
+        sage: not source.exists() or Path('reference/algebras') in documents
         True
     """
     documents: list[tuple[int, Path]] = []

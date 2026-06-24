@@ -1108,8 +1108,10 @@ def lazy_import(module, names, as_=None, *,
         <built-in function NmzListConeProperties>
         sage: lazy_import('foo', 'not_there',
         ....:             feature=PythonModule('foo', spkg='non-existing-package'))
-        sage: not_there
-        Failed lazy import:
+        sage: try:
+        ....:     not_there.get_object()
+        ....: except Exception as err:
+        ....:     print(err)
         foo is not available.
         Importing not_there failed: No module named 'foo'...
     """

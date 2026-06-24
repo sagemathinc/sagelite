@@ -152,12 +152,14 @@ def load(*filename, compress=True, verbose=True, **kwargs):
 
     We can load Fortran files::
 
+        sage: # needs numpy
+        sage: # optional - gfortran
         sage: code = '      subroutine hello\n         print *, "Hello World!"\n      end subroutine hello\n'
         sage: t = tmp_filename(ext='.F')
         sage: with open(t, 'w') as f:
         ....:     _ = f.write(code)
-        sage: load(t)                                                                   # needs numpy
-        sage: hello                                                                     # needs numpy
+        sage: load(t)
+        sage: hello
         <fortran ...>
 
     Path objects are supported::

@@ -1535,7 +1535,7 @@ class TikzPicture(Standalone):
             sage: # needs sage.graphs
             sage: from sage.misc.latex_standalone import TikzPicture
             sage: g = graphs.PetersenGraph()
-            sage: tikz = TikzPicture.from_graph(g)                              # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(g)                              # optional - dot2tex graphviz pdflatex
             doctest:...: FutureWarning: This class/method/function is marked as experimental.
             It, its functionality or its interface might change without a formal deprecation.
             See https://github.com/sagemath/sage/issues/20343 for details.
@@ -1544,13 +1544,13 @@ class TikzPicture(Standalone):
         Using ``prog``::
 
             sage: # needs sage.graphs
-            sage: tikz = TikzPicture.from_graph(g, prog='neato',        # long time (3s), optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(g, prog='neato',        # long time (3s), optional - dot2tex graphviz pdflatex
             ....:                               color_by_label=True)
             sage: _ = tikz.pdf()      # not tested
 
         Using ``rankdir``::
 
-            sage: tikz = TikzPicture.from_graph(g, rankdir='right')     # long time (3s), optional - dot2tex graphviz, needs sage.graphs
+            sage: tikz = TikzPicture.from_graph(g, rankdir='right')     # long time (3s), optional - dot2tex graphviz pdflatex, needs sage.graphs
             sage: _ = tikz.pdf()      # not tested
 
         Using ``merge_multiedges``::
@@ -1560,7 +1560,7 @@ class TikzPicture(Standalone):
             sage: m = matrix(2, range(4)); m.set_immutable()
             sage: G = DiGraph([(0,1,alpha), (0,1,0), (0,2,9), (0,2,m)],
             ....:             multiedges=True)
-            sage: tikz = TikzPicture.from_graph(G, merge_multiedges=True)       # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(G, merge_multiedges=True)       # optional - dot2tex graphviz pdflatex
             sage: _ = tikz.pdf()      # not tested
 
         Using ``merge_multiedges`` with ``merge_label_function``::
@@ -1569,7 +1569,7 @@ class TikzPicture(Standalone):
             sage: fn = lambda L: LatexExpr(','.join(map(str, L)))
             sage: edges = [(0,1,'a'), (0,1,'b'), (0,2,'c'), (0,2,'d')]
             sage: G = DiGraph(edges, multiedges=True)
-            sage: tikz = TikzPicture.from_graph(G,                              # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(G,                              # optional - dot2tex graphviz pdflatex
             ....:           merge_multiedges=True, merge_label_function=fn)
             sage: _ = tikz.pdf()      # not tested
 
@@ -1587,7 +1587,7 @@ class TikzPicture(Standalone):
             sage: G                                                                     # needs sage.graphs
             Looped multi-digraph on 27 vertices
             sage: C = G.strongly_connected_components()                                 # needs sage.graphs
-            sage: tikz = TikzPicture.from_graph(G,                              # optional - dot2tex graphviz, needs sage.graphs
+            sage: tikz = TikzPicture.from_graph(G,                              # optional - dot2tex graphviz pdflatex, needs sage.graphs
             ....:              merge_multiedges=False, subgraph_clusters=C)
             sage: _ = tikz.pdf()      # not tested
 
@@ -1599,7 +1599,7 @@ class TikzPicture(Standalone):
             sage: G = DiGraph()
             sage: G.add_edges((i, f(i), f) for i in (1, 2, 1/2, 1/4))
             sage: G.add_edges((i, g(i), g) for i in (1, 2, 1/2, 1/4))
-            sage: tikz = TikzPicture.from_graph(G)      # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(G)      # optional - dot2tex graphviz pdflatex
             sage: _ = tikz.pdf()      # not tested
             sage: def edge_options(data):
             ....:     u, v, label = data
@@ -1609,7 +1609,7 @@ class TikzPicture(Standalone):
             ....:     if (u,v) == (1,   -1): options["label_style"] = "latex"
             ....:     if (u,v) == (1,  1/2): options["dir"]         = "back"
             ....:     return options
-            sage: tikz = TikzPicture.from_graph(G, edge_options=edge_options)   # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_graph(G, edge_options=edge_options)   # optional - dot2tex graphviz pdflatex
             sage: _ = tikz.pdf()      # not tested
         """
         from sage.features.latex import pdflatex
@@ -1803,22 +1803,22 @@ class TikzPicture(Standalone):
 
             sage: # needs sage.graphs sage.modules
             sage: P = posets.PentagonPoset()
-            sage: tikz = TikzPicture.from_poset(P)                              # optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_poset(P)                              # optional - dot2tex graphviz pdflatex
             doctest:...: FutureWarning: This class/method/function is marked as experimental.
             It, its functionality or its interface might change without a formal deprecation.
             See https://github.com/sagemath/sage/issues/20343 for details.
 
         ::
 
-            sage: tikz = TikzPicture.from_poset(P, prog='neato',        # long time (3s), optional - dot2tex, needs sage.graphs sage.modules
+            sage: tikz = TikzPicture.from_poset(P, prog='neato',        # long time (3s), optional - dot2tex pdflatex, needs sage.graphs sage.modules
             ....:                               color_by_label=True)
 
         ::
 
             sage: # needs sage.graphs
             sage: P = posets.SymmetricGroupWeakOrderPoset(4)
-            sage: tikz = TikzPicture.from_poset(P)                      # long time (4s), optional - dot2tex graphviz
-            sage: tikz = TikzPicture.from_poset(P, prog='neato')        # long time (4s), optional - dot2tex graphviz
+            sage: tikz = TikzPicture.from_poset(P)                      # long time (4s), optional - dot2tex graphviz pdflatex
+            sage: tikz = TikzPicture.from_poset(P, prog='neato')        # long time (4s), optional - dot2tex graphviz pdflatex
         """
         graph = poset.hasse_diagram()
         return cls.from_graph(graph, **kwds)

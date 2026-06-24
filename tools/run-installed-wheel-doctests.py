@@ -155,7 +155,7 @@ def build_selftest_command(python: str) -> list[str]:
 
 def build_clean_environment(python: str) -> dict[str, str]:
     env = os.environ.copy()
-    python_bin = os.fspath(Path(python).resolve().parent)
+    python_bin = os.fspath(Path(python).expanduser().absolute().parent)
     path = env.get("PATH", "")
     env["PATH"] = python_bin if not path else f"{python_bin}{os.pathsep}{path}"
     for key in list(env):

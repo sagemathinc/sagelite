@@ -1284,7 +1284,7 @@ cdef class SingularFunction(SageObject):
 
             sage: from sage.libs.singular.function import singular_function
             sage: groebner = singular_function('groebner')
-            sage: 'groebner' in groebner.__doc__  # needs info
+            sage: 'groebner' in groebner.__doc__  # optional - singular_doc
             True
         """
 

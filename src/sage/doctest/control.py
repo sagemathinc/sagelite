@@ -1465,7 +1465,7 @@ class DocTestController(SageObject):
             sage: with open(filename, 'w') as f:
             ....:     f.write(test_hide)
             ....:     f.close()
-            714
+            758
             sage: DF = DocTestDefaults(hide='buckygen,all')
             sage: DC = DocTestController(DF, [filename])
             sage: DC.run()
@@ -1697,8 +1697,9 @@ FeatureNotPresentError: benzene is not available.
 1
 {prompt}: from sage.matrix.matrix_space import get_matrix_class
 {prompt}: get_matrix_class(GF(25,'x'), 4, 4, False, 'meataxe')
-Failed lazy import:
-meataxe is not available.
+Traceback (most recent call last):
+ ...
+FeatureNotPresentError: meataxe is not available.
 ...
 {prompt}: get_matrix_class(GF(25,'x'), 4, 4, False, 'meataxe')  # optional - meataxe
 <class 'sage.matrix.matrix_gfpn_dense.Matrix_gfpn_dense'>

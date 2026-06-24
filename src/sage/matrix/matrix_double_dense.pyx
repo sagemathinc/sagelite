@@ -1499,16 +1499,18 @@ cdef class Matrix_double_dense(Matrix_numpy_dense):
             raise ArithmeticError("other must be a square matrix")
         if self._nrows == 0:
             return [], self.__copy__()
-        global scipy
+        global scipy, numpy
         if scipy is None:
             import scipy
         import scipy.linalg
+        if numpy is None:
+            import numpy
         v, eig = scipy.linalg.eig(self._matrix_numpy,
                                   None if other is None else other.numpy(),
                                   right=False, left=True,
                                   homogeneous_eigvals=homogeneous)
         # scipy puts eigenvectors in columns, we will extract from rows
-        eig = matrix(eig.T)
+        eig = matrix(numpy.ascontiguousarray(eig.T))
         if other is not None:
             # scipy fails to normalize generalized left eigenvectors
             # (see https://github.com/scipy/scipy/issues/11550),
@@ -1656,16 +1658,18 @@ cdef class Matrix_double_dense(Matrix_numpy_dense):
             raise ArithmeticError("other must be a square matrix")
         if self._nrows == 0:
             return [], self.__copy__()
-        global scipy
+        global scipy, numpy
         if scipy is None:
             import scipy
         import scipy.linalg
+        if numpy is None:
+            import numpy
         v, eig = scipy.linalg.eig(self._matrix_numpy,
                                   None if other is None else other.numpy(),
                                   right=True, left=False,
                                   homogeneous_eigvals=homogeneous)
         # scipy puts eigenvectors in columns, we will extract from rows
-        eig = matrix(eig.T)
+        eig = matrix(numpy.ascontiguousarray(eig.T))
         from sage.rings.complex_double import CDF
         if homogeneous:
             v = [(CDF(a), CDF(b)) for a, b in v.T]

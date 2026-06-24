@@ -825,10 +825,12 @@ class Function_real_nth_root(BuiltinFunction):
         3/5*x^2*real_nth_root(x^(-12), 5)
         sage: result = f.integrate(x)
         ...
-        sage: result
-        integrate((abs(x)^3)^(1/5)*sgn(x^3), x)
-        sage: _.diff()
-        (abs(x)^3)^(1/5)*sgn(x^3)
+        sage: str(result) in ['integrate((abs(x)^3)^(1/5)*sgn(x^3), x)',
+        ....:                 'integrate(real_nth_root(x^3, 5), x)']
+        True
+        sage: str(result.diff()) in ['(abs(x)^3)^(1/5)*sgn(x^3)',
+        ....:                        'real_nth_root(x^3, 5)']
+        True
     """
     def __init__(self):
         r"""

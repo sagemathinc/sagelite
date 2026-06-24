@@ -121,10 +121,10 @@ class Function_exp_integral_e(BuiltinFunction):
         sage: f.diff(x)
         -exp_integral_e(1, x)
         sage: f.integrate(x)
-        -1/2*I*pi*x^2 + 1/2*x^2*Ei(-x) + 1/2*x*e^(-x) - 1/2*e^(-x)
+        -exp_integral_e(3, x)
         sage: f = exp_integral_e(-1, x)
         sage: f.integrate(x)
-        -e^(-x)/x
+        Ei(-x) - gamma(-1, x)
 
     Some special values of ``exp_integral_e`` can be simplified.
     [AS1964]_ 5.1.23::
@@ -298,7 +298,7 @@ class Function_exp_integral_e1(BuiltinFunction):
         sage: f.diff(x)
         -e^(-x)/x
         sage: f.integrate(x)
-        x*exp_integral_e(1, x) - e^(-x)
+        -exp_integral_e(2, x)
 
     ALGORITHM:
 
@@ -750,7 +750,7 @@ class Function_sin_integral(BuiltinFunction):
         sage: f.integrate(x)
         x*sin_integral(x) + cos(x)
         sage: integrate(sin(x)/x, x)
-        sin_integral(x)
+        -1/2*I*Ei(I*x) + 1/2*I*Ei(-I*x)
 
 
     Compare values of the functions `\operatorname{Si}(x)` and
@@ -937,7 +937,7 @@ class Function_cos_integral(BuiltinFunction):
         sage: f.diff(x)
         cos(x)/x
         sage: f.integrate(x)
-        x*cos_integral(x) + 1/2*x*log(x^2) - x*log(x) - sin(x)
+        x*cos_integral(x) - sin(x)
 
     The Nielsen spiral is the parametric plot of (Si(t), Ci(t))::
 
@@ -1224,7 +1224,7 @@ class Function_cosh_integral(BuiltinFunction):
         sage: f.diff(x)
         cosh(x)/x
         sage: f.integrate(x)
-        x*cosh_integral(x) + 1/2*x*log(x^2) - x*log(x) - sinh(x)
+        x*cosh_integral(x) - sinh(x)
 
     ALGORITHM:
 

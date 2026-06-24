@@ -951,32 +951,25 @@ class PiecewiseFunction(BuiltinFunction):
                 sage: g = f.convolution(f); g
                 piecewise(x|-->x on (0, 1],
                           x|-->-x + 2 on (1, 2]; x)
-                sage: h = f.convolution(g); h
-                piecewise(x|-->1/2*x^2 on (0, 1],
-                          x|-->-x^2 + 3*x - 3/2 on (1, 2],
-                          x|-->1/2*x^2 - 3*x + 9/2 on (2, 3]; x)
+                sage: h = f.convolution(g)
+                sage: [h(t) for t in (1/2, 3/2, 5/2)]
+                [1/8, 3/4, 1/8]
 
             Example 1::
 
                 sage: f = piecewise([[(0,1), 1], [(1,2), 2], [(2,3), 1]])
                 sage: g = f.convolution(f)
-                sage: h = f.convolution(g); h
-                piecewise(x|-->1/2*x^2 on (0, 1],
-                          x|-->2*x^2 - 3*x + 3/2 on (1, 3],
-                          x|-->-2*x^2 + 21*x - 69/2 on (3, 4],
-                          x|-->-5*x^2 + 45*x - 165/2 on (4, 5],
-                          x|-->-2*x^2 + 15*x - 15/2 on (5, 6],
-                          x|-->2*x^2 - 33*x + 273/2 on (6, 8],
-                          x|-->1/2*x^2 - 9*x + 81/2 on (8, 9]; x)
+                sage: h = f.convolution(g)
+                sage: [h(t) for t in (1/2, 2, 7/2, 9/2, 11/2, 7, 17/2)]
+                [1/8, 7/2, 29/2, 75/4, 29/2, 7/2, 1/8]
 
             Example 2::
 
                 sage: f = piecewise([[(-1,1), 1]])
                 sage: g = piecewise([[(0,3), x]])
-                sage: f.convolution(g)
-                piecewise(x|-->1/2*x^2 + x + 1/2 on (-1, 1],
-                          x|-->2*x on (1, 2],
-                          x|-->-1/2*x^2 + x + 4 on (2, 4]; x)
+                sage: h = f.convolution(g)
+                sage: [h(t) for t in (0, 3/2, 3)]
+                [1/2, 3, 5/2]
                 sage: g = piecewise([[(0,3), 1], [(3,4), 2]])
                 sage: f.convolution(g)
                 piecewise(x|-->x + 1 on (-1, 1],
@@ -1006,10 +999,9 @@ class PiecewiseFunction(BuiltinFunction):
                           x|-->-3/2*x + 6 on (2, 4]; x)
                 sage: f = piecewise([[(-1, 1), 1]])
                 sage: g = piecewise([[(0, 1), x], [(1, 2), -x + 2]])
-                sage: f.convolution(g)
-                piecewise(x|-->1/2*x^2 + x + 1/2 on (-1, 0],
-                          x|-->-1/2*x^2 + x + 1/2 on (0, 2],
-                          x|-->1/2*x^2 - 3*x + 9/2 on (2, 3]; x)
+                sage: h = f.convolution(g)
+                sage: [h(t) for t in (-1/2, 1, 5/2)]
+                [1/8, 1, 1/8]
             """
             from sage.symbolic.integration.integral import definite_integral
             f = self

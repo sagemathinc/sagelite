@@ -272,22 +272,31 @@ def _extract_embedded_position(docstring):
     raw_filename = res.group('FILENAME')
     filename = raw_filename
 
+    if os.path.isabs(filename) and not os.path.exists(filename):
+        parts = os.path.normpath(filename).split(os.path.sep)
+        try:
+            sage_index = len(parts) - 1 - parts[::-1].index('sage')
+        except ValueError:
+            pass
+        else:
+            filename = os.path.join(*parts[sage_index:])
+
     if not os.path.isabs(filename):
         # Try some common path prefixes for Cython modules built by/for Sage
         # 1) Module in the sage src tree
         # 2) Module compiled by Sage's inline cython() compiler
         from sage.misc.temporary_file import spyx_tmp
-        if raw_filename.startswith('sage/'):
+        if filename.startswith('sage/'):
             import sage
             from sage.env import SAGE_SRC
-            try_filenames = [os.path.join(directory, raw_filename.removeprefix('sage/'))
+            try_filenames = [os.path.join(directory, filename.removeprefix('sage/'))
                              for directory in sage.__path__]
-            try_filenames.append(os.path.join(SAGE_SRC, raw_filename))  # meson editable install
+            try_filenames.append(os.path.join(SAGE_SRC, filename))  # meson editable install
         else:
             try_filenames = []
         try_filenames.append(
-            os.path.join(spyx_tmp(), '_'.join(raw_filename.split('_')[:-1]),
-                         raw_filename))
+            os.path.join(spyx_tmp(), '_'.join(filename.split('_')[:-1]),
+                         filename))
         for try_filename in try_filenames:
             if os.path.exists(try_filename):
                 filename = try_filename
@@ -439,6 +448,53 @@ def _extract_source(lines, lineno):
         lines[-1] += '\n'
 
     return _getblock(lines[lineno:])
+
+
+def _sage_package_source_dirs():
+    r"""
+    Yield directories that contain the installed or source-tree ``sage``
+    package.
+    """
+    try:
+        from sage.env import SAGE_SRC
+    except ImportError:
+        pass
+    else:
+        if SAGE_SRC:
+            yield os.path.normpath(os.path.join(SAGE_SRC, 'sage'))
+
+    import sage
+    for directory in sage.__path__:
+        yield os.path.normpath(directory)
+
+
+def _resolve_sage_source_filename(filename):
+    r"""
+    Resolve namespace-relative Cython source filenames in installed wheels.
+    """
+    if not filename:
+        return filename
+
+    filename = os.fspath(filename)
+    if os.path.isabs(filename) and os.path.exists(filename):
+        return filename
+
+    norm = os.path.normpath(filename)
+    parts = norm.split(os.sep)
+    if parts and parts[0] == 'sage':
+        suffix = os.path.join(*parts[1:])
+    elif 'sage' in parts:
+        index = len(parts) - 1 - parts[::-1].index('sage')
+        suffix = os.path.join(*parts[index + 1:])
+    else:
+        return filename
+
+    for directory in _sage_package_source_dirs():
+        candidate = os.path.join(directory, suffix)
+        if os.path.exists(candidate):
+            return candidate
+
+    return filename
 
 
 class SageArgSpecVisitor(ast.NodeVisitor):
@@ -1281,7 +1337,7 @@ def sage_getfile(obj):
     pos = _extract_embedded_position(d)
     if pos is not None:
         (_, filename, _) = pos
-        return filename
+        return _resolve_sage_source_filename(filename)
 
     # The instance case
     if isclassinstance(obj):
@@ -1292,7 +1348,7 @@ def sage_getfile(obj):
         pos = _extract_embedded_position(_sage_getdoc_unformatted(obj.__init__))
         if pos is not None:
             (_, filename, _) = pos
-            return filename
+            return _resolve_sage_source_filename(filename)
 
     # No go? fall back to inspect.
     try:
@@ -1307,8 +1363,10 @@ def sage_getfile(obj):
             # but as long as either the class or its __init__ method has a
             # docstring, _sage_getdoc_unformatted should return correct result
             # see https://github.com/mesonbuild/meson-python/issues/723
-            return sourcefile.removesuffix(suffix)+os.path.extsep+'pyx'
-    return sourcefile
+            return _resolve_sage_source_filename(
+                sourcefile.removesuffix(suffix) + os.path.extsep + 'pyx'
+            )
+    return _resolve_sage_source_filename(sourcefile)
 
 
 def sage_getfile_relative(obj):
@@ -2540,6 +2598,7 @@ def sage_getsourcelines(obj):
                     raise err
 
     (orig, filename, lineno) = pos
+    filename = _resolve_sage_source_filename(filename)
     try:
         with open(filename) as f:
             source_lines = f.readlines()
@@ -2725,6 +2784,12 @@ def __internal_tests():
         sage: s = 'File: sage/rings/rational.pyx (starting at line 1080)\noriginal'
         sage: _extract_embedded_position(s)
         ('original', '.../rational.pyx', 1080)
+
+    Stale absolute build paths are remapped to the installed source tree::
+
+        sage: s = 'File: /stale/build/src/sage/rings/rational.pyx (starting at line 1080)'
+        sage: _extract_embedded_position(s)
+        ('', '...sage/rings/rational.pyx', 1080)
 
     And with a complicated original docstring::
 

@@ -19,6 +19,8 @@ interpreter.
 import os
 import pickle
 import re
+import shlex
+import sys
 import textwrap
 
 import sage.repl.preparse
@@ -153,7 +155,7 @@ class Sage(ExtraTabCompletion, Expect):
                     'init_code should be a string or an iterable of lines '
                     'of code')
 
-        command = 'python3 -u'
+        command = f'{shlex.quote(sys.executable)} -u'
         prompt = re.compile(b'>>> |sage: |In : ')
         environment = 'sage.all'
         init_code.append(f'from {environment} import *')

@@ -20,6 +20,7 @@ AUTHORS:
 # ****************************************************************************
 
 import builtins
+import importlib.util
 import os
 import re
 import shutil
@@ -28,11 +29,230 @@ import webbrowser
 from pathlib import Path
 
 from sage.config import get_include_dirs
-from sage.env import SAGE_LOCAL, cython_aliases
+from sage.env import SAGE_LOCAL, SAGE_ROOT, cython_aliases
 from sage.misc.cachefunc import cached_function
 from sage.misc.sage_ostools import redirection, restore_cwd
 from sage.misc.temporary_file import spyx_tmp, tmp_filename
 from sage.repl.user_globals import get_globals
+
+
+def _deduplicate_existing_dirs(dirs):
+    """
+    Return existing directories from ``dirs`` without duplicates.
+    """
+    deduped = []
+    seen = set()
+    for directory in dirs:
+        path = Path(directory)
+        if not path.is_dir():
+            continue
+        key = os.path.normcase(os.path.realpath(path))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(path.as_posix())
+    return deduped
+
+
+def _installed_sage_package_roots():
+    """
+    Return site-package roots that contain the installed ``sage`` package.
+    """
+    import sage
+
+    return [Path(directory).parent for directory in sage.__path__]
+
+
+@cached_function
+def _installed_sagelite_include_dirs():
+    """
+    Return native include directories available from an installed wheel.
+    """
+    if SAGE_ROOT is not None:
+        return []
+
+    dirs = []
+    for root in _installed_sage_package_roots():
+        sage_include = root / "sage" / "include"
+        dirs.append(sage_include)
+        dirs.append(sage_include / "singular")
+
+    gmpy2_spec = importlib.util.find_spec("gmpy2")
+    if gmpy2_spec is not None and gmpy2_spec.origin:
+        gmpy2_include = Path(gmpy2_spec.origin).parent
+        if (gmpy2_include / "gmp.h").is_file():
+            dirs.append(gmpy2_include)
+
+    try:
+        import numpy
+    except ImportError:
+        pass
+    else:
+        dirs.append(Path(numpy.get_include()))
+
+    return _deduplicate_existing_dirs(dirs)
+
+
+def _installed_sagelite_library_link_names(library):
+    """
+    Return linker names for an auditwheel-hashed runtime library.
+    """
+    name = library.name
+    candidates = {name}
+
+    match = re.match(r"^(lib.+?)-[0-9a-f]{8}(\.so.*)$", name)
+    if match:
+        candidates.add(f"{match.group(1)}.so")
+
+    match = re.match(r"^(lib.+?)-[0-9a-f]{8}(\..*)$", name)
+    if match:
+        candidates.add(f"{match.group(1)}.so")
+
+    if name.startswith("libpari-gmp"):
+        candidates.add("libpari.so")
+    elif name.startswith("libopenblas"):
+        candidates.update({"libblas.so", "libcblas.so", "libopenblas.so"})
+
+    return sorted(candidates)
+
+
+def _populate_installed_sagelite_library_links(library_dir, link_dir):
+    """
+    Populate ``link_dir`` with conventional linker names for ``library_dir``.
+    """
+    link_dir.mkdir(parents=True, exist_ok=True)
+    for library in sorted(library_dir.glob("lib*.so*")):
+        if not library.is_file():
+            continue
+        for name in _installed_sagelite_library_link_names(library):
+            link = link_dir / name
+            if link.exists() or link.is_symlink():
+                continue
+            try:
+                link.symlink_to(library)
+            except OSError:
+                continue
+    return any(path.exists() or path.is_symlink() for path in link_dir.glob("lib*.so*"))
+
+
+@cached_function
+def _installed_sagelite_library_dirs():
+    """
+    Return private linker directories for auditwheel-bundled Sage libraries.
+    """
+    if SAGE_ROOT is not None:
+        return []
+
+    dirs = []
+    link_root = Path(spyx_tmp()) / "sagelite-lib-links"
+    for index, root in enumerate(_installed_sage_package_roots()):
+        library_dir = root / "sagelite.libs"
+        if not library_dir.is_dir():
+            continue
+        link_dir = link_root / str(index)
+        if _populate_installed_sagelite_library_links(library_dir, link_dir):
+            dirs.append(link_dir)
+    return _deduplicate_existing_dirs(dirs)
+
+
+def _add_installed_sagelite_aliases(aliases, include_dirs, library_dirs):
+    """
+    Add pkg-config-style aliases backed by wheel-bundled native libraries.
+    """
+    if SAGE_ROOT is not None or not library_dirs:
+        return
+
+    def set_alias(prefix, libraries):
+        aliases.setdefault(f"{prefix}_LIBRARIES", libraries)
+        aliases.setdefault(f"{prefix}_INCDIR", include_dirs)
+        aliases.setdefault(f"{prefix}_LIBDIR", library_dirs)
+        aliases.setdefault(f"{prefix}_LIBEXTRA", [])
+        aliases.setdefault(f"{prefix}_CFLAGS", [])
+
+    # These cover the Sage Cython include files that express native
+    # dependencies through pkg-config aliases in source builds.
+    set_alias("CBLAS", ["openblas"])
+    set_alias("FFLASFFPACK", ["fflas", "ffpack"])
+    set_alias("GDLIB", ["gd"])
+    set_alias("GIVARO", ["givaro"])
+    set_alias("GSL", ["gsl"])
+    set_alias("LAPACK", ["openblas"])
+    set_alias("LIBPNG", ["png16"])
+    set_alias("LINBOX", ["linbox"])
+    set_alias("M4RI", ["m4ri"])
+    set_alias("M4RIE", ["m4rie"])
+    set_alias("SINGULAR", [
+        "Singular-4",
+        "polys-4",
+        "factory-4",
+        "singular_resources-4",
+        "omalloc-0",
+    ])
+
+    if not aliases.get("NTL_INCDIR"):
+        aliases["NTL_INCDIR"] = include_dirs
+    if not aliases.get("NTL_LIBDIR"):
+        aliases["NTL_LIBDIR"] = library_dirs
+
+
+def _expand_cython_alias_list(values, aliases):
+    """
+    Expand alias tokens left in Cython extension metadata.
+
+    Cython applies aliases to ``# distutils`` directives in the primary
+    source, but directives inherited through ``cimport``ed ``.pxd`` files can
+    still leave values such as ``GSL_LIBDIR`` in the generated extension.
+    """
+    expanded = []
+    for value in values or []:
+        alias_value = aliases.get(value)
+        if alias_value is None:
+            expanded.append(value)
+        elif isinstance(alias_value, str):
+            expanded.extend(alias_value.split())
+        else:
+            expanded.extend(alias_value)
+    return expanded
+
+
+def _extend_unique(values, extra_values):
+    """
+    Return ``values`` followed by new entries from ``extra_values``.
+    """
+    extended = []
+    seen = set()
+    for value in list(values or []) + list(extra_values or []):
+        if not value:
+            continue
+        if value in seen:
+            continue
+        seen.add(value)
+        extended.append(value)
+    return extended
+
+
+def _finalize_cythonized_extension(ext, aliases, libraries, library_dirs, include_dirs):
+    """
+    Restore installed-wheel include and linker metadata after Cythonization.
+    """
+    for attribute in (
+        "include_dirs",
+        "library_dirs",
+        "runtime_library_dirs",
+        "libraries",
+        "extra_compile_args",
+        "extra_link_args",
+    ):
+        setattr(
+            ext,
+            attribute,
+            _expand_cython_alias_list(getattr(ext, attribute, []), aliases),
+        )
+
+    ext.include_dirs = _extend_unique(ext.include_dirs, include_dirs)
+    ext.library_dirs = _extend_unique(ext.library_dirs, library_dirs)
+    ext.runtime_library_dirs = _extend_unique(ext.runtime_library_dirs, library_dirs)
+    ext.libraries = _extend_unique(ext.libraries, libraries)
 
 
 @cached_function
@@ -43,19 +263,31 @@ def _standard_libs_libdirs_incdirs_aliases():
     EXAMPLES::
 
         sage: from sage.misc.cython import _standard_libs_libdirs_incdirs_aliases
-        sage: _standard_libs_libdirs_incdirs_aliases()
-        (['mpfr', 'gmp', 'gmpxx', 'pari', ...],
-         [...],
-         [...],
-         {...})
+        sage: libs, libdirs, incdirs, aliases = _standard_libs_libdirs_incdirs_aliases()
+        sage: all(isinstance(value, list) for value in (libs, libdirs, incdirs))
+        True
+        sage: isinstance(aliases, dict)
+        True
     """
     aliases = cython_aliases()
-    standard_libs = ["mpfr", "gmp", "gmpxx", "pari", "m", "ec", "gsl", "ntl"]
+    installed_incdirs = _installed_sagelite_include_dirs()
+    installed_libdirs = _installed_sagelite_library_dirs()
+    _add_installed_sagelite_aliases(aliases, installed_incdirs, installed_libdirs)
+
+    if SAGE_ROOT is None and not installed_libdirs:
+        standard_libs = []
+    else:
+        standard_libs = ["mpfr", "gmp", "gmpxx", "pari", "m", "ec", "gsl", "ntl"]
     standard_libdirs = []
-    if SAGE_LOCAL:
+    if SAGE_LOCAL and SAGE_ROOT is not None:
         standard_libdirs.append(os.path.join(SAGE_LOCAL, "lib"))
+    standard_libdirs.extend(installed_libdirs)
     standard_libdirs.extend(aliases["NTL_LIBDIR"])
-    standard_incdirs = [dir.as_posix() for dir in get_include_dirs()] + aliases["NTL_INCDIR"]
+    standard_incdirs = [dir.as_posix() for dir in get_include_dirs()]
+    standard_incdirs.extend(installed_incdirs)
+    standard_incdirs.extend(aliases["NTL_INCDIR"])
+    standard_libdirs = _deduplicate_existing_dirs(standard_libdirs)
+    standard_incdirs = _deduplicate_existing_dirs(standard_incdirs)
     return standard_libs, standard_libdirs, standard_incdirs, aliases
 
 ################################################################
@@ -371,7 +603,8 @@ def cython(filename, verbose=0, compile_message=False,
                     extra_compile_args=extra_compile_args,
                     extra_link_args=extra_link_args,
                     libraries=standard_libs,
-                    library_dirs=standard_libdirs)
+                    library_dirs=standard_libdirs,
+                    runtime_library_dirs=standard_libdirs)
 
     directives = {'language_level': 3, 'cdivision': True}
 
@@ -389,6 +622,13 @@ def cython(filename, verbose=0, compile_message=False,
                                      quiet=(verbose <= 0),
                                      errors_to_stderr=False,
                                      use_listing_file=True)
+                    _finalize_cythonized_extension(
+                        ext,
+                        aliases,
+                        standard_libs,
+                        standard_libdirs,
+                        includes,
+                    )
             finally:
                 # Read the "listing file" which is the file containing
                 # warning and error messages generated by Cython.

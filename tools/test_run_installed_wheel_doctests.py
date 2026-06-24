@@ -35,7 +35,7 @@ def test_runner_uses_short_installed_doctest_defaults(monkeypatch, tmp_path):
         assert "PYTHONPATH" not in env
         assert "LD_LIBRARY_PATH" not in env
         assert env["PATH"].split(os.pathsep)[0] == str(
-            Path(sys.executable).resolve().parent
+            Path(sys.executable).expanduser().absolute().parent
         )
         if command[2] == "sage.doctest":
             log_path = Path(command[5])
@@ -276,6 +276,23 @@ def test_runner_sanitizes_installed_doctest_environment(monkeypatch):
         "FPLLL_DEFAULT_STRATEGY",
     ]:
         assert key not in env
+
+
+def test_runner_keeps_venv_scripts_directory_ahead_of_resolved_python(
+    monkeypatch, tmp_path
+):
+    runner = _load_runner()
+    venv_bin = tmp_path / "venv" / "bin"
+    system_bin = tmp_path / "system" / "bin"
+    venv_bin.mkdir(parents=True)
+    system_bin.mkdir(parents=True)
+    python = venv_bin / "python"
+    python.symlink_to(system_bin / "python3.12")
+    monkeypatch.setenv("PATH", "/usr/bin")
+
+    env = runner.build_clean_environment(os.fspath(python))
+
+    assert env["PATH"].split(os.pathsep)[:2] == [os.fspath(venv_bin), "/usr/bin"]
 
 
 def test_manual_companion_packages_parse_hyphenated_wheel_names():

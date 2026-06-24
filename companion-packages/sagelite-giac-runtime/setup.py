@@ -57,9 +57,16 @@ def _runtime_libraries(executable: Path) -> list[Path]:
         "libglpk",
         "libcliquer",
         "libecm",
+        "libgf2x",
+        "libgfortran",
+        "libopenblas",
+        "libquadmath",
         "libreadline",
         "libhistory",
+        "libtinfo",
         "libcurl",
+        "libssl",
+        "libcrypto",
         "libpng",
     )
     for line in output.splitlines():

@@ -166,6 +166,10 @@ class build_py(_build_py):
             "  fi\n"
             "fi\n"
             'mkdir -p "$SYMPOW_CACHEDIR/sympow" "$SYMPOW_PKGCACHEDIR/sympow"\n'
+            'if [ -d "$HERE/../datafiles" ] && [ ! -f "$SYMPOW_CACHEDIR/sympow/datafiles/M02HM.txt" ]; then\n'
+            '  mkdir -p "$SYMPOW_CACHEDIR/sympow/datafiles"\n'
+            '  cp -R "$HERE/../datafiles/." "$SYMPOW_CACHEDIR/sympow/datafiles/"\n'
+            'fi\n'
             "export LD_LIBRARY_PATH SYMPOW_PKGDATADIR SYMPOW_PKGLIBDIR SYMPOW_CACHEDIR SYMPOW_PKGCACHEDIR SYMPOW_GP\n"
             'cd "$HERE/.." || exit 127\n'
             'exec "$HERE/sympow-real" "$@"\n'

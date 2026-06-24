@@ -3403,7 +3403,7 @@ cdef class Matrix(Matrix1):
 
             sage: m = matrix.random(RR, 128)
             sage: from sage.doctest.util import ensure_interruptible_after
-            sage: with ensure_interruptible_after(1): m.charpoly()
+            sage: with ensure_interruptible_after(1, max_wait_after_interrupt=1): m.charpoly()
         """
 
         # Validate assertions
@@ -17192,20 +17192,20 @@ cdef class Matrix(Matrix1):
 
         We check some degenerate cases::
 
-            sage: m = matrix(OL, 0, 0, []); r,s,p = m._echelon_form_PID()
-            sage: (r,s,p)
+            sage: m = matrix(OL, 0, 0, []); r,s,p = m._echelon_form_PID()               # needs sage.rings.number_field
+            sage: (r,s,p)                                                               # needs sage.rings.number_field
             ([], [], [])
-            sage: r * m == s and r.det() == 1
+            sage: r * m == s and r.det() == 1                                           # needs sage.rings.number_field
             True
-            sage: m = matrix(OL, 0, 1, []); r,s,p = m._echelon_form_PID()
-            sage: (r,s,p)
+            sage: m = matrix(OL, 0, 1, []); r,s,p = m._echelon_form_PID()               # needs sage.rings.number_field
+            sage: (r,s,p)                                                               # needs sage.rings.number_field
             ([], [], [])
-            sage: r * m == s and r.det() == 1
+            sage: r * m == s and r.det() == 1                                           # needs sage.rings.number_field
             True
-            sage: m = matrix(OL, 1, 0, []); r,s,p = m._echelon_form_PID()
-            sage: (r,s,p)
+            sage: m = matrix(OL, 1, 0, []); r,s,p = m._echelon_form_PID()               # needs sage.rings.number_field
+            sage: (r,s,p)                                                               # needs sage.rings.number_field
             ([1], [], [])
-            sage: r * m == s and r.det() == 1
+            sage: r * m == s and r.det() == 1                                           # needs sage.rings.number_field
             True
 
         A 2x2 matrix::
@@ -17221,14 +17221,14 @@ cdef class Matrix(Matrix1):
 
         A larger example::
 
-            sage: m = matrix(OL, 3, 5, [a^2 - 3*a - 1, a^2 - 3*a + 1, a^2 + 1,
+            sage: m = matrix(OL, 3, 5, [a^2 - 3*a - 1, a^2 - 3*a + 1, a^2 + 1,          # needs sage.rings.number_field
             ....:   -a^2 + 2, -3*a^2 - a - 1, -6*a - 1, a^2 - 3*a - 1,
             ....:   2*a^2 + a + 5, -2*a^2 + 5*a + 1, -a^2 + 13*a - 3,
             ....:   -2*a^2 + 4*a - 2, -2*a^2 + 1, 2*a, a^2 - 6, 3*a^2 - a ])
-            sage: r,s,p = m._echelon_form_PID()
-            sage: s[2]
+            sage: r,s,p = m._echelon_form_PID()                                        # needs sage.rings.number_field
+            sage: s[2]                                                                  # needs sage.rings.number_field
             (0, 0, 3*a^2 + 18*a - 34, 68*a^2 - 134*a + 53, 111*a^2 - 275*a + 90)
-            sage: r * m == s and r.det() == 1
+            sage: r * m == s and r.det() == 1                                           # needs sage.rings.number_field
             True
 
         We verify that :issue:`9053` is resolved::

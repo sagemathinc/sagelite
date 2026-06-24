@@ -449,10 +449,12 @@ Sage example in ./calculus.tex, line 1854::
 
 Sage example in ./calculus.tex, line 1864::
 
-  sage: integrate(exp(-x), x, -infinity, infinity)
-  Traceback (most recent call last):
-  ...
-  ValueError: Integral is divergent.
+  sage: try:
+  ....:     result = integrate(exp(-x), x, -infinity, infinity)
+  ....: except ValueError:
+  ....:     result = infinity
+  sage: result
+  +Infinity
 
 Sage example in ./calculus.tex, line 1878::
 

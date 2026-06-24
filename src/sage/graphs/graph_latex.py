@@ -1337,17 +1337,17 @@ class GraphLatex(SageObject):
             %%
             \begin{scope}
               \pgfsetstrokecolor{black}
-              \definecolor{strokecol}{rgb}{...};
+              \definecolor{strokecol}{rgb}{...}...
               \pgfsetstrokecolor{strokecol}
-              \definecolor{fillcol}{rgb}{...};
+              \definecolor{fillcol}{rgb}{...}...
               \pgfsetfillcolor{fillcol}
               \filldraw ... cycle;
             \end{scope}
             \begin{scope}
               \pgfsetstrokecolor{black}
-              \definecolor{strokecol}{rgb}{...};
+              \definecolor{strokecol}{rgb}{...}...
               \pgfsetstrokecolor{strokecol}
-              \definecolor{fillcol}{rgb}{...};
+              \definecolor{fillcol}{rgb}{...}...
               \pgfsetfillcolor{fillcol}
               \filldraw ... cycle;
             \end{scope}
@@ -1395,7 +1395,7 @@ class GraphLatex(SageObject):
             \node (node_...) at (...bp,...bp) [draw,draw=none] {$...$};
               \node (node_...) at (...bp,...bp) [draw,draw=none] {$...$};
               \draw [black,->] (node_...) ..controls (...bp,...bp) and (...bp,...bp)  .. (node_...);
-              \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+              \definecolor{strokecol}{rgb}{0.0,0.0,0.0}...
               \pgfsetstrokecolor{strokecol}
               \draw (...bp,...bp) node {$\text{\texttt{my{\char`\_}label}}$};
             %
@@ -1438,12 +1438,20 @@ class GraphLatex(SageObject):
 
         dotdata = self._graph.graphviz_string(labels='latex', **options)
         import dot2tex
-        return dot2tex.dot2tex(dotdata,
-                               format='tikz',
-                               autosize=True,
-                               crop=True,
-                               figonly='True',
-                               prog=self.get_option('prog')).strip()
+        dot2tex_options = {
+            'format': 'tikz',
+            'figonly': 'True',
+            'prog': self.get_option('prog'),
+        }
+        try:
+            return dot2tex.dot2tex(dotdata,
+                                   autosize=True,
+                                   crop=True,
+                                   **dot2tex_options).strip()
+        except FileNotFoundError as err:
+            if not err.filename or not err.filename.endswith("dot2tex.log"):
+                raise
+            return dot2tex.dot2tex(dotdata, **dot2tex_options).strip()
         # usepdflatex = True, debug = True)
 
     def tkz_picture(self):

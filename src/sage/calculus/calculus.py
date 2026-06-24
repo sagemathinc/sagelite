@@ -408,7 +408,7 @@ see :issue:`9538`::
 To check that :issue:`14821` is fixed::
 
     sage: H = exp(-1.0 * x)
-    sage: H.integral(x, 0, 1)
+    sage: H.integral(x, 0, 1)  # tol 1e-15
     0.6321205588285577
     sage: result = integral(exp(-300.0/(-0.064*x+14.0)),x,0.0,120.0)
     ...

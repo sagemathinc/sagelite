@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 
-PROGRAMS = ["dot", "neato", "twopi"]
+PROGRAMS = ["dot", "neato", "twopi", "fdp", "circo"]
 
 
 def data_dir() -> Path:
@@ -61,10 +61,20 @@ def twopi() -> int:
     return run_program("twopi")
 
 
+def fdp() -> int:
+    return run_program("fdp")
+
+
+def circo() -> int:
+    return run_program("circo")
+
+
 __all__ = [
+    "circo",
     "dot",
     "bin_dir",
     "executable_path",
+    "fdp",
     "library_dir",
     "neato",
     "plugin_dir",

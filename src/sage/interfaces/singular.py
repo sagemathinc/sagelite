@@ -2276,7 +2276,7 @@ class SingularFunction(ExpectFunction):
         """
         EXAMPLES::
 
-            sage: 'groebner' in singular.groebner.__doc__  # needs info
+            sage: 'groebner' in singular.groebner.__doc__  # optional - singular_doc
             True
         """
 
@@ -2306,7 +2306,7 @@ class SingularFunctionElement(FunctionElement):
 
             sage: R = singular.ring(0, '(x,y,z)', 'dp')
             sage: A = singular.matrix(2,2)
-            sage: 'matrix_expression' in A.nrows.__doc__  # needs info
+            sage: 'matrix_expression' in A.nrows.__doc__  # optional - singular_doc
             True
         """
         return get_docstring(self._name, code=True)
@@ -2338,15 +2338,15 @@ def get_docstring(name, prefix=False, code=False):
     EXAMPLES::
 
         sage: from sage.interfaces.singular import get_docstring
-        sage: 'groebner' in get_docstring('groebner')  # needs_info
+        sage: 'groebner' in get_docstring('groebner')  # optional - singular_doc
         True
-        sage: 'standard.lib' in get_docstring('groebner')  # needs info
+        sage: 'standard.lib' in get_docstring('groebner')  # optional - singular_doc
         True
 
     The ``prefix=True`` form is used in Sage's generated docstrings::
 
         sage: from sage.interfaces.singular import get_docstring
-        sage: print(get_docstring("factorize", prefix=True))  # needs info
+        sage: print(get_docstring("factorize", prefix=True))  # optional - singular_doc
         The Singular documentation for "factorize" is given below.
         ...
 
@@ -2355,7 +2355,7 @@ def get_docstring(name, prefix=False, code=False):
     Non-existent functions raise a :class:`KeyError`::
 
         sage: from sage.interfaces.singular import get_docstring
-        sage: get_docstring("mysql_real_escape_string")  # needs info
+        sage: get_docstring("mysql_real_escape_string")  # optional - singular_doc
         Traceback (most recent call last):
         ...
         KeyError: 'mysql_real_escape_string'
@@ -2364,7 +2364,7 @@ def get_docstring(name, prefix=False, code=False):
     are not function nodes::
 
         sage: from sage.interfaces.singular import get_docstring
-        sage: get_docstring("Preface")  # needs info
+        sage: get_docstring("Preface")  # optional - singular_doc
         Traceback (most recent call last):
         ...
         KeyError: 'Preface'

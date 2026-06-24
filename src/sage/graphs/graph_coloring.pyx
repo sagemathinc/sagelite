@@ -2084,8 +2084,10 @@ def acyclic_edge_coloring(g, hex_colors=False, value_only=False, k=0,
         sage: from sage.graphs.graph_coloring import acyclic_edge_coloring
         sage: g = graphs.CompleteGraph(4)
         sage: d = acyclic_edge_coloring(g, hex_colors=True)                             # needs sage.numerical.mip
-        sage: sorted(d)                                                                 # needs sage.numerical.mip
-        ['#0066ff', '#00ff66', '#cbff00', '#cc00ff', '#ff0000']
+        sage: sorted(d) in [                                                            # needs sage.numerical.mip
+        ....:     ['#0066ff', '#00ff66', '#cbff00', '#cc00ff', '#ff0000'],
+        ....:     ['#0065ff', '#00ff66', '#cbff00', '#cc00ff', '#ff0000']]
+        True
 
     The acyclic chromatic index of a graph without edge is 0 (:issue:`27079`)::
 

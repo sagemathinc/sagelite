@@ -141,14 +141,14 @@ def load(filename, globals, attach=False):
 
     Cython files are *not* preparsed::
 
-        sage: context = { "z": 1 }
-        sage: with NamedTemporaryFile(mode='w', suffix='.pyx') as file:
+        sage: context = { "z": 1 }                                                     # needs sage.misc.cython
+        sage: with NamedTemporaryFile(mode='w', suffix='.pyx') as file:                 # needs sage.misc.cython
         ....:     _ = file.write("print(('hi', 2^3)); z = -2^7")
         ....:     _ = file.seek(0)
-        ....:     sage.repl.load.load(file.name, context)                                         # needs sage.misc.cython
+        ....:     sage.repl.load.load(file.name, context)
         Compiling ...
         ('hi', 1)
-        sage: context["z"]
+        sage: context["z"]                                                             # needs sage.misc.cython
         -7
 
     If the file is not a Cython, Python, or Sage file, a :exc:`ValueError`

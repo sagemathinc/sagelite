@@ -1569,6 +1569,7 @@ def write_install_metadata(
     *,
     label: str,
     package: str,
+    doctest_optional: str,
     base_python: str,
     install_dir: Path,
     venv_python: Path,
@@ -1597,6 +1598,7 @@ def write_install_metadata(
         "schema": "sagelite-wheelhouse-validation-install-v1",
         "label": label,
         "package": package,
+        "doctest_optional": doctest_optional,
         "base_python": base_python,
         "install_dir": os.fspath(install_dir),
         "venv_python": os.fspath(venv_python),
@@ -2355,6 +2357,7 @@ def build_validation_command(
     *,
     full: bool,
     short: int | None,
+    optional: str,
     nthreads: int,
     manifest_compiled_limit: int | None,
     extra_doctest_args: list[str],
@@ -2370,6 +2373,8 @@ def build_validation_command(
         label,
         "--runtime-summary",
         "--selftest",
+        "--optional",
+        optional,
         "--nthreads",
         str(nthreads),
     ]
@@ -2428,6 +2433,11 @@ def _make_parser() -> argparse.ArgumentParser:
         "--package",
         default=DEFAULT_PACKAGE,
         help="package requirement installed from the wheelhouse",
+    )
+    parser.add_argument(
+        "--optional",
+        default="sage,optional",
+        help="value passed to the installed doctest runner --optional option",
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
@@ -2624,6 +2634,7 @@ def main(argv: list[str] | None = None) -> int:
             wheelhouses,
             full=args.full,
             short=None if args.full else args.short,
+            optional=args.optional,
             nthreads=args.nthreads,
             manifest_compiled_limit=args.manifest_compiled_limit,
             extra_doctest_args=args.doctest_args[1:]
@@ -2753,6 +2764,7 @@ def main(argv: list[str] | None = None) -> int:
                 output_dir,
                 label=label,
                 package=args.package,
+                doctest_optional=args.optional,
                 base_python=args.python,
                 install_dir=install_dir,
                 venv_python=venv_python,
@@ -2793,6 +2805,7 @@ def main(argv: list[str] | None = None) -> int:
         output_dir,
         label=label,
         package=args.package,
+        doctest_optional=args.optional,
         base_python=args.python,
         install_dir=install_dir,
         venv_python=venv_python,
@@ -2842,6 +2855,7 @@ def main(argv: list[str] | None = None) -> int:
             output_dir,
             label=label,
             package=args.package,
+            doctest_optional=args.optional,
             base_python=args.python,
             install_dir=install_dir,
             venv_python=venv_python,
@@ -2889,6 +2903,7 @@ def main(argv: list[str] | None = None) -> int:
         output_dir,
         label=label,
         package=args.package,
+        doctest_optional=args.optional,
         base_python=args.python,
         install_dir=install_dir,
         venv_python=venv_python,

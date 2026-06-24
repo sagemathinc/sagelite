@@ -306,6 +306,7 @@ class ode_solver():
     functions that specify the system. (You can also use the ``%%cython``
     cell magic, see :meth:`~sage.repl.ipython_extension.SageMagics.cython`.) ::
 
+        sage: # needs sage.misc.cython
         sage: cython('''
         ....: cimport sage.calculus.ode
         ....: import sage.calculus.ode
@@ -329,14 +330,14 @@ class ode_solver():
     After executing the above block of code you can do the
     following::
 
-        sage: T = ode_solver()
-        sage: T.algorithm = "bsimp"
-        sage: vander = van_der_pol()
-        sage: T.function = vander
-        sage: T.ode_solve(y_0=[1, 0], t_span=[0, 2000],
+        sage: T = ode_solver()                                                         # needs sage.misc.cython
+        sage: T.algorithm = "bsimp"                                                    # needs sage.misc.cython
+        sage: vander = van_der_pol()                                                   # needs sage.misc.cython
+        sage: T.function = vander                                                      # needs sage.misc.cython
+        sage: T.ode_solve(y_0=[1, 0], t_span=[0, 2000],                                # needs sage.misc.cython
         ....:             num_points=1000)
-        sage: from tempfile import NamedTemporaryFile
-        sage: with NamedTemporaryFile(suffix='.png') as f:
+        sage: from tempfile import NamedTemporaryFile                                   # needs sage.misc.cython
+        sage: with NamedTemporaryFile(suffix='.png') as f:                             # needs sage.misc.cython sage.plot
         ....:     T.plot_solution(i=0, filename=f.name)
     """
     def __init__(self, function=None, jacobian=None, h=1e-2, error_abs=1e-10,

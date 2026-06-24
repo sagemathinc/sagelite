@@ -559,8 +559,8 @@ class Gp(ExtraTabCompletion, Expect):
 
             sage: gp.get_default('log')
             0
-            sage: gp.get_default('datadir')
-            '.../share/pari'
+            sage: gp.get_default('datadir').endswith('/pari')
+            True
             sage: gp.get_default('seriesprecision')
             16
             sage: gp.get_default('realprecision')

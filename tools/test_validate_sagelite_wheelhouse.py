@@ -85,7 +85,6 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
             "4",
             "--manifest-compiled-limit",
             "250",
-            "--",
             "--optional",
             "sage,optional,external",
         ]
@@ -98,6 +97,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["schema"] == "sagelite-wheelhouse-validation-install-v1"
     assert metadata["label"] == "cibw-proof"
     assert metadata["package"] == "sagelite[all-needed-extras]"
+    assert metadata["doctest_optional"] == "sage,optional,external"
     assert metadata["base_python"] == "/opt/python/cp312/bin/python"
     assert metadata["install_dir"] == os.fspath(install_dir)
     assert metadata["venv_python"] == os.fspath(venv_python)
@@ -266,6 +266,8 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
             "cibw-proof",
             "--runtime-summary",
             "--selftest",
+            "--optional",
+            "sage,optional,external",
             "--nthreads",
             "4",
             "--full",
@@ -273,9 +275,6 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
             "250",
             "--wheelhouse",
             os.fspath(wheelhouse.resolve()),
-            "--",
-            "--optional",
-            "sage,optional,external",
         ],
     ]
     assert metadata["commands"] == commands
@@ -427,6 +426,7 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
     assert commands[2][-1] == "sagelite"
     assert metadata["label"] == "repaired-wheel-20260621-020304"
     assert metadata["package"] == "sagelite"
+    assert metadata["doctest_optional"] == "sage,optional"
     assert metadata["commands"] == commands
     assert metadata["status"] == "passed"
     assert metadata["exit_code"] == 0
@@ -442,6 +442,8 @@ def test_defaults_use_scratch_timestamped_paths_and_short_validation(tmp_path):
         "repaired-wheel-20260621-020304",
         "--runtime-summary",
         "--selftest",
+        "--optional",
+        "sage,optional",
         "--nthreads",
         "1",
         "--short",
@@ -786,6 +788,8 @@ def test_stops_after_failed_step(tmp_path):
             "repaired-wheel-20260621-030405",
             "--runtime-summary",
             "--selftest",
+            "--optional",
+            "sage,optional",
             "--nthreads",
             "1",
             "--short",

@@ -499,7 +499,12 @@ def sieve(X, bound):
                 m[i] = point[i]
 
             M = matrix(ZZ, N+2, N+1, m)
-            A = M.LLL()
+            try:
+                A = M.LLL()
+            except Exception as err:
+                if err.__class__.__name__ != "ReductionError":
+                    raise
+                A = M.LLL(algorithm='NTL:LLL')
             point = list(A[1])
 
             # check if all coordinates of this point satisfy height bound

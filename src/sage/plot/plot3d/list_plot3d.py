@@ -622,8 +622,15 @@ def list_plot3d_tuples(v, interpolation_type, **kwds):
             kx = kwds['degree']
             ky = kwds['degree']
         s = kwds.get('smoothing', len(x) - numpy.sqrt(2 * len(x)))
-        s = interpolate.bisplrep(x, y, z, [1] * len(x), xmin, xmax,
-                                 ymin, ymax, kx=kx, ky=ky, s=s)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                "No more knots can be added.*",
+                RuntimeWarning,
+            )
+            s = interpolate.bisplrep(x, y, z, [1] * len(x), xmin, xmax,
+                                     ymin, ymax, kx=kx, ky=ky, s=s)
 
         def f(x, y):
             return interpolate.bisplev(x, y, s)

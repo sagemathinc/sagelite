@@ -48,6 +48,7 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     prefixes = (
         "libec.so",
         "libflint.so",
+        "libgf2x.so",
         "libgmp.so",
         "libmpfr.so",
         "libntl.so",

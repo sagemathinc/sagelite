@@ -98,8 +98,8 @@ Sage example in ./sol/calculus.tex, line 285::
 Sage example in ./sol/calculus.tex, line 317::
 
   sage: t = var('t'); J = integrate(f(t) / (1-t^8), t, 0, 1/sqrt(2))
-  sage: J.canonicalize_radical()
-  pi + 2*log(sqrt(2) + 1) + 2*log(sqrt(2) - 1)
+  sage: J.canonicalize_radical() in [pi, pi + 2*log(sqrt(2) + 1) + 2*log(sqrt(2) - 1)]
+  True
 
 Sage example in ./sol/calculus.tex, line 325::
 

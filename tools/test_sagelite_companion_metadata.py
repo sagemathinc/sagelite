@@ -64,7 +64,7 @@ def test_native_wheel_catalog_exports_stable_json(capsys):
 
 RUNTIME_PACKAGE_DATA = {
     "sagelite-4ti2-runtime": {
-        "sagelite_four_ti_2": ["data/bin/*", "data/lib/*"],
+        "sagelite_four_ti_2": ["data/bin/*", "data/bin/.real/*", "data/lib/*"],
     },
     "sagelite-benzene-runtime": {
         "sagelite_benzene": ["data/bin/*"],
@@ -640,18 +640,23 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-ecm-runtime >=10.9,<10.10",
     "sagelite-flatter-runtime >=10.9,<10.10",
     "sagelite-frobby-runtime >=10.9,<10.10",
+    "sagelite-gap-runtime >=10.9.post4,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
-    "sagelite-graphviz-runtime >=10.9.post1,<10.10",
+    "sagelite-graphviz-runtime >=10.9.post2,<10.10",
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
+    "sagelite-maxima-runtime >=10.9.post14,<10.10",
+    "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
+    "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
     "sagelite-pari-runtime >=10.9,<10.10",
     "sagelite-pdf2svg-runtime >=10.9,<10.10",
     "sagelite-poppler-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
     "sagelite-sirocco-runtime >=10.9,<10.10",
-    "sagelite-tides-runtime >=10.9,<10.10",
+    "sagelite-sympow-runtime >=10.9.post1,<10.10",
+    "sagelite-tachyon-runtime >=10.9,<10.10",
     "sagelite-topcom-runtime >=10.9,<10.10",
 }
 
@@ -664,6 +669,8 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "khoca >=1.4",
     'lrcalc ~=2.1; sys_platform != "win32"',
     "Mathics3 >=10.0.1; python_version < '3.14'",
+    "meson",
+    "ninja",
     "packaging",
     "phitigra >=0.2.6",
     'primecountpy >=0.2.1; sys_platform != "win32"',
@@ -777,12 +784,21 @@ GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     ],
 }
 
-DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES: set[str] = set()
+DEFAULT_GAP_PACKAGE_COMPANION_DEPENDENCIES = {
+    "sagelite-gap-package-gapdoc >=10.9,<10.10",
+    "sagelite-gap-package-primgrp >=10.9,<10.10",
+    "sagelite-gap-package-smallgrp >=10.9,<10.10",
+    "sagelite-gap-package-transgrp >=10.9,<10.10",
+}
 
 
 def _pyproject(name: str) -> dict:
     with (ROOT / "companion-packages" / name / "pyproject.toml").open("rb") as handle:
         return tomllib.load(handle)
+
+
+def _companion_file(name: str, *parts: str) -> Path:
+    return ROOT / "companion-packages" / name / Path(*parts)
 
 
 def _maxima_runtime_setup_helpers() -> dict:
@@ -878,8 +894,13 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "database-cubic-hecke ==2022.4.4" in dependencies
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" not in dependencies
+    assert "sagelite-gap-runtime >=10.9.post4,<10.10" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" not in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" not in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" in dependencies
+    assert "sagelite-meataxe-runtime >=10.9,<10.10" in dependencies
+    assert "sagelite-nauty-runtime >=10.9,<10.10" in dependencies
+    assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in dependencies
+    assert "sagelite-tachyon-runtime >=10.9,<10.10" in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -1506,7 +1527,7 @@ def test_tides_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     extras = pyproject["project"]["optional-dependencies"]
     requirement = "sagelite-tides-runtime >=10.9,<10.10"
 
-    assert requirement in pyproject["project"]["dependencies"]
+    assert requirement not in pyproject["project"]["dependencies"]
     assert extras["tides"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
@@ -2373,12 +2394,14 @@ def test_graphviz_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-graphviz-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-graphviz-runtime >=10.9.post2,<10.10"
 
     assert extras["graphviz"] == [requirement]
     assert extras["dot"] == [requirement]
     assert extras["neato"] == [requirement]
     assert extras["twopi"] == [requirement]
+    assert extras["fdp"] == [requirement]
+    assert extras["circo"] == [requirement]
     assert requirement in extras["runtime"]
     assert requirement in extras["full"]
 
@@ -2493,6 +2516,7 @@ def test_gap_runtime_requires_gap4_roots_and_keeps_package_roots(
     assert "GAP 4 roots" in setup_text
     assert "lib/system.g" in gap_builder
     assert "lib/package.gi" in gap_builder
+    assert "has_gap_core" not in gap_builder
     assert 'SAGELITE_GAP_BINDIR="$prefix/bin"' in gap_builder
     assert "*/pkg/*/PackageInfo.g" not in gap_builder
 
@@ -3050,6 +3074,26 @@ def test_flatter_runtime_declares_console_script():
     }
 
 
+def test_flatter_runtime_bundles_openblas_dependency():
+    setup_py = _companion_file("sagelite-flatter-runtime", "setup.py").read_text()
+
+    assert '"libopenblas.so",' in setup_py
+    assert '"libgfortran.so",' in setup_py
+    assert '"libquadmath.so",' in setup_py
+
+
+def test_giac_runtime_bundles_openblas_dependency():
+    setup_py = _companion_file("sagelite-giac-runtime", "setup.py").read_text()
+
+    assert '"libopenblas",' in setup_py
+    assert '"libgfortran",' in setup_py
+    assert '"libquadmath",' in setup_py
+    assert '"libgf2x",' in setup_py
+    assert '"libtinfo",' in setup_py
+    assert '"libssl",' in setup_py
+    assert '"libcrypto",' in setup_py
+
+
 def test_flatter_runtime_repair_builds_pinned_source_fallback():
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 
@@ -3118,6 +3162,9 @@ def test_sympow_runtime_builds_datafiles_aware_wrapper():
     assert "sympow-real" in setup_py
     assert "LD_LIBRARY_PATH" in setup_py
     assert "data_target" in setup_py
+    assert "SYMPOW_CACHEDIR/sympow/datafiles" in setup_py
+    assert "M02HM.txt" in setup_py
+    assert "cp -R \"$HERE/../datafiles/.\"" in setup_py
     assert "SYMPOW_GP" in setup_py
     assert "SYMPOW_PKGLIBDIR" in setup_py
     assert "_patch_new_data_script" in setup_py
@@ -3256,7 +3303,9 @@ def test_graphviz_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-graphviz-runtime")
 
     assert pyproject["project"]["scripts"] == {
+        "circo": "sagelite_graphviz.runtime:circo",
         "dot": "sagelite_graphviz.runtime:dot",
+        "fdp": "sagelite_graphviz.runtime:fdp",
         "neato": "sagelite_graphviz.runtime:neato",
         "twopi": "sagelite_graphviz.runtime:twopi",
     }
@@ -3524,6 +3573,16 @@ def test_lcalc_runtime_declares_console_script():
     }
 
 
+def test_mwrank_runtime_builds_relocatable_wrapper():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-mwrank-runtime" / "setup.py"
+    ).read_text()
+
+    assert "mwrank-real" in setup_py
+    assert "LD_LIBRARY_PATH" in setup_py
+    assert '"libgf2x.so"' in setup_py
+
+
 def test_latte_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-latte-runtime")
 
@@ -3536,6 +3595,13 @@ def test_latte_runtime_wheel_declares_copied_runtime_data():
         "data/bin/*",
         "data/lib/*",
     ]
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-latte-runtime" / "setup.py"
+    ).read_text()
+    assert '"libLiDIA"' in setup_py
+    assert '"libgf2x"' in setup_py
+    assert '"libglpk"' in setup_py
+    assert "exec -a {program}" in setup_py
 
 
 def test_maxima_runtime_wheel_declares_copied_runtime_data():
@@ -4235,6 +4301,19 @@ def test_four_ti_2_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_four_ti_2_runtime_exposes_internal_helpers():
+    setup_py = _companion_file("sagelite-4ti2-runtime", "setup.py").read_text()
+
+    assert 'export PATH="$HERE${PATH:+:$PATH}"' in setup_py
+    assert '"4ti2gmp", "4ti2int32", "4ti2int64"' in setup_py
+
+
+def test_four_ti_2_runtime_bundles_glpk_dependency():
+    setup_py = _companion_file("sagelite-4ti2-runtime", "setup.py").read_text()
+
+    assert '"libglpk",' in setup_py
+
+
 def test_gfan_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -4336,6 +4415,8 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
     assert "gap_package_roots" in repair
     assert "PackageInfo.g" in repair
     assert 'SAGELITE_GAP_ROOTS="$gap_package_roots"' in repair
+    assert "SAGELITE_BUILD_POLYTOPES_4D" in repair
+    assert "Skipping sagelite-database-polytopes-4d" in repair
 
 
 def test_linux_repair_builds_requested_base_dependency_companion_wheels():
@@ -4472,6 +4553,7 @@ def test_tachyon_runtime_builds_relocatable_wrapper():
 
     assert "tachyon-real" in setup_py
     assert "LD_LIBRARY_PATH" in setup_py
+    assert "exec -a tachyon" in setup_py
     assert "lib_target" in setup_py
     assert "_runtime_libraries(source)" in setup_py
 

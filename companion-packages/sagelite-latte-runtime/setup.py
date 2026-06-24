@@ -19,9 +19,12 @@ PROGRAMS = {
     "integrate": ("integrate", "latte-integrate"),
 }
 RUNTIME_LIBRARY_PREFIXES = (
+    "libLiDIA",
     "lib4ti2",
     "libcdd",
     "libflint",
+    "libgf2x",
+    "libglpk",
     "libgmp",
     "liblatte",
     "libmpfr",
@@ -107,7 +110,7 @@ class build_py(_build_py):
                 'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
                 'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
                 "export LD_LIBRARY_PATH\n"
-                f'exec "$HERE/{program}-real" "$@"\n'
+                f'exec -a {program} "$HERE/{program}-real" "$@"\n'
             )
             wrapper.chmod(0o755)
 

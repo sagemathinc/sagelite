@@ -47,5 +47,6 @@ where = ["src"]
 [tool.setuptools.package-data]
 sagelite_four_ti_2 = [
   "data/bin/*",
+  "data/bin/.real/*",
   "data/lib/*",
 ]

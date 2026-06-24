@@ -48,8 +48,11 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     prefixes = (
         "libflatter.so",
         "libfplll.so",
+        "libgfortran.so",
+        "libopenblas.so",
         "libgmp.so",
         "libmpfr.so",
+        "libquadmath.so",
         "libqd.so",
     )
     for line in output.splitlines():

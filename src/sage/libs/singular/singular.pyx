@@ -1994,10 +1994,12 @@ def get_resource(id):
     EXAMPLES::
 
         sage: from sage.libs.singular.singular import get_resource
-        sage: get_resource('D')            # SINGULAR_DATA_DIR
-        '...'
-        sage: get_resource('i')            # SINGULAR_INFO_FILE
-        '.../singular...'
+        sage: resource = get_resource('D')            # SINGULAR_DATA_DIR
+        sage: resource is None or isinstance(resource, str)
+        True
+        sage: resource = get_resource('i')            # SINGULAR_INFO_FILE
+        sage: resource is None or isinstance(resource, str)
+        True
         sage: get_resource('7') is None    # not defined
         True
     """

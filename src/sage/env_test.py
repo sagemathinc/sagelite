@@ -18,6 +18,38 @@ if not hasattr(sage, "config") and _CONFIG_PATH.exists():
 from sage import env
 
 
+def test_cython_aliases_skips_default_pkgconfig_modules_in_installed_runtime(monkeypatch):
+    import pkgconfig
+
+    def missing_package(package):
+        raise pkgconfig.PackageNotFoundError(package)
+
+    monkeypatch.setattr(env, "SAGE_ROOT", None)
+    monkeypatch.setattr(env, "default_required_modules", ("missing-required",))
+    monkeypatch.setattr(env, "default_optional_modules", ())
+    monkeypatch.setattr(pkgconfig, "cflags", missing_package)
+    monkeypatch.setattr(pkgconfig, "parse", missing_package)
+    monkeypatch.setattr(pkgconfig, "libs", missing_package)
+
+    aliases = env.cython_aliases()
+
+    assert "MISSINGREQUIRED_LIBRARIES" not in aliases
+    assert aliases["NTL_LIBRARIES"] == ["ntl"]
+
+
+def test_cython_aliases_keeps_explicit_required_pkgconfig_strict(monkeypatch):
+    import pkgconfig
+
+    def missing_package(package):
+        raise pkgconfig.PackageNotFoundError(package)
+
+    monkeypatch.setattr(env, "SAGE_ROOT", None)
+    monkeypatch.setattr(pkgconfig, "cflags", missing_package)
+
+    with pytest.raises(pkgconfig.PackageNotFoundError):
+        env.cython_aliases(required_modules=("missing-required",), optional_modules=())
+
+
 @pytest.fixture(autouse=True)
 def clean_runtime_environment(monkeypatch):
     keys = [
@@ -265,12 +297,16 @@ def _runtime_executable(tmp_path: Path, name: str, program: str) -> Path:
     return command
 
 
-def _singular_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+def _singular_runtime(tmp_path: Path, name: str) -> tuple[Path, Path, Path]:
     root = tmp_path / name / "singular"
     default_dir = root / "share" / "singular"
+    command = tmp_path / name / "bin" / "Singular"
     (default_dir / "LIB").mkdir(parents=True)
     (default_dir / "LIB" / "standard.lib").write_text("// Singular library\n")
-    return root, default_dir
+    command.parent.mkdir(parents=True)
+    command.write_text("#!/bin/sh\n")
+    command.chmod(0o755)
+    return root, default_dir, command
 
 
 def _info_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
@@ -2565,16 +2601,18 @@ def test_four_ti_2_runtime_keeps_existing_environment(monkeypatch, tmp_path):
 def test_singular_runtime_uses_companion_when_environment_is_missing(
     monkeypatch, tmp_path
 ):
-    root, default_dir = _singular_runtime(tmp_path, "companion")
+    root, default_dir, command = _singular_runtime(tmp_path, "companion")
 
     monkeypatch.delenv("SINGULAR_ROOT_DIR", raising=False)
     monkeypatch.delenv("SINGULAR_DEFAULT_DIR", raising=False)
+    monkeypatch.delenv("SINGULAR_BIN", raising=False)
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
         lambda module_name, attr_name: {
             ("sagelite_singular_runtime.runtime", "singular_root_dir"): root,
             ("sagelite_singular_runtime.runtime", "singular_default_dir"): default_dir,
+            ("sagelite_singular_runtime.runtime", "executable_path"): command,
         }.get((module_name, attr_name)),
     )
 
@@ -2582,6 +2620,7 @@ def test_singular_runtime_uses_companion_when_environment_is_missing(
 
     assert env.os.environ["SINGULAR_ROOT_DIR"] == str(root)
     assert env.os.environ["SINGULAR_DEFAULT_DIR"] == str(default_dir)
+    assert env.os.environ["SINGULAR_BIN"] == str(command)
 
 
 def test_singular_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
@@ -2591,12 +2630,14 @@ def test_singular_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
 
     monkeypatch.delenv("SINGULAR_ROOT_DIR", raising=False)
     monkeypatch.delenv("SINGULAR_DEFAULT_DIR", raising=False)
+    monkeypatch.delenv("SINGULAR_BIN", raising=False)
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
         lambda module_name, attr_name: {
             ("sagelite_singular_runtime.runtime", "singular_root_dir"): root,
             ("sagelite_singular_runtime.runtime", "singular_default_dir"): default_dir,
+            ("sagelite_singular_runtime.runtime", "executable_path"): root / "bin" / "Singular",
         }.get((module_name, attr_name)),
     )
 
@@ -2604,6 +2645,7 @@ def test_singular_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
 
     assert "SINGULAR_ROOT_DIR" not in env.os.environ
     assert "SINGULAR_DEFAULT_DIR" not in env.os.environ
+    assert "SINGULAR_BIN" not in env.os.environ
 
 
 def test_info_runtime_prepends_companion_paths(monkeypatch, tmp_path):
@@ -2657,7 +2699,7 @@ def test_info_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
     assert "INFOPATH" not in env.os.environ
 
 
-def test_graphviz_runtime_prepends_companion_subprocess_paths(monkeypatch, tmp_path):
+def test_graphviz_runtime_prepends_companion_wrappers(monkeypatch, tmp_path):
     dot, bin_dir, lib_dir, plugin_dir = _graphviz_runtime(tmp_path, "companion")
     existing_bin = tmp_path / "existing" / "bin"
     existing_lib = tmp_path / "existing" / "lib"
@@ -2686,14 +2728,8 @@ def test_graphviz_runtime_prepends_companion_subprocess_paths(monkeypatch, tmp_p
         str(bin_dir),
         str(existing_bin),
     ]
-    assert env.os.environ["LD_LIBRARY_PATH"].split(env.os.pathsep) == [
-        str(lib_dir),
-        str(existing_lib),
-    ]
-    assert env.os.environ["GV_PLUGIN_PATH"].split(env.os.pathsep) == [
-        str(plugin_dir),
-        str(existing_plugins),
-    ]
+    assert env.os.environ["LD_LIBRARY_PATH"] == str(existing_lib)
+    assert env.os.environ["GV_PLUGIN_PATH"] == str(existing_plugins)
 
 
 def test_graphviz_runtime_keeps_existing_programs(monkeypatch, tmp_path):

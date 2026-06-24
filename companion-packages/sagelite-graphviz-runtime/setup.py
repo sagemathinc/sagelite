@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - wheel is a build requirement
     _bdist_wheel = None
 
 
-PROGRAMS = ["dot", "neato", "twopi"]
+PROGRAMS = ["dot", "neato", "twopi", "fdp", "circo"]
 EXCLUDED_LIBRARY_NAMES = {
     "ld-linux-x86-64.so.2",
     "libBrokenLocale.so.1",

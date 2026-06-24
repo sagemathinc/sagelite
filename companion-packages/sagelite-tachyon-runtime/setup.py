@@ -75,11 +75,11 @@ class build_py(_build_py):
         shutil.copy2(source, target / "tachyon-real")
         wrapper = target / "tachyon"
         wrapper.write_text(
-            "#!/bin/sh\n"
+            "#!/usr/bin/env bash\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
             "export LD_LIBRARY_PATH\n"
-            'exec "$HERE/tachyon-real" "$@"\n'
+            'exec -a tachyon "$HERE/tachyon-real" "$@"\n'
         )
         wrapper.chmod(0o755)
 

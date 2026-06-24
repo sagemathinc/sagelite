@@ -1550,18 +1550,18 @@ cdef class Polynomial(CommutativePolynomial):
             0.4*x^4 - 0.2*x^3 - 0.4*x^2 + 0.2*x + 0.8
             sage: poly = f * (x^2 + 1) % (x^5 + x + 1)
             sage: # Remove noisy zero terms:
-            sage: parent(poly)([0.0 if abs(c) <= epsilon else c
+            sage: parent(poly)([0.0 if abs(c) <= epsilon else c  # abs tol 1e-14
             ....:               for c in poly.coefficients(sparse=False)])
             1.0
-            sage: f = inverse_mod(x^3 - x + 1, x - 2); f
+            sage: f = inverse_mod(x^3 - x + 1, x - 2); f  # abs tol 1e-16
             0.14285714285714285
-            sage: f * (x^3 - x + 1) % (x - 2)
+            sage: f * (x^3 - x + 1) % (x - 2)  # abs tol 1e-14
             1.0
             sage: g = 5*x^3 + x - 7; m = x^4 - 12*x + 13; f = inverse_mod(g, m); f
             -0.0319636125...*x^3 - 0.0383269759...*x^2 - 0.0463050900...*x + 0.346479687...
             sage: poly = f*g % m
             sage: # Remove noisy zero terms:
-            sage: parent(poly)([0.0 if abs(c) <= epsilon else c  # abs tol 1e-14
+            sage: parent(poly)([0.0 if abs(c) <= epsilon else c  # abs tol 1e-13
             ....:               for c in poly.coefficients(sparse=False)])
             1.0000000000000004
 
@@ -3466,7 +3466,7 @@ cdef class Polynomial(CommutativePolynomial):
             sage: from sage.doctest.util import ensure_interruptible_after
             sage: R.<x> = CDF[]
             sage: f = R.random_element(degree=5000)
-            sage: with ensure_interruptible_after(0.5): h = f*f
+            sage: with ensure_interruptible_after(0.5, max_wait_after_interrupt=0.5): h = f*f
         """
         cdef list x = self.list(copy=False)
         cdef Py_ssize_t i, j
@@ -4625,9 +4625,9 @@ cdef class Polynomial(CommutativePolynomial):
 
             sage: # needs numpy
             sage: R.<x> = RDF[]
-            sage: (-2*x^2 - 1).factor()
+            sage: (-2*x^2 - 1).factor()  # abs tol 1e-15
             (-2.0) * (x^2 + 0.5000000000000001)
-            sage: (-2*x^2 - 1).factor().expand()
+            sage: (-2*x^2 - 1).factor().expand()  # abs tol 1e-15
             -2.0*x^2 - 1.0000000000000002
             sage: f = (x - 1)^3
             sage: f.factor()  # abs tol 2e-5

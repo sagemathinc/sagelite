@@ -202,8 +202,10 @@ def integral(f, *args, **kwds):
 
     ::
 
-        sage: integral(x/(x^3-1), x)
-        1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x + 1)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)
+        sage: str(integral(x/(x^3-1), x)) in [
+        ....:     '1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x + 1)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)',
+        ....:     '1/3*sqrt(3)*arctan(2/3*sqrt(3)*x + 1/3*sqrt(3)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)']
+        True
 
     ::
 
@@ -249,8 +251,10 @@ def integral(f, *args, **kwds):
 
     and its value::
 
-        sage: integral( exp(-x^2)*ln(x), x, 0, oo)
-        -1/4*sqrt(pi)*(euler_gamma + 2*log(2))
+        sage: str(integral( exp(-x^2)*ln(x), x, 0, oo)) in [
+        ....:     '-1/4*sqrt(pi)*(euler_gamma + 2*log(2))',
+        ....:     '-1/4*euler_gamma*sqrt(pi) - 1/2*sqrt(pi)*log(2)']
+        True
 
     This definite integral is easy::
 
@@ -260,8 +264,10 @@ def integral(f, *args, **kwds):
     Sage cannot do this elliptic integral (yet)::
 
         sage: ans = integral(1/sqrt(2*t^4 - 3*t^2 - 2), t, 2, 3)  # random - ignore giac stderr output
-        sage: ans
-        integrate(1/(sqrt(2*t^2 + 1)*sqrt(t^2 - 2)), t, 2, 3)
+        sage: str(ans) in [
+        ....:     'integrate(1/(sqrt(2*t^2 + 1)*sqrt(t^2 - 2)), t, 2, 3)',
+        ....:     'integrate(1/sqrt(2*t^4 - 3*t^2 - 2), t, 2, 3)']
+        True
 
     A double integral::
 

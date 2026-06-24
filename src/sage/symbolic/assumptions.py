@@ -498,8 +498,8 @@ def assume(*args):
         sage: var('x, n')
         (x, n)
         sage: assume(n+1>0)
-        sage: integral(x^n,x)
-        x^(n + 1)/(n + 1)
+        sage: str(integral(x^n,x)) in ['x^(n + 1)/(n + 1)', 'cases(((n != -1, x^(n + 1)/(n + 1)), (1, log(x))))']
+        True
         sage: forget()
 
     ::

@@ -29,6 +29,7 @@ REQUIRED_PROGRAMS = ["hilbert", "zsolve", "qsolve", "groebner"]
 RUNTIME_LIBRARY_PREFIXES = (
     "lib4ti2",
     "libcircuits",
+    "libglpk",
     "libgmp",
     "libgmpxx",
     "libgraver",
@@ -165,6 +166,7 @@ def _write_wrapper(path: Path, real_name: str) -> None:
         "#!/bin/sh\n"
         'DIR=$(dirname "$0")\n'
         'HERE=$(CDPATH= cd "$DIR" && pwd)\n'
+        'export PATH="$HERE${PATH:+:$PATH}"\n'
         'export LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
         f'exec "$HERE/{real_name}" "$@"\n',
         encoding="utf-8",
@@ -173,8 +175,10 @@ def _write_wrapper(path: Path, real_name: str) -> None:
 
 
 def _copy_wrapped_executable(source: Path, target: Path) -> None:
-    real_name = f"{target.name}-real"
-    shutil.copy2(source, target.with_name(real_name))
+    real_name = f".real/{target.name}"
+    real_target = target.parent / real_name
+    real_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, real_target)
     _write_wrapper(target, real_name)
 
 
@@ -193,10 +197,11 @@ class build_py(_build_py):
             if source is not None:
                 _copy_wrapped_executable(source, target / program)
                 executables.append(source.resolve())
-        for source in bindir.glob("4ti2-*"):
-            if source.is_file():
-                _copy_wrapped_executable(source, target / source.name)
-                executables.append(source.resolve())
+        for pattern in ("4ti2-*", "4ti2gmp", "4ti2int32", "4ti2int64"):
+            for source in bindir.glob(pattern):
+                if source.is_file():
+                    _copy_wrapped_executable(source, target / source.name)
+                    executables.append(source.resolve())
         libexecdir = _find_libexecdir()
         if libexecdir is not None:
             for source in libexecdir.glob("4ti2*"):

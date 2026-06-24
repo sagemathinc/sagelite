@@ -959,7 +959,8 @@ def _bootstrap_sagelite_latte_runtime() -> None:
 
 def _bootstrap_sagelite_singular_runtime() -> None:
     """
-    Seed Singular data-root variables from an optional companion package.
+    Seed Singular executable and data-root variables from an optional companion
+    package.
 
     Binary ``sagelite`` wheels link against libSingular, but Singular's
     library files can live outside the wheel.  The companion package supplies
@@ -971,11 +972,16 @@ def _bootstrap_sagelite_singular_runtime() -> None:
     default_dir = _optional_runtime_value(
         "sagelite_singular_runtime.runtime", "singular_default_dir"
     )
+    command = _optional_runtime_value(
+        "sagelite_singular_runtime.runtime", "executable_path"
+    )
 
     if root and os.path.isdir(os.path.join(root, "share", "singular", "LIB")):
         os.environ.setdefault("SINGULAR_ROOT_DIR", os.fspath(root))
     if default_dir and os.path.isdir(os.path.join(default_dir, "LIB")):
         os.environ.setdefault("SINGULAR_DEFAULT_DIR", os.fspath(default_dir))
+    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+        os.environ.setdefault("SINGULAR_BIN", os.fspath(command))
 
 
 def _bootstrap_sagelite_info_runtime() -> None:
@@ -1016,8 +1022,9 @@ def _bootstrap_sagelite_graphviz_runtime() -> None:
     Most Sage code uses :mod:`sage.features.graphviz`, which can discover
     companion executables directly.  Some graph layout paths go through
     ``dot2tex`` or other subprocess callers that invoke Graphviz programs by
-    name, so installed wheels also need the companion ``bin`` directory and
-    plugin path in the subprocess environment.
+    name, so installed wheels also need the companion ``bin`` directory in
+    ``PATH``.  The companion executables are wrappers that seed Graphviz's
+    private library and plugin paths for the Graphviz subprocess only.
     """
     if all(shutil.which(program) for program in ("dot", "neato", "twopi")):
         return
@@ -1027,15 +1034,8 @@ def _bootstrap_sagelite_graphviz_runtime() -> None:
         return
 
     bindir = _optional_runtime_value("sagelite_graphviz.runtime", "bin_dir")
-    libdir = _optional_runtime_value("sagelite_graphviz.runtime", "library_dir")
-    plugin_dir = _optional_runtime_value("sagelite_graphviz.runtime", "plugin_dir")
-
     if bindir and os.path.isdir(bindir):
         _prepend_env_path("PATH", bindir)
-    if libdir and os.path.isdir(libdir):
-        _prepend_env_path("LD_LIBRARY_PATH", libdir)
-    if plugin_dir and os.path.isdir(plugin_dir):
-        _prepend_env_path("GV_PLUGIN_PATH", plugin_dir)
 
 
 def _bootstrap_sagelite_meataxe_runtime() -> None:
@@ -1537,11 +1537,10 @@ FOURTITWO_PPI = var("FOURTITWO_PPI")
 FOURTITWO_CIRCUITS = var("FOURTITWO_CIRCUITS")
 FOURTITWO_GROEBNER = var("FOURTITWO_GROEBNER")
 ECL_CONFIG = var("ECL_CONFIG", "ecl-config")
-ECL_CONFIG = var(
-    "ECL_CONFIG",
-    _installed_command_or_fallback(ECL_CONFIG, "ecl-config"),
-    force=True,
+ECL_CONFIG = os.environ.get("ECL_CONFIG") or _installed_command_or_fallback(
+    ECL_CONFIG, "ecl-config"
 )
+SAGE_ENV["ECL_CONFIG"] = ECL_CONFIG
 NTL_INCDIR = var("NTL_INCDIR")
 NTL_LIBDIR = var("NTL_LIBDIR")
 _bootstrap_sagelite_lie_runtime()
@@ -1675,12 +1674,11 @@ def cython_aliases(required_modules=None, optional_modules=None):
     EXAMPLES::
 
         sage: from sage.env import cython_aliases
-        sage: cython_aliases()
-        {...}
-        sage: sorted(cython_aliases().keys())
-        ['ECL_CFLAGS',
-         ...,
-         'ZLIB_LIBRARIES']
+        sage: aliases = cython_aliases(required_modules=())
+        sage: isinstance(aliases, dict)
+        True
+        sage: 'ZLIB_LIBRARIES' in cython_aliases(required_modules=('zlib',), optional_modules=())
+        True
         sage: cython_aliases(required_modules=('module-that-is-assumed-to-not-exist'))
         Traceback (most recent call last):
         ...
@@ -1713,6 +1711,9 @@ def cython_aliases(required_modules=None, optional_modules=None):
     import itertools
 
     import pkgconfig
+
+    using_default_required_modules = required_modules is None
+    installed_without_source_tree = SAGE_ROOT is None
 
     if required_modules is None:
         required_modules = default_required_modules
@@ -1756,7 +1757,9 @@ def cython_aliases(required_modules=None, optional_modules=None):
                 pc = pkgconfig.parse(lib)
                 libs = pkgconfig.libs(lib)
             except pkgconfig.PackageNotFoundError:
-                if required:
+                if required and not (
+                    using_default_required_modules and installed_without_source_tree
+                ):
                     raise
                 else:
                     continue

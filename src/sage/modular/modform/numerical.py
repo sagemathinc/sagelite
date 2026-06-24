@@ -231,6 +231,8 @@ class NumericalEigenforms(SageObject):
             import scipy
         import scipy.linalg
         evals, eig = scipy.linalg.eig(self._hecke_matrix.numpy(), right=True, left=False)
+        if not (eig.flags.c_contiguous or eig.flags.f_contiguous):
+            eig = eig.copy(order='C')
         B = matrix(eig)
         v = [CDF(evals[i]) for i in range(len(evals))]
 

@@ -758,14 +758,10 @@ def color_list(color, n):
         sage: len(color_list("grey", 3))
         3
         sage: L = color_list("rainbow", 3)
-        sage: L
-        [RGB color (1.0, 0.0, 0.0),
-         RGB color (0.0, 1.0, 0.0),
-         RGB color (0.0, 0.0, 1.0)]
-        sage: color_list(L, 3)
-        [RGB color (1.0, 0.0, 0.0),
-         RGB color (0.0, 1.0, 0.0),
-         RGB color (0.0, 0.0, 1.0)]
+        sage: [c.html_color() for c in L]
+        ['#ff0000', '#00ff00', '#0000ff']
+        sage: [c.html_color() for c in color_list(L, 3)]
+        ['#ff0000', '#00ff00', '#0000ff']
         sage: color_list(L, 4)
         Traceback (most recent call last):
         ...

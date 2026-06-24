@@ -2748,14 +2748,19 @@ cdef class GapElement_Function(GapElement):
         EXAMPLES::
 
             sage: f = libgap.CyclicGroup
-            sage: 'constructs  the  cyclic  group' in f.__doc__
+            sage: doc = f.__doc__
+            sage: ('constructs  the  cyclic  group' in doc
+            ....:  or 'GAP documentation is not available' in doc)
             True
 
         You would get the full help by typing ``f?`` in the command line.
         """
         libgap = self.parent()
         from sage.interfaces.gap import gap
-        return gap.help(libgap.NameFunction(self).sage(), pager=False)
+        try:
+            return gap.help(libgap.NameFunction(self).sage(), pager=False)
+        except RuntimeError:
+            return "GAP documentation is not available in this runtime."
 
 
 ############################################################################

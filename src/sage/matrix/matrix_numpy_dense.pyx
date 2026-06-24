@@ -448,7 +448,7 @@ cdef class Matrix_numpy_dense(Matrix_dense):
             sage: m = matrix(RDF,[[1,2],[3,4]])
             sage: n = m.numpy()
             sage: import numpy
-            sage: tuple(numpy.linalg.eig(n))
+            sage: tuple(numpy.real_if_close(a) for a in numpy.linalg.eig(n))
             (array([-0.37228132,  5.37228132]),
              array([[-0.82456484, -0.41597356],
                    [ 0.56576746, -0.90937671]]))

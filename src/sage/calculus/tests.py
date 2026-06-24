@@ -100,8 +100,10 @@ from some Mathematica docs::
     diff(f(x), x)
     sage: diff( 2*x*f(x^2), x)
     4*x^2*D[0](f)(x^2) + 2*f(x^2)
-    sage: integrate( 1/(x^4 - a^4), x)
-    -1/2*arctan(x/a)/a^3 - 1/4*log(a + x)/a^3 + 1/4*log(-a + x)/a^3
+    sage: str(integrate( 1/(x^4 - a^4), x)) in [
+    ....:     '-1/2*arctan(x/a)/a^3 - 1/4*log(a + x)/a^3 + 1/4*log(-a + x)/a^3',
+    ....:     '-1/4*(log(a + x) + I*log(I*a + x) - I*log(-I*a + x) - log(-a + x))/a^3']
+    True
     sage: expand(integrate(log(1-x^2), x))
     x*log(-x^2 + 1) - 2*x + log(x + 1) - log(x - 1)
 
@@ -111,22 +113,28 @@ the antiderivative is correct, assuming we work with
 1/2*log(x^2)*log(-x^2 + 1) + 1/2*dilog(-x^2 + 1).
 See also https://sourceforge.net/p/maxima/bugs/3275/::
 
-    sage: integrate(log(1-x^2)/x, x)
-    log(-x)*log(x + 1) + log(x)*log(-x + 1) + dilog(x + 1) + dilog(-x + 1)
+    sage: str(integrate(log(1-x^2)/x, x)) in [
+    ....:     'log(-x)*log(x + 1) + log(x)*log(-x + 1) + dilog(x + 1) + dilog(-x + 1)',
+    ....:     '-1/2*dilog(x^2*exp_polar(2*I*pi))']
+    True
 
 No problems here::
 
     sage: integrate(exp(1-x^2),x)
     1/2*sqrt(pi)*erf(x)*e
-    sage: integrate(sin(x^2),x)
-    1/16*sqrt(pi)*((I + 1)*sqrt(2)*erf((1/2*I + 1/2)*sqrt(2)*x) + (I - 1)*sqrt(2)*erf((1/2*I - 1/2)*sqrt(2)*x) - (I - 1)*sqrt(2)*erf(sqrt(-I)*x) + (I + 1)*sqrt(2)*erf((-1)^(1/4)*x))
+    sage: str(integrate(sin(x^2),x)) in [
+    ....:     '1/16*sqrt(pi)*((I + 1)*sqrt(2)*erf((1/2*I + 1/2)*sqrt(2)*x) + (I - 1)*sqrt(2)*erf((1/2*I - 1/2)*sqrt(2)*x) - (I - 1)*sqrt(2)*erf(sqrt(-I)*x) + (I + 1)*sqrt(2)*erf((-1)^(1/4)*x))',
+    ....:     '3/8*sqrt(2)*sqrt(pi)*fresnel_sin(sqrt(2)*x/sqrt(pi))*gamma(3/4)/gamma(7/4)']
+    True
 
     sage: integrate((1-x^2)^n,x)  # long time
     x*hypergeometric((1/2, -n), (3/2,), x^2*exp_polar(2*I*pi))
     sage: integrate(x^x,x)
     integrate(x^x, x)
-    sage: integrate(1/(x^3+1),x)
-    1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x - 1)) - 1/6*log(x^2 - x + 1) + 1/3*log(x + 1)
+    sage: str(integrate(1/(x^3+1),x)) in [
+    ....:     '1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x - 1)) - 1/6*log(x^2 - x + 1) + 1/3*log(x + 1)',
+    ....:     '1/3*sqrt(3)*arctan(2/3*sqrt(3)*x - 1/3*sqrt(3)) - 1/6*log(x^2 - x + 1) + 1/3*log(x + 1)']
+    True
     sage: integrate(1/(x^3+1), x, 0, 1)
     1/9*sqrt(3)*pi + 1/3*log(2)
 
@@ -195,8 +203,10 @@ Maple documentation::
 
 ::
 
-    sage: integrate( x/(x^3-1), x)
-    1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x + 1)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)
+    sage: str(integrate( x/(x^3-1), x)) in [
+    ....:     '1/3*sqrt(3)*arctan(1/3*sqrt(3)*(2*x + 1)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)',
+    ....:     '1/3*sqrt(3)*arctan(2/3*sqrt(3)*x + 1/3*sqrt(3)) - 1/6*log(x^2 + x + 1) + 1/3*log(x - 1)']
+    True
     sage: integrate(exp(-x^2), x)
     1/2*sqrt(pi)*erf(x)
     sage: integrate(exp(-x^2)*log(x), x)  # long time

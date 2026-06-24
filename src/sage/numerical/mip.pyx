@@ -1831,7 +1831,7 @@ cdef class MixedIntegerLinearProgram(SageObject):
             sage: p.set_objective(x[1] + 5*x[2])
             sage: p.add_constraint(x[1] + 2/10*x[2], max=4)
             sage: p.add_constraint(1.5*x[1] + 3*x[2], max=4)
-            sage: round(p.solve(),5)
+            sage: round(p.solve(),5)  # tol 1e-12
             6.66667
             sage: p.set_objective(None)
             sage: _ = p.solve()

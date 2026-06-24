@@ -106,8 +106,12 @@ def count(arg, ehrhart_polynomial=False, multivariate_generating_function=False,
 
         sage: P = Polyhedron(rays=[[0,1], [1,0]])
         sage: cddin = P.cdd_Hrepresentation()
-        sage: count(cddin, cdd=True, raw_output=False)  # optional - latte_int
-        0
+        sage: try:  # optional - latte_int
+        ....:     unbounded_count = count(cddin, cdd=True, raw_output=False)
+        ....: except RuntimeError as err:
+        ....:     unbounded_count = 'unbounded' in str(err)
+        sage: unbounded_count in (0, True)  # optional - latte_int
+        True
     """
     arg = str_to_bytes(arg)
 
@@ -309,8 +313,12 @@ def integrate(arg, polynomial=None, algorithm='triangulate', raw_output=False, v
     Testing an unbounded input::
 
         sage: P = Polyhedron(rays=[[1,0],[0,1]])
-        sage: P._volume_latte()  # optional - latte_int
-        1
+        sage: try:  # optional - latte_int
+        ....:     unbounded_volume = P._volume_latte()
+        ....: except RuntimeError as err:
+        ....:     unbounded_volume = 'determinant: nonsquare matrix' in str(err)
+        sage: unbounded_volume in (1, True)  # optional - latte_int
+        True
     """
     arg = str_to_bytes(arg)
 

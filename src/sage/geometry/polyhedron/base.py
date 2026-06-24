@@ -1026,7 +1026,7 @@ class Polyhedron_base(Polyhedron_base7):
             (None, None)
             sage: Polyhedron([(1/3,2/3), (3/3, 4/3)]).bounding_box(integral_hull=True)
             ((1, 1), (1, 1))
-            sage: polytopes.buckyball(exact=False).bounding_box()                       # needs sage.groups
+            sage: polytopes.buckyball(exact=False).bounding_box()  # needs sage.groups # tol 1e-15
             ((-0.8090169944, -0.8090169944, -0.8090169944),
              (0.8090169944, 0.8090169944, 0.8090169944))
 

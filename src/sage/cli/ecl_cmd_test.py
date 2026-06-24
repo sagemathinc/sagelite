@@ -94,6 +94,60 @@ def test_main_dispatches_python_options_to_current_interpreter(monkeypatch, tmp_
     ]
 
 
+def test_main_dispatches_runtime_passthrough_options(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(
+        "sage.cli._run_command",
+        lambda command, args: calls.append((command, args)) or 19,
+    )
+
+    monkeypatch.setattr(sys, "argv", ["sage", "--cython", "--version"])
+    assert main() == 19
+    monkeypatch.setattr(sys, "argv", ["sage", "--gp", "-f"])
+    assert main() == 19
+    monkeypatch.setattr(sys, "argv", ["sage", "--maxima", "--version"])
+    monkeypatch.setattr("sage.cli._maxima_command", lambda: "maxima-bin")
+    assert main() == 19
+    monkeypatch.setattr(sys, "argv", ["sage", "--mwrank", "-v0"])
+    monkeypatch.setattr("sage.cli._mwrank_command", lambda: "mwrank-bin")
+    assert main() == 19
+    monkeypatch.setattr(sys, "argv", ["sage", "--singular"])
+    monkeypatch.setattr("sage.cli._singular_command", lambda: "Singular-bin")
+    assert main() == 19
+
+    assert calls == [
+        ("cython", ["--version"]),
+        ("gp", ["-f"]),
+        ("maxima-bin", ["--version"]),
+        ("mwrank-bin", ["-v0"]),
+        ("Singular-bin", []),
+    ]
+
+
+def test_main_dispatches_preparse_option(monkeypatch):
+    calls = []
+
+    monkeypatch.setattr(sys, "argv", ["sage", "--preparse", "a.sage", "b.sage"])
+    monkeypatch.setattr(
+        "sage.cli._preparse_files",
+        lambda files: calls.append(files) or 0,
+    )
+
+    assert main() == 0
+    assert calls == [["a.sage", "b.sage"]]
+
+
+def test_main_reports_historical_unknown_option(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["sage", "--zzfoobar"])
+
+    with pytest.raises(SystemExit) as exc:
+        main()
+
+    assert exc.value.code == 2
+    assert "unknown option: --zzfoobar" in capsys.readouterr().err
+
+
 def test_main_prints_installed_advanced_help(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["sage", "--advanced"])
 

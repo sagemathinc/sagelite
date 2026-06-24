@@ -847,12 +847,14 @@ class TachyonRT(SageObject):
 
             sage: from sage.interfaces.tachyon import TachyonRT
             sage: t = TachyonRT()
-            sage: t.usage(use_pager=False)
-            Usage: tachyon... modelfile [options]...
-            ...
-            <BLANKLINE>
-            Model file formats supported:
-              filename.dat ...
+            sage: import contextlib
+            sage: import io
+            sage: output = io.StringIO()
+            sage: with contextlib.redirect_stdout(output):
+            ....:     t.usage(use_pager=False)
+            sage: text = output.getvalue()
+            sage: 'modelfile [options]' in text and 'Model file formats supported' in text
+            True
         """
         from sage.env import TACHYON
 

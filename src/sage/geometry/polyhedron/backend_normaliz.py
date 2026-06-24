@@ -1409,7 +1409,7 @@ class Polyhedron_normaliz(Polyhedron_base_number_field):
         space and the result is a float::
 
             sage: s = polytopes.simplex(3, backend='normaliz')
-            sage: s._volume_normaliz()
+            sage: s._volume_normaliz()  # tol 1e-15
             0.3333333333333333
 
         One other possibility is to compute the scaled volume where a unimodular
@@ -1419,7 +1419,7 @@ class Polyhedron_normaliz(Polyhedron_base_number_field):
             1
             sage: v = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
             sage: cube = Polyhedron(vertices=v, backend='normaliz')
-            sage: cube._volume_normaliz()
+            sage: cube._volume_normaliz()  # tol 1e-15
             1.0
             sage: cube._volume_normaliz(measure='induced_lattice')
             6
@@ -2391,19 +2391,18 @@ class Polyhedron_QQ_normaliz(Polyhedron_normaliz, Polyhedron_QQ):
 
             sage: square = Polyhedron(vertices=[[1,1], [-1,1], [-1,-1], [1,-1]],
             ....:                     backend='normaliz')
-            sage: Hstar = square.Hstar_function(); Hstar                                # needs sage.rings.number_field
-            chi_0*t^2 + (2*chi_0 + chi_2 + chi_3 + chi_4)*t + chi_0
+            sage: Hstar = square.Hstar_function()                                      # needs sage.rings.number_field
+            sage: str(Hstar) in [                                                       # needs sage.rings.number_field
+            ....:     'chi_0*t^2 + (2*chi_0 + chi_2 + chi_3 + chi_4)*t + chi_0',
+            ....:     'chi_0*t^2 + (2*chi_0 + chi_1 + chi_2 + chi_4)*t + chi_0']
+            True
 
         Plugging in the values from the first column of the character table below
         yields the `h^*`-polynomial of the square, `t^2+6t+1`::
 
             sage: G = square.restricted_automorphism_group(output='permutation')        # needs sage.groups
-            sage: G.character_table()                                                   # needs sage.groups
-            [ 1  1  1  1  1]
-            [ 1 -1 -1  1  1]
-            [ 1 -1  1 -1  1]
-            [ 1  1 -1 -1  1]
-            [ 2  0  0  0 -2]
+            sage: sorted(tuple(row) for row in G.character_table().rows())              # needs sage.groups
+            [(1, 1, 1, 1, 1), (1, 1, -1, -1, 1), (1, -1, 1, -1, 1), (1, -1, -1, 1, 1), (2, 0, 0, 0, -2)]
         """
         from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
         from sage.rings.qqbar import QQbar

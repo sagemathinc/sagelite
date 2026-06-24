@@ -98,17 +98,7 @@ build_gap_runtime_companion() {
       sort -u |
       paste -sd ';' -
   )"
-  local has_gap_core
-  has_gap_core="no"
-  while IFS= read -r gap_root; do
-    if [ -f "$gap_root/lib/init.g" ] &&
-       [ -f "$gap_root/lib/system.g" ] &&
-       [ -f "$gap_root/lib/package.gi" ]; then
-      has_gap_core="yes"
-      break
-    fi
-  done < <(printf '%s' "$gap_roots" | tr ';' '\n')
-  if [ -z "$gap_roots" ] || [ "$has_gap_core" != "yes" ]; then
+  if [ -z "$gap_roots" ]; then
     echo "GAP 4 root not found under $prefix; searched prefix contents:" >&2
     find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g -o -name sysinfo.gap \) -print >&2 || true
     exit 1
@@ -716,13 +706,15 @@ build_graphviz_runtime_companion() {
   for candidate in "$prefix/bin" /usr/bin /usr/local/bin; do
     if [ -x "$candidate/dot" ] &&
        [ -x "$candidate/neato" ] &&
-       [ -x "$candidate/twopi" ]; then
+       [ -x "$candidate/twopi" ] &&
+       [ -x "$candidate/fdp" ] &&
+       [ -x "$candidate/circo" ]; then
       graphviz_bindir="$candidate"
       break
     fi
   done
   if [ -z "$graphviz_bindir" ]; then
-    echo "Skipping Graphviz runtime companion; Graphviz executables not found under $prefix/bin, /usr/bin, or /usr/local/bin" >&2
+    echo "Skipping Graphviz runtime companion; complete Graphviz executable set not found under $prefix/bin, /usr/bin, or /usr/local/bin" >&2
     return 0
   fi
 
@@ -1719,6 +1711,11 @@ build_database_polytopes_4d_companion() {
     *) return 0 ;;
   esac
 
+  if [ "${SAGELITE_BUILD_POLYTOPES_4D:-0}" != 1 ]; then
+    echo "Skipping sagelite-database-polytopes-4d; set SAGELITE_BUILD_POLYTOPES_4D=1 to build the optional 4D database wheel."
+    return 0
+  fi
+
   local tarball
   tarball="$(download_sage_spkg polytopes_db_4d)"
 
@@ -2376,6 +2373,59 @@ PY
   )
 }
 
+inject_native_include_headers() {
+  case "$(basename "$1")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local wheel="$1"
+  local include_dir="$prefix/include"
+  local tmp_wheel="$tmpdir/native-headers-${wheel##*/}"
+  if [ ! -d "$include_dir" ]; then
+    echo "native include directory not found under $include_dir" >&2
+    exit 1
+  fi
+
+  "$python_bin" - "$wheel" "$include_dir" "$tmp_wheel" <<'PY'
+from pathlib import Path
+import sys
+import zipfile
+
+wheel = Path(sys.argv[1])
+include_dir = Path(sys.argv[2])
+tmp_wheel = Path(sys.argv[3])
+prefix = "sage/include/"
+
+written = set()
+header_count = 0
+with zipfile.ZipFile(wheel, "r") as source, zipfile.ZipFile(
+    tmp_wheel, "w", zipfile.ZIP_DEFLATED
+) as target:
+    for item in source.infolist():
+        if item.filename in written:
+            continue
+        target.writestr(item, source.read(item.filename))
+        written.add(item.filename)
+
+    for path in sorted(include_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(include_dir).as_posix()
+        archive_name = prefix + relative
+        if archive_name in written:
+            continue
+        target.write(path, archive_name)
+        written.add(archive_name)
+        header_count += 1
+
+if header_count == 0:
+    raise SystemExit(f"no native headers found under {include_dir}")
+print(f"injected {header_count} native headers into {wheel.name}")
+PY
+  mv "$tmp_wheel" "$wheel"
+}
+
 if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   echo "AUDITWHEEL_PLAT is not set" >&2
   exit 1
@@ -2412,21 +2462,8 @@ env -u PIP_CONSTRAINT \
   --prefix "$vendored_site" \
   --out "$tmpdir/${raw_wheel##*/}"
 
-pruned_dir="$tmpdir/pruned-wheel"
-packed_dir="$tmpdir/packed-wheel"
-
-# Cython sources and declarations are useful for source builds but are not
-# needed at runtime.  Dropping them buys several MB of PyPI size headroom.
-env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade wheel
-env -u PIP_CONSTRAINT "$python_bin" -m wheel unpack "$tmpdir/${raw_wheel##*/}" -d "$pruned_dir"
-find "$pruned_dir" -type f \( -name '*.pyx' -o -name '*.pxd' -o -name '*.pxi' \) -delete
-mkdir -p "$packed_dir"
-env -u PIP_CONSTRAINT "$python_bin" -m wheel pack "$pruned_dir"/* -d "$packed_dir"
-repaired_input="$(find "$packed_dir" -name '*.whl' -print -quit)"
-if [ -z "$repaired_input" ]; then
-  echo "failed to repack pruned wheel" >&2
-  exit 1
-fi
+repaired_input="$tmpdir/${raw_wheel##*/}"
+inject_native_include_headers "$repaired_input"
 
 if command -v ccache >/dev/null 2>&1; then
   echo "Compiler cache stats after wheel build:"

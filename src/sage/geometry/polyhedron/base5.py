@@ -1675,7 +1675,7 @@ class Polyhedron_base5(Polyhedron_base4):
             sage: p = Polyhedron(vertices = [[t,t^2,t^3] for t in srange(2,4)])
             sage: (p/5).Vrepresentation()
             (A vertex at (2/5, 4/5, 8/5), A vertex at (3/5, 9/5, 27/5))
-            sage: (p/int(5)).Vrepresentation()
+            sage: (p/int(5)).Vrepresentation()  # tol 1e-15
             (A vertex at (0.4, 0.8, 1.6), A vertex at (0.6, 1.8, 5.4))
         """
         return self.dilation(1/scalar)

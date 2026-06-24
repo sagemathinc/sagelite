@@ -2,11 +2,11 @@
 
 Optional Graphviz executable companion package for `sagelite`.
 
-Sage uses the `dot`, `neato`, and `twopi` programs for graph layout features
-and doctests marked `optional - graphviz`. The `sagelite` core wheel does not
-bundle these external executables directly. Installing this companion package
-makes them available through standard Python entry points and through Sage's
-Graphviz feature detection.
+Sage uses the `dot`, `neato`, `twopi`, `fdp`, and `circo` programs for graph
+layout features and doctests marked `optional - graphviz`. The `sagelite` core
+wheel does not bundle these external executables directly. Installing this
+companion package makes them available through standard Python entry points and
+through Sage's Graphviz feature detection.
 
 Build this package from a system or prefix that already has Graphviz installed:
 

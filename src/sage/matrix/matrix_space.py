@@ -56,6 +56,7 @@ from sage.categories.fields import Fields
 from sage.categories.enumerated_sets import EnumeratedSets
 
 from sage.misc.lazy_import import lazy_import
+from sage.features import FeatureNotPresentError
 from sage.features.meataxe import Meataxe
 lazy_import('sage.matrix.matrix_gfpn_dense', ['Matrix_gfpn_dense'],
             feature=Meataxe())
@@ -227,9 +228,10 @@ def get_matrix_class(R, nrows, ncols, sparse, implementation):
 
                 if (not R.is_prime_field()) and R.order() < 256:
                     try:
+                        Meataxe().require()
                         from . import matrix_gfpn_dense
                         return matrix_gfpn_dense.Matrix_gfpn_dense
-                    except ImportError:
+                    except (ImportError, FeatureNotPresentError):
                         pass
 
             if isinstance(R, sage.rings.abc.IntegerModRing):
@@ -330,6 +332,7 @@ def get_matrix_class(R, nrows, ncols, sparse, implementation):
 
         if implementation == 'meataxe':
             if R.is_field() and R.order() < 256:
+                Meataxe().require()
                 from sage.matrix.matrix_gfpn_dense import Matrix_gfpn_dense
                 return Matrix_gfpn_dense
             raise ValueError("'meataxe' matrix can only deal with finite fields of order < 256")

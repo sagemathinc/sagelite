@@ -555,7 +555,7 @@ class Polyhedron_base7(Polyhedron_base6):
             0
             sage: P.volume(measure='induced')                                           # needs sage.rings.number_field
             2.598076211353316?
-            sage: P.volume(measure='induced', engine='normaliz')
+            sage: P.volume(measure='induced', engine='normaliz')  # tol 1e-15
             2.598076211353316
             sage: P.volume(measure='induced_rational')                  # optional - latte_int
             3/2
@@ -809,7 +809,7 @@ class Polyhedron_base7(Polyhedron_base6):
 
             sage: P = 1.4142*polytopes.cube()
             sage: P_QQ = Polyhedron(vertices=[[QQ(vi) for vi in v] for v in P.vertex_generator()])
-            sage: RDF(P_QQ.integrate(x^2*y^2*z^2))                      # optional - latte_int
+            sage: RDF(P_QQ.integrate(x^2*y^2*z^2))  # optional - latte_int # tol 1e-14
             6.703841212195228
 
         Integral over a non full-dimensional polytope::
