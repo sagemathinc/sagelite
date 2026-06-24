@@ -148,6 +148,18 @@ def _pari_data_runtime(tmp_path: Path, name: str) -> Path:
     return data_dir
 
 
+def _pari_runtime(tmp_path: Path, name: str) -> tuple[Path, Path]:
+    bindir = tmp_path / name / "bin"
+    gp = bindir / "gp"
+    gphelp = bindir / "gphelp"
+    bindir.mkdir(parents=True)
+    gp.write_text("#!/bin/sh\n")
+    gphelp.write_text("#!/bin/sh\n")
+    gp.chmod(0o755)
+    gphelp.chmod(0o755)
+    return gp, gphelp
+
+
 def _lie_runtime(tmp_path: Path, name: str) -> Path:
     info_dir = tmp_path / name / "lib" / "LiE"
     info_dir.mkdir(parents=True)
@@ -1628,6 +1640,49 @@ def test_pari_data_runtime_rejects_incomplete_companion(monkeypatch, tmp_path):
     env._bootstrap_sagelite_pari_data_runtime()
 
     assert "GP_DATA_DIR" not in env.os.environ
+
+
+def test_pari_runtime_uses_companion_commands_when_environment_is_missing(
+    monkeypatch, tmp_path
+):
+    gp, gphelp = _pari_runtime(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_GP_COMMAND", raising=False)
+    monkeypatch.delenv("SAGE_GPHELP_COMMAND", raising=False)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_pari.runtime", "gp_command"): gp,
+            ("sagelite_pari.runtime", "gphelp_command"): gphelp,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_pari_runtime()
+
+    assert env.os.environ["SAGE_GP_COMMAND"] == str(gp)
+    assert env.os.environ["SAGE_GPHELP_COMMAND"] == str(gphelp)
+
+
+def test_pari_runtime_keeps_existing_environment(monkeypatch, tmp_path):
+    companion_gp, companion_gphelp = _pari_runtime(tmp_path, "companion")
+    existing_gp, existing_gphelp = _pari_runtime(tmp_path, "existing")
+
+    monkeypatch.setenv("SAGE_GP_COMMAND", str(existing_gp))
+    monkeypatch.setenv("SAGE_GPHELP_COMMAND", str(existing_gphelp))
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_pari.runtime", "gp_command"): companion_gp,
+            ("sagelite_pari.runtime", "gphelp_command"): companion_gphelp,
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_pari_runtime()
+
+    assert env.os.environ["SAGE_GP_COMMAND"] == str(existing_gp)
+    assert env.os.environ["SAGE_GPHELP_COMMAND"] == str(existing_gphelp)
 
 
 def test_pari_script_dir_uses_registered_companion_path(monkeypatch, tmp_path):

@@ -411,6 +411,11 @@ jobs:
             path: companion-packages/sagelite-pari-data
             apt_packages: pari-elldata pari-galdata pari-galpol pari-seadata
             publish: true
+          - name: sagelite-pari-runtime
+            import_name: sagelite_pari
+            path: companion-packages/sagelite-pari-runtime
+            apt_packages: pari-gp
+            publish: true
           - name: sagelite-singular-runtime
             import_name: sagelite_singular_runtime
             path: companion-packages/sagelite-singular-runtime
@@ -693,6 +698,9 @@ jobs:
           if [ "${{ matrix.name }}" = "sagelite-pari-data" ]; then
             export SAGELITE_PARI_DATA_DIR=/usr/share/pari
             export SAGELITE_PARI_NFTABLES_TARBALL="$(PYTHONPATH=build build/bin/sage-package download pari_nftables | tail -n 1)"
+          fi
+          if [ "${{ matrix.name }}" = "sagelite-pari-runtime" ]; then
+            export SAGELITE_PARI_BINDIR=/usr/bin
           fi
           if [ "${{ matrix.name }}" = "sagelite-singular-runtime" ]; then
             export SAGELITE_SINGULAR_ROOT=/usr

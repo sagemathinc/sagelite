@@ -387,6 +387,25 @@ def _bootstrap_sagelite_pari_data_runtime() -> None:
         os.environ.setdefault("GP_DATA_DIR", os.fspath(data_dir))
 
 
+def _bootstrap_sagelite_pari_runtime() -> None:
+    """
+    Seed PARI/GP command variables from an optional companion package.
+
+    The GP interface is pexpect-based and normally looks for ``gp`` and
+    ``gphelp`` on ``PATH``. Installed ``sagelite`` wheels should prefer the
+    matching companion commands unless the user explicitly selected commands.
+    """
+    if not os.environ.get("SAGE_GP_COMMAND"):
+        command = _optional_runtime_value("sagelite_pari.runtime", "gp_command")
+        if command and os.path.isfile(command) and os.access(command, os.X_OK):
+            os.environ.setdefault("SAGE_GP_COMMAND", os.fspath(command))
+
+    if not os.environ.get("SAGE_GPHELP_COMMAND"):
+        command = _optional_runtime_value("sagelite_pari.runtime", "gphelp_command")
+        if command and os.path.isfile(command) and os.access(command, os.X_OK):
+            os.environ.setdefault("SAGE_GPHELP_COMMAND", os.fspath(command))
+
+
 def pari_script_dir(name: str) -> Path:
     """
     Return a directory containing Sage's PARI helper scripts.
@@ -1425,6 +1444,9 @@ SAGE_PKG_CONFIG_PATH = var("SAGE_PKG_CONFIG_PATH")
 SAGE_DATA_PATH = var("SAGE_DATA_PATH")
 _bootstrap_sagelite_pari_data_runtime()
 GP_DATA_DIR = var("GP_DATA_DIR")
+_bootstrap_sagelite_pari_runtime()
+SAGE_GP_COMMAND = var("SAGE_GP_COMMAND", "gp")
+SAGE_GPHELP_COMMAND = var("SAGE_GPHELP_COMMAND", "gphelp")
 _bootstrap_sagelite_fplll_data_runtime()
 
 # database directories, the default is to search in SAGE_DATA_PATH

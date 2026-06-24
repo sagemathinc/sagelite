@@ -61,11 +61,42 @@ def _candidate_datafiles(executable: Path) -> list[Path]:
     return files
 
 
+def _candidate_libdirs(executable: Path) -> list[Path]:
+    dirs = []
+    if os.environ.get("SAGELITE_SYMPOW_LIBDIR"):
+        dirs.append(Path(os.environ["SAGELITE_SYMPOW_LIBDIR"]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "lib" / "sympow")
+    dirs.extend(
+        [
+            executable.parent / "sympow",
+            executable.parent.parent / "lib" / "sympow",
+            Path("/usr/lib/sympow"),
+            Path("/usr/local/lib/sympow"),
+        ]
+    )
+    return dirs
+
+
 def _find_datafiles(executable: Path) -> Path | None:
     for path in _candidate_datafiles(executable):
         if path.is_dir():
             return path.resolve()
     return None
+
+
+def _find_libdir(executable: Path) -> Path | None:
+    for path in _candidate_libdirs(executable):
+        if (path / "new_data").is_file():
+            return path.resolve()
+    return None
+
+
+def _patch_new_data_script(script: Path) -> None:
+    text = script.read_text()
+    text = text.replace("GP=$2\n", "GP=${SYMPOW_GP:-$2}\n")
+    script.write_text(text)
+    script.chmod(0o755)
 
 
 def _runtime_libraries(executable: Path) -> list[Path]:
@@ -105,7 +136,21 @@ class build_py(_build_py):
             "#!/bin/sh\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
-            "export LD_LIBRARY_PATH\n"
+            'SYMPOW_PKGDATADIR="${SYMPOW_PKGDATADIR:-$HERE/../datafiles}"\n'
+            'SYMPOW_PKGLIBDIR="${SYMPOW_PKGLIBDIR:-$HERE/../lib/sympow}"\n'
+            'SYMPOW_CACHEDIR="${SYMPOW_CACHEDIR:-${XDG_CACHE_HOME:-${HOME:-/tmp}}/sagelite-sympow}"\n'
+            'SYMPOW_PKGCACHEDIR="${SYMPOW_PKGCACHEDIR:-$SYMPOW_CACHEDIR}"\n'
+            'if [ -z "${SYMPOW_GP:-}" ]; then\n'
+            '  if [ -n "${SAGE_GP_COMMAND:-}" ]; then\n'
+            '    SYMPOW_GP="$SAGE_GP_COMMAND"\n'
+            '  elif [ -x "$HERE/../../../sagelite_pari/data/bin/gp" ]; then\n'
+            '    SYMPOW_GP="$HERE/../../../sagelite_pari/data/bin/gp"\n'
+            '  elif command -v gp >/dev/null 2>&1; then\n'
+            '    SYMPOW_GP="$(command -v gp)"\n'
+            "  fi\n"
+            "fi\n"
+            'mkdir -p "$SYMPOW_CACHEDIR"\n'
+            "export LD_LIBRARY_PATH SYMPOW_PKGDATADIR SYMPOW_PKGLIBDIR SYMPOW_CACHEDIR SYMPOW_PKGCACHEDIR SYMPOW_GP\n"
             'cd "$HERE/.." || exit 127\n'
             'exec "$HERE/sympow-real" "$@"\n'
         )
@@ -116,6 +161,14 @@ class build_py(_build_py):
         datafiles = _find_datafiles(source)
         if datafiles is not None:
             shutil.copytree(datafiles, data_target, ignore_dangling_symlinks=True)
+
+        libdir = _find_libdir(source)
+        if libdir is not None:
+            helper_target = lib_target / "sympow"
+            shutil.copytree(libdir, helper_target, ignore_dangling_symlinks=True)
+            new_data = helper_target / "new_data"
+            if new_data.is_file():
+                _patch_new_data_script(new_data)
 
         super().run()
 

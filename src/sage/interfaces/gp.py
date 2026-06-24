@@ -138,9 +138,10 @@ AUTHORS:
 #
 ##########################################################################
 import os
+import shlex
 
 import sage.interfaces.abc
-from sage.env import DOT_SAGE
+from sage.env import DOT_SAGE, SAGE_GP_COMMAND, SAGE_GPHELP_COMMAND
 from sage.interfaces.tab_completion import ExtraTabCompletion
 from sage.libs.pari import pari
 from sage.misc.instancedoc import instancedoc
@@ -155,6 +156,17 @@ from sage.interfaces.expect import (
     ExpectFunction,
     FunctionElement,
 )
+
+
+def _quote_gp_shell_command(command):
+    command = os.fspath(command)
+    if os.path.isabs(command):
+        return shlex.quote(command)
+    return command
+
+
+def _escape_gp_string(value):
+    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
 class Gp(ExtraTabCompletion, Expect):
@@ -222,11 +234,12 @@ class Gp(ExtraTabCompletion, Expect):
             sage: gp == loads(dumps(gp))
             True
         """
+        gp_command = _quote_gp_shell_command(SAGE_GP_COMMAND)
         Expect.__init__(self,
                         name='pari',
                         prompt='\\? ',
                         # --fast so the system gprc isn't read (we configure below)
-                        command=f"gp --fast --emacs --quiet --stacksize {stacksize}",
+                        command=f"{gp_command} --fast --emacs --quiet --stacksize {stacksize}",
                         maxread=maxread,
                         server=server,
                         server_tmpdir=server_tmpdir,
@@ -273,7 +286,8 @@ class Gp(ExtraTabCompletion, Expect):
         # list of directories where gp will look for scripts (only current working directory)
         self._eval_line('default(path,".");')
         # executable for gp ?? help
-        self._eval_line('default(help, "gphelp -detex");')
+        gphelp = _escape_gp_string(_quote_gp_shell_command(SAGE_GPHELP_COMMAND))
+        self._eval_line(f'default(help, "{gphelp} -detex");')
         # logfile disabled since Expect already logs
         self._eval_line('default(log,0);')
         self._eval_line("default(nbthreads,1);")

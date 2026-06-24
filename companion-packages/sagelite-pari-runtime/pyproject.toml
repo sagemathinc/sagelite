@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sagelite-sympow-runtime"
-version = "10.9.post1"
-description = "Optional SYMPOW executable companion package for sagelite"
+name = "sagelite-pari-runtime"
+version = "10.9"
+description = "Optional PARI/GP executable companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "GPL-2.0-or-later"
@@ -27,7 +27,9 @@ classifiers = [
 urls = { Homepage = "https://www.sagemath.org" }
 
 [project.scripts]
-sympow = "sagelite_sympow.runtime:sympow"
+gp = "sagelite_pari.runtime:gp"
+gphelp = "sagelite_pari.runtime:gphelp"
+tex2mail = "sagelite_pari.runtime:tex2mail"
 
 [tool.setuptools]
 include-package-data = true
@@ -37,8 +39,7 @@ zip-safe = false
 where = ["src"]
 
 [tool.setuptools.package-data]
-sagelite_sympow = [
+sagelite_pari = [
   "data/bin/*",
-  "data/datafiles/**/*",
-  "data/lib/**/*",
+  "data/lib/*",
 ]

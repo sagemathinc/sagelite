@@ -566,6 +566,40 @@ def _check_pari_data():
     return f"datadir={pari.default('datadir')}, polgalois={result}"
 
 
+def _check_gp_runtime():
+    try:
+        from sagelite_pari import runtime
+    except ImportError:
+        return "not installed"
+
+    from sage.env import SAGE_GP_COMMAND, SAGE_GPHELP_COMMAND
+    from sage.interfaces.gp import Gp
+
+    command = Path(runtime.gp_command())
+    help_command = Path(runtime.gphelp_command())
+    if not command.is_file() or not os.access(command, os.X_OK):
+        raise RuntimeError(f"PARI/GP companion command is not executable: {command}")
+    if not help_command.is_file() or not os.access(help_command, os.X_OK):
+        raise RuntimeError(
+            f"PARI/GP companion help command is not executable: {help_command}"
+        )
+    if not _same_existing_path(command, SAGE_GP_COMMAND):
+        return f"Sage is using non-companion PARI/GP runtime: {SAGE_GP_COMMAND}"
+    if not _same_existing_path(help_command, SAGE_GPHELP_COMMAND):
+        return (
+            "Sage is using non-companion PARI/GP help runtime: "
+            f"{SAGE_GPHELP_COMMAND}"
+        )
+
+    gp = Gp()
+    try:
+        if gp.eval("2+3") != "5":
+            raise RuntimeError("PARI/GP companion runtime did not evaluate 2+3")
+    finally:
+        gp.quit()
+    return "PARI/GP executable runtime available"
+
+
 def _check_singular_runtime():
     try:
         import sagelite_singular_runtime  # noqa: F401
@@ -964,6 +998,15 @@ def _check_sympow_runtime():
         raise RuntimeError(f"sympow companion command is not executable: {command}")
     if not _same_existing_path(command, SYMPOW):
         return f"Sage is using non-companion sympow runtime: {SYMPOW}"
+
+    from sage.all import EllipticCurve
+    from sage.lfunctions.sympow import sympow
+
+    modular_degree = sympow.modular_degree(EllipticCurve("11a"))
+    if modular_degree != 1:
+        raise RuntimeError(
+            f"sympow companion returned unexpected modular degree: {modular_degree}"
+        )
     return "sympow executable runtime available"
 
 
@@ -1753,6 +1796,7 @@ def main(argv: list[str] | None = None) -> int:
         ("cddlib executable runtime", _check_cddlib_runtime),
         ("LiE executable runtime", _check_lie_runtime),
         ("PARI data runtime", _check_pari_data),
+        ("PARI/GP executable runtime", _check_gp_runtime),
         ("Singular library runtime", _check_singular_runtime),
         ("libbraiding library", _check_libbraiding),
         ("libhomfly library", _check_libhomfly),

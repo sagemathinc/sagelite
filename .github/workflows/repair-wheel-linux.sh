@@ -2058,6 +2058,41 @@ build_palp_runtime_companion() {
   ls -lh "$output_dir"
 }
 
+build_pari_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local pari_bindir="$prefix/bin"
+  for command in gp gphelp tex2mail; do
+    if [ ! -x "$pari_bindir/$command" ]; then
+      echo "$command executable not found under $pari_bindir; searched prefix contents:" >&2
+      find "$prefix" -maxdepth 4 -name "$command" -print >&2 || true
+      exit 1
+    fi
+  done
+
+  local project_dir="/project"
+  local companion_dir="$project_dir/companion-packages/sagelite-pari-runtime"
+  local output_dir="$dest_dir"
+  if [ ! -d "$companion_dir" ]; then
+    echo "PARI/GP runtime companion package not found: $companion_dir" >&2
+    exit 1
+  fi
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  mkdir -p "$output_dir"
+  SAGELITE_PARI_BINDIR="$pari_bindir" \
+  SAGELITE_PARI_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
+    env -u PIP_CONSTRAINT "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$output_dir" \
+      "$companion_dir"
+  ls -lh "$output_dir"
+}
+
 build_pari_data_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -2421,6 +2456,7 @@ build_giac_runtime_companion
 build_ecm_runtime_companion
 build_frobby_runtime_companion
 build_mwrank_runtime_companion
+build_pari_runtime_companion
 build_sympow_runtime_companion
 build_topcom_runtime_companion
 build_four_ti_2_runtime_companion

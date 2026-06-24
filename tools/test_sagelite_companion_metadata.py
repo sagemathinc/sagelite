@@ -241,6 +241,9 @@ RUNTIME_PACKAGE_DATA = {
     "sagelite-palp-runtime": {
         "sagelite_palp": ["data/bin/*"],
     },
+    "sagelite-pari-runtime": {
+        "sagelite_pari": ["data/bin/*", "data/lib/*"],
+    },
     "sagelite-pdf2svg-runtime": {
         "sagelite_pdf2svg": ["data/bin/*", "data/lib/*"],
     },
@@ -277,7 +280,7 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_sympow": [
             "data/bin/*",
             "data/datafiles/**/*",
-            "data/lib/*",
+            "data/lib/**/*",
         ],
     },
     "sagelite-tachyon-runtime": {
@@ -421,6 +424,7 @@ REPAIR_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime",
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
+    "sagelite-pari-runtime",
     "sagelite-pdf2svg-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
@@ -515,6 +519,7 @@ COMPANION_WORKFLOW_BUILT_RUNTIME_PACKAGES = {
     "sagelite-nauty-runtime",
     "sagelite-palp-runtime",
     "sagelite-pari-data",
+    "sagelite-pari-runtime",
     "sagelite-pdf2svg-runtime",
     "sagelite-planarity-runtime",
     "sagelite-plantri-runtime",
@@ -558,6 +563,7 @@ RELEASE_WORKFLOW_SEPARATED_RUNTIME_PACKAGES = {
     "sagelite-mwrank-runtime": "mwrank-runtime-dist",
     "sagelite-nauty-runtime": "nauty-runtime-dist",
     "sagelite-palp-runtime": "palp-runtime-dist",
+    "sagelite-pari-runtime": "pari-runtime-dist",
     "sagelite-pdf2svg-runtime": "pdf2svg-runtime-dist",
     "sagelite-planarity-runtime": "planarity-runtime-dist",
     "sagelite-plantri-runtime": "plantri-runtime-dist",
@@ -636,6 +642,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
+    "sagelite-pari-runtime >=10.9,<10.10",
     "sagelite-pdf2svg-runtime >=10.9,<10.10",
     "sagelite-poppler-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post1,<10.10",
@@ -1642,6 +1649,15 @@ def test_linux_repair_builds_pari_data_companion_wheel():
     assert "companion-packages/sagelite-pari-data" in repair_text
     assert "build_pari_data_companion" in repair_text
     assert "SAGELITE_PARI_DATA_DIR" in repair_text
+
+
+def test_linux_repair_builds_pari_runtime_companion_wheel():
+    repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
+    repair_text = repair_script.read_text()
+
+    assert "companion-packages/sagelite-pari-runtime" in repair_text
+    assert "build_pari_runtime_companion" in repair_text
+    assert "SAGELITE_PARI_BINDIR" in repair_text
 
 
 def test_linux_repair_builds_lie_runtime_companion_wheel():
@@ -3083,7 +3099,7 @@ def test_sympow_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-sympow-runtime >=10.9,<10.10"
+    requirement = "sagelite-sympow-runtime >=10.9.post1,<10.10"
 
     assert extras["sympow"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -3098,7 +3114,45 @@ def test_sympow_runtime_builds_datafiles_aware_wrapper():
     assert "sympow-real" in setup_py
     assert "LD_LIBRARY_PATH" in setup_py
     assert "data_target" in setup_py
+    assert "SYMPOW_GP" in setup_py
+    assert "SYMPOW_PKGLIBDIR" in setup_py
+    assert "_patch_new_data_script" in setup_py
     assert "cd \"$HERE/..\" || exit 127" in setup_py
+
+
+def test_pari_runtime_is_exposed_by_sagelite_runtime_extras():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-pari-runtime >=10.9,<10.10"
+
+    assert extras["gp"] == [requirement]
+    assert extras["pari-gp"] == [requirement]
+    assert extras["pari-runtime"] == [requirement]
+    assert requirement in extras["runtime"]
+    assert requirement in pyproject["project"]["dependencies"]
+
+
+def test_pari_runtime_declares_console_scripts():
+    pyproject = _pyproject("sagelite-pari-runtime")
+
+    assert pyproject["project"]["scripts"] == {
+        "gp": "sagelite_pari.runtime:gp",
+        "gphelp": "sagelite_pari.runtime:gphelp",
+        "tex2mail": "sagelite_pari.runtime:tex2mail",
+    }
+
+
+def test_pari_runtime_builds_wrapped_executables():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-pari-runtime" / "setup.py"
+    ).read_text()
+
+    assert 'EXECUTABLES = ("gp", "gphelp", "tex2mail")' in setup_py
+    assert 'real_name = f"{name}-real"' in setup_py
+    assert "LD_LIBRARY_PATH" in setup_py
+    assert "SAGELITE_PARI_BINDIR" in setup_py
 
 
 def test_d3js_runtime_is_exposed_by_sagelite_extras():
@@ -3998,6 +4052,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in validation_requirements
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():

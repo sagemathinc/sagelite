@@ -757,6 +757,7 @@ def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
 
     for name in (
         "ECL executable runtime",
+        "PARI/GP executable runtime",
         "sympow executable runtime",
         "Tachyon executable runtime",
         "MathJax static runtime",
@@ -765,6 +766,24 @@ def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
         "matroid database runtime",
     ):
         assert name in calls
+
+
+def test_selftest_sympow_runtime_exercises_modular_degree():
+    selftest = _load_selftest()
+    source = Path(selftest.__file__).read_text()
+
+    assert "sympow.modular_degree" in source
+    assert 'EllipticCurve("11a")' in source
+
+
+def test_selftest_gp_runtime_checks_companion_command():
+    selftest = _load_selftest()
+    source = Path(selftest.__file__).read_text()
+
+    assert "sagelite_pari" in source
+    assert "SAGE_GP_COMMAND" in source
+    assert "SAGE_GPHELP_COMMAND" in source
+    assert "PARI/GP executable runtime available" in source
 
 
 def test_subprocess_probe_reports_probe_description(tmp_path):
