@@ -1015,6 +1015,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "require-repaired-sagelite-wheel",
         "require-package-all-needed-extras",
         "require-all-needed-extra-sagelite-wheels",
+        "require-requested-sagelite-dependency-wheels",
         "reject-duplicate-companion-sagelite-wheels",
         "require-sagelite-companion-wheel-requirements",
         "require-primary-sagelite-wheel-requirement",
@@ -1033,6 +1034,7 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
         "`require-repaired-sagelite-wheel`, "
         "`require-package-all-needed-extras`, "
         "`require-all-needed-extra-sagelite-wheels`, "
+        "`require-requested-sagelite-dependency-wheels`, "
         "`reject-duplicate-companion-sagelite-wheels`, "
         "`require-sagelite-companion-wheel-requirements`, "
         "`require-primary-sagelite-wheel-requirement`, "
@@ -1108,7 +1110,9 @@ def test_strict_repaired_wheelhouse_preflight_rejects_third_party_mismatch(
     (
         wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
     ).write_text("")
-    for package in validator._all_needed_extra_sagelite_packages():
+    for package in validator._requested_sagelite_dependency_packages(
+        "sagelite[all-needed-extras]"
+    ):
         version = _companion_version(package)
         wheel_name = package.replace("-", "_") + f"-{version}-py3-none-any.whl"
         (wheelhouse / wheel_name).write_text("")
@@ -1339,6 +1343,71 @@ def test_require_all_needed_extra_sagelite_wheels_allows_complete_companions(
     assert metadata["wheelhouse_inventory"][
         "missing_all_needed_extra_sagelite_packages"
     ] == []
+
+
+def test_requested_sagelite_dependency_packages_include_base_and_extra_companions():
+    validator = _load_validator()
+
+    requested_packages = validator._requested_sagelite_dependency_packages(
+        "sagelite[all-needed-extras]"
+    )
+
+    assert "sagelite-cunningham-tables" in requested_packages
+    assert "sagelite-database-cremona-mini" in requested_packages
+    assert "sagelite-maxima-runtime" in requested_packages
+    assert "sagelite-database-cremona-ellcurve" in requested_packages
+    assert len(requested_packages) > len(validator._all_needed_extra_sagelite_packages())
+
+
+def test_require_requested_sagelite_dependency_wheels_rejects_missing_base_companions(
+    tmp_path,
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    for package in validator._all_needed_extra_sagelite_packages():
+        version = _companion_version(package)
+        wheel_name = package.replace("-", "_") + f"-{version}-py3-none-any.whl"
+        (wheelhouse / wheel_name).write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260621-063700"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--require-requested-sagelite-dependency-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260621-063700" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260621-063700" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    contract = metadata["validation_contract"]
+    missing = contract["missing_requested_sagelite_dependency_packages"]
+    assert "sagelite-cunningham-tables" in missing
+    assert "sagelite-database-cremona-mini" in missing
+    assert "sagelite-maxima-runtime" not in missing
+    assert "requested sagelite dependency wheels are required" in metadata[
+        "preflight_error"
+    ]
+    assert "sagelite-cunningham-tables" in metadata["preflight_error"]
+    assert "sagelite-maxima-runtime" not in metadata["preflight_error"]
+    assert contract["contains_requested_sagelite_dependency_wheels"] is False
+    assert "- Contains requested sagelite dependency wheels: `False`" in summary
+    assert "- Missing requested sagelite dependency packages: " in summary
+    assert "## Preflight Error" in summary
 
 
 def test_require_repaired_sagelite_wheel_rejects_mixed_primary_wheels(tmp_path):

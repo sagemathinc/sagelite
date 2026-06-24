@@ -70,6 +70,15 @@ download_gzip() {
   mv "$tmp_output" "$output"
 }
 
+extract_tarball() {
+  local tarball="$1"
+  local extract_dir="$2"
+
+  rm -rf "$extract_dir"
+  mkdir -p "$extract_dir"
+  tar -xf "$tarball" -C "$extract_dir"
+}
+
 build_gap_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1348,6 +1357,154 @@ build_kenzo_runtime_companion() {
     "SAGELITE_KENZO_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
 }
 
+build_cunningham_tables_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir main_gz
+  tarball="$(download_sage_spkg cunningham_tables)"
+  extract_dir="$tmpdir/cunningham-tables"
+  extract_tarball "$tarball" "$extract_dir"
+  main_gz="$(find "$extract_dir" -type f -name main.gz -print -quit)"
+  if [ -z "$main_gz" ] || [ ! -f "$main_gz" ]; then
+    echo "Cunningham tables main.gz not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-cunningham-tables \
+    "SAGELITE_CUNNINGHAM_MAIN_GZ=$main_gz"
+}
+
+build_d3js_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg d3js)"
+
+  build_companion_wheel \
+    sagelite-d3js-runtime \
+    "SAGELITE_D3JS_TARBALL=$tarball"
+}
+
+build_mathjax_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg mathjax)"
+
+  build_companion_wheel \
+    sagelite-mathjax-runtime \
+    "SAGELITE_MATHJAX_TARBALL=$tarball"
+}
+
+build_threejs_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir source_root version threejs_root build_dir
+  tarball="$(download_sage_spkg threejs)"
+  extract_dir="$tmpdir/threejs"
+  extract_tarball "$tarball" "$extract_dir"
+  source_root="$(
+    find "$extract_dir" -type f -name version -print -quit |
+      sed 's#/version$##'
+  )"
+  if [ -z "$source_root" ] || [ ! -f "$source_root/version" ]; then
+    echo "threejs-sage version file not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+  version="$(cat "$source_root/version")"
+  build_dir="$source_root/build"
+  if [ ! -f "$build_dir/three.min.js" ]; then
+    echo "threejs-sage build output not found under $build_dir" >&2
+    find "$source_root" -maxdepth 4 -type f -name 'three*.js' -print >&2 || true
+    exit 1
+  fi
+  threejs_root="$tmpdir/threejs-sage-runtime"
+  rm -rf "$threejs_root"
+  mkdir -p "$threejs_root/$version"
+  cp "$source_root/version" "$threejs_root/version"
+  cp -a "$build_dir"/. "$threejs_root/$version"/
+
+  build_companion_wheel \
+    sagelite-threejs-runtime \
+    "SAGELITE_THREEJS_DIR=$threejs_root"
+}
+
+build_sirocco_runtime_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local sirocco_library
+  sirocco_library="$(
+    find "$prefix/lib" "$prefix/lib64" -maxdepth 1 -type f -name 'libsirocco*' \
+      ! -name '*.la' -print -quit 2>/dev/null || true
+  )"
+  if [ ! -f "$prefix/include/sirocco.h" ] || [ -z "$sirocco_library" ]; then
+    echo "SIROCCO headers or libsirocco not found under $prefix; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 4 \( -name sirocco.h -o -name 'libsirocco*' \) -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-sirocco-runtime \
+    "SAGELITE_SIROCCO_PREFIX=$prefix" \
+    "SAGELITE_SIROCCO_RUNTIME_PLAT_NAME=$AUDITWHEEL_PLAT"
+}
+
+build_database_elliptic_curves_companions() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir source_root install_work share_dir
+  tarball="$(download_sage_spkg elliptic_curves)"
+  extract_dir="$tmpdir/elliptic-curves"
+  extract_tarball "$tarball" "$extract_dir"
+  source_root="$(
+    find "$extract_dir" -type f -path '*/common/allcurves.00000-09999' -print -quit |
+      sed 's#/common/allcurves\.00000-09999$##'
+  )"
+  if [ -z "$source_root" ] || [ ! -d "$source_root/ellcurves" ]; then
+    echo "elliptic_curves source payload not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+  install_work="$tmpdir/elliptic-curves-install"
+  share_dir="$install_work/share"
+  rm -rf "$install_work"
+  mkdir -p "$install_work/src" "$share_dir"
+  cp -a "$source_root"/. "$install_work/src"/
+  (
+    cd "$install_work"
+    SAGE_SHARE="$share_dir" \
+      env -u PIP_CONSTRAINT "$python_bin" /project/build/pkgs/elliptic_curves/spkg-install.py
+  )
+
+  build_companion_wheel \
+    sagelite-database-cremona-mini \
+    "SAGELITE_CREMONA_MINI_DB=$share_dir/cremona/cremona_mini.db"
+  build_companion_wheel \
+    sagelite-database-ellcurves \
+    "SAGELITE_ELLCURVES_DATA_DIR=$share_dir/ellcurves"
+}
+
 build_database_cremona_ellcurve_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1370,6 +1527,112 @@ build_database_cremona_ellcurve_companion() {
   build_companion_wheel \
     sagelite-database-cremona-ellcurve \
     "SAGELITE_CREMONA_ELLCURVE_DB=$cremona_db"
+}
+
+build_database_graphs_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir graphs_dir
+  tarball="$(download_sage_spkg graphs)"
+  extract_dir="$tmpdir/graphs"
+  extract_tarball "$tarball" "$extract_dir"
+  graphs_dir="$(
+    find "$extract_dir" -type f -name graphs.db -print -quit |
+      sed 's#/graphs\.db$##'
+  )"
+  if [ -z "$graphs_dir" ] || [ ! -f "$graphs_dir/brouwer_srg_database.json" ]; then
+    echo "graph database payload not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-database-graphs \
+    "SAGELITE_GRAPHS_DATA_DIR=$graphs_dir"
+}
+
+build_database_jones_numfield_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg database_jones_numfield)"
+
+  build_companion_wheel \
+    sagelite-database-jones-numfield \
+    "SAGELITE_JONES_NUMFIELD_SPKG=$tarball"
+}
+
+build_database_kohel_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir kohel_dir
+  tarball="$(download_sage_spkg database_kohel)"
+  extract_dir="$tmpdir/kohel"
+  extract_tarball "$tarball" "$extract_dir"
+  kohel_dir="$(
+    find "$extract_dir" -type f -path '*/PolMod/Cls/pol.029.dbz' -print -quit |
+      sed 's#/PolMod/Cls/pol\.029\.dbz$##'
+  )"
+  if [ -z "$kohel_dir" ] || [ ! -d "$kohel_dir/PolHeeg" ]; then
+    echo "Kohel database payload not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-database-kohel \
+    "SAGELITE_KOHEL_DATA_DIR=$kohel_dir"
+}
+
+build_database_mutation_class_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg database_mutation_class)"
+
+  build_companion_wheel \
+    sagelite-database-mutation-class \
+    "SAGELITE_MUTATION_CLASS_SPKG=$tarball"
+}
+
+build_database_odlyzko_zeta_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg database_odlyzko_zeta)"
+
+  build_companion_wheel \
+    sagelite-database-odlyzko-zeta \
+    "SAGELITE_ODLYZKO_ZETA_SPKG=$tarball"
+}
+
+build_database_polytopes_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball
+  tarball="$(download_sage_spkg polytopes_db)"
+
+  build_companion_wheel \
+    sagelite-database-polytopes \
+    "SAGELITE_POLYTOPES_SPKG=$tarball"
 }
 
 build_database_polytopes_4d_companion() {
@@ -1403,6 +1666,31 @@ build_database_sloane_companion() {
     "SAGELITE_SLOANE_NAMES_GZ=$sloane_dir/names.gz"
 }
 
+build_database_symbolic_data_companion() {
+  case "$(basename "$raw_wheel")" in
+    *-cp312-cp312-*) ;;
+    *) return 0 ;;
+  esac
+
+  local tarball extract_dir symbolic_data_dir
+  tarball="$(download_sage_spkg database_symbolic_data)"
+  extract_dir="$tmpdir/symbolic-data"
+  extract_tarball "$tarball" "$extract_dir"
+  symbolic_data_dir="$(
+    find "$extract_dir" -type d -path '*/Data/XMLResources' -print -quit |
+      sed 's#/Data/XMLResources$##'
+  )"
+  if [ -z "$symbolic_data_dir" ] || [ ! -f "$symbolic_data_dir/COPYING" ]; then
+    echo "SymbolicData payload not found in $tarball" >&2
+    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+    exit 1
+  fi
+
+  build_companion_wheel \
+    sagelite-database-symbolic-data \
+    "SAGELITE_SYMBOLIC_DATA_DIR=$symbolic_data_dir"
+}
+
 build_database_stein_watkins_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -1428,6 +1716,9 @@ build_database_stein_watkins_companion() {
   build_companion_wheel \
     sagelite-database-stein-watkins \
     "SAGELITE_STEIN_WATKINS_DIR=$stein_watkins_dir"
+  build_companion_wheel \
+    sagelite-database-stein-watkins-mini \
+    "SAGELITE_STEIN_WATKINS_MINI_DIR=$stein_watkins_dir"
 }
 
 build_maxima_runtime_companion() {
@@ -2025,6 +2316,19 @@ fi
 
 auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
 verify_repaired_sagelite_wheel
+build_cunningham_tables_companion
+build_d3js_runtime_companion
+build_mathjax_runtime_companion
+build_threejs_runtime_companion
+build_sirocco_runtime_companion
+build_database_elliptic_curves_companions
+build_database_graphs_companion
+build_database_jones_numfield_companion
+build_database_kohel_companion
+build_database_mutation_class_companion
+build_database_odlyzko_zeta_companion
+build_database_polytopes_companion
+build_database_symbolic_data_companion
 build_gap_runtime_companion
 build_gap3_runtime_companion
 build_gfan_runtime_companion

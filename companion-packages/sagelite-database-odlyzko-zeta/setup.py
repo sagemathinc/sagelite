@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+import pickle
 import shutil
 import tarfile
+import zlib
 from pathlib import Path
 
 from setuptools import setup
@@ -72,18 +74,9 @@ def _find_database_dir() -> Path | None:
 
 
 def _write_zeros_sobj_from_text(source: Path, target: Path) -> None:
-    try:
-        from sage.all import save
-    except Exception as error:
-        raise RuntimeError(
-            "building zeros.sobj from zeros6 requires importable Sage. "
-            "Install sagelite first, or provide SAGELITE_ODLYZKO_ZETA_DATA_DIR "
-            "containing zeros.sobj."
-        ) from error
-
     zeros = [float(line) for line in source.read_text().splitlines() if line.strip()]
     target.parent.mkdir(parents=True, exist_ok=True)
-    save(zeros, os.fspath(target))
+    target.write_bytes(zlib.compress(pickle.dumps(zeros, protocol=2)))
 
 
 def _extract_spkg(target: Path) -> bool:

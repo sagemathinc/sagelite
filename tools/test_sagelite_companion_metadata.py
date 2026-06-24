@@ -2021,6 +2021,18 @@ def test_odlyzko_zeta_database_wheel_declares_packaged_data():
     ]
 
 
+def test_odlyzko_zeta_database_can_build_zeros_sobj_without_importing_sage():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-database-odlyzko-zeta" / "setup.py"
+    )
+    setup_text = setup_py.read_text()
+
+    assert "import pickle" in setup_text
+    assert "import zlib" in setup_text
+    assert "pickle.dumps(zeros, protocol=2)" in setup_text
+    assert "from sage.all import save" not in setup_text
+
+
 def test_odlyzko_zeta_database_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
@@ -4113,6 +4125,48 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
     ]
     for call in required_calls:
         assert f"\n{call}\n" in repair
+
+
+def test_linux_repair_builds_requested_base_dependency_companion_wheels():
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    required_calls = [
+        "build_cunningham_tables_companion",
+        "build_d3js_runtime_companion",
+        "build_mathjax_runtime_companion",
+        "build_threejs_runtime_companion",
+        "build_sirocco_runtime_companion",
+        "build_database_elliptic_curves_companions",
+        "build_database_graphs_companion",
+        "build_database_jones_numfield_companion",
+        "build_database_kohel_companion",
+        "build_database_mutation_class_companion",
+        "build_database_odlyzko_zeta_companion",
+        "build_database_polytopes_companion",
+        "build_database_symbolic_data_companion",
+    ]
+    for call in required_calls:
+        assert f"\n{call}\n" in repair
+
+    required_packages = [
+        "sagelite-cunningham-tables",
+        "sagelite-d3js-runtime",
+        "sagelite-database-cremona-mini",
+        "sagelite-database-ellcurves",
+        "sagelite-database-graphs",
+        "sagelite-database-jones-numfield",
+        "sagelite-database-kohel",
+        "sagelite-database-mutation-class",
+        "sagelite-database-odlyzko-zeta",
+        "sagelite-database-polytopes",
+        "sagelite-database-stein-watkins-mini",
+        "sagelite-database-symbolic-data",
+        "sagelite-mathjax-runtime",
+        "sagelite-sirocco-runtime",
+        "sagelite-threejs-runtime",
+    ]
+    for package in required_packages:
+        assert package in repair
 
     assert (
         repair.index("\nbuild_ecl_runtime_companion\n")

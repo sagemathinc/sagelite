@@ -21,6 +21,7 @@ import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 
+from packaging.markers import default_environment
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.specifiers import SpecifierSet
 from packaging import tags as packaging_tags
@@ -218,10 +219,26 @@ def _sagelite_requirement_name(requirement: str) -> str | None:
     return name
 
 
+def _normalized_name(name: str) -> str:
+    return name.replace("_", "-").lower()
+
+
+def _pyproject_data() -> dict[str, object]:
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
+        return tomllib.load(pyproject)
+
+
+def _requirement_applies(requirement: Requirement, *, extra: str | None) -> bool:
+    if requirement.marker is None:
+        return True
+    marker_environment = default_environment()
+    marker_environment["extra"] = extra or ""
+    return requirement.marker.evaluate(marker_environment)
+
+
 def _sagelite_project_requirements() -> dict[str, list[str]]:
     requirements_by_name: dict[str, list[str]] = {}
-    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
-        data = tomllib.load(pyproject)
+    data = _pyproject_data()
     requirements = list(data["project"]["dependencies"])
     for extra_requirements in data["project"]["optional-dependencies"].values():
         requirements.extend(extra_requirements)
@@ -231,7 +248,7 @@ def _sagelite_project_requirements() -> dict[str, list[str]]:
             requirement = Requirement(requirement_text)
         except InvalidRequirement:
             continue
-        name = requirement.name.replace("_", "-").lower()
+        name = _normalized_name(requirement.name)
         if not name.startswith("sagelite-"):
             continue
         requirements_by_name.setdefault(name, [])
@@ -241,8 +258,7 @@ def _sagelite_project_requirements() -> dict[str, list[str]]:
 
 
 def _all_needed_extra_sagelite_packages() -> list[str]:
-    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject:
-        data = tomllib.load(pyproject)
+    data = _pyproject_data()
     requirements = data["project"]["optional-dependencies"]["all-needed-extras"]
     package_names = {
         name
@@ -250,6 +266,69 @@ def _all_needed_extra_sagelite_packages() -> list[str]:
         if (name := _sagelite_requirement_name(requirement)) is not None
     }
     return sorted(package_names)
+
+
+def _sagelite_dependency_packages_from_requirements(
+    requirements: list[str],
+    *,
+    extra: str | None,
+) -> set[str]:
+    package_names: set[str] = set()
+    for requirement_text in requirements:
+        try:
+            requirement = Requirement(requirement_text)
+        except InvalidRequirement:
+            continue
+        name = _normalized_name(requirement.name)
+        if not name.startswith("sagelite-"):
+            continue
+        if not _requirement_applies(requirement, extra=extra):
+            continue
+        package_names.add(name)
+    return package_names
+
+
+def _requested_sagelite_dependency_packages(package: str) -> list[str]:
+    requested = _primary_sagelite_requirement(package)
+    if requested.get("error") or requested.get("applies_to_sagelite") is not True:
+        return []
+
+    data = _pyproject_data()
+    project = data["project"]
+    package_names = _sagelite_dependency_packages_from_requirements(
+        list(project["dependencies"]),
+        extra=None,
+    )
+    optional_dependencies = project["optional-dependencies"]
+    optional_by_normalized_name = {
+        _normalized_name(str(extra)): list(requirements)
+        for extra, requirements in optional_dependencies.items()
+    }
+    extras = requested.get("extras", [])
+    if not isinstance(extras, list):
+        extras = []
+    for extra in extras:
+        if not isinstance(extra, str):
+            continue
+        normalized_extra = _normalized_name(extra)
+        package_names.update(
+            _sagelite_dependency_packages_from_requirements(
+                optional_by_normalized_name.get(normalized_extra, []),
+                extra=normalized_extra,
+            )
+        )
+    return sorted(package_names)
+
+
+def _missing_requested_sagelite_dependency_packages(
+    inventory: dict[str, object],
+    package: str,
+) -> list[str]:
+    companion_package_names = inventory.get("companion_sagelite_package_names", [])
+    if not isinstance(companion_package_names, list):
+        companion_package_names = []
+    present = {str(name) for name in companion_package_names}
+    return sorted(set(_requested_sagelite_dependency_packages(package)) - present)
 
 
 def _is_repaired_linux_wheel(wheel: Path) -> bool:
@@ -470,6 +549,33 @@ def _ensure_all_needed_extra_sagelite_wheels(inventory: dict[str, object]) -> No
     )
 
 
+def _ensure_requested_sagelite_dependency_wheels(
+    inventory: dict[str, object],
+    package: str,
+) -> None:
+    requested = _primary_sagelite_requirement(package)
+    if requested.get("error"):
+        raise RuntimeError(
+            "requested package requirement could not be parsed for sagelite "
+            "dependency wheel validation: "
+            + str(requested.get("error"))
+        )
+    if requested.get("applies_to_sagelite") is not True:
+        raise RuntimeError(
+            "requested sagelite dependency wheel validation requires a sagelite "
+            f"package requirement, but requested package is {package!r}"
+        )
+
+    missing = _missing_requested_sagelite_dependency_packages(inventory, package)
+    if not missing:
+        return
+    raise RuntimeError(
+        "requested sagelite dependency wheels are required but missing for "
+        f"{package}: "
+        + ", ".join(str(package_name) for package_name in missing)
+    )
+
+
 def _ensure_no_duplicate_companion_sagelite_wheels(
     inventory: dict[str, object],
 ) -> None:
@@ -523,8 +629,8 @@ def _primary_sagelite_requirement(package: str) -> dict[str, object]:
             "requests_all_needed_extras": False,
             "error": f"{type(exc).__name__}: {exc}",
         }
-    name = requirement.name.replace("_", "-").lower()
-    extras = sorted(requirement.extras)
+    name = _normalized_name(requirement.name)
+    extras = sorted(_normalized_name(extra) for extra in requirement.extras)
     return {
         "package": package,
         "name": name,
@@ -1370,9 +1476,24 @@ def _validation_contract(
         expected_abi_tag,
         compatible_platform_tags,
     )
+    requested_sagelite_dependency_packages = _requested_sagelite_dependency_packages(
+        package
+    )
+    missing_requested_sagelite_dependency_packages = (
+        _missing_requested_sagelite_dependency_packages(inventory, package)
+    )
     invalid_wheel_filenames = _invalid_wheel_filename_report(inventory)
     return {
         "primary_sagelite_requirement": _primary_sagelite_requirement(package),
+        "requested_sagelite_dependency_packages": (
+            requested_sagelite_dependency_packages
+        ),
+        "missing_requested_sagelite_dependency_packages": (
+            missing_requested_sagelite_dependency_packages
+        ),
+        "contains_requested_sagelite_dependency_wheels": (
+            not missing_requested_sagelite_dependency_packages
+        ),
         "primary_sagelite_wheel_requirement_satisfaction": (
             primary_requirement_satisfaction
         ),
@@ -1634,6 +1755,39 @@ def write_validation_summary(
                 f"`{validation_contract.get('compatible_platform_tag_source')}`",
             ]
         )
+        requested_dependency_packages = validation_contract.get(
+            "requested_sagelite_dependency_packages", []
+        )
+        if not isinstance(requested_dependency_packages, list):
+            requested_dependency_packages = []
+        missing_requested_dependency_packages = validation_contract.get(
+            "missing_requested_sagelite_dependency_packages", []
+        )
+        if not isinstance(missing_requested_dependency_packages, list):
+            missing_requested_dependency_packages = []
+        lines.extend(
+            [
+                (
+                    "- Requested sagelite dependency package count: "
+                    f"`{len(requested_dependency_packages)}`"
+                ),
+                (
+                    "- Missing requested sagelite dependency package count: "
+                    f"`{len(missing_requested_dependency_packages)}`"
+                ),
+                (
+                    "- Contains requested sagelite dependency wheels: "
+                    f"`{validation_contract.get('contains_requested_sagelite_dependency_wheels')}`"
+                ),
+            ]
+        )
+        if missing_requested_dependency_packages:
+            lines.append(
+                "- Missing requested sagelite dependency packages: "
+                + ", ".join(
+                    f"`{name}`" for name in missing_requested_dependency_packages
+                )
+            )
         enabled_preflights = validation_contract.get("enabled_preflights", [])
         if not isinstance(enabled_preflights, list):
             enabled_preflights = []
@@ -2330,6 +2484,15 @@ def _make_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-requested-sagelite-dependency-wheels",
+        action="store_true",
+        help=(
+            "fail before installation unless every sagelite package dependency "
+            "required by the requested --package and its extras is present in "
+            "the wheelhouse"
+        ),
+    )
+    parser.add_argument(
         "--reject-duplicate-companion-sagelite-wheels",
         action="store_true",
         help=(
@@ -2491,6 +2654,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.require_all_needed_extra_sagelite_wheels or strict_preflight:
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
         enabled_preflights.append("require-all-needed-extra-sagelite-wheels")
+    if args.require_requested_sagelite_dependency_wheels or strict_preflight:
+        preflight_checks.append(
+            lambda inventory: _ensure_requested_sagelite_dependency_wheels(
+                inventory,
+                args.package,
+            )
+        )
+        enabled_preflights.append("require-requested-sagelite-dependency-wheels")
     if args.reject_duplicate_companion_sagelite_wheels or strict_preflight:
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
         enabled_preflights.append("reject-duplicate-companion-sagelite-wheels")
