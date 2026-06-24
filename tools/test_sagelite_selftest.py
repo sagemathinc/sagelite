@@ -768,11 +768,12 @@ def test_selftest_exercises_remaining_standard_companion_runtimes(monkeypatch):
         assert name in calls
 
 
-def test_selftest_sympow_runtime_exercises_modular_degree():
+def test_selftest_sympow_runtime_exercises_l_value():
     selftest = _load_selftest()
     source = Path(selftest.__file__).read_text()
 
-    assert "sympow.modular_degree" in source
+    assert "sympow.L" in source
+    assert "4.195745112728" in source
     assert 'EllipticCurve("11a")' in source
 
 

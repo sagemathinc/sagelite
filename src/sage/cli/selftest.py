@@ -1002,10 +1002,10 @@ def _check_sympow_runtime():
     from sage.all import EllipticCurve
     from sage.lfunctions.sympow import sympow
 
-    modular_degree = sympow.modular_degree(EllipticCurve("11a"))
-    if modular_degree != 1:
+    value = sympow.L(EllipticCurve("11a"), 2, 16)
+    if not str(value).startswith("4.195745112728"):
         raise RuntimeError(
-            f"sympow companion returned unexpected modular degree: {modular_degree}"
+            f"sympow companion returned unexpected L-value: {value}"
         )
     return "sympow executable runtime available"
 
