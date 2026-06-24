@@ -55,6 +55,35 @@ def _candidate_main_gz_files() -> list[Path]:
     return files
 
 
+def _candidate_precomputed_sobj_files() -> list[Path]:
+    files = []
+    if os.environ.get("SAGELITE_CUNNINGHAM_FACTORS_SOBJ"):
+        files.append(Path(os.environ["SAGELITE_CUNNINGHAM_FACTORS_SOBJ"]))
+    files.append(
+        Path(__file__).resolve().parent
+        / "src"
+        / "sagelite_cunningham_tables"
+        / "data"
+        / "cunningham_tables"
+        / "cunningham_prime_factors.sobj"
+    )
+    files.append(
+        _project_root()
+        / "build"
+        / "pkgs"
+        / "cunningham_tables"
+        / "cunningham_prime_factors.sobj"
+    )
+    return files
+
+
+def _find_precomputed_sobj() -> Path | None:
+    for path in _candidate_precomputed_sobj_files():
+        if path.is_file():
+            return path.resolve()
+    return None
+
+
 def _find_main_gz() -> Path:
     for path in _candidate_main_gz_files():
         if path.is_file():
@@ -80,6 +109,15 @@ def _write_sobj(path: Path, factors: list[int]) -> None:
     path.write_bytes(zlib.compress(pickle.dumps(factors, protocol=2)))
 
 
+def _copy_or_build_sobj(target: Path) -> None:
+    precomputed_sobj = _find_precomputed_sobj()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if precomputed_sobj is not None:
+        shutil.copy2(precomputed_sobj, target)
+        return
+    _write_sobj(target, _parse_factors(_find_main_gz()))
+
+
 class build_py(_build_py):
     def run(self):
         super().run()
@@ -91,16 +129,32 @@ class build_py(_build_py):
             / "cunningham_tables"
         )
         shutil.rmtree(target, ignore_errors=True)
-        _write_sobj(target / "cunningham_prime_factors.sobj", _parse_factors(_find_main_gz()))
+        _copy_or_build_sobj(target / "cunningham_prime_factors.sobj")
 
 
 class sdist(_sdist):
     def make_release_tree(self, base_dir, files):
         super().make_release_tree(base_dir, files)
 
-        target = Path(base_dir) / "src" / "sagelite_cunningham_tables" / "_main.gz"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(_find_main_gz(), target)
+        precomputed_sobj = _find_precomputed_sobj()
+        if precomputed_sobj is not None:
+            target = (
+                Path(base_dir)
+                / "src"
+                / "sagelite_cunningham_tables"
+                / "data"
+                / "cunningham_tables"
+                / "cunningham_prime_factors.sobj"
+            )
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(precomputed_sobj, target)
+            return
+
+        main_gz_target = (
+            Path(base_dir) / "src" / "sagelite_cunningham_tables" / "_main.gz"
+        )
+        main_gz_target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(_find_main_gz(), main_gz_target)
 
 
 setup(cmdclass={"build_py": build_py, "sdist": sdist})

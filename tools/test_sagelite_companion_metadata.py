@@ -2888,6 +2888,17 @@ def test_cunningham_tables_registers_data_path():
     ]
 
 
+def test_cunningham_tables_accept_precomputed_sage_object_payload():
+    setup_py = ROOT / "companion-packages" / "sagelite-cunningham-tables" / "setup.py"
+    setup_text = setup_py.read_text()
+    repair_text = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    assert "SAGELITE_CUNNINGHAM_FACTORS_SOBJ" in setup_text
+    assert "_find_precomputed_sobj" in setup_text
+    assert "cunningham_prime_factors.sobj" in repair_text
+    assert "SAGELITE_CUNNINGHAM_FACTORS_SOBJ=$factors_sobj" in repair_text
+
+
 def test_cunningham_tables_are_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)

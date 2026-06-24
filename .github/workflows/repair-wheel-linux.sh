@@ -1363,20 +1363,28 @@ build_cunningham_tables_companion() {
     *) return 0 ;;
   esac
 
-  local tarball extract_dir main_gz
+  local tarball extract_dir main_gz factors_sobj
   tarball="$(download_sage_spkg cunningham_tables)"
   extract_dir="$tmpdir/cunningham-tables"
   extract_tarball "$tarball" "$extract_dir"
   main_gz="$(find "$extract_dir" -type f -name main.gz -print -quit)"
-  if [ -z "$main_gz" ] || [ ! -f "$main_gz" ]; then
-    echo "Cunningham tables main.gz not found in $tarball" >&2
-    find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
-    exit 1
+  factors_sobj="$(find "$extract_dir" -type f -name cunningham_prime_factors.sobj -print -quit)"
+  if [ -n "$main_gz" ] && [ -f "$main_gz" ]; then
+    build_companion_wheel \
+      sagelite-cunningham-tables \
+      "SAGELITE_CUNNINGHAM_MAIN_GZ=$main_gz"
+    return 0
+  fi
+  if [ -n "$factors_sobj" ] && [ -f "$factors_sobj" ]; then
+    build_companion_wheel \
+      sagelite-cunningham-tables \
+      "SAGELITE_CUNNINGHAM_FACTORS_SOBJ=$factors_sobj"
+    return 0
   fi
 
-  build_companion_wheel \
-    sagelite-cunningham-tables \
-    "SAGELITE_CUNNINGHAM_MAIN_GZ=$main_gz"
+  echo "Cunningham tables payload not found in $tarball" >&2
+  find "$extract_dir" -maxdepth 5 -type f -print >&2 || true
+  exit 1
 }
 
 build_d3js_runtime_companion() {
