@@ -87,23 +87,29 @@ build_gap_runtime_companion() {
 
   local gap_roots
   gap_roots="$(
-    {
-      find "$prefix" -path '*/lib/init.g' -print |
-        sed 's#/lib/init\.g$##'
-      find "$prefix" -path '*/pkg/*/PackageInfo.g' -print |
-        sed 's#/pkg/[^/]*/PackageInfo\.g$##'
-    } | sort -u | paste -sd ';' -
+    find "$prefix" -path '*/lib/init.g' -print |
+      while IFS= read -r init_file; do
+        gap_root="${init_file%/lib/init.g}"
+        if [ -f "$gap_root/lib/system.g" ] &&
+           [ -f "$gap_root/lib/package.gi" ]; then
+          printf '%s\n' "$gap_root"
+        fi
+      done |
+      sort -u |
+      paste -sd ';' -
   )"
-  local has_gap_init
-  has_gap_init="no"
+  local has_gap_core
+  has_gap_core="no"
   while IFS= read -r gap_root; do
-    if [ -f "$gap_root/lib/init.g" ]; then
-      has_gap_init="yes"
+    if [ -f "$gap_root/lib/init.g" ] &&
+       [ -f "$gap_root/lib/system.g" ] &&
+       [ -f "$gap_root/lib/package.gi" ]; then
+      has_gap_core="yes"
       break
     fi
   done < <(printf '%s' "$gap_roots" | tr ';' '\n')
-  if [ -z "$gap_roots" ] || [ "$has_gap_init" != "yes" ]; then
-    echo "GAP root not found under $prefix; searched prefix contents:" >&2
+  if [ -z "$gap_roots" ] || [ "$has_gap_core" != "yes" ]; then
+    echo "GAP 4 root not found under $prefix; searched prefix contents:" >&2
     find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g -o -name sysinfo.gap \) -print >&2 || true
     exit 1
   fi

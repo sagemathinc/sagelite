@@ -779,6 +779,24 @@ def _maxima_runtime_setup_helpers() -> dict:
     return namespace
 
 
+def _load_gap_runtime_module():
+    runtime_path = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-gap-runtime"
+        / "src"
+        / "sagelite_gap_runtime"
+        / "runtime.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "test_sagelite_gap_runtime", runtime_path
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
 def _companion_versions() -> dict[str, Version]:
     versions = {}
     for pyproject_toml in (ROOT / "companion-packages").glob(
@@ -2419,6 +2437,40 @@ def test_buckygen_runtime_is_exposed_by_sagelite_extras():
     assert requirement in extras["full"]
 
 
+def test_gap_runtime_requires_gap4_roots_and_keeps_package_roots(
+    monkeypatch, tmp_path
+):
+    setup_text = (
+        ROOT / "companion-packages" / "sagelite-gap-runtime" / "setup.py"
+    ).read_text()
+    runtime = _load_gap_runtime_module()
+    repair_text = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
+    gap_builder = repair_text[
+        repair_text.index("build_gap_runtime_companion()") :
+        repair_text.index("\nbuild_gap3_runtime_companion()")
+    ]
+
+    core_root = tmp_path / "data" / "gap0"
+    gap3_root = tmp_path / "data" / "gap1"
+    package_root = tmp_path / "data" / "gap2"
+    (core_root / "lib").mkdir(parents=True)
+    for name in ("init.g", "system.g", "package.gi"):
+        (core_root / "lib" / name).write_text("gap4 marker\n", encoding="utf-8")
+    (gap3_root / "lib").mkdir(parents=True)
+    (gap3_root / "lib" / "init.g").write_text("gap3 marker\n", encoding="utf-8")
+    _gap_package(package_root, "example")
+
+    monkeypatch.setattr(runtime, "files", lambda package: tmp_path)
+
+    assert runtime.gap_root_paths() == f"{core_root};{package_root}"
+    assert '"system.g"' in setup_text
+    assert '"package.gi"' in setup_text
+    assert "GAP 4 roots" in setup_text
+    assert "lib/system.g" in gap_builder
+    assert "lib/package.gi" in gap_builder
+    assert "*/pkg/*/PackageInfo.g" not in gap_builder
+
+
 def test_gap_grape_package_registers_gap_root_path():
     pyproject = _pyproject("sagelite-gap-package-grape")
 
@@ -3373,6 +3425,18 @@ def test_lie_runtime_declares_console_script():
     }
 
 
+def test_lie_runtime_builds_relocatable_wrapper():
+    setup_text = (
+        ROOT / "companion-packages" / "sagelite-lie-runtime" / "setup.py"
+    ).read_text()
+
+    assert "def _write_lie_command" in setup_text
+    assert 'LD="${LIE_INFO_DIR:-$PREFIX/LiE}"' in setup_text
+    assert 'exec "$LD/Lie.exe" initfile "$LD" "$@"' in setup_text
+    assert 'info_target / "Lie.exe"' in setup_text
+    assert 'shutil.copy2(command, bin_target / "lie")' not in setup_text
+
+
 def test_lrslib_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-lrslib-runtime")
 
@@ -3482,6 +3546,10 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "system ECL runtime" in setup_text
     assert '"FE"' in setup_text
     assert "--remove-rpath" in setup_text
+    assert "--set-rpath" in setup_text
+    assert '"$ORIGIN/../runtime"' in setup_text
+    assert '"libgc.so"' in setup_text
+    assert '"libffi.so"' in setup_text
 
 
 def test_maxima_runtime_strips_rpath_for_system_ecl_images(
@@ -3516,7 +3584,7 @@ def test_maxima_runtime_strips_rpath_for_system_ecl_images(
     assert not any("--replace-needed" in command for command in commands)
 
 
-def test_maxima_runtime_strips_rpath_without_ecl_needed(tmp_path):
+def test_maxima_runtime_sets_relative_rpath_without_ecl_needed(tmp_path):
     helpers = _maxima_runtime_setup_helpers()
     image = tmp_path / "sockets.fas"
     commands = []
@@ -3542,8 +3610,45 @@ def test_maxima_runtime_strips_rpath_without_ecl_needed(tmp_path):
 
     assert commands == [
         ["patchelf", "--print-needed", os.fspath(image)],
-        ["patchelf", "--remove-rpath", os.fspath(image)],
+        ["patchelf", "--set-rpath", "$ORIGIN/../runtime", os.fspath(image)],
     ]
+
+
+def test_maxima_runtime_rewrites_ecl_needed_and_sets_relative_rpath(
+    monkeypatch, tmp_path
+):
+    helpers = _maxima_runtime_setup_helpers()
+    image = tmp_path / "sockets.fas"
+    commands = []
+
+    class Patchelf:
+        @staticmethod
+        def run(args, **kwargs):
+            commands.append(args)
+            assert kwargs["check"] is True
+            if args[:2] == ["patchelf", "--print-needed"]:
+                assert kwargs["capture_output"] is True
+                assert kwargs["text"] is True
+
+                class Result:
+                    stdout = "libecl.so.24.5\nlibgc.so.1\nlibc.so.6\n"
+
+                return Result()
+            return None
+
+    monkeypatch.setenv("SAGELITE_MAXIMA_ECL_SONAME", "libecl-sagelite.so.24.5.10")
+    helpers["subprocess"] = Patchelf
+
+    helpers["_patch_ecl_fas"](image)
+
+    assert [
+        "patchelf",
+        "--replace-needed",
+        "libecl.so.24.5",
+        "libecl-sagelite.so.24.5.10",
+        os.fspath(image),
+    ] in commands
+    assert ["patchelf", "--set-rpath", "$ORIGIN/../runtime", os.fspath(image)] in commands
 
 
 def test_maxima_runtime_validation_rejects_missing_fe_symbols(monkeypatch, tmp_path):

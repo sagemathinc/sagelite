@@ -25,7 +25,11 @@ def _split_roots(value: str | None) -> list[Path]:
 
 
 def _looks_like_gap_root(root: Path) -> bool:
-    return (root / "lib" / "init.g").is_file()
+    return (
+        (root / "lib" / "init.g").is_file()
+        and (root / "lib" / "system.g").is_file()
+        and (root / "lib" / "package.gi").is_file()
+    )
 
 
 def _candidate_gap_roots() -> list[Path]:
@@ -96,7 +100,7 @@ def _find_gap_roots() -> list[Path]:
 
     searched = "\n  ".join(os.fspath(root) for root in _candidate_gap_roots())
     raise RuntimeError(
-        "could not find GAP roots containing lib/init.g and package data. "
+        "could not find GAP 4 roots containing lib/init.g and package data. "
         "Set SAGELITE_GAP_ROOTS to the GAP roots built with sagelite.\n"
         f"Searched:\n  {searched}"
     )

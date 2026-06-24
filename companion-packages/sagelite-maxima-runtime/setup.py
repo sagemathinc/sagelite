@@ -231,6 +231,32 @@ def _find_library_with_prefix(prefix: str, maxima_prefix: Path) -> Path:
     )
 
 
+REQUIRED_RUNTIME_LIBRARY_PREFIXES = ("libecl.so", "libgmp.so", "libgc.so")
+OPTIONAL_RUNTIME_LIBRARY_PREFIXES = ("libffi.so",)
+
+
+def _find_optional_library_with_prefix(
+    prefix: str, maxima_prefix: Path
+) -> Path | None:
+    try:
+        return _find_library_with_prefix(prefix, maxima_prefix)
+    except RuntimeError:
+        return None
+
+
+def _ensure_runtime_libraries(libraries: list[Path], maxima_prefix: Path) -> list[Path]:
+    for prefix in REQUIRED_RUNTIME_LIBRARY_PREFIXES:
+        if not any(path.name.startswith(prefix) for path in libraries):
+            libraries.append(_find_library_with_prefix(prefix, maxima_prefix))
+    for prefix in OPTIONAL_RUNTIME_LIBRARY_PREFIXES:
+        if any(path.name.startswith(prefix) for path in libraries):
+            continue
+        library = _find_optional_library_with_prefix(prefix, maxima_prefix)
+        if library is not None:
+            libraries.append(library)
+    return libraries
+
+
 def _runtime_libraries(executable: Path, maxima_prefix: Path) -> list[Path]:
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
@@ -239,7 +265,7 @@ def _runtime_libraries(executable: Path, maxima_prefix: Path) -> list[Path]:
         text=True,
     ).stdout
     libraries = []
-    prefixes = ("libecl.so", "libgmp.so")
+    prefixes = REQUIRED_RUNTIME_LIBRARY_PREFIXES + OPTIONAL_RUNTIME_LIBRARY_PREFIXES
     for line in output.splitlines():
         if "=>" not in line:
             continue
@@ -249,20 +275,14 @@ def _runtime_libraries(executable: Path, maxima_prefix: Path) -> list[Path]:
         if name.startswith(prefixes) and path != "not":
             libraries.append(Path(path))
 
-    if not any(path.name.startswith("libecl.so") for path in libraries):
-        libraries.append(_find_library_with_prefix("libecl.so", maxima_prefix))
-    if not any(path.name.startswith("libgmp.so") for path in libraries):
-        libraries.append(_find_library_with_prefix("libgmp.so", maxima_prefix))
+    libraries = _ensure_runtime_libraries(libraries, maxima_prefix)
 
     by_name = {path.name: path for path in libraries}
     return sorted(by_name.values())
 
 
 def _fallback_runtime_libraries(maxima_prefix: Path) -> list[Path]:
-    libraries = [
-        _find_library_with_prefix("libecl.so", maxima_prefix),
-        _find_library_with_prefix("libgmp.so", maxima_prefix),
-    ]
+    libraries = _ensure_runtime_libraries([], maxima_prefix)
     by_name = {path.name: path for path in libraries}
     return sorted(by_name.values())
 
@@ -479,7 +499,9 @@ def _patch_ecl_fas(path: Path) -> None:
     crash the process.  Release builds pass the repaired sagelite ECL SONAME so
     these images bind to the already-loaded library.  All builds remove RPATHs
     from copied images so they cannot keep searching the original Sage build
-    prefix after installation.
+    prefix after installation.  Release builds instead give copied images a
+    relative runtime search path so support images such as ``sockets.fas`` can
+    resolve bundled auxiliary ECL libraries such as ``libgc``.
     """
     ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
     allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
@@ -519,7 +541,10 @@ def _patch_ecl_fas(path: Path) -> None:
                 ],
                 check=True,
             )
-        subprocess.run(["patchelf", "--remove-rpath", os.fspath(path)], check=True)
+        subprocess.run(
+            ["patchelf", "--set-rpath", "$ORIGIN/../runtime", os.fspath(path)],
+            check=True,
+        )
     except FileNotFoundError as err:
         raise RuntimeError(
             "patchelf is required to validate or patch Maxima ECL images"

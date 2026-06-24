@@ -16,11 +16,26 @@ def gap_root_paths() -> str:
     Return the semicolon-separated GAP root path string expected by libgap.
     """
     data = files(__package__).joinpath("data")
-    roots = []
+    core_roots = []
+    package_roots = []
     for root in sorted(data.iterdir(), key=lambda path: path.name):
-        if root.is_dir() and root.joinpath("lib", "init.g").is_file():
-            roots.append(os.fspath(root))
-    return ";".join(roots)
+        if not root.is_dir():
+            continue
+        if (
+            root.joinpath("lib", "init.g").is_file()
+            and root.joinpath("lib", "system.g").is_file()
+            and root.joinpath("lib", "package.gi").is_file()
+        ):
+            core_roots.append(os.fspath(root))
+            continue
+        pkg = root.joinpath("pkg")
+        if pkg.is_dir() and any(
+            package.joinpath("PackageInfo.g").is_file()
+            for package in pkg.iterdir()
+            if package.is_dir()
+        ):
+            package_roots.append(os.fspath(root))
+    return ";".join(core_roots + package_roots)
 
 
 def gap_command() -> str | None:

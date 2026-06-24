@@ -69,6 +69,19 @@ def _find_info_dir() -> Path:
     )
 
 
+def _write_lie_command(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """#!/bin/sh
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PREFIX=$(dirname "$HERE")
+LD="${LIE_INFO_DIR:-$PREFIX/LiE}"
+exec "$LD/Lie.exe" initfile "$LD" "$@"
+""",
+    )
+    path.chmod(0o755)
+
+
 class build_py(_build_py):
     def run(self):
         command = _find_executable()
@@ -79,8 +92,12 @@ class build_py(_build_py):
         shutil.rmtree(target, ignore_errors=True)
         bin_target.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(command, bin_target / "lie")
         shutil.copytree(info_dir, info_target, ignore_dangling_symlinks=True)
+        lie_executable = info_target / "Lie.exe"
+        if not lie_executable.is_file():
+            shutil.copy2(command, lie_executable)
+        lie_executable.chmod(lie_executable.stat().st_mode | 0o111)
+        _write_lie_command(bin_target / "lie")
 
         super().run()
 
