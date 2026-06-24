@@ -3,8 +3,8 @@
 Optional PARI/GP executable companion package for `sagelite`.
 
 This package is built from a Sage or system PARI/GP installation and bundles
-the `gp`, `gphelp`, and `tex2mail` commands with the runtime libraries needed
-to execute them from an installed `sagelite` wheel.
+the `gp`, `gphelp`, and `tex2mail` commands with the runtime libraries and
+help data needed to execute them from an installed `sagelite` wheel.
 
 Build from a Sage prefix by pointing `SAGELITE_PARI_BINDIR` at the directory
 containing `gp`:

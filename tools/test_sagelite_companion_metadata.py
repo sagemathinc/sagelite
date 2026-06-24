@@ -242,7 +242,11 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_palp": ["data/bin/*"],
     },
     "sagelite-pari-runtime": {
-        "sagelite_pari": ["data/bin/*", "data/lib/*"],
+        "sagelite_pari": [
+            "data/bin/*",
+            "data/lib/*",
+            "data/share/pari/doc/**/*",
+        ],
     },
     "sagelite-pdf2svg-runtime": {
         "sagelite_pdf2svg": ["data/bin/*", "data/lib/*"],
