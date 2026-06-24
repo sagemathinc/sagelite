@@ -574,7 +574,11 @@ def test_require_compatible_third_party_wheels_rejects_mismatch(tmp_path):
     output_dir = tmp_path / "validation"
     commands = []
 
-    validator._run = lambda command, env: commands.append(command)
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
 
     exit_code = validator.main(
         [
@@ -611,6 +615,130 @@ def test_require_compatible_third_party_wheels_rejects_mismatch(tmp_path):
     assert f"- Incompatible third-party wheels: `{incompatible.name}`" in summary
     assert "## Preflight Error" in summary
     assert "mismatches: python, abi" in summary
+
+
+def test_require_compatible_third_party_wheels_allows_abi3_tags(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (wheelhouse / "igraph-1.0.0-cp39-abi3-manylinux_2_28_x86_64.whl").write_text("")
+    (
+        wheelhouse
+        / "psutil-7.2.2-cp36-abi3-manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (
+        wheelhouse
+        / "pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    install_dir = tmp_path / "install"
+    output_dir = tmp_path / "validation"
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--install-dir",
+            str(install_dir),
+            "--output-dir",
+            str(output_dir),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-compatible-third-party-wheels",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    third_party_compatibility = metadata["validation_contract"][
+        "third_party_wheel_compatibility"
+    ]
+    assert [item["name"] for item in third_party_compatibility] == [
+        "igraph-1.0.0-cp39-abi3-manylinux_2_28_x86_64.whl",
+        (
+            "psutil-7.2.2-cp36-abi3-manylinux_2_12_x86_64."
+            "manylinux_2_28_x86_64.whl"
+        ),
+        (
+            "pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64."
+            "manylinux_2_28_x86_64.whl"
+        ),
+    ]
+    assert metadata["validation_contract"]["incompatible_third_party_wheels"] == []
+    assert all(item["compatible"] for item in third_party_compatibility)
+    assert all(item["mismatches"] == [] for item in third_party_compatibility)
+    assert all(item["python_compatible"] for item in third_party_compatibility)
+    assert all(item["abi_compatible"] for item in third_party_compatibility)
+    summary = (output_dir / "validation-summary.md").read_text(encoding="utf-8")
+    assert "- Third-party compatibility checked wheels: `3`" in summary
+    assert "- Third-party compatibility passed wheels: `3`" in summary
+    assert "- Incompatible third-party wheels: `none`" in summary
+
+
+def test_require_compatible_third_party_wheels_rejects_too_new_abi3(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (
+        wheelhouse / "sagelite-10.9.post1-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    (
+        wheelhouse / "futurelib-1.0.0-cp313-abi3-manylinux_2_28_x86_64.whl"
+    ).write_text("")
+    install_dir = tmp_path / "install"
+    output_dir = tmp_path / "validation"
+    commands = []
+
+    validator._run = lambda command, env: commands.append(command)
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["manylinux_2_28_x86_64", "linux_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--install-dir",
+            str(install_dir),
+            "--output-dir",
+            str(output_dir),
+            "--python",
+            "/opt/python/cp312/bin/python",
+            "--require-compatible-third-party-wheels",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads((output_dir / "install-metadata.json").read_text())
+    incompatibility = metadata["validation_contract"][
+        "incompatible_third_party_wheels"
+    ][0]
+    assert incompatibility["name"] == (
+        "futurelib-1.0.0-cp313-abi3-manylinux_2_28_x86_64.whl"
+    )
+    assert incompatibility["mismatches"] == ["python", "abi"]
 
 
 def test_stops_after_failed_step(tmp_path):
@@ -1833,6 +1961,9 @@ def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
         wheelhouse
         / "sagelite_maxima_runtime-10.9-cp312-cp312-manylinux_2_28_x86_64.whl"
     ).write_text("")
+    (
+        wheelhouse / "sagelite_ecl_runtime-10.9-cp39-abi3-manylinux_2_28_x86_64.whl"
+    ).write_text("")
     commands = []
 
     def fake_run(command, env):
@@ -1872,21 +2003,37 @@ def test_require_compatible_companion_sagelite_wheels_allows_usable_tags(
     companion_compatibility = metadata["validation_contract"][
         "companion_sagelite_wheel_compatibility"
     ]
-    assert companion_compatibility[0]["matched_platform_tags"] == ["any"]
-    assert companion_compatibility[1]["matched_platform_tags"] == [
+    by_name = {item["name"]: item for item in companion_compatibility}
+    assert by_name["sagelite_gap_runtime-10.9-py3-none-any.whl"][
+        "matched_platform_tags"
+    ] == ["any"]
+    assert by_name[
+        "sagelite_maxima_runtime-10.9-cp312-cp312-manylinux_2_28_x86_64.whl"
+    ]["matched_platform_tags"] == ["manylinux_2_28_x86_64"]
+    abi3_companion = by_name[
+        "sagelite_ecl_runtime-10.9-cp39-abi3-manylinux_2_28_x86_64.whl"
+    ]
+    assert abi3_companion["matched_platform_tags"] == [
         "manylinux_2_28_x86_64"
     ]
+    assert abi3_companion["python_compatible"] is True
+    assert abi3_companion["abi_compatible"] is True
     summary = (
         tmp_path / "validation-20260621-072100" / "validation-summary.md"
     ).read_text(encoding="utf-8")
-    assert "- Companion compatibility checked wheels: `2`" in summary
-    assert "- Companion compatibility passed wheels: `2`" in summary
+    assert "- Companion compatibility checked wheels: `3`" in summary
+    assert "- Companion compatibility passed wheels: `3`" in summary
     assert (
         "  - `sagelite_gap_runtime-10.9-py3-none-any.whl`: compatible `True` "
         "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
     ) in summary
     assert (
         "  - `sagelite_maxima_runtime-10.9-cp312-cp312-manylinux_2_28_x86_64.whl`: "
+        "compatible `True` "
+        "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
+    ) in summary
+    assert (
+        "  - `sagelite_ecl_runtime-10.9-cp39-abi3-manylinux_2_28_x86_64.whl`: "
         "compatible `True` "
         "(python: `True`; abi: `True`; platform: `True`; mismatches: `none`)"
     ) in summary

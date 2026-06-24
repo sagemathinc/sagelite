@@ -668,6 +668,34 @@ def _wheel_identity_rendered(wheel: dict[str, object]) -> str:
     return f"size: {size}; sha256: {sha256}"
 
 
+def _cpython_tag_version(tag: object) -> tuple[int, int] | None:
+    match = re.fullmatch(r"cp([0-9])([0-9]+)", str(tag))
+    if match is None:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _abi3_compatible_with_expected_python(
+    python_tags: list[object],
+    abi_tags: list[object],
+    expected_python_tag: str | None,
+) -> bool:
+    if "abi3" not in {str(tag) for tag in abi_tags}:
+        return False
+    expected = _cpython_tag_version(expected_python_tag)
+    if expected is None:
+        return False
+    expected_major, expected_minor = expected
+    for tag in python_tags:
+        version = _cpython_tag_version(tag)
+        if version is None:
+            continue
+        major, minimum_minor = version
+        if major == expected_major and minimum_minor <= expected_minor:
+            return True
+    return False
+
+
 def _companion_sagelite_wheel_compatibility(
     inventory: dict[str, object],
     expected_python_tag: str | None,
@@ -697,12 +725,17 @@ def _companion_sagelite_wheel_compatibility(
         ]
         if "any" in platform_tags and "any" not in matched_platform_tags:
             matched_platform_tags.append("any")
+        abi3_ok = _abi3_compatible_with_expected_python(
+            python_tags,
+            abi_tags,
+            expected_python_tag,
+        )
         python_ok = "py3" in python_tags or (
             expected_python_tag is not None and expected_python_tag in python_tags
-        )
+        ) or abi3_ok
         abi_ok = "none" in abi_tags or (
             expected_abi_tag is not None and expected_abi_tag in abi_tags
-        )
+        ) or abi3_ok
         platform_ok = bool(matched_platform_tags)
         mismatches = []
         if not python_ok:
@@ -753,12 +786,17 @@ def _wheel_tag_compatibility(
     ]
     if "any" in platform_tags and "any" not in matched_platform_tags:
         matched_platform_tags.append("any")
+    abi3_ok = _abi3_compatible_with_expected_python(
+        python_tags,
+        abi_tags,
+        expected_python_tag,
+    )
     python_ok = "py3" in python_tags or (
         expected_python_tag is not None and expected_python_tag in python_tags
-    )
+    ) or abi3_ok
     abi_ok = "none" in abi_tags or (
         expected_abi_tag is not None and expected_abi_tag in abi_tags
-    )
+    ) or abi3_ok
     platform_ok = bool(matched_platform_tags)
     mismatches = []
     if not python_ok:
