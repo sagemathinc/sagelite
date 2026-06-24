@@ -737,7 +737,11 @@ if str(values[1]) != "1" or str(values[2]) != "2":
 
 matrix = gap3([[1, 2], [3, 4]])
 matrix_latex = latex(matrix)
-if r"\begin{array}" not in matrix_latex or "3&4" not in matrix_latex:
+if (
+    "1&2" not in matrix_latex
+    or "3&4" not in matrix_latex
+    or r"\\" not in matrix_latex
+):
     raise RuntimeError(f"GAP3 LaTeX output is not available: {matrix_latex!r}")
 
 print("GAP3 prompt, help, indexing, and LaTeX available")
