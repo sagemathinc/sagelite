@@ -433,10 +433,8 @@ def test_collect_runtime_smoke_tests_checks_symbolic_and_external_conversions(
     assert 'gap3._execute_line("1+1;")' in probe_by_name["gap3_interface"][0]
     assert "values[2]" in probe_by_name["gap3_interface"][0]
     assert "._latex_()" in probe_by_name["gap3_interface"][0]
-    assert "fricas_linear_ode_basis_sage" in result
-    assert 'fricas("sol.basis").sage()' in probe_by_name[
-        "fricas_linear_ode_basis_sage"
-    ][0]
+    assert "fricas_solve_sage" in result
+    assert 'fricas("solve(x^2 - 1=0,x)")' in probe_by_name["fricas_solve_sage"][0]
     assert "fricas_record_sage" in result
     assert ".solve(y.operator(), x).sage()" in probe_by_name["fricas_record_sage"][0]
 

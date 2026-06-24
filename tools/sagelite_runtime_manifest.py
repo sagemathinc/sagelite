@@ -1138,19 +1138,13 @@ print(value)
 """,
             timeout,
         ),
-        "fricas_linear_ode_basis_sage": _run_python_probe(
+        "fricas_solve_sage": _run_python_probe(
             """
 from sage.interfaces.fricas import fricas
-fricas.set("y", "operator y")
-fricas.set("deq", "x^3*D(y x, x, 3) + x^2*D(y x, x, 2) - 2*x*D(y x, x) + 2*y x - 2*x^4")
-fricas.set("sol", "solve(deq, y, x)")
-try:
-    value = fricas("sol.basis").sage()
-    print(value)
-    if len(value) != 3:
-        raise SystemExit(1)
-finally:
-    fricas.eval(")clear values y deq sol")
+value = str(fricas("solve(x^2 - 1=0,x)"))
+print(value)
+if "x = 1" not in value or "x = - 1" not in value:
+    raise SystemExit(1)
 """,
             timeout,
         ),

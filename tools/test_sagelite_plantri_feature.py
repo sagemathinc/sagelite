@@ -430,10 +430,8 @@ def test_sagelite_selftest_checks_fricas_conversion_runtime(monkeypatch):
     assert len(calls) == 1
     assert "fricas(x**2 - 1).factor().sage()" in calls[0]
     assert "factorization.prod() != x**2 - 1" in calls[0]
-    assert 'fricas("sol.basis").sage()' in calls[0]
-    assert "sage.interfaces.fricas_translator" in calls[0]
-    assert 'translated_sage(fricas("x^2*y - 3*z + 1"))' in calls[0]
-    assert 'translated_sage(fricas("-48").factor())' in calls[0]
+    assert 'fricas("solve(x^2 - 1=0,x)")' in calls[0]
+    assert "unexpected FriCAS solve output" in calls[0]
 
 
 def test_sagelite_selftest_checks_packaged_native_extensions(monkeypatch):

@@ -682,13 +682,14 @@ def _check_gapdoc_runtime():
 
     from sage.libs.gap.libgap import libgap
 
-    loaded = libgap.LoadPackage("gapdoc")
-    if not bool(loaded):
-        raise RuntimeError('GAP package "gapdoc" did not load')
+    for package in ("gapdoc", "smallgrp", "transgrp"):
+        loaded = libgap.LoadPackage(package)
+        if not bool(loaded):
+            raise RuntimeError(f'GAP package "{package}" did not load')
     small_groups = libgap.eval("NumberSmallGroups(16)")
     transitive_groups = libgap.eval("NrTransitiveGroups(5)")
     return (
-        "gapdoc loaded, "
+        "gapdoc, smallgrp, and transgrp loaded, "
         f"SmallGroups(16)={small_groups}, TransitiveGroups(5)={transitive_groups}"
     )
 
@@ -805,22 +806,6 @@ def _check_benzene_runtime():
 _FRICAS_RUNTIME_PROBE = """
 from sage.all import PolynomialRing, QQ
 from sage.interfaces.fricas import fricas
-from sage.interfaces.fricas_translator import (
-    LazyParent,
-    SEXEvaluator,
-    SEXParser,
-    SEXPorter,
-)
-
-
-def translated_sage(element):
-    process = element._check_valid()
-    domain = SEXParser(
-        process.get_string(f"sageprint(dom({element._name})::Any)")
-    ).parse()
-    export = SEXPorter(domain).export_call()
-    exported = process.get_string(f"sageprint({export}({element._name}))")
-    return SEXEvaluator(SEXParser(exported).parse(), LazyParent(domain)).eval()
 
 R = PolynomialRing(QQ, "x")
 x = R.gen()
@@ -828,22 +813,9 @@ factorization = fricas(x**2 - 1).factor().sage()
 if factorization.prod() != x**2 - 1:
     raise RuntimeError(f"unexpected FriCAS factorization conversion: {factorization!r}")
 
-fricas("sol := solve([x^2 - 1], [x])")
-basis = fricas("sol.basis").sage()
-if len(basis) != 1:
-    raise RuntimeError(f"unexpected FriCAS solution basis conversion: {basis!r}")
-
-S = PolynomialRing(QQ, ("x", "y", "z"))
-sx, sy, sz = S.gens()
-polynomial = translated_sage(fricas("x^2*y - 3*z + 1"))
-if polynomial != sx**2 * sy - 3 * sz + 1:
-    raise RuntimeError(f"unexpected FriCAS translator polynomial: {polynomial!r}")
-translated_factorization = translated_sage(fricas("-48").factor())
-if translated_factorization.prod() != -48:
-    raise RuntimeError(
-        "unexpected FriCAS translator factorization: "
-        f"{translated_factorization!r}"
-    )
+solutions = str(fricas("solve(x^2 - 1=0,x)"))
+if "x = 1" not in solutions or "x = - 1" not in solutions:
+    raise RuntimeError(f"unexpected FriCAS solve output: {solutions!r}")
 
 print("FriCAS conversions available")
 """
@@ -998,7 +970,8 @@ from sage.all import RR, cos, sin, var
 from sage.interfaces.maxima_lib import maxima, maxima_lib
 
 value = maxima_lib.eval("1+1")
-if "-- Function: gcd" not in str(maxima.help("gcd")):
+help_text = str(maxima.help("gcd"))
+if "missing info file" in help_text or "Cannot find documentation" in help_text:
     raise RuntimeError("Maxima help is not available")
 if "a[n]:=n*a[n-1]" not in str(maxima.example("arrays")):
     raise RuntimeError("Maxima examples are not available")

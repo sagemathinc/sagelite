@@ -113,6 +113,11 @@ build_gap_runtime_companion() {
     find "$prefix" -maxdepth 5 \( -name init.g -o -name PackageInfo.g -o -name sysinfo.gap \) -print >&2 || true
     exit 1
   fi
+  if [ ! -x "$prefix/bin/gap" ]; then
+    echo "GAP executable not found under $prefix/bin; searched prefix contents:" >&2
+    find "$prefix" -maxdepth 5 -name gap -print >&2 || true
+    exit 1
+  fi
 
   local project_dir="/project"
   local companion_dir="$project_dir/companion-packages/sagelite-gap-runtime"
@@ -125,6 +130,7 @@ build_gap_runtime_companion() {
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GAP_ROOTS="$gap_roots" \
+  SAGELITE_GAP_BINDIR="$prefix/bin" \
   SAGELITE_GAP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \

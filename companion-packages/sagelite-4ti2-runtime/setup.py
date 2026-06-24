@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from setuptools import setup
@@ -25,6 +26,20 @@ PROGRAMS = [
     "groebner",
 ]
 REQUIRED_PROGRAMS = ["hilbert", "zsolve", "qsolve", "groebner"]
+RUNTIME_LIBRARY_PREFIXES = (
+    "lib4ti2",
+    "libcircuits",
+    "libgmp",
+    "libgmpxx",
+    "libgraver",
+    "libgroebner",
+    "libhilbert",
+    "libmarkov",
+    "libppi",
+    "libqsolve",
+    "librays",
+    "libzsolve",
+)
 
 
 def _candidate_bindirs() -> list[Path]:
@@ -56,6 +71,20 @@ def _candidate_libexecdirs() -> list[Path]:
     return dirs
 
 
+def _candidate_libdirs() -> list[Path]:
+    dirs = []
+    for variable in ("SAGELITE_4TI2_LIBDIR", "FOURTITWO_LIBDIR"):
+        if os.environ.get(variable):
+            dirs.append(Path(os.environ[variable]))
+    if os.environ.get("SAGE_LOCAL"):
+        dirs.append(Path(os.environ["SAGE_LOCAL"]) / "lib")
+    for bindir in _candidate_bindirs():
+        dirs.append(bindir.parent / "lib")
+        dirs.append(bindir.parent / "lib64")
+    dirs.extend([Path("/usr/lib64"), Path("/usr/lib"), Path("/usr/local/lib")])
+    return dirs
+
+
 def _find_bindir() -> Path:
     for bindir in _candidate_bindirs():
         if all(_program_path(bindir, program) for program in REQUIRED_PROGRAMS):
@@ -82,24 +111,82 @@ def _find_libexecdir() -> Path | None:
     return None
 
 
+def _linked_libraries(path: Path) -> list[Path]:
+    try:
+        output = subprocess.run(
+            ["ldd", os.fspath(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    except subprocess.CalledProcessError:
+        return []
+
+    libraries = []
+    for line in output.splitlines():
+        if "=>" not in line:
+            continue
+        name, rest = line.split("=>", 1)
+        name = name.strip()
+        path = rest.strip().split(maxsplit=1)[0]
+        if name.startswith(RUNTIME_LIBRARY_PREFIXES) and path != "not":
+            libraries.append(Path(path))
+    return libraries
+
+
+def _runtime_libraries(executables: list[Path]) -> list[Path]:
+    libraries: dict[str, Path] = {}
+    pending = list(executables)
+    seen: set[Path] = set()
+    for libdir in _candidate_libdirs():
+        if not libdir.is_dir():
+            continue
+        for prefix in RUNTIME_LIBRARY_PREFIXES:
+            for library in libdir.glob(f"{prefix}*.so*"):
+                if library.is_file() or library.is_symlink():
+                    pending.append(library.resolve())
+
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        if path.name.startswith(RUNTIME_LIBRARY_PREFIXES):
+            libraries.setdefault(path.name, path)
+        for library in _linked_libraries(path):
+            previous = libraries.setdefault(library.name, library)
+            if previous == library:
+                pending.append(library)
+    return sorted(libraries.values())
+
+
 class build_py(_build_py):
     def run(self):
         bindir = _find_bindir()
         target = Path(self.build_lib) / "sagelite_four_ti_2" / "data" / "bin"
+        lib_target = Path(self.build_lib) / "sagelite_four_ti_2" / "data" / "lib"
         shutil.rmtree(target, ignore_errors=True)
+        shutil.rmtree(lib_target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
+        lib_target.mkdir(parents=True, exist_ok=True)
+        executables = []
         for program in PROGRAMS:
             source = _program_path(bindir, program)
             if source is not None:
                 shutil.copy2(source, target / program)
+                executables.append(source.resolve())
         for source in bindir.glob("4ti2-*"):
             if source.is_file():
                 shutil.copy2(source, target / source.name)
+                executables.append(source.resolve())
         libexecdir = _find_libexecdir()
         if libexecdir is not None:
             for source in libexecdir.glob("4ti2*"):
                 if source.is_file():
                     shutil.copy2(source, target / source.name)
+                    executables.append(source.resolve())
+        for library in _runtime_libraries(executables):
+            shutil.copy2(library, lib_target / library.name)
 
         super().run()
 

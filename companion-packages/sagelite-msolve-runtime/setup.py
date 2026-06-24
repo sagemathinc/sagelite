@@ -37,24 +37,49 @@ def _find_executable() -> Path:
     )
 
 
-def _runtime_libraries(executable: Path) -> list[Path]:
+RUNTIME_LIBRARY_PREFIXES = (
+    "libmsolve.so",
+    "libneogb.so",
+    "libflint.so",
+    "libgmp.so",
+    "libmpfr.so",
+)
+
+
+def _linked_libraries(path: Path) -> list[Path]:
     output = subprocess.run(
-        ["ldd", os.fspath(executable)],
+        ["ldd", os.fspath(path)],
         check=True,
         capture_output=True,
         text=True,
     ).stdout
+
     libraries = []
-    prefixes = ("libmsolve.so", "libflint.so", "libgmp.so", "libmpfr.so")
     for line in output.splitlines():
         if "=>" not in line:
             continue
         name, rest = line.split("=>", 1)
         name = name.strip()
         path = rest.strip().split(maxsplit=1)[0]
-        if name.startswith(prefixes) and path != "not":
+        if name.startswith(RUNTIME_LIBRARY_PREFIXES) and path != "not":
             libraries.append(Path(path))
     return libraries
+
+
+def _runtime_libraries(executable: Path) -> list[Path]:
+    libraries: dict[str, Path] = {}
+    pending = [executable]
+    seen: set[Path] = set()
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        for library in _linked_libraries(path):
+            previous = libraries.setdefault(library.name, library)
+            if previous == library:
+                pending.append(library)
+    return sorted(libraries.values())
 
 
 class build_py(_build_py):

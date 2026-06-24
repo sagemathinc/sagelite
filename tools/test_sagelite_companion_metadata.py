@@ -64,7 +64,7 @@ def test_native_wheel_catalog_exports_stable_json(capsys):
 
 RUNTIME_PACKAGE_DATA = {
     "sagelite-4ti2-runtime": {
-        "sagelite_four_ti_2": ["data/bin/*"],
+        "sagelite_four_ti_2": ["data/bin/*", "data/lib/*"],
     },
     "sagelite-benzene-runtime": {
         "sagelite_benzene": ["data/bin/*"],
@@ -182,7 +182,11 @@ RUNTIME_PACKAGE_DATA = {
         ],
     },
     "sagelite-imagemagick-runtime": {
-        "sagelite_imagemagick": ["data/bin/*", "data/lib/*"],
+        "sagelite_imagemagick": [
+            "data/bin/*",
+            "data/etc/**/*",
+            "data/lib/**/*",
+        ],
     },
     "sagelite-info-runtime": {
         "sagelite_info": [
@@ -618,7 +622,7 @@ DATA_COMPANION_EXTRA_ALIASES = {
 }
 
 BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
-    "sagelite-4ti2-runtime >=10.9,<10.10",
+    "sagelite-4ti2-runtime >=10.9.post1,<10.10",
     "sagelite-benzene-runtime >=10.9,<10.10",
     "sagelite-buckygen-runtime >=10.9,<10.10",
     "sagelite-cddlib-runtime >=10.9,<10.10",
@@ -696,67 +700,68 @@ RELEASE_REQUIRED_NATIVE_SMOKE_IMPORT_MODULES = (
 
 GAP_PACKAGE_EXTRA_REQUIREMENTS = {
     "atlasrep": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-atlasrep >=10.9,<10.10",
     ],
     "ctbllib": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-ctbllib >=10.9,<10.10",
     ],
     "design": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-design >=10.9,<10.10",
     ],
     "gapdoc": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-gapdoc >=10.9,<10.10",
     ],
     "grape": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-grape >=10.9,<10.10",
     ],
     "guava": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-guava >=10.9,<10.10",
     ],
     "hap": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-hap >=10.9,<10.10",
     ],
     "polenta": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-polenta >=10.9,<10.10",
     ],
     "polycyclic": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-polycyclic >=10.9,<10.10",
     ],
     "primgrp": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-primgrp >=10.9,<10.10",
     ],
     "qpa": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-qpa >=10.9,<10.10",
     ],
     "quagroup": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-quagroup >=10.9,<10.10",
     ],
     "repsn": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-repsn >=10.9,<10.10",
     ],
     "smallgrp": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-smallgrp >=10.9,<10.10",
     ],
     "tomlib": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
         "sagelite-gap-package-tomlib >=10.9,<10.10",
     ],
     "transgrp": [
-        "sagelite-gap-runtime >=10.9.post2,<10.10",
+        "sagelite-gap-runtime >=10.9.post3,<10.10",
+        "sagelite-gap-package-primgrp >=10.9,<10.10",
         "sagelite-gap-package-transgrp >=10.9,<10.10",
     ],
 }
@@ -863,7 +868,7 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "database-knotinfo >=2026.3.1" in dependencies
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" not in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" not in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post13,<10.10" not in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" not in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -1088,7 +1093,7 @@ def test_lrslib_runtime_is_exposed_by_lrs_extra():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-lrslib-runtime >=10.9,<10.10"
+    requirement = "sagelite-lrslib-runtime >=10.9.post1,<10.10"
 
     assert extras["lrs"] == [requirement]
     assert extras["lrslib"] == [requirement]
@@ -2468,6 +2473,7 @@ def test_gap_runtime_requires_gap4_roots_and_keeps_package_roots(
     assert "GAP 4 roots" in setup_text
     assert "lib/system.g" in gap_builder
     assert "lib/package.gi" in gap_builder
+    assert 'SAGELITE_GAP_BINDIR="$prefix/bin"' in gap_builder
     assert "*/pkg/*/PackageInfo.g" not in gap_builder
 
 
@@ -2490,7 +2496,7 @@ def test_gap_grape_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     grape = "sagelite-gap-package-grape >=10.9,<10.10"
 
     assert extras["gap-grape"] == [gap_runtime, grape]
@@ -2518,7 +2524,7 @@ def test_gap_atlasrep_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     atlasrep = "sagelite-gap-package-atlasrep >=10.9,<10.10"
 
     assert extras["gap-atlasrep"] == [gap_runtime, atlasrep]
@@ -2546,7 +2552,7 @@ def test_gap_ctbllib_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     ctbllib = "sagelite-gap-package-ctbllib >=10.9,<10.10"
 
     assert extras["gap-ctbllib"] == [gap_runtime, ctbllib]
@@ -2574,7 +2580,7 @@ def test_gap_design_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     design = "sagelite-gap-package-design >=10.9,<10.10"
 
     assert extras["gap-design"] == [gap_runtime, design]
@@ -2602,7 +2608,7 @@ def test_gap_gapdoc_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     gapdoc = "sagelite-gap-package-gapdoc >=10.9,<10.10"
 
     assert extras["gap-gapdoc"] == [gap_runtime, gapdoc]
@@ -2721,7 +2727,7 @@ def test_gap_guava_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     guava = "sagelite-gap-package-guava >=10.9,<10.10"
 
     assert extras["gap-guava"] == [gap_runtime, guava]
@@ -2749,7 +2755,7 @@ def test_gap_polycyclic_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     polycyclic = "sagelite-gap-package-polycyclic >=10.9,<10.10"
 
     assert extras["gap-polycyclic"] == [gap_runtime, polycyclic]
@@ -2777,7 +2783,7 @@ def test_gap_primgrp_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     primgrp = "sagelite-gap-package-primgrp >=10.9,<10.10"
 
     assert extras["gap-primgrp"] == [gap_runtime, primgrp]
@@ -2805,7 +2811,7 @@ def test_gap_repsn_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     repsn = "sagelite-gap-package-repsn >=10.9,<10.10"
 
     assert extras["gap-repsn"] == [gap_runtime, repsn]
@@ -2833,7 +2839,7 @@ def test_gap_smallgrp_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     smallgrp = "sagelite-gap-package-smallgrp >=10.9,<10.10"
 
     assert extras["gap-smallgrp"] == [gap_runtime, smallgrp]
@@ -2861,7 +2867,7 @@ def test_gap_tomlib_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     tomlib = "sagelite-gap-package-tomlib >=10.9,<10.10"
 
     assert extras["gap-tomlib"] == [gap_runtime, tomlib]
@@ -2889,11 +2895,12 @@ def test_gap_transgrp_package_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
+    primgrp = "sagelite-gap-package-primgrp >=10.9,<10.10"
     transgrp = "sagelite-gap-package-transgrp >=10.9,<10.10"
 
-    assert extras["gap-transgrp"] == [gap_runtime, transgrp]
-    assert extras["gap_package_transgrp"] == [gap_runtime, transgrp]
+    assert extras["gap-transgrp"] == [gap_runtime, primgrp, transgrp]
+    assert extras["gap_package_transgrp"] == [gap_runtime, primgrp, transgrp]
     assert transgrp not in extras["runtime"]
     assert transgrp not in extras["full"]
 
@@ -2903,7 +2910,7 @@ def test_gap_packages_extra_matches_available_gap_package_companions():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    gap_runtime = "sagelite-gap-runtime >=10.9.post2,<10.10"
+    gap_runtime = "sagelite-gap-runtime >=10.9.post3,<10.10"
     available_gap_packages = [
         "sagelite-gap-package-atlasrep >=10.9,<10.10",
         "sagelite-gap-package-ctbllib >=10.9,<10.10",
@@ -3202,7 +3209,7 @@ def test_imagemagick_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-imagemagick-runtime >=10.9,<10.10"
+    requirement = "sagelite-imagemagick-runtime >=10.9.post1,<10.10"
 
     assert extras["imagemagick"] == [requirement]
     assert extras["magick"] == [requirement]
@@ -3213,11 +3220,16 @@ def test_imagemagick_runtime_is_exposed_by_sagelite_extras():
 
 def test_imagemagick_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-imagemagick-runtime")
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-imagemagick-runtime" / "setup.py"
+    ).read_text()
 
     assert pyproject["project"]["scripts"] == {
         "convert": "sagelite_imagemagick.runtime:convert",
         "magick": "sagelite_imagemagick.runtime:magick",
     }
+    assert "MAGICK_CONFIGURE_PATH" in setup_py
+    assert "MAGICK_CODER_MODULE_PATH" in setup_py
 
 
 def test_kissat_runtime_is_exposed_by_sagelite_extras():
@@ -3362,7 +3374,7 @@ def test_lrslib_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-lrslib-runtime >=10.9,<10.10"
+    requirement = "sagelite-lrslib-runtime >=10.9.post1,<10.10"
 
     assert extras["lrslib"] == [requirement]
     assert extras["lrs"] == [requirement]
@@ -3402,7 +3414,7 @@ def test_msolve_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-msolve-runtime >=10.9,<10.10"
+    requirement = "sagelite-msolve-runtime >=10.9.post1,<10.10"
 
     assert extras["msolve"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -3486,8 +3498,11 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         / "sagelite_maxima"
         / "runtime.py"
     ).read_text()
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
+    ).read_text()
 
-    assert pyproject["project"]["version"] == "10.9.post13"
+    assert pyproject["project"]["version"] == "10.9.post14"
     assert pyproject["project"]["dependencies"] == [
         "sagelite-ecl-runtime >=10.9,<10.10",
     ]
@@ -3507,6 +3522,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
     assert '"runtime_library_dir"' in runtime_py
     assert "maxima_library_path" in package_init
     assert "runtime_library_dir" in package_init
+    assert 'source.glob("maxima.info*")' in setup_py
 
 
 def test_maxima_library_mode_prefers_versioned_companion_tree():
@@ -3944,7 +3960,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post13,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post14,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -3959,15 +3975,16 @@ def test_all_needed_extras_match_installed_validation_plan():
     extras = pyproject["project"]["optional-dependencies"]
     validation_requirements = set(extras["all-needed-extras"])
 
-    assert "sagelite-maxima-runtime >=10.9.post13,<10.10" in validation_requirements
+    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" in validation_requirements
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-polytopes-4d >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-sloane >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-stein-watkins >=10.9,<10.10" in validation_requirements
     assert "sagelite-ecl-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
-    assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
+    assert "sagelite-gap-runtime >=10.9.post3,<10.10" in validation_requirements
     assert "sagelite-gap-package-gapdoc >=10.9,<10.10" in validation_requirements
+    assert "sagelite-gap-package-primgrp >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-package-smallgrp >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-package-transgrp >=10.9,<10.10" in validation_requirements
     assert (
@@ -3976,10 +3993,10 @@ def test_all_needed_extras_match_installed_validation_plan():
     )
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
-    assert "sagelite-imagemagick-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-imagemagick-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
-    assert "sagelite-msolve-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-msolve-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
 
 
@@ -4139,7 +4156,7 @@ def test_four_ti_2_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-4ti2-runtime >=10.9,<10.10"
+    requirement = "sagelite-4ti2-runtime >=10.9.post1,<10.10"
 
     assert requirement in pyproject["project"]["dependencies"]
     assert extras["4ti2"] == [requirement]

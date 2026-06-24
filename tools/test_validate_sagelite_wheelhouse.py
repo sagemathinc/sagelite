@@ -374,7 +374,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
     assert "- Companion sagelite package count: `1`" in summary
     assert "- Third-party wheel count: `0`" in summary
-    assert "- Missing all-needed-extra sagelite package count: `31`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `32`" in summary
     assert "- Companion compatibility checked wheels: `1`" in summary
     assert "- Companion compatibility passed wheels: `1`" in summary
     assert (
@@ -1294,7 +1294,7 @@ def test_require_all_needed_extra_sagelite_wheels_rejects_missing_companions(
         "contains_all_needed_extra_sagelite_wheels"
     ] is False
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
-    assert "- Missing all-needed-extra sagelite package count: `31`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `32`" in summary
     assert "`sagelite-maxima-runtime`" in summary
     assert "## Preflight Error" in summary
     assert "all-needed-extras companion sagelite wheels are required" in summary
@@ -1792,14 +1792,14 @@ def test_reject_unsatisfied_companion_sagelite_requirements_preflight(tmp_path):
     assert metadata["exit_code"] == 2
     assert "companion wheel versions do not satisfy" in metadata["preflight_error"]
     assert outdated_gap_runtime.name in metadata["preflight_error"]
-    assert ">=10.9.post2" in metadata["preflight_error"]
+    assert ">=10.9.post3" in metadata["preflight_error"]
     assert "<10.10" in metadata["preflight_error"]
     assert unsatisfied == [
         {
             "name": outdated_gap_runtime.name,
             "project_name": "sagelite-gap-runtime",
             "version": "10.9",
-            "required_specifiers": ["<10.10,>=10.9.post2"],
+            "required_specifiers": ["<10.10,>=10.9.post3"],
             "reason": "version does not satisfy sagelite requirements",
         }
     ]

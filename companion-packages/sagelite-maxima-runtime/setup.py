@@ -586,13 +586,14 @@ def _patch_maxima_executable(path: Path) -> None:
 
 def _copy_maxima_info_indexes(maxima_prefix: Path, target: Path) -> None:
     """
-    Copy the small CL-INFO indexes used during Maxima startup if available.
+    Copy the Maxima info payload used by help and example lookups.
     """
     source = maxima_prefix.parents[1] / "info"
     if not source.is_dir():
         return
 
     files = sorted(source.glob("maxima-index*.lisp"))
+    files.extend(sorted(source.glob("maxima.info*")))
     if not files:
         return
 

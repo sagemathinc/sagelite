@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sagelite-4ti2-runtime"
-version = "10.9"
+version = "10.9.post1"
 description = "Optional 4ti2 executable companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -47,4 +47,5 @@ where = ["src"]
 [tool.setuptools.package-data]
 sagelite_four_ti_2 = [
   "data/bin/*",
+  "data/lib/*",
 ]

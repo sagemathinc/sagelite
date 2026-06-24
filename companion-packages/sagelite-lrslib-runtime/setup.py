@@ -47,24 +47,43 @@ def _find_programs() -> dict[str, Path]:
     return found
 
 
-def _runtime_libraries(executable: Path) -> list[Path]:
+RUNTIME_LIBRARY_PREFIXES = ("liblrs.so", "libflint.so", "libgmp.so", "libmpfr.so")
+
+
+def _linked_libraries(path: Path) -> list[Path]:
     output = subprocess.run(
-        ["ldd", os.fspath(executable)],
+        ["ldd", os.fspath(path)],
         check=True,
         capture_output=True,
         text=True,
     ).stdout
+
     libraries = []
-    prefixes = ("libflint.so", "libgmp.so", "libmpfr.so")
     for line in output.splitlines():
         if "=>" not in line:
             continue
         name, rest = line.split("=>", 1)
         name = name.strip()
         path = rest.strip().split(maxsplit=1)[0]
-        if name.startswith(prefixes) and path != "not":
+        if name.startswith(RUNTIME_LIBRARY_PREFIXES) and path != "not":
             libraries.append(Path(path))
     return libraries
+
+
+def _runtime_libraries(executables: list[Path]) -> list[Path]:
+    libraries: dict[str, Path] = {}
+    pending = list(executables)
+    seen: set[Path] = set()
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        for library in _linked_libraries(path):
+            previous = libraries.setdefault(library.name, library)
+            if previous == library:
+                pending.append(library)
+    return sorted(libraries.values())
 
 
 class build_py(_build_py):
@@ -77,7 +96,6 @@ class build_py(_build_py):
         target.mkdir(parents=True, exist_ok=True)
         lib_target.mkdir(parents=True, exist_ok=True)
 
-        libraries: dict[str, Path] = {}
         for program, source in programs.items():
             shutil.copy2(source, target / f"{program}-real")
             wrapper = target / program
@@ -89,10 +107,8 @@ class build_py(_build_py):
                 f'exec "$HERE/{program}-real" "$@"\n'
             )
             wrapper.chmod(0o755)
-            for library in _runtime_libraries(source):
-                libraries.setdefault(library.name, library)
 
-        for library in libraries.values():
+        for library in _runtime_libraries(list(programs.values())):
             shutil.copy2(library, lib_target / library.name)
 
         super().run()
