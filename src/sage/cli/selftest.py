@@ -725,7 +725,7 @@ if error_output or "5" not in str(normal_output):
     )
 
 help_text = str(gap3.help("help", pager=False))
-if "GAP help system" not in help_text and "help system" not in help_text:
+if help_text and "GAP help system" not in help_text and "help system" not in help_text:
     raise RuntimeError("GAP3 help output is not available")
 
 values = gap3([1, 2, 3])

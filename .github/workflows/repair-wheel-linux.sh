@@ -1860,23 +1860,29 @@ if len(matches) != 1:
 print(matches[0])
 PY
   )"
-  sagelite_ecl_library="$tmpdir/$ecl_soname"
-  "$python_bin" - "$repaired_sagelite_wheel" "$ecl_soname" "$sagelite_ecl_library" <<'PY'
+  local sagelite_ecl_library_dir="$tmpdir/sagelite-libs"
+  mkdir -p "$sagelite_ecl_library_dir"
+  sagelite_ecl_library="$sagelite_ecl_library_dir/$ecl_soname"
+  "$python_bin" - "$repaired_sagelite_wheel" "$ecl_soname" "$sagelite_ecl_library_dir" <<'PY'
 import os
 import sys
 import zipfile
 
-wheel_path, ecl_soname, output_path = sys.argv[1:]
+wheel_path, ecl_soname, output_dir = sys.argv[1:]
+prefixes = ("libecl", "libgmp", "libgc", "libffi")
 with zipfile.ZipFile(wheel_path) as wheel:
-    matches = [
+    members = [
         name
         for name in wheel.namelist()
-        if name.startswith("sagelite.libs/") and os.path.basename(name) == ecl_soname
+        if name.startswith("sagelite.libs/")
+        and os.path.basename(name).startswith(prefixes)
     ]
-    if len(matches) != 1:
-        raise SystemExit(f"expected one bundled {ecl_soname}, found {matches}")
-    with wheel.open(matches[0]) as source, open(output_path, "wb") as target:
-        target.write(source.read())
+    if not any(os.path.basename(name) == ecl_soname for name in members):
+        raise SystemExit(f"expected bundled {ecl_soname}, found {members}")
+    for member in members:
+        output_path = os.path.join(output_dir, os.path.basename(member))
+        with wheel.open(member) as source, open(output_path, "wb") as target:
+            target.write(source.read())
 PY
 
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel

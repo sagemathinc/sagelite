@@ -233,6 +233,7 @@ def _find_library_with_prefix(prefix: str, maxima_prefix: Path) -> Path:
 
 REQUIRED_RUNTIME_LIBRARY_PREFIXES = ("libecl.so", "libgmp.so", "libgc.so")
 OPTIONAL_RUNTIME_LIBRARY_PREFIXES = ("libffi.so",)
+TARGET_ECL_RUNTIME_LIBRARY_PREFIXES = ("libecl", "libgmp", "libgc", "libffi")
 
 
 def _find_optional_library_with_prefix(
@@ -382,7 +383,15 @@ def _copy_target_ecl_runtime(runtime_library_dir: Path) -> None:
     library = _target_ecl_library()
     if library is None:
         return
-    shutil.copy2(library, runtime_library_dir / library.name)
+    copied = set()
+    for prefix in TARGET_ECL_RUNTIME_LIBRARY_PREFIXES:
+        for candidate in sorted(library.parent.glob(f"{prefix}*.so*")):
+            if not candidate.is_file() and not candidate.is_symlink():
+                continue
+            shutil.copy2(candidate, runtime_library_dir / candidate.name)
+            copied.add(candidate.name)
+    if library.name not in copied:
+        shutil.copy2(library, runtime_library_dir / library.name)
 
 
 def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:

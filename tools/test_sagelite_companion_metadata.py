@@ -3543,6 +3543,7 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "def _system_ecl_libraries" in setup_text
     assert "def _validation_targets" in setup_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY" in setup_text
+    assert "TARGET_ECL_RUNTIME_LIBRARY_PREFIXES" in setup_text
     assert "def _copy_target_ecl_runtime" in setup_text
     assert "def _patch_maxima_executable" in setup_text
     assert "_copy_target_ecl_runtime(runtime_target)" in setup_text
@@ -3844,7 +3845,9 @@ def test_linux_repair_validates_maxima_against_repaired_sagelite_ecl():
         repair_text.index('auditwheel repair --plat "$AUDITWHEEL_PLAT"')
         < verify_call
     )
-    assert 'sagelite_ecl_library="$tmpdir/$ecl_soname"' in repair_text
+    assert 'sagelite_ecl_library_dir="$tmpdir/sagelite-libs"' in repair_text
+    assert 'sagelite_ecl_library="$sagelite_ecl_library_dir/$ecl_soname"' in repair_text
+    assert 'prefixes = ("libecl", "libgmp", "libgc", "libffi")' in repair_text
     assert "with zipfile.ZipFile(wheel_path) as wheel:" in repair_text
     assert "SAGELITE_MAXIMA_ECL_LIBRARY=\"$sagelite_ecl_library\"" in repair_text
     assert "'*/share/maxima*/*/src'" not in repair_text
@@ -3964,8 +3967,13 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-ecl-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-fricas-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-gap-runtime >=10.9.post2,<10.10" in validation_requirements
-    for requirement in extras["gap_packages"]:
-        assert requirement in validation_requirements
+    assert "sagelite-gap-package-gapdoc >=10.9,<10.10" in validation_requirements
+    assert "sagelite-gap-package-smallgrp >=10.9,<10.10" in validation_requirements
+    assert "sagelite-gap-package-transgrp >=10.9,<10.10" in validation_requirements
+    assert (
+        "sagelite-gap-package-atlasrep >=10.9,<10.10"
+        not in validation_requirements
+    )
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
     assert "sagelite-imagemagick-runtime >=10.9,<10.10" in validation_requirements

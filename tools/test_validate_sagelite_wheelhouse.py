@@ -374,7 +374,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
     assert "- Companion sagelite package count: `1`" in summary
     assert "- Third-party wheel count: `0`" in summary
-    assert "- Missing all-needed-extra sagelite package count: `44`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `31`" in summary
     assert "- Companion compatibility checked wheels: `1`" in summary
     assert "- Companion compatibility passed wheels: `1`" in summary
     assert (
@@ -1294,7 +1294,7 @@ def test_require_all_needed_extra_sagelite_wheels_rejects_missing_companions(
         "contains_all_needed_extra_sagelite_wheels"
     ] is False
     assert "- Contains all-needed-extra sagelite wheels: `False`" in summary
-    assert "- Missing all-needed-extra sagelite package count: `44`" in summary
+    assert "- Missing all-needed-extra sagelite package count: `31`" in summary
     assert "`sagelite-maxima-runtime`" in summary
     assert "## Preflight Error" in summary
     assert "all-needed-extras companion sagelite wheels are required" in summary
