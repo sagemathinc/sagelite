@@ -77,8 +77,6 @@ dependencies = [
   'ipywidgets >=7.5.1',
   'jupyter-client',
   'jupyter-jsmol >=2022.1.0',
-  'khoca >=1.4',
-  'py >=1.11,<2',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',
   'matplotlib >=3.7.0',
@@ -145,7 +143,7 @@ dependencies = [
   'sagelite-pari-runtime >=10.9,<10.10',
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-poppler-runtime >=10.9,<10.10',
-  'sagelite-singular-runtime >=10.9.post1,<10.10',
+  'sagelite-singular-runtime >=10.9.post2,<10.10',
   'sagelite-sirocco-runtime >=10.9,<10.10',
   'sagelite-sympow-runtime >=10.9.post1,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
@@ -311,8 +309,8 @@ extra = [
   'dot2tex >=2.11.3',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
-  'khoca >=1.4',
-  'py >=1.11,<2',
+  "khoca >=1.4; python_version < '3.14'",
+  "py >=1.11,<2; python_version < '3.14'",
   'ortools >=9.11',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'phitigra >=0.2.6',
@@ -336,8 +334,8 @@ full = [
   'imageio-ffmpeg >=0.6.0',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
-  'khoca >=1.4',
-  'py >=1.11,<2',
+  "khoca >=1.4; python_version < '3.14'",
+  "py >=1.11,<2; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',
   'matroid-database ==0.3',
   "Mathics3 >=10.0.1; python_version < '3.14'",
@@ -385,7 +383,7 @@ full = [
   'sagelite-pari-data >=10.9,<10.10',
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-poppler-runtime >=10.9,<10.10',
-  'sagelite-singular-runtime >=10.9.post1,<10.10',
+  'sagelite-singular-runtime >=10.9.post2,<10.10',
   'sagelite-sirocco-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
   'sagelite-tides-runtime >=10.9,<10.10',
@@ -643,7 +641,7 @@ kenzo = ['sagelite-kenzo-runtime >=10.9,<10.10']
 kissat = ['sagelite-kissat-runtime >=10.9,<10.10']
 knotinfo = ['database-knotinfo >=2026.3.1']
 kohel = ['sagelite-database-kohel >=10.9,<10.10']
-khoca = ['khoca >=1.4', 'py >=1.11,<2']
+khoca = ["khoca >=1.4; python_version < '3.14'", "py >=1.11,<2; python_version < '3.14'"]
 latte = ['sagelite-latte-runtime >=10.9,<10.10']
 latte_int = ['sagelite-latte-runtime >=10.9,<10.10']
 lcalc = ['sagelite-lcalc-runtime >=10.9,<10.10']
@@ -727,8 +725,8 @@ runtime = [
   'imageio-ffmpeg >=0.6.0',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
-  'khoca >=1.4',
-  'py >=1.11,<2',
+  "khoca >=1.4; python_version < '3.14'",
+  "py >=1.11,<2; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',
   "Mathics3 >=10.0.1; python_version < '3.14'",
   'meson',
@@ -765,7 +763,7 @@ runtime = [
   'sagelite-pari-runtime >=10.9,<10.10',
   'sagelite-pdf2svg-runtime >=10.9,<10.10',
   'sagelite-poppler-runtime >=10.9,<10.10',
-  'sagelite-singular-runtime >=10.9.post1,<10.10',
+  'sagelite-singular-runtime >=10.9.post2,<10.10',
   'sagelite-sirocco-runtime >=10.9,<10.10',
   'sagelite-threejs-runtime >=10.9,<10.10',
   'sagelite-tides-runtime >=10.9,<10.10',
@@ -778,7 +776,7 @@ dikcube = ['sagelite-rubiks-runtime >=10.9,<10.10']
 mcube = ['sagelite-rubiks-runtime >=10.9,<10.10']
 optimal = ['sagelite-rubiks-runtime >=10.9,<10.10']
 size222 = ['sagelite-rubiks-runtime >=10.9,<10.10']
-singular = ['sagelite-singular-runtime >=10.9.post1,<10.10']
+singular = ['sagelite-singular-runtime >=10.9.post2,<10.10']
 sirocco = ['sagelite-sirocco-runtime >=10.9,<10.10']
 sloane = ['sagelite-database-sloane >=10.9,<10.10']
 sloane-database = ['sagelite-database-sloane >=10.9,<10.10']

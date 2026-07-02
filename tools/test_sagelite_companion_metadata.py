@@ -653,7 +653,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-pari-runtime >=10.9,<10.10",
     "sagelite-pdf2svg-runtime >=10.9,<10.10",
     "sagelite-poppler-runtime >=10.9,<10.10",
-    "sagelite-singular-runtime >=10.9.post1,<10.10",
+    "sagelite-singular-runtime >=10.9.post2,<10.10",
     "sagelite-sirocco-runtime >=10.9,<10.10",
     "sagelite-sympow-runtime >=10.9.post1,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
@@ -666,7 +666,6 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
     "imageio-ffmpeg >=0.6.0",
     "igraph",
     "jupyter-jsmol >=2022.1.0",
-    "khoca >=1.4",
     'lrcalc ~=2.1; sys_platform != "win32"',
     "Mathics3 >=10.0.1; python_version < '3.14'",
     "meson",
@@ -2276,11 +2275,13 @@ def test_khoca_pypi_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "khoca >=1.4"
-    py_requirement = "py >=1.11,<2"
+    requirement = "khoca >=1.4; python_version < '3.14'"
+    py_requirement = "py >=1.11,<2; python_version < '3.14'"
 
-    assert requirement in pyproject["project"]["dependencies"]
-    assert py_requirement in pyproject["project"]["dependencies"]
+    assert requirement not in pyproject["project"]["dependencies"]
+    assert py_requirement not in pyproject["project"]["dependencies"]
+    assert "khoca >=1.4" not in pyproject["project"]["dependencies"]
+    assert "py >=1.11,<2" not in pyproject["project"]["dependencies"]
     assert extras["khoca"] == [requirement, py_requirement]
     assert requirement in extras["extra"]
     assert requirement in extras["runtime"]
@@ -4128,7 +4129,7 @@ def test_all_needed_extras_match_installed_validation_plan():
 def test_singular_runtime_wheel_declares_copied_runtime_data():
     pyproject = _pyproject("sagelite-singular-runtime")
 
-    assert pyproject["project"]["version"] == "10.9.post1"
+    assert pyproject["project"]["version"] == "10.9.post2"
     assert pyproject["tool"]["setuptools"]["include-package-data"] is True
     assert pyproject["tool"]["setuptools"]["package-data"][
         "sagelite_singular_runtime"
@@ -4148,12 +4149,24 @@ def test_singular_runtime_copies_factory_gftables():
     assert 'target / "share" / "factory"' in setup_text
 
 
+def test_singular_runtime_copies_selected_runtime_dependency_closure():
+    setup_py = ROOT / "companion-packages" / "sagelite-singular-runtime" / "setup.py"
+    setup_text = setup_py.read_text()
+
+    assert '"libreadline"' in setup_text
+    assert '"libtinfo"' in setup_text
+    assert '"libtinfow"' in setup_text
+    assert '"libncurses"' in setup_text
+    assert "_ldd_libraries" in setup_text
+    assert "pending.append(library)" in setup_text
+
+
 def test_release_upload_expects_current_singular_runtime_version():
     release = ROOT / ".github" / "workflows" / "release.yml"
     release_text = release.read_text()
 
     assert (
-        "sagelite_singular_runtime-10.9.post1-py3-none-manylinux_2_28_x86_64.whl"
+        "sagelite_singular_runtime-10.9.post2-py3-none-manylinux_2_28_x86_64.whl"
         in release_text
     )
     assert (

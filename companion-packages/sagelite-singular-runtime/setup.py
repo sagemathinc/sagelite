@@ -94,9 +94,32 @@ def _find_singular_root() -> Path:
     )
 
 
-def _runtime_libraries(executable: Path) -> list[Path]:
+_RUNTIME_LIBRARY_PREFIXES = (
+    "libSingular",
+    "libpolys",
+    "libfactory",
+    "libsingular_resources",
+    "libomalloc",
+    "libflint",
+    "libntl",
+    "libgmp",
+    "libmpfr",
+    "libgf2x",
+    "libreadline",
+    "libtinfo",
+    "libtinfow",
+    "libncurses",
+    "libncursesw",
+)
+
+
+def _selected_runtime_library_name(name: str) -> bool:
+    return name.startswith(_RUNTIME_LIBRARY_PREFIXES)
+
+
+def _ldd_libraries(binary: Path) -> list[tuple[str, Path]]:
     output = subprocess.run(
-        ["ldd", os.fspath(executable)],
+        ["ldd", os.fspath(binary)],
         check=True,
         capture_output=True,
         text=True,
@@ -108,25 +131,29 @@ def _runtime_libraries(executable: Path) -> list[Path]:
         name, rest = line.split("=>", 1)
         name = name.strip()
         path = rest.strip().split(maxsplit=1)[0]
-        if (
-            name.startswith(
-                (
-                    "libSingular",
-                    "libpolys",
-                    "libfactory",
-                    "libsingular_resources",
-                    "libomalloc",
-                    "libflint",
-                    "libntl",
-                    "libgmp",
-                    "libmpfr",
-                    "libgf2x",
-                )
-            )
-            and path != "not"
-        ):
-            libraries.append(Path(path))
+        if _selected_runtime_library_name(name) and path != "not":
+            libraries.append((name, Path(path)))
     return libraries
+
+
+def _runtime_libraries(executable: Path) -> list[tuple[str, Path]]:
+    libraries: dict[str, Path] = {}
+    pending = [executable]
+    seen: set[Path] = set()
+
+    while pending:
+        current = pending.pop()
+        resolved = current.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        for library_name, library in _ldd_libraries(resolved):
+            if library.name not in libraries:
+                libraries[library.name] = library
+                pending.append(library)
+            libraries.setdefault(library_name, library)
+
+    return [(name, libraries[name]) for name in sorted(libraries)]
 
 
 class build_py(_build_py):
@@ -158,10 +185,10 @@ class build_py(_build_py):
         wrapper.chmod(0o755)
 
         libraries: dict[str, Path] = {}
-        for library in _runtime_libraries(singular_executable):
-            libraries.setdefault(library.name, library)
-        for library in libraries.values():
-            shutil.copy2(library, lib_target / library.name)
+        for library_name, library in _runtime_libraries(singular_executable):
+            libraries.setdefault(library_name, library)
+        for library_name, library in libraries.items():
+            shutil.copy2(library, lib_target / library_name)
 
         source = singular_root / "share" / "singular"
         shutil.copytree(source, target / "share" / "singular", ignore_dangling_symlinks=True)

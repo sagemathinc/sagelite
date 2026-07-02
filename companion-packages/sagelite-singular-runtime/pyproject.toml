@@ -24,7 +24,7 @@ name = "sagelite-singular-runtime"
 readme = "README.md"
 requires-python = ">=3.12"
 urls = { Homepage = "https://www.sagemath.org" }
-version = "10.9.post1"
+version = "10.9.post2"
 
 [tool.setuptools]
 include-package-data = true

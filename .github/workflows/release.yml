@@ -2624,7 +2624,7 @@ jobs:
         run: |
           set -euo pipefail
           find singular-runtime-dist -maxdepth 1 -type f -name "*.whl" -print | sort
-          test "$(find singular-runtime-dist -maxdepth 1 -type f -name "sagelite_singular_runtime-10.9.post1-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
+          test "$(find singular-runtime-dist -maxdepth 1 -type f -name "sagelite_singular_runtime-10.9.post2-py3-none-manylinux_2_28_x86_64.whl" | wc -l)" -eq 1
           test "$(find singular-runtime-dist -maxdepth 1 -type f -name "*.whl" | wc -l)" -eq 1
 
       - uses: pypa/gh-action-pypi-publish@release/v1
