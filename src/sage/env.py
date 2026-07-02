@@ -134,12 +134,11 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     """
     Seed Maxima runtime variables from an optional ``sagelite_maxima`` package.
 
-    This is only used when the user has not already provided Maxima paths in
-    the environment and the configured Maxima paths are not usable.  Binary
-    wheels can contain build-time Maxima paths that no longer exist after
-    installation; those stale paths should not prevent an installed companion
-    runtime from being used.  Usable configured paths are kept together because
-    Maxima's ECL image must match the ECL library used by sagelib.
+    Explicit user-provided environment variables are kept.  Otherwise, an
+    installed companion runtime is preferred over ``sage.config`` values.
+    Binary wheels can contain build-time Maxima paths that either no longer
+    exist after installation or still exist on the build host but point at an
+    unrelocated tree.
     """
     configured_prefix = getattr(sage.config, "MAXIMA_PREFIX", None)
     configured_fas = getattr(sage.config, "MAXIMA_FAS", None)
@@ -160,30 +159,47 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
     configured_imagesdir_usable = bool(
         configured_imagesdir and os.path.isdir(os.fspath(configured_imagesdir))
     )
-    configured_runtime_usable = configured_command_usable or configured_fas_usable
-
-    needs_prefix = (
-        not configured_runtime_usable
-        and not os.environ.get("MAXIMA_PREFIX")
-        and not configured_prefix_usable
+    runtime_library_dir = _optional_runtime_value(
+        "sagelite_maxima.runtime", "runtime_library_dir"
     )
-    needs_fas = not os.environ.get("MAXIMA_FAS") and not configured_fas_usable
-    needs_command = not os.environ.get("MAXIMA") and not configured_command_usable
+    prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
+    fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
+    command = _optional_runtime_value("sagelite_maxima.runtime", "maxima_command")
+    ecldir = _optional_runtime_value("sagelite_maxima.runtime", "ecl_dir")
+    layout = _optional_runtime_value(
+        "sagelite_maxima.runtime", "maxima_layout_autotools"
+    )
+    imagesdir = _optional_runtime_value("sagelite_maxima.runtime", "maxima_imagesdir")
+
+    companion_runtime_usable = bool(
+        command and os.path.isfile(command) and os.access(command, os.X_OK)
+    ) or bool(fas and os.path.isfile(fas))
+    configured_runtime_usable = (
+        not companion_runtime_usable
+        and (configured_command_usable or configured_fas_usable)
+    )
+
+    needs_prefix = not os.environ.get("MAXIMA_PREFIX") and (
+        companion_runtime_usable
+        or (not configured_runtime_usable and not configured_prefix_usable)
+    )
+    needs_fas = not os.environ.get("MAXIMA_FAS") and (
+        companion_runtime_usable or not configured_fas_usable
+    )
+    needs_command = not os.environ.get("MAXIMA") and (
+        companion_runtime_usable or not configured_command_usable
+    )
     needs_ecldir = (
-        not configured_runtime_usable
+        (companion_runtime_usable or not configured_runtime_usable)
         and not _ecldir_contains_maxima(os.environ.get("ECLDIR"))
     )
     needs_layout = (
-        not configured_runtime_usable
+        (companion_runtime_usable or not configured_runtime_usable)
         and not os.environ.get("MAXIMA_LAYOUT_AUTOTOOLS")
     )
-    needs_imagesdir = (
-        not configured_runtime_usable
-        and not os.environ.get("MAXIMA_IMAGESDIR")
-        and not configured_imagesdir_usable
-    )
-    runtime_library_dir = _optional_runtime_value(
-        "sagelite_maxima.runtime", "runtime_library_dir"
+    needs_imagesdir = not os.environ.get("MAXIMA_IMAGESDIR") and (
+        companion_runtime_usable
+        or (not configured_runtime_usable and not configured_imagesdir_usable)
     )
 
     if not (
@@ -197,24 +213,8 @@ def _bootstrap_sagelite_maxima_runtime() -> None:
         return
 
     _prepend_env_path("LD_LIBRARY_PATH", runtime_library_dir)
-
-    prefix = fas = command = ecldir = layout = imagesdir = None
-    if needs_prefix:
-        prefix = _optional_runtime_value("sagelite_maxima.runtime", "maxima_prefix")
-    if needs_fas:
-        fas = _optional_runtime_value("sagelite_maxima.runtime", "maxima_fas")
-    if needs_command:
-        command = _optional_runtime_value("sagelite_maxima.runtime", "maxima_command")
-    if needs_ecldir:
-        ecldir = _optional_runtime_value("sagelite_maxima.runtime", "ecl_dir")
-    if needs_layout:
-        layout = _optional_runtime_value(
-            "sagelite_maxima.runtime", "maxima_layout_autotools"
-        )
-    if needs_imagesdir:
-        imagesdir = _optional_runtime_value(
-            "sagelite_maxima.runtime", "maxima_imagesdir"
-        )
+    if sys.platform == "darwin":
+        _prepend_env_path("DYLD_LIBRARY_PATH", runtime_library_dir)
 
     if needs_prefix and prefix and os.path.isdir(prefix):
         os.environ.setdefault("MAXIMA_PREFIX", os.fspath(prefix))

@@ -1383,7 +1383,9 @@ def test_maxima_runtime_prefers_companion_over_configured_paths(monkeypatch, tmp
     assert env.os.environ["ECLDIR"] == str(ecldir)
 
 
-def test_maxima_runtime_keeps_usable_configured_paths(monkeypatch, tmp_path):
+def test_maxima_runtime_prefers_companion_over_usable_configured_paths(
+    monkeypatch, tmp_path
+):
     companion_prefix, companion_fas, companion_command, companion_imagesdir = (
         _maxima_runtime(tmp_path, "companion")
     )
@@ -1404,6 +1406,7 @@ def test_maxima_runtime_keeps_usable_configured_paths(monkeypatch, tmp_path):
         "ECLDIR",
         "MAXIMA_LAYOUT_AUTOTOOLS",
         "LD_LIBRARY_PATH",
+        "DYLD_LIBRARY_PATH",
     ):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setattr(env.sage.config, "MAXIMA", str(configured_command), raising=False)
@@ -1434,13 +1437,19 @@ def test_maxima_runtime_keeps_usable_configured_paths(monkeypatch, tmp_path):
 
     env._bootstrap_sagelite_maxima_runtime()
 
-    assert "MAXIMA" not in env.os.environ
-    assert "MAXIMA_PREFIX" not in env.os.environ
-    assert "MAXIMA_FAS" not in env.os.environ
-    assert "MAXIMA_IMAGESDIR" not in env.os.environ
-    assert "ECLDIR" not in env.os.environ
-    assert "MAXIMA_LAYOUT_AUTOTOOLS" not in env.os.environ
-    assert "LD_LIBRARY_PATH" not in env.os.environ
+    assert env.os.environ["MAXIMA"] == str(companion_command)
+    assert env.os.environ["MAXIMA_PREFIX"] == str(companion_prefix)
+    assert env.os.environ["MAXIMA_FAS"] == str(companion_fas)
+    assert env.os.environ["MAXIMA_IMAGESDIR"] == str(companion_imagesdir)
+    assert env.os.environ["ECLDIR"] == str(companion_ecldir)
+    assert env.os.environ["MAXIMA_LAYOUT_AUTOTOOLS"] == "true"
+    assert env.os.environ["LD_LIBRARY_PATH"].split(env.os.pathsep)[0] == str(
+        runtime_library_dir
+    )
+    if sys.platform == "darwin":
+        assert env.os.environ["DYLD_LIBRARY_PATH"].split(env.os.pathsep)[0] == str(
+            runtime_library_dir
+        )
 
 
 def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -47,13 +48,22 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     libraries = []
     prefixes = (
         "libflatter.so",
+        "libflatter.dylib",
         "libfplll.so",
+        "libfplll.",
         "libgfortran.so",
+        "libgfortran.",
         "libopenblas.so",
+        "libopenblas.",
         "libgmp.so",
+        "libgmp.",
         "libmpfr.so",
+        "libmpfr.",
         "libquadmath.so",
+        "libquadmath.",
         "libqd.so",
+        "libqd.",
+        "libomp.dylib",
     )
     for line in output.splitlines():
         if "=>" not in line:
@@ -66,6 +76,48 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     return libraries
 
 
+def _install_name_tool(*args: str) -> None:
+    subprocess.run(["install_name_tool", *args], check=True)
+
+
+def _add_rpath(binary: Path, rpath: str) -> None:
+    result = subprocess.run(
+        ["install_name_tool", "-add_rpath", rpath, os.fspath(binary)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 and "would duplicate path" not in result.stderr:
+        result.check_returncode()
+
+
+def _codesign_darwin(path: Path) -> None:
+    if sys.platform != "darwin" or shutil.which("codesign") is None:
+        return
+    subprocess.run(["codesign", "--force", "--sign", "-", os.fspath(path)], check=True)
+
+
+def _fix_macos_install_names(executable: Path, libraries: dict[Path, Path]) -> None:
+    if sys.platform != "darwin":
+        return
+
+    _add_rpath(executable, "@loader_path/../lib")
+    for library in libraries.values():
+        _install_name_tool("-id", f"@rpath/{library.name}", os.fspath(library))
+        _add_rpath(library, "@loader_path")
+
+    machos = [executable, *libraries.values()]
+    for mach_o in machos:
+        for original, bundled in libraries.items():
+            _install_name_tool(
+                "-change",
+                os.fspath(original),
+                f"@rpath/{bundled.name}",
+                os.fspath(mach_o),
+            )
+        _codesign_darwin(mach_o)
+
+
 class build_py(_build_py):
     def run(self):
         source = _find_executable()
@@ -76,19 +128,30 @@ class build_py(_build_py):
         target.mkdir(parents=True, exist_ok=True)
         lib_target.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(source, target / "flatter-real")
+        real = target / "flatter-real"
+        shutil.copy2(source, real)
+        real.chmod(real.stat().st_mode | 0o200)
         wrapper = target / "flatter"
         wrapper.write_text(
             "#!/bin/sh\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+            'DYLD_LIBRARY_PATH="$HERE/../lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"\n'
             "export LD_LIBRARY_PATH\n"
+            "export DYLD_LIBRARY_PATH\n"
             'exec "$HERE/flatter-real" "$@"\n'
         )
         wrapper.chmod(0o755)
 
+        libraries = {}
         for library in _runtime_libraries(source):
-            shutil.copy2(library, lib_target / library.name)
+            libraries.setdefault(library, lib_target / library.name)
+
+        for library, destination in libraries.items():
+            shutil.copy2(library, destination)
+            destination.chmod(destination.stat().st_mode | 0o200)
+
+        _fix_macos_install_names(real, libraries)
 
         super().run()
 

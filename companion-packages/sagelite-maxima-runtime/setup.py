@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -222,6 +223,8 @@ def _find_library_with_prefix(prefix: str, maxima_prefix: Path) -> Path:
     for directory in _candidate_library_dirs(maxima_prefix):
         candidates.extend(directory.glob(f"{prefix}*"))
     for candidate in candidates:
+        if candidate.name.startswith("libffi-trampolines"):
+            continue
         if candidate.is_file() or candidate.is_symlink():
             return candidate.resolve()
     searched = "\n  ".join(os.fspath(path) for path in candidates)
@@ -231,8 +234,12 @@ def _find_library_with_prefix(prefix: str, maxima_prefix: Path) -> Path:
     )
 
 
-REQUIRED_RUNTIME_LIBRARY_PREFIXES = ("libecl.so", "libgmp.so", "libgc.so")
-OPTIONAL_RUNTIME_LIBRARY_PREFIXES = ("libffi.so",)
+if sys.platform == "darwin":
+    REQUIRED_RUNTIME_LIBRARY_PREFIXES = ("libecl", "libgmp", "libgc")
+    OPTIONAL_RUNTIME_LIBRARY_PREFIXES = ("libffi",)
+else:
+    REQUIRED_RUNTIME_LIBRARY_PREFIXES = ("libecl.so", "libgmp.so", "libgc.so")
+    OPTIONAL_RUNTIME_LIBRARY_PREFIXES = ("libffi.so",)
 TARGET_ECL_RUNTIME_LIBRARY_PREFIXES = ("libecl", "libgmp", "libgc", "libffi")
 
 
@@ -331,13 +338,21 @@ def _system_ecl_libraries() -> list[Path]:
     with symbols that the installed extension will not provide.
     """
     candidates = []
-    for directory in (
-        Path("/usr/lib"),
-        Path("/usr/local/lib"),
-        *Path("/usr/lib").glob("*-linux-gnu"),
-        *Path("/usr/local/lib").glob("*-linux-gnu"),
-    ):
-        candidates.extend(directory.glob("libecl.so*"))
+    if sys.platform == "darwin":
+        for directory in (
+            Path("/opt/homebrew/lib"),
+            Path("/usr/local/lib"),
+            *Path("/opt/homebrew/Cellar/ecl").glob("*/lib"),
+        ):
+            candidates.extend(directory.glob("libecl*.dylib"))
+    else:
+        for directory in (
+            Path("/usr/lib"),
+            Path("/usr/local/lib"),
+            *Path("/usr/lib").glob("*-linux-gnu"),
+            *Path("/usr/local/lib").glob("*-linux-gnu"),
+        ):
+            candidates.extend(directory.glob("libecl.so*"))
 
     libraries = [
         path.resolve()
@@ -372,6 +387,37 @@ def _target_ecl_library() -> Path | None:
     return path.resolve()
 
 
+def _codesign_darwin(path: Path) -> None:
+    if sys.platform != "darwin" or shutil.which("codesign") is None:
+        return
+    subprocess.run(["codesign", "--force", "--sign", "-", os.fspath(path)], check=True)
+
+
+def _darwin_linked_libraries(path: Path) -> list[str]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return [
+        line.strip().split(maxsplit=1)[0]
+        for line in output.splitlines()[1:]
+        if line.strip()
+    ]
+
+
+def _darwin_add_rpath(path: Path, rpath: str) -> None:
+    result = subprocess.run(
+        ["install_name_tool", "-add_rpath", rpath, os.fspath(path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 and "would duplicate path" not in result.stderr:
+        result.check_returncode()
+
+
 def _copy_target_ecl_runtime(runtime_library_dir: Path) -> None:
     """
     Copy the auditwheel-renamed ECL runtime used by the sagelite wheel.
@@ -384,14 +430,73 @@ def _copy_target_ecl_runtime(runtime_library_dir: Path) -> None:
     if library is None:
         return
     copied = set()
+    suffixes = ("*.dylib",) if sys.platform == "darwin" else ("*.so*",)
     for prefix in TARGET_ECL_RUNTIME_LIBRARY_PREFIXES:
-        for candidate in sorted(library.parent.glob(f"{prefix}*.so*")):
-            if not candidate.is_file() and not candidate.is_symlink():
-                continue
-            shutil.copy2(candidate, runtime_library_dir / candidate.name)
-            copied.add(candidate.name)
+        for suffix in suffixes:
+            for candidate in sorted(library.parent.glob(f"{prefix}{suffix}")):
+                if candidate.name.startswith("libffi-trampolines"):
+                    continue
+                if not candidate.is_file() and not candidate.is_symlink():
+                    continue
+                destination = runtime_library_dir / candidate.name
+                shutil.copy2(candidate, destination)
+                destination.chmod(0o644)
+                copied.add(candidate.name)
     if library.name not in copied:
-        shutil.copy2(library, runtime_library_dir / library.name)
+        destination = runtime_library_dir / library.name
+        shutil.copy2(library, destination)
+        destination.chmod(0o644)
+        copied.add(library.name)
+
+    if sys.platform == "darwin":
+        ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
+        if ecl_soname and ecl_soname not in copied:
+            ecl_libraries = sorted(runtime_library_dir.glob("libecl*.dylib"))
+            if not ecl_libraries:
+                raise RuntimeError(
+                    f"could not create {ecl_soname}: no copied libecl*.dylib"
+                )
+            destination = runtime_library_dir / ecl_soname
+            shutil.copy2(ecl_libraries[0], destination)
+            destination.chmod(0o644)
+            copied.add(ecl_soname)
+
+
+def _patch_darwin_runtime_libraries(runtime_library_dir: Path) -> None:
+    if sys.platform != "darwin":
+        return
+
+    libraries = sorted(runtime_library_dir.glob("*.dylib"))
+    copied_names = {path.name for path in libraries}
+    for library in libraries:
+        library.chmod(library.stat().st_mode | 0o200)
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-id",
+                f"@rpath/{library.name}",
+                os.fspath(library),
+            ],
+            check=True,
+        )
+        _darwin_add_rpath(library, "@loader_path")
+
+    for library in libraries:
+        for original in _darwin_linked_libraries(library):
+            basename = Path(original).name
+            if basename not in copied_names or original == f"@rpath/{basename}":
+                continue
+            subprocess.run(
+                [
+                    "install_name_tool",
+                    "-change",
+                    original,
+                    f"@rpath/{basename}",
+                    os.fspath(library),
+                ],
+                check=True,
+            )
+        _codesign_darwin(library)
 
 
 def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
@@ -404,7 +509,10 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
     that library explicitly so this package rejects ABI-mismatched images
     before publishing a wheel.
     """
-    ecl_libraries = sorted(runtime_library_dir.glob("libecl.so*"))
+    if sys.platform == "darwin":
+        ecl_libraries = sorted(runtime_library_dir.glob("libecl*.dylib"))
+    else:
+        ecl_libraries = sorted(runtime_library_dir.glob("libecl.so*"))
     if not ecl_libraries:
         raise RuntimeError(
             f"could not validate copied ECL images: no libecl.so* in {runtime_library_dir}"
@@ -438,6 +546,39 @@ def _validation_targets(runtime_library_dir: Path) -> dict[str, list[Path]]:
 def _patch_ecl_consumer(path: Path, rpath: str) -> None:
     ecl_soname = os.environ.get("SAGELITE_MAXIMA_ECL_SONAME")
     allow_system_ecl = os.environ.get("SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL") == "1"
+
+    if sys.platform == "darwin":
+        path.chmod(path.stat().st_mode | 0o200)
+        darwin_rpath = rpath.replace("$ORIGIN", "@loader_path")
+        ecl_needed = [
+            library
+            for library in _darwin_linked_libraries(path)
+            if "libecl" in library
+        ]
+        if ecl_needed and not ecl_soname and not allow_system_ecl:
+            raise RuntimeError(
+                f"{path} depends on {', '.join(ecl_needed)} but "
+                "SAGELITE_MAXIMA_ECL_SONAME is not set. Set it to the bundled "
+                "ECL dylib name, or set SAGELITE_MAXIMA_ALLOW_SYSTEM_ECL=1 for "
+                "an explicit system-ECL test build."
+            )
+        if ecl_soname:
+            for original in ecl_needed:
+                if original == f"@rpath/{ecl_soname}":
+                    continue
+                subprocess.run(
+                    [
+                        "install_name_tool",
+                        "-change",
+                        original,
+                        f"@rpath/{ecl_soname}",
+                        os.fspath(path),
+                    ],
+                    check=True,
+                )
+        _darwin_add_rpath(path, darwin_rpath)
+        _codesign_darwin(path)
+        return
 
     try:
         needed = subprocess.run(
@@ -489,6 +630,9 @@ def _validate_copied_ecl_images(ecl_dir: Path, runtime_library_dir: Path) -> Non
     distribution release and ``libecl`` from another, which otherwise build a
     wheel that installs but fails when Sage evaluates ``(require 'maxima)``.
     """
+    if sys.platform == "darwin":
+        return
+
     missing_by_target = {}
     for target, libraries in _validation_targets(runtime_library_dir).items():
         exported = set()
@@ -556,6 +700,7 @@ export MAXIMA_LAYOUT_AUTOTOOLS=true
 export MAXIMA_IMAGESDIR="$PREFIX/lib/maxima/{version}"
 export ECLDIR="$PREFIX/lib/{ecl_dir_name}/"
 export LD_LIBRARY_PATH="$PREFIX/lib/runtime${{LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}}"
+export DYLD_LIBRARY_PATH="$PREFIX/lib/runtime${{DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}}"
 exec "$PREFIX/lib/maxima/{version}/binary-ecl/maxima" \\
   --frame-stack 4096 --lisp-stack 65536 -- "$@"
 """,
@@ -662,8 +807,11 @@ class build_py(_build_py):
                 maxima_images_dir / "binary-ecl" / "maxima", maxima_prefix
             )
         for library in libraries:
-            shutil.copy2(library, runtime_target / library.name)
+            destination = runtime_target / library.name
+            shutil.copy2(library, destination)
+            destination.chmod(0o644)
         _copy_target_ecl_runtime(runtime_target)
+        _patch_darwin_runtime_libraries(runtime_target)
         if maxima_images_dir is not None:
             _patch_maxima_executable(images_target / "binary-ecl" / "maxima")
         _validate_copied_ecl_images(ecl_target, runtime_target)

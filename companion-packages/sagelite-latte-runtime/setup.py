@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -84,6 +85,49 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     return libraries
 
 
+def _install_name_tool(*args: str) -> None:
+    subprocess.run(["install_name_tool", *args], check=True)
+
+
+def _add_rpath(binary: Path, rpath: str) -> None:
+    result = subprocess.run(
+        ["install_name_tool", "-add_rpath", rpath, os.fspath(binary)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 and "would duplicate path" not in result.stderr:
+        result.check_returncode()
+
+
+def _codesign_darwin(path: Path) -> None:
+    if sys.platform != "darwin" or shutil.which("codesign") is None:
+        return
+    subprocess.run(["codesign", "--force", "--sign", "-", os.fspath(path)], check=True)
+
+
+def _fix_macos_install_names(executables: list[Path], libraries: dict[Path, Path]) -> None:
+    if sys.platform != "darwin":
+        return
+
+    for executable in executables:
+        _add_rpath(executable, "@loader_path/../lib")
+    for library in libraries.values():
+        _install_name_tool("-id", f"@rpath/{library.name}", os.fspath(library))
+        _add_rpath(library, "@loader_path")
+
+    machos = [*executables, *libraries.values()]
+    for mach_o in machos:
+        for original, bundled in libraries.items():
+            _install_name_tool(
+                "-change",
+                os.fspath(original),
+                f"@rpath/{bundled.name}",
+                os.fspath(mach_o),
+            )
+        _codesign_darwin(mach_o)
+
+
 class build_py(_build_py):
     def run(self):
         bindir = _find_bindir()
@@ -94,7 +138,8 @@ class build_py(_build_py):
         target.mkdir(parents=True, exist_ok=True)
         lib_target.mkdir(parents=True, exist_ok=True)
 
-        libraries = set()
+        executables = []
+        libraries = {}
         for program in PROGRAMS:
             source = _program_path(bindir, program)
             if source is None:
@@ -102,20 +147,28 @@ class build_py(_build_py):
 
             real = target / f"{program}-real"
             shutil.copy2(source.resolve(), real)
-            libraries.update(_runtime_libraries(source.resolve()))
+            real.chmod(real.stat().st_mode | 0o200)
+            executables.append(real)
+            for library in _runtime_libraries(source.resolve()):
+                libraries.setdefault(library, lib_target / library.name)
 
             wrapper = target / program
             wrapper.write_text(
                 "#!/usr/bin/env bash\n"
                 'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
                 'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+                'DYLD_LIBRARY_PATH="$HERE/../lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"\n'
                 "export LD_LIBRARY_PATH\n"
+                "export DYLD_LIBRARY_PATH\n"
                 f'exec -a {program} "$HERE/{program}-real" "$@"\n'
             )
             wrapper.chmod(0o755)
 
-        for library in sorted(libraries):
-            shutil.copy2(library, lib_target / library.name)
+        for library, destination in libraries.items():
+            shutil.copy2(library, destination)
+            destination.chmod(destination.stat().st_mode | 0o200)
+
+        _fix_macos_install_names(executables, libraries)
 
         super().run()
 
