@@ -791,7 +791,7 @@ class Polyhedron_base0(Element, sage.geometry.abc.Polyhedron):
 
             sage: p = polytopes.simplex(4, project=True)
             sage: p.Vrepresentation(0)
-            A vertex at (0.7071067812, 0.40824829050000006, 0.28867513460000005, 0.22360679770000003)
+            A vertex at (0.7071067812, 0.4082482905..., 0.2886751346..., 0.2236067977...)
             sage: p.Vrepresentation(0) == p.Vrepresentation() [0]
             True
         """

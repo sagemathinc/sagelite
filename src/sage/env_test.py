@@ -1487,6 +1487,8 @@ def test_maxima_runtime_keeps_existing_environment(monkeypatch, tmp_path):
                 "maxima_prefix": prefix,
                 "maxima_fas": fas,
                 "maxima_imagesdir": imagesdir,
+                "ecl_dir": existing_ecldir,
+                "maxima_layout_autotools": "false",
                 "runtime_library_dir": tmp_path / "companion" / "lib" / "runtime",
             }[attr_name]
         ),

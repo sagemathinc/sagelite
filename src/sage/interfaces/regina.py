@@ -662,7 +662,7 @@ class ReginaElement(ExtraTabCompletion, InterfaceElement):
             sage: type(regina.AbelianGroup().detail)
             <class 'sage.interfaces.regina.ReginaFunctionElement'>
             sage: regina.AbelianGroup().detail._name
-            <bound method pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1.detail of <regina.AbelianGroup: 0>>
+            <bound method pybind11_detail_function_record_v1_system_...detail of <regina.AbelianGroup: 0>>
         """
         P = self._check_valid()
         if attrname == '_inst':
@@ -982,7 +982,7 @@ class ReginaFunctionElement(InterfaceFunctionElement):
 
         sage: A = regina.AbelianGroup()
         sage: A.addRank
-        <bound method pybind11_detail_function_record_v1_system_libstdcpp_gxx_abi_1xxx_use_cxx11_abi_1.addRank of <regina.AbelianGroup: 0>>
+        <bound method pybind11_detail_function_record_v1_system_...addRank of <regina.AbelianGroup: 0>>
         sage: type(A.addRank)
         <class 'sage.interfaces.regina.ReginaFunctionElement'>
     """

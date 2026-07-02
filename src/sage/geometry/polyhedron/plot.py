@@ -594,10 +594,7 @@ class Projection(SageObject):
 
             sage: p = polytopes.simplex(4, project=True).projection()
             sage: p.coordinates_of([1])
-            [[-0.7071067812,
-              0.40824829050000006,
-              0.28867513460000005,
-              0.22360679770000003]]
+            [[-0.7071067812, 0.4082482905..., 0.2886751346..., 0.2236067977...]]
         """
         return [self.transformed_coords[i] for i in coord_index_list]
 

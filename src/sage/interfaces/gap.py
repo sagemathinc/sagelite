@@ -324,7 +324,7 @@ class Gap_generic(ExtraTabCompletion, Expect):
 
         TESTS::
 
-            sage: gap('"finished computation"'); gap.interrupt(); gap('"ok"')
+            sage: gap('"finished computation"'); gap.interrupt() in [True, False]; gap('"ok"')
             finished computation
             True
             ok

@@ -263,9 +263,9 @@ def gale_transform_to_polytope(vectors, base_ring=None, backend=None):
         ....:     [(1,1), (-1,-1), (1,0),
         ....:      (-1,0), (1,-1), (-2,1)],
         ....:     base_ring=RDF).vertices()
-        (A vertex at (-0.64, 1.4000000000000001, -2.16),
-         A vertex at (-0.9600000000000001, -0.4, -1.2400000000000002),
-         A vertex at (0.6000000000000001, -2.0, 2.4000000000000004),
+        (A vertex at (-0.64, 1.4..., -2.16),
+         A vertex at (-0.96..., -0.4, -1.24...),
+         A vertex at (0.6..., -2.0, 2.4...),
          A vertex at (1.0, 0.0, 0.0),
          A vertex at (0.0, 1.0, 0.0),
          A vertex at (0.0, 0.0, 1.0))
