@@ -1912,7 +1912,7 @@ build_meataxe_runtime_companion() {
     *) return 0 ;;
   esac
   case "$AUDITWHEEL_PLAT" in
-    manylinux*_x86_64) ;;
+    manylinux*_x86_64|manylinux*_aarch64) ;;
     *) return 0 ;;
   esac
 
@@ -2096,7 +2096,7 @@ build_pari_data_companion() {
     *) return 0 ;;
   esac
   case "$AUDITWHEEL_PLAT" in
-    manylinux*_x86_64) ;;
+    manylinux*_x86_64|manylinux*_aarch64) ;;
     *) return 0 ;;
   esac
 
@@ -2136,7 +2136,7 @@ build_singular_runtime_companion() {
     *) return 0 ;;
   esac
   case "$AUDITWHEEL_PLAT" in
-    manylinux*_x86_64) ;;
+    manylinux*_x86_64|manylinux*_aarch64) ;;
     *) return 0 ;;
   esac
 
