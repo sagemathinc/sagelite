@@ -122,6 +122,40 @@ python3 tools/validate-sagelite-wheelhouse.py \
   --full
 ```
 
+## Publish a Sagelite R2 Wheel Index
+
+This command stages a local wheelhouse in the dedicated `sagelite` Cloudflare R2
+bucket and publishes a PEP 503 simple index plus a JSON wheel manifest. It uses
+bucket-scoped S3-compatible credentials, so it does not need broader Cloudflare
+API access.
+
+Example:
+
+```bash
+AWS_BIN=/scratch/sagelite-r2-tools/bin/aws \
+  tools/publish-sagelite-r2-wheel-index.sh \
+  /scratch/sagelite-runs/cp312-x86_64-rebuild-20260701-193345-f575cf62/source/wheelhouse \
+  dev/linux-x86_64-cp312
+```
+
+By default the script reads `/run/secrets/cocalc/sagelite-r2-bucket.sh`, maps
+`access_key_id`, `secret_access_key`, and `s3_endpoint` to AWS CLI environment
+variables, and uploads to `s3://sagelite/<prefix>/`. Set
+`SAGELITE_PUBLISH_DRY_RUN=1` to validate the generated index and AWS commands
+without writing objects.
+
+The resulting layout is:
+
+- `wheels/`: immutable wheel artifacts
+- `simple/`: pip-compatible simple package index
+- `manifest.json`: wheel filenames, sizes, and SHA256 digests
+- `index.html`: small human-readable landing page
+
+Public pip testing also requires a public R2 custom domain or Worker/Pages
+frontend pointing at the same prefix. Once that URL exists, set
+`SAGELITE_SIMPLE_INDEX_URL` when publishing so the root page displays the exact
+`pip install --extra-index-url ...` command.
+
 ## Update Version Number
 
 Increments the version number in the project. This command is useful when releasing a new version of the project.
