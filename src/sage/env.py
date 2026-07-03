@@ -1554,6 +1554,22 @@ SINGULAR_BIN = var("SINGULAR_BIN") or "Singular"
 OPENMP_CFLAGS = var("OPENMP_CFLAGS", "")
 OPENMP_CXXFLAGS = var("OPENMP_CXXFLAGS", "")
 
+
+def _openmp_flags() -> list[str]:
+    """
+    Return OpenMP flags for ad hoc Cython builds.
+    """
+    configured_flags = OPENMP_CFLAGS.split()
+    if configured_flags and not (
+        sys.platform == "darwin" and configured_flags == ["-fopenmp"]
+    ):
+        return configured_flags
+
+    if sys.platform == "darwin":
+        return []
+
+    return configured_flags
+
 # Make sure that mpmath < 1.4 does not try to use Sage types
 os.environ.pop('MPMATH_SAGE', None)
 os.environ['MPMATH_NOSAGE'] = '1'
@@ -1809,8 +1825,8 @@ def cython_aliases(required_modules=None, optional_modules=None):
     aliases["NTL_LIBEXTRA"] = []
 
     # OpenMP
-    aliases["OPENMP_CFLAGS"] = OPENMP_CFLAGS.split()
-    aliases["OPENMP_CXXFLAGS"] = OPENMP_CXXFLAGS.split()
+    aliases["OPENMP_CFLAGS"] = _openmp_flags()
+    aliases["OPENMP_CXXFLAGS"] = OPENMP_CXXFLAGS.split() or aliases["OPENMP_CFLAGS"]
 
     return aliases
 
