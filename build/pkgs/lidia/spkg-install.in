@@ -1,5 +1,7 @@
 cd src/
 
+cp "$SAGE_ROOT"/config/config.* .
+
 if [ -n "$SAGE_GMP_PREFIX" ]; then
    GMP_CONFIGURE="--with-extra-includes=$SAGE_GMP_PREFIX/include --with-extra-libs=$SAGE_GMP_PREFIX/lib"
 fi
@@ -17,4 +19,3 @@ sdh_make_install
 # So we make a symbolic link, just in case.
 # (On the Mac, nothing is done because of its case-preserving, case-insensitive file system.)
 ( cd "$SAGE_DESTDIR_LOCAL/include" && if [ ! -r LiDIA ] ; then ln -s lidia LiDIA; fi  || true )
-
