@@ -95,7 +95,7 @@ def _installed_sagelite_include_dirs():
 
 def _installed_sagelite_library_link_names(library):
     """
-    Return linker names for an auditwheel-hashed runtime library.
+    Return conventional linker names for an installed-wheel runtime library.
     """
     name = library.name
     candidates = {name}
@@ -108,10 +108,21 @@ def _installed_sagelite_library_link_names(library):
     if match:
         candidates.add(f"{match.group(1)}.so")
 
+    match = re.match(r"^(lib.+?)\.\d+(?:\.\d+)*\.dylib$", name)
+    if match:
+        candidates.add(f"{match.group(1)}.dylib")
+
     if name.startswith("libpari-gmp"):
-        candidates.add("libpari.so")
+        candidates.update({"libpari.so", "libpari.dylib"})
     elif name.startswith("libopenblas"):
-        candidates.update({"libblas.so", "libcblas.so", "libopenblas.so"})
+        candidates.update({
+            "libblas.so",
+            "libblas.dylib",
+            "libcblas.so",
+            "libcblas.dylib",
+            "libopenblas.so",
+            "libopenblas.dylib",
+        })
 
     return sorted(candidates)
 
@@ -121,7 +132,7 @@ def _populate_installed_sagelite_library_links(library_dir, link_dir):
     Populate ``link_dir`` with conventional linker names for ``library_dir``.
     """
     link_dir.mkdir(parents=True, exist_ok=True)
-    for library in sorted(library_dir.glob("lib*.so*")):
+    for library in sorted(library_dir.glob("lib*.so*")) + sorted(library_dir.glob("lib*.dylib")):
         if not library.is_file():
             continue
         for name in _installed_sagelite_library_link_names(library):
@@ -132,7 +143,29 @@ def _populate_installed_sagelite_library_links(library_dir, link_dir):
                 link.symlink_to(library)
             except OSError:
                 continue
-    return any(path.exists() or path.is_symlink() for path in link_dir.glob("lib*.so*"))
+    return any(
+        path.exists() or path.is_symlink()
+        for pattern in ("lib*.so*", "lib*.dylib")
+        for path in link_dir.glob(pattern)
+    )
+
+
+def _installed_sagelite_runtime_library_dirs(root):
+    """
+    Return installed-wheel native runtime library directories under ``root``.
+    """
+    candidates = [root / "sagelite.libs"]
+    candidates.extend(root.glob("sagelite_*/data/lib"))
+    candidates.extend(root.glob("*.libs"))
+    candidates.extend(root.glob("*/.dylibs"))
+    return [
+        candidate for candidate in candidates
+        if candidate.is_dir()
+        and (
+            any(candidate.glob("lib*.so*"))
+            or any(candidate.glob("lib*.dylib"))
+        )
+    ]
 
 
 @cached_function
@@ -145,13 +178,13 @@ def _installed_sagelite_library_dirs():
 
     dirs = []
     link_root = Path(spyx_tmp()) / "sagelite-lib-links"
-    for index, root in enumerate(_installed_sage_package_roots()):
-        library_dir = root / "sagelite.libs"
-        if not library_dir.is_dir():
-            continue
-        link_dir = link_root / str(index)
-        if _populate_installed_sagelite_library_links(library_dir, link_dir):
-            dirs.append(link_dir)
+    index = 0
+    for root in _installed_sage_package_roots():
+        for library_dir in _installed_sagelite_runtime_library_dirs(root):
+            link_dir = link_root / str(index)
+            index += 1
+            if _populate_installed_sagelite_library_links(library_dir, link_dir):
+                dirs.append(link_dir)
     return _deduplicate_existing_dirs(dirs)
 
 
@@ -274,7 +307,7 @@ def _standard_libs_libdirs_incdirs_aliases():
     installed_libdirs = _installed_sagelite_library_dirs()
     _add_installed_sagelite_aliases(aliases, installed_incdirs, installed_libdirs)
 
-    if SAGE_ROOT is None and not installed_libdirs:
+    if SAGE_ROOT is None:
         standard_libs = []
     else:
         standard_libs = ["mpfr", "gmp", "gmpxx", "pari", "m", "ec", "gsl", "ntl"]

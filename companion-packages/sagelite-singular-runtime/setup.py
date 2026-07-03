@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -136,6 +137,34 @@ def _ldd_libraries(binary: Path) -> list[tuple[str, Path]]:
     return libraries
 
 
+def _otool_libraries(binary: Path) -> list[tuple[str, Path]]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(binary)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    for line in output.splitlines()[1:]:
+        path = line.strip().split(maxsplit=1)[0]
+        if not path.startswith("/"):
+            continue
+        library = Path(path)
+        if library.parts[:2] in {("/", "usr"), ("/", "System")}:
+            continue
+        if not library.is_file():
+            continue
+        if _selected_runtime_library_name(library.name):
+            libraries.append((library.name, library))
+    return libraries
+
+
+def _linked_libraries(binary: Path) -> list[tuple[str, Path]]:
+    if sys.platform == "darwin":
+        return _otool_libraries(binary)
+    return _ldd_libraries(binary)
+
+
 def _runtime_libraries(executable: Path) -> list[tuple[str, Path]]:
     libraries: dict[str, Path] = {}
     pending = [executable]
@@ -147,13 +176,77 @@ def _runtime_libraries(executable: Path) -> list[tuple[str, Path]]:
         if resolved in seen:
             continue
         seen.add(resolved)
-        for library_name, library in _ldd_libraries(resolved):
+        for library_name, library in _linked_libraries(resolved):
             if library.name not in libraries:
                 libraries[library.name] = library
                 pending.append(library)
             libraries.setdefault(library_name, library)
 
     return [(name, libraries[name]) for name in sorted(libraries)]
+
+
+def _is_macho(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        return path.read_bytes()[:4] in {
+            b"\xcf\xfa\xed\xfe",
+            b"\xfe\xed\xfa\xcf",
+            b"\xca\xfe\xba\xbe",
+            b"\xca\xfe\xba\xbf",
+        }
+    except OSError:
+        return False
+
+
+def _macho_dependencies(path: Path) -> list[str]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return [line.strip().split(maxsplit=1)[0] for line in output.splitlines()[1:]]
+
+
+def _rewrite_macos_runtime_paths(root: Path, lib_target: Path) -> None:
+    runtime_libraries = {path.name for path in lib_target.iterdir() if path.is_file()}
+    if not runtime_libraries:
+        return
+
+    modified: list[Path] = []
+    for path in sorted(root.rglob("*")):
+        if not _is_macho(path):
+            continue
+
+        args: list[str] = []
+        if path.parent == lib_target and path.suffix == ".dylib":
+            args.extend(["-id", f"@rpath/{path.name}"])
+
+        rel_lib_dir = os.path.relpath(lib_target, path.parent)
+        for dependency in _macho_dependencies(path):
+            dependency_name = Path(dependency).name
+            if dependency_name in runtime_libraries and dependency != path.name:
+                args.extend(
+                    [
+                        "-change",
+                        dependency,
+                        f"@loader_path/{rel_lib_dir}/{dependency_name}",
+                    ]
+                )
+
+        if args:
+            subprocess.run(["install_name_tool", *args, os.fspath(path)], check=True)
+            modified.append(path)
+
+    if shutil.which("codesign") is not None:
+        for path in modified:
+            subprocess.run(
+                ["codesign", "--force", "--sign", "-", os.fspath(path)],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
 
 
 class build_py(_build_py):
@@ -204,6 +297,10 @@ class build_py(_build_py):
         for module_dir in _singular_module_dirs(singular_root):
             relative = module_dir.relative_to(singular_root)
             shutil.copytree(module_dir, target / relative, ignore_dangling_symlinks=True)
+
+        if sys.platform == "darwin":
+            runtime_root = Path(self.build_lib) / "sagelite_singular_runtime" / "data"
+            _rewrite_macos_runtime_paths(runtime_root, lib_target)
 
         super().run()
 
