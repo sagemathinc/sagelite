@@ -1,5 +1,7 @@
 cd src
 
+cp "$SAGE_ROOT"/config/config.* .
+
 sdh_configure
 
 # * Use $SAGE_LOCAL/include instead of hardcoded /usr/local/include
