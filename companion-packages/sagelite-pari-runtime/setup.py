@@ -102,6 +102,7 @@ _RUNTIME_LIBRARY_PREFIXES = (
     "libpari",
     "libgmp",
     "libmpfr",
+    "libmpfi",
     "libreadline",
     "libtinfo",
     "libtinfow",
@@ -212,6 +213,7 @@ def _macho_runtime_libraries(executables: dict[str, Path]) -> list[Path]:
             Path("/opt/homebrew/lib"),
             Path("/opt/homebrew/opt/gmp/lib"),
             Path("/opt/homebrew/opt/mpfr/lib"),
+            Path("/opt/homebrew/opt/mpfi/lib"),
             Path("/opt/homebrew/opt/readline/lib"),
         }
     )

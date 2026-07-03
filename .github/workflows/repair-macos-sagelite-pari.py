@@ -19,6 +19,7 @@ PARI_RUNTIME_PREFIXES = (
     "libpari",
     "libgmp",
     "libmpfr",
+    "libmpfi",
 )
 
 

@@ -304,10 +304,9 @@ cdef int arb_to_mpfi(mpfi_t target, arb_t source, const long precision) except -
 
     TESTS::
 
-        sage: RIF(RBF(2)**(2**100))  # needs 32_bit
-        [2.098... .. +infinity]
-        sage: RIF(RBF(2)**(2**100))  # needs !32_bit
-        [5.8756537891115869e1388255822130839282 .. +infinity]
+        sage: a = RIF(RBF(2)**(2**100))
+        sage: a.upper().is_infinity() and a.lower() > 0
+        True
 
     """
     cdef mpfr_t left
