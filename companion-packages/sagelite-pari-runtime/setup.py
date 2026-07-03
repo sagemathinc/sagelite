@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -97,14 +98,26 @@ def _is_elf(path: Path) -> bool:
         return False
 
 
+_RUNTIME_LIBRARY_PREFIXES = (
+    "libpari",
+    "libgmp",
+    "libmpfr",
+    "libreadline",
+    "libtinfo",
+    "libtinfow",
+    "libncurses",
+    "libncursesw",
+)
+
+
+def _selected_runtime_library_name(name: str) -> bool:
+    return name.startswith(_RUNTIME_LIBRARY_PREFIXES)
+
+
 def _runtime_libraries(executables: dict[str, Path]) -> list[Path]:
-    prefixes = (
-        "libpari",
-        "libgmp",
-        "libreadline",
-        "libtinfo",
-        "libncurses",
-    )
+    if sys.platform == "darwin":
+        return _macho_runtime_libraries(executables)
+
     libraries: dict[str, Path] = {}
     for executable in executables.values():
         if not _is_elf(executable):
@@ -122,7 +135,7 @@ def _runtime_libraries(executables: dict[str, Path]) -> list[Path]:
                 continue
             name, rest = line.split("=>", 1)
             name = name.strip()
-            if not name.startswith(prefixes):
+            if not _selected_runtime_library_name(name):
                 continue
             path = rest.strip().split(maxsplit=1)[0]
             if path == "not":
@@ -138,6 +151,120 @@ def _runtime_libraries(executables: dict[str, Path]) -> list[Path]:
     return list(libraries.values())
 
 
+def _is_macho(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        return path.read_bytes()[:4] in {
+            b"\xcf\xfa\xed\xfe",
+            b"\xfe\xed\xfa\xcf",
+            b"\xca\xfe\xba\xbe",
+            b"\xca\xfe\xba\xbf",
+        }
+    except OSError:
+        return False
+
+
+def _macho_dependencies(path: Path) -> list[str]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return [line.strip().split(maxsplit=1)[0] for line in output.splitlines()[1:]]
+
+
+def _otool_libraries(binary: Path) -> list[Path]:
+    libraries = []
+    for dependency in _macho_dependencies(binary):
+        if not dependency.startswith("/"):
+            continue
+        library = Path(dependency)
+        if library.parts[:2] in {("/", "usr"), ("/", "System")}:
+            continue
+        if library.is_file() and _selected_runtime_library_name(library.name):
+            libraries.append(library)
+    return libraries
+
+
+def _macho_runtime_libraries(executables: dict[str, Path]) -> list[Path]:
+    libraries: dict[str, Path] = {}
+    pending = list(executables.values())
+    seen: set[Path] = set()
+
+    while pending:
+        current = pending.pop()
+        resolved = current.resolve()
+        if resolved in seen or not _is_macho(resolved):
+            continue
+        seen.add(resolved)
+        for library in _otool_libraries(resolved):
+            if library.name not in libraries:
+                libraries[library.name] = library
+                pending.append(library)
+
+    candidate_libdirs = {
+        _prefix_for(executable) / "lib" for executable in executables.values()
+    }
+    candidate_libdirs.update(
+        {
+            Path("/opt/homebrew/lib"),
+            Path("/opt/homebrew/opt/gmp/lib"),
+            Path("/opt/homebrew/opt/mpfr/lib"),
+            Path("/opt/homebrew/opt/readline/lib"),
+        }
+    )
+    for libdir in sorted(candidate_libdirs):
+        if not libdir.is_dir():
+            continue
+        for library in sorted(libdir.glob("*.dylib")):
+            if _selected_runtime_library_name(library.name):
+                libraries.setdefault(library.name, library)
+
+    return [libraries[name] for name in sorted(libraries)]
+
+
+def _rewrite_macos_runtime_paths(root: Path, lib_target: Path) -> None:
+    runtime_libraries = {path.name for path in lib_target.iterdir() if path.is_file()}
+    if not runtime_libraries:
+        return
+
+    modified: list[Path] = []
+    for path in sorted(root.rglob("*")):
+        if not _is_macho(path):
+            continue
+
+        args: list[str] = []
+        if path.parent == lib_target and path.suffix == ".dylib":
+            args.extend(["-id", f"@rpath/{path.name}"])
+
+        rel_lib_dir = os.path.relpath(lib_target, path.parent)
+        for dependency in _macho_dependencies(path):
+            dependency_name = Path(dependency).name
+            if dependency_name in runtime_libraries and dependency != path.name:
+                args.extend(
+                    [
+                        "-change",
+                        dependency,
+                        f"@loader_path/{rel_lib_dir}/{dependency_name}",
+                    ]
+                )
+
+        if args:
+            subprocess.run(["install_name_tool", *args, os.fspath(path)], check=True)
+            modified.append(path)
+
+    if shutil.which("codesign") is not None:
+        for path in modified:
+            subprocess.run(
+                ["codesign", "--force", "--sign", "-", os.fspath(path)],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+
 def _write_wrapper(path: Path, real_name: str) -> None:
     path.write_text(
         "#!/bin/sh\n"
@@ -148,8 +275,9 @@ def _write_wrapper(path: Path, real_name: str) -> None:
         "    export SAGELITE_PARI_DATADIR\n"
         "fi\n"
         'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+        'DYLD_LIBRARY_PATH="$HERE/../lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"\n'
         'PATH="$HERE${PATH:+:$PATH}"\n'
-        "export LD_LIBRARY_PATH PATH\n"
+        "export LD_LIBRARY_PATH DYLD_LIBRARY_PATH PATH\n"
         f'exec "$HERE/{real_name}" "$@"\n'
     )
     path.chmod(0o755)
@@ -198,6 +326,10 @@ class build_py(_build_py):
 
         for library in _runtime_libraries(executables):
             shutil.copy2(library, lib_target / library.name)
+
+        if sys.platform == "darwin":
+            runtime_root = Path(self.build_lib) / "sagelite_pari" / "data"
+            _rewrite_macos_runtime_paths(runtime_root, lib_target)
 
         shutil.copytree(
             _find_pari_doc(executables),
