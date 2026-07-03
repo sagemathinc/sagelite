@@ -100,7 +100,7 @@ dependencies = [
   'packaging',
   'primecountpy >=0.2.1; sys_platform != "win32"',
   'ptyprocess > 0.5',
-  'regina >=7.4.1',
+  'regina >=7.4.1; platform_machine != "aarch64" and platform_machine != "arm64"',
   'pytest >=8.0',
   'requests >=2.13.0',
   'sagelite-4ti2-runtime >=10.9.post2,<10.10',
@@ -319,7 +319,7 @@ extra = [
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
   'pyscipopt >=5.1.1',
-  'regina >=7.4.1',
+  'regina >=7.4.1; platform_machine != "aarch64" and platform_machine != "arm64"',
   'sage_numerical_backends_coin',
   'symengine >= 0.6.1', # Only used in tests
 ]
@@ -350,7 +350,7 @@ full = [
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
   'pyscipopt >=5.1.1',
-  'regina >=7.4.1',
+  'regina >=7.4.1; platform_machine != "aarch64" and platform_machine != "arm64"',
   'sage_numerical_backends_coin',
   'sagelite-4ti2-runtime >=10.9.post2,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
@@ -716,7 +716,7 @@ pycosat = ['pycosat >=0.6.3']
 pynormaliz = ['pynormaliz >=2.18; sys_platform != "win32"']
 pyscipopt = ['pyscipopt >=5.1.1']
 pyparsing = ['pyparsing >=3.2.3']
-regina = ['regina >=7.4.1']
+regina = ['regina >=7.4.1; platform_machine != "aarch64" and platform_machine != "arm64"']
 runtime = [
   'cvxopt >=1.3.3',
   'cvxpy >=1.6.7',
@@ -740,7 +740,7 @@ runtime = [
   "pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))",
   'pynormaliz >=2.18; sys_platform != "win32"',
   'pyscipopt >=5.1.1',
-  'regina >=7.4.1',
+  'regina >=7.4.1; platform_machine != "aarch64" and platform_machine != "arm64"',
   'symengine >= 0.6.1',
   'sagelite-4ti2-runtime >=10.9.post2,<10.10',
   'sagelite-benzene-runtime >=10.9,<10.10',
