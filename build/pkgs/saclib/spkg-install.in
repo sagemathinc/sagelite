@@ -10,7 +10,7 @@ case "$(uname -s):$(uname -m)" in
    Linux:aarch64|Linux:arm64)
       # SACLIB 2.2.8 has no Linux ARM64 sysdep profile.  The Linux 64-bit
       # profile only supplies endian/word-size macros and generic fenv support.
-      bin/sconf x86_64linux
+      (cd sysdep/linuxX86_64 && ./install)
       ;;
    *)
       bin/sconf
