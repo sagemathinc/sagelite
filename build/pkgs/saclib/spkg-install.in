@@ -6,7 +6,17 @@ sed -i.bak 's/make  CC=$CC/make  CC="$CC"/g' bin/mklib
 
 saclib=$(pwd -P)
 export saclib
-bin/sconf && bin/mkproto && bin/mkmake && bin/mklib all
+case "$(uname -s):$(uname -m)" in
+   Linux:aarch64|Linux:arm64)
+      # SACLIB 2.2.8 has no Linux ARM64 sysdep profile.  The Linux 64-bit
+      # profile only supplies endian/word-size macros and generic fenv support.
+      bin/sconf x86_64linux
+      ;;
+   *)
+      bin/sconf
+      ;;
+esac
+bin/mkproto && bin/mkmake && bin/mklib all
 if [ $? -ne 0 ] || [ ! -s lib/saclibo.a ] || [ ! -s lib/saclibd.a ]; then
    echo >&2 "Error building saclib."
    exit 1
