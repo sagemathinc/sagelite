@@ -40,7 +40,7 @@ chmod +x build/bin/cython
 ln -sf cython build/bin/cython3
 
 env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m ensurepip --upgrade || true
-env -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m pip install --upgrade \
+env -u CYTHON -u PIP_CONSTRAINT -u PYTHONPATH "${SAGE_PYTHON}" -m pip install --upgrade \
   pip \
   setuptools \
   wheel \
