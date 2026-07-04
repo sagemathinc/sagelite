@@ -23,7 +23,7 @@ To test in a fresh virtual environment, use:
 python3.12 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post1"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
 python -c "from sage.all import *; x = polygen(QQ); print(factor(x**4 - 1)); print(gap.eval('2+2'))"
 ```
 
@@ -35,12 +35,13 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post1"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
 ```
 
 Current preview platform support:
 
-- Linux `x86_64`, CPython 3.12, `manylinux_2_27`/`manylinux_2_28`
+- Linux `x86_64`, CPython 3.12, 3.13, and 3.14,
+  `manylinux_2_27`/`manylinux_2_28`
 - Linux `aarch64`, CPython 3.12, `manylinux_2_27`/`manylinux_2_28`
 - macOS `arm64`, CPython 3.12, 3.13, and 3.14, currently tagged
   `macosx_26_0_arm64`
@@ -48,7 +49,8 @@ Current preview platform support:
 Current limits:
 
 - These are preview wheels, not the final PyPI release.
-- Linux CPython 3.13 and 3.14 wheels are not staged yet.
+- Linux `x86_64` CPython 3.13 and 3.14 are staged for feedback, but have
+  smoke-test coverage rather than full doctest coverage.
 - macOS support is arm64 only. Intel macOS wheels are not a priority for this
   preview.
 - The current macOS wheels require a compatible macOS 26+ arm64 environment
@@ -61,9 +63,13 @@ Test status:
 
 - The Linux `x86_64` CPython 3.12 installed-wheel baseline has passed the full
   standard non-optional Sage doctest suite.
-- Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
-  3.13, and 3.14, including `pip check`, `import sage.all`, polynomial
-  arithmetic, integer matrix arithmetic, and GAP invocation.
+- Fresh public-index binary-only smoke tests have passed on Linux `x86_64` for
+  CPython 3.13 and 3.14 with `sagelite==10.9.post2`, including `pip check`,
+  polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
+- Fresh public-index smoke tests passed on macOS arm64 for the previous
+  `10.9.post1` preview on CPython 3.12, 3.13, and 3.14. The current
+  `10.9.post2` macOS wheels reuse the same built payloads with updated preview
+  metadata, but should still be treated as needing more real-world feedback.
 - Linux `aarch64` wheels are staged for preview testing, but should be treated
   as needing more real-world feedback before PyPI promotion.
 
@@ -699,4 +705,3 @@ At the current stage, `sagelite` should be understood as:
 
 That is the working contract used to judge packaging, testing, and release
 readiness.
-
