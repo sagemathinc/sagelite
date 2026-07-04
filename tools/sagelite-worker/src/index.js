@@ -31,11 +31,12 @@ ${body}
 function rootIndex() {
   return html(`    <h1>Sagelite wheel index</h1>
     <ul>
+      <li><a href="/dev/simple/">Linux CPython 3.12 simple index</a></li>
       <li><a href="/dev/linux-x86_64-cp312/simple/">Linux x86_64 CPython 3.12 simple index</a></li>
       <li><a href="/dev/linux-aarch64-cp312/simple/">Linux aarch64 CPython 3.12 simple index</a></li>
     </ul>
     <p>Example:</p>
-    <pre>python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/linux-x86_64-cp312/simple/ sagelite</pre>
+    <pre>python3.12 -m venv sage-pip-test &amp;&amp; sage-pip-test/bin/python -m pip install --upgrade pip &amp;&amp; sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post1'</pre>
 `);
 }
 
