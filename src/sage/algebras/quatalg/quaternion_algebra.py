@@ -3462,6 +3462,8 @@ class QuaternionFractionalIdeal_rational(QuaternionFractionalIdeal):
         N = ZZ(I.norm())
         Q = I.quadratic_form()
         for v in ZZ**4:
+            if v.is_zero():
+                continue
             if -v < v:  # enumerate up to sign  #TODO this should be a method of free modules
                 continue
             if N.gcd(Q(v)) == 1:
