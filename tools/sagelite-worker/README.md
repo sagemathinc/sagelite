@@ -1,0 +1,29 @@
+# Sagelite Worker
+
+This Cloudflare Worker serves staged Sagelite wheels from the private
+`sagelite` R2 bucket at `https://sagelite.sagemath.org/`.
+
+It is intentionally small:
+
+- `GET` and `HEAD` only
+- private R2 bucket binding named `SAGELITE_BUCKET`
+- `/path/` maps to R2 key `/path/index.html`
+- missing `/path` redirects to `/path/` when `/path/index.html` exists
+- wheel, HTML, and JSON content types are set when R2 metadata is absent
+
+Deploy with a Cloudflare token that can edit Workers for `sagemath.org`:
+
+```bash
+export CLOUDFLARE_API_TOKEN="$(cat /run/secrets/cocalc/sagemath.org-cloudflare-worker-token.txt)"
+cd tools/sagelite-worker
+npx wrangler deploy
+```
+
+The staged pip indexes currently published by `tools/publish-sagelite-r2-wheel-index.sh`
+are:
+
+```text
+https://sagelite.sagemath.org/dev/linux-x86_64-cp312/simple/
+https://sagelite.sagemath.org/dev/linux-aarch64-cp312/simple/
+```
+

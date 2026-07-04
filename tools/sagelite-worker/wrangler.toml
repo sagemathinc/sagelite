@@ -1,0 +1,13 @@
+name = "sagelite-wheel-index"
+main = "src/index.js"
+compatibility_date = "2026-07-04"
+account_id = "bf59ea74a28f5bf3c2679e78f6db1205"
+workers_dev = false
+
+routes = [
+  { pattern = "sagelite.sagemath.org", custom_domain = true },
+]
+
+[[r2_buckets]]
+binding = "SAGELITE_BUCKET"
+bucket_name = "sagelite"
