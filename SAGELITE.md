@@ -43,6 +43,24 @@ python -m pip install --upgrade pip
 python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
 ```
 
+Disk-space guidance:
+
+- A fresh preview install currently uses about 5 GB for the virtual
+  environment on Linux `x86_64`.
+- Have at least 10 GB free before installing. 15 GB or more is more comfortable
+  because `pip` may also keep downloaded wheels and temporary files while it
+  installs.
+- If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
+  of downloaded wheels:
+
+  ```bash
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
+  ```
+
+- Running the full Sage doctest suite needs substantially more temporary space
+  than a smoke test. Use a filesystem with tens of GB free for full-suite
+  validation.
+
 Current preview platform support:
 
 - Linux `x86_64`, CPython 3.12, 3.13, and 3.14,
