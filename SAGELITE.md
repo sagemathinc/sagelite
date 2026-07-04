@@ -5,17 +5,22 @@
 The distribution package name is `sagelite`. The Python import namespace
 remains `sage`.
 
-```bash
-uv pip install sagelite
-uv add sagelite
-python -c "import sage.all"
-```
+There are two different install modes to keep separate:
+
+- `python -m pip install sagelite` or `uv pip install sagelite` is the intended
+  normal install path after packages are published to PyPI. It only sees
+  packages available on the configured package indexes, so it is not the right
+  command for testing unpublished preview wheels.
+- The developer preview below uses the Sagelite staging index and an explicit
+  preview version. That command installs `sagelite` plus the current standard
+  non-optional companion runtime and data wheels. This is the install shape
+  being tested for standard Sage doctest parity on supported platforms.
 
 ## Developer Preview
 
 Preview wheels are staged at `https://sagelite.sagemath.org/dev/simple/` for
-Sage developers who want to try the wheel-first distribution before PyPI
-publication.
+Sage developers who want to try the complete standard, non-optional
+wheel-first distribution before PyPI publication.
 
 To test in a fresh virtual environment, use:
 
