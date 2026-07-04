@@ -28,8 +28,8 @@ https://sagelite.sagemath.org/dev/linux-x86_64-cp312/simple/
 https://sagelite.sagemath.org/dev/linux-aarch64-cp312/simple/
 ```
 
-The current Linux CPython 3.12 developer trial command is:
+The current developer preview trial command is:
 
 ```bash
-python3.12 -m venv sage-pip-test && sage-pip-test/bin/python -m pip install --upgrade pip && sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post1'
+python3.12 -m venv sage-pip-test && sage-pip-test/bin/python -m pip install --upgrade pip && sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post3'
 ```

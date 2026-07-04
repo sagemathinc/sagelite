@@ -28,7 +28,7 @@ To test in a fresh virtual environment, use:
 python3.12 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post3"
 python -c "from sage.all import *; x = polygen(QQ); print(factor(x**4 - 1)); print(gap.eval('2+2'))"
 ```
 
@@ -40,21 +40,22 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post3"
 ```
 
 Disk-space guidance:
 
 - A fresh preview install currently uses about 5 GB for the virtual
   environment on Linux `x86_64`.
+
 - Have at least 10 GB free before installing. 15 GB or more is more comfortable
   because `pip` may also keep downloaded wheels and temporary files while it
   installs.
+
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
-
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post2"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post3"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
@@ -86,13 +87,19 @@ Test status:
 
 - The Linux `x86_64` CPython 3.12 installed-wheel baseline has passed the full
   standard non-optional Sage doctest suite.
-- Fresh public-index binary-only smoke tests have passed on Linux `x86_64` for
-  CPython 3.13 and 3.14 with `sagelite==10.9.post2`, including `pip check`,
+- The macOS arm64 CPython 3.12 installed-wheel baseline has passed the full
+  standard non-optional Sage doctest suite and packaged pytest tests during
+  `10.9.post3` validation. Full-suite macOS validation currently sets
+  `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
+  fork-safety abort in proxy detection code used by one URL-opening doctest.
+- Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
+  3.12 and 3.14 with `sagelite==10.9.post3`, including `pip check`,
   polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
-- Fresh public-index smoke tests passed on macOS arm64 for the previous
-  `10.9.post1` preview on CPython 3.12, 3.13, and 3.14. The current
-  `10.9.post2` macOS wheels reuse the same built payloads with updated preview
-  metadata, but should still be treated as needing more real-world feedback.
+  Linux `x86_64` CPython 3.13 is staged for feedback; the previous
+  `10.9.post2` preview passed the same public-index smoke test there.
+- Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
+  3.13, and 3.14 with `sagelite==10.9.post3`, including `pip check`,
+  polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
 - Linux `aarch64` wheels are staged for preview testing, but should be treated
   as needing more real-world feedback before PyPI promotion.
 
