@@ -46,7 +46,7 @@ python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple
 Disk-space guidance:
 
 - A fresh preview install currently uses about 5 GB for the virtual
-  environment on Linux `x86_64`.
+  environment on Linux `x86_64` and Linux `aarch64`.
 
 - Have at least 10 GB free before installing. 15 GB or more is more comfortable
   because `pip` may also keep downloaded wheels and temporary files while it
@@ -93,15 +93,16 @@ Test status:
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
-  3.12 and 3.14 with `sagelite==10.9.post3`, including `pip check`,
+  3.12, 3.13, and 3.14 with `sagelite==10.9.post3`, including `pip check`,
   polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
-  Linux `x86_64` CPython 3.13 is staged for feedback; the previous
-  `10.9.post2` preview passed the same public-index smoke test there.
 - Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
   3.13, and 3.14 with `sagelite==10.9.post3`, including `pip check`,
   polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
-- Linux `aarch64` wheels are staged for preview testing, but should be treated
-  as needing more real-world feedback before PyPI promotion.
+- A fresh public-index smoke test has passed on Linux `aarch64` for CPython
+  3.12 with `sagelite==10.9.post3`, including a binary-only install,
+  `pip check`, polynomial arithmetic, integer matrix arithmetic, and GAP
+  invocation. Linux `aarch64` should still be treated as needing more
+  real-world feedback before PyPI promotion.
 
 Feedback is welcome. Please open issues at
 https://github.com/sagemathinc/sagelite/issues with the platform, Python
