@@ -28,7 +28,7 @@ To test in a fresh virtual environment, use:
 python3.12 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post4"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
 python -c "from sage.all import *; x = polygen(QQ); print((x**4 - 1).factor()); print(gap.eval('2+2'))"
 ```
 
@@ -40,19 +40,20 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post4"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
 ```
 
 An initial batch of optional packages that are available as compatible wheels
 can also be requested explicitly:
 
 ```bash
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post4"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post5"
 ```
 
-This currently adds `biopython`, `clarabel`, `ecos`, `osqp`, `pybtex`,
-`python-flint`, `qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal
-Python package indexes. It is not the full Sage optional package set.
+This currently adds `admcycles`, `biopython`, `clarabel`, `ecos`,
+`GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `python-flint`,
+`qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal Python package
+indexes. It is not the full Sage optional package set.
 
 Disk-space guidance:
 
@@ -66,7 +67,7 @@ Disk-space guidance:
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post4"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
@@ -115,9 +116,9 @@ Test status:
   invocation. Linux `aarch64` should still be treated as needing more
   real-world feedback before PyPI promotion.
 - A fresh public-index smoke test has passed on Linux `x86_64` for CPython
-  3.12 with `sagelite[optional-wheel-ready]==10.9.post4`, including
+  3.12 with `sagelite[optional-wheel-ready]==10.9.post5`, including
   `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
-  invocation, and imports of the initial optional wheel-ready package batch.
+  invocation, and imports of the optional wheel-ready package batch.
 
 Feedback is welcome. Please open issues at
 https://github.com/sagemathinc/sagelite/issues with the platform, Python

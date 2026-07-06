@@ -14,8 +14,8 @@ python tools/sagelite_optional_package_inventory.py > agents/sagelite-optional-p
 
 - Optional/experimental package directories: 165
 - By Sage type: experimental=8, optional=157
-- By triage tier: excluded=2, tier 0=75, tier 1=18, tier 2=27, tier 3=43
-- By Sagelite status: base dependency=12, extra -> PyPI/system=21, extra -> companion=42, not packaged=90
+- By triage tier: excluded=2, tier 0=79, tier 1=14, tier 2=27, tier 3=43
+- By Sagelite status: base dependency=12, extra -> PyPI/system=25, extra -> companion=42, not packaged=86
 
 Tier meanings:
 
@@ -29,15 +29,11 @@ Tier meanings:
 
 | Package | Version | License hint | Sagelite status | Signals | Sage dependencies | Notes |
 |---|---:|---|---|---|---|---|
-| `admcycles` | - | unknown | not packaged | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `gap_jupyter` | 0.9 | unknown | not packaged | pip, native, distros | \| $(PYTHON_TOOLCHAIN) ipython gap $(PYTHON) | pip package with Sage install wrapper |
-| `gitpython` | - | unknown | not packaged | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `jupymake` | 0.9 | unknown | not packaged | pip, native, distros | polymake \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
-| `nibabel` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
 | `ore_algebra` | - | unknown | not packaged | pip, distros | \| $(PYTHON_TOOLCHAIN) $(SAGERUNTIME) $(PYTHON) | pip-style package metadata |
 | `pandoc_attributes` | 8bc82f6d | unknown | not packaged | pip, native, distros | \| pandocfilters $(PYTHON) $(PYTHON_TOOLCHAIN) | pip package with Sage install wrapper |
 | `pari_jupyter` | 1.4.3 | unknown | not packaged | pip, native, distros | pari \| $(PYTHON_TOOLCHAIN) cython notebook jupyter_core ipykernel $(PYTHON) | pip package with Sage install wrapper |
-| `pygraphviz` | - | unknown | not packaged | pip, distros | libgraphviz \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `pyppeteer` | - | unknown | not packaged | pip, distros | appdirs urllib3 certifi \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `pysingular` | 0.9.7 | unknown | not packaged | pip, native, distros | singular \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
 | `pyx` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
@@ -140,6 +136,7 @@ Tier meanings:
 | Package | Version | License hint | Sagelite status | Signals | Sage dependencies | Notes |
 |---|---:|---|---|---|---|---|
 | `4ti2` | 1.6.10 | unknown | extra -> companion | native, distros | $(MP_LIBRARY) glpk | already represented in Sagelite metadata |
+| `admcycles` | - | unknown | extra -> PyPI/system | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `benzene` | 20130630 | Benzene is licensed under the GNU General Public License v2 or later | extra -> companion | native, distros | - | already represented in Sagelite metadata |
 | `biopython` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `buckygen` | 1.1 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
@@ -167,6 +164,7 @@ Tier meanings:
 | `gap3` | 04jul17 | Most parts of the GAP distribution, including the core part of the GAP system, are distributed under the terms of the GNU General Public License (see http://www.gnu.org/licenses/gpl.html or the file GPL in the | extra -> companion | native | # no dependencies | already represented in Sagelite metadata |
 | `gap_packages` | 4.15.1 | unknown | extra -> companion | native, distros | gap planarity \| $(SAGERUNTIME) | already represented in Sagelite metadata |
 | `giac` | 1.9.0.15p0 | unknown | extra -> companion | native, patches, distros | readline libpng $(MP_LIBRARY) mpfr mpfi ntl gsl pari glpk curl cliquer ecm | already represented in Sagelite metadata |
+| `gitpython` | - | unknown | extra -> PyPI/system | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `glucose` | 4.1 | unknown | extra -> companion | native, patches, distros | - | already represented in Sagelite metadata |
 | `graphviz` | - | unknown | extra -> companion | distros | - | already represented in Sagelite metadata |
 | `igraph` | 0.10.15 | unknown | base dependency | native, distros | $(MP_LIBRARY) glpk $(BLAS) \| cmake | already represented in Sagelite metadata |
@@ -183,6 +181,7 @@ Tier meanings:
 | `matroid_database` | 0.3 | unknown | base dependency | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `meataxe` | 1.0.2 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
 | `msolve` | 0.8.0 | unknown | extra -> companion | native | $(MP_LIBRARY) flint mpfr | already represented in Sagelite metadata |
+| `nibabel` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `osqp_python` | 1.1.1 | unknown | extra -> PyPI/system | pip, native, distros | qdldl_python numpy scipy jinja2 joblib \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | already represented in Sagelite metadata |
 | `pandoc` | - | unknown | extra -> PyPI/system | distros | - | already represented in Sagelite metadata |
 | `pari_elldata` | 20161017 | unknown | extra -> companion | native, distros | pari_seadata_small | already represented in Sagelite metadata |
@@ -196,6 +195,7 @@ Tier meanings:
 | `pybtex` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `pycosat` | 0.6.3 | unknown | base dependency | pip, native, distros | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pycryptosat` | - | unknown | base dependency | pip, distros | m4ri libpng \| cmake $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
+| `pygraphviz` | - | unknown | extra -> PyPI/system | pip, distros | libgraphviz \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pynormaliz` | 2.24 | unknown | base dependency | pip, native, distros | normaliz \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pyscipopt` | 6.1.0 | unknown | extra -> PyPI/system | pip, native, distros | scip numpy \| $(PYTHON_TOOLCHAIN) cython $(PYTHON) | already represented in Sagelite metadata |
 | `python_flint` | 0.8.0 | unknown | extra -> PyPI/system | pip, native | flint \| $(PYTHON_TOOLCHAIN) cython $(PYTHON) | already represented in Sagelite metadata |
