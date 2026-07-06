@@ -31,5 +31,5 @@ https://sagelite.sagemath.org/dev/linux-aarch64-cp312/simple/
 The current developer preview trial command is:
 
 ```bash
-python3.12 -m venv sage-pip-test && sage-pip-test/bin/python -m pip install --upgrade pip && sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post3'
+python3.12 -m venv sage-pip-test && sage-pip-test/bin/python -m pip install --upgrade pip && sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post4'
 ```

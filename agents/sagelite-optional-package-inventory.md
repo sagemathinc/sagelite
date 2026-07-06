@@ -14,8 +14,8 @@ python tools/sagelite_optional_package_inventory.py > agents/sagelite-optional-p
 
 - Optional/experimental package directories: 165
 - By Sage type: experimental=8, optional=157
-- By triage tier: excluded=2, tier 0=65, tier 1=28, tier 2=27, tier 3=43
-- By Sagelite status: base dependency=12, extra -> PyPI/system=11, extra -> companion=42, not packaged=100
+- By triage tier: excluded=2, tier 0=75, tier 1=18, tier 2=27, tier 3=43
+- By Sagelite status: base dependency=12, extra -> PyPI/system=21, extra -> companion=42, not packaged=90
 
 Tier meanings:
 
@@ -30,33 +30,23 @@ Tier meanings:
 | Package | Version | License hint | Sagelite status | Signals | Sage dependencies | Notes |
 |---|---:|---|---|---|---|---|
 | `admcycles` | - | unknown | not packaged | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
-| `biopython` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
-| `clarabel` | 0.11.1 | unknown | not packaged | pip | numpy scipy cffi \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
-| `ecos_python` | 2.0.14 | unknown | not packaged | pip, native, distros | numpy scipy \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
 | `gap_jupyter` | 0.9 | unknown | not packaged | pip, native, distros | \| $(PYTHON_TOOLCHAIN) ipython gap $(PYTHON) | pip package with Sage install wrapper |
 | `gitpython` | - | unknown | not packaged | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `jupymake` | 0.9 | unknown | not packaged | pip, native, distros | polymake \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
 | `nibabel` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
 | `ore_algebra` | - | unknown | not packaged | pip, distros | \| $(PYTHON_TOOLCHAIN) $(SAGERUNTIME) $(PYTHON) | pip-style package metadata |
-| `osqp_python` | 1.1.1 | unknown | not packaged | pip, native, distros | qdldl_python numpy scipy jinja2 joblib \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | pip package with Sage install wrapper |
 | `pandoc_attributes` | 8bc82f6d | unknown | not packaged | pip, native, distros | \| pandocfilters $(PYTHON) $(PYTHON_TOOLCHAIN) | pip package with Sage install wrapper |
 | `pari_jupyter` | 1.4.3 | unknown | not packaged | pip, native, distros | pari \| $(PYTHON_TOOLCHAIN) cython notebook jupyter_core ipykernel $(PYTHON) | pip package with Sage install wrapper |
-| `pybtex` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
 | `pygraphviz` | - | unknown | not packaged | pip, distros | libgraphviz \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `pyppeteer` | - | unknown | not packaged | pip, distros | appdirs urllib3 certifi \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip-style package metadata |
 | `pysingular` | 0.9.7 | unknown | not packaged | pip, native, distros | singular \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
-| `python_flint` | 0.8.0 | unknown | not packaged | pip, native | flint \| $(PYTHON_TOOLCHAIN) cython $(PYTHON) | pip package with Sage install wrapper |
 | `pyx` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
-| `qdldl_python` | 0.1.9.post1 | unknown | not packaged | pip, native, distros | pybind11 numpy scipy \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | pip package with Sage install wrapper |
 | `rst2ipynb` | 0.2.3 | unknown | not packaged | pip, native, distros | pandoc pandocfilters \| $(PYTHON_TOOLCHAIN) notedown $(PYTHON) | pip package with Sage install wrapper |
 | `sage_flatsurf` | - | unknown | not packaged | pip | \| $(PYTHON_TOOLCHAIN) surface_dynamics $(SAGERUNTIME) $(PYTHON) | pip-style package metadata |
-| `scs` | 3.2.11 | unknown | not packaged | pip, native, distros | numpy scipy \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | pip package with Sage install wrapper |
 | `singular_jupyter` | 0.9.7 | unknown | not packaged | pip, native, distros | jupyter_client \| $(PYTHON_TOOLCHAIN) pysingular ipython ipywidgets $(PYTHON) | pip package with Sage install wrapper |
 | `slabbe` | - | unknown | not packaged | pip, distros | \| $(PYTHON_TOOLCHAIN) $(SAGERUNTIME) $(PYTHON) | pip-style package metadata |
 | `snappy` | - | unknown | not packaged | pip | decorator ipython cypari \| $(PYTHON_TOOLCHAIN) sagelib $(PYTHON) | pip-style package metadata |
-| `sqlalchemy` | - | unknown | not packaged | pip, distros | - | pip-style package metadata |
 | `surface_dynamics` | - | unknown | not packaged | pip, distros | cysignals pplpy $(SAGE_SRC)/sage/rings/integer.pxd $(SAGE_SRC)/sage/ext/stdsage.pxd \| $(PYTHON_TOOLCHAIN) $(SAGERUNTIME) $(PYTHON) | pip-style package metadata |
-| `texttable` | 1.7.0 | unknown | not packaged | pip, native, distros | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | pip package with Sage install wrapper |
 
 ## Second-Batch Candidates
 
@@ -125,13 +115,13 @@ Tier meanings:
 | `polylib` | 5.22.5 | unknown | not packaged | native, distros | $(MP_LIBRARY) mpfr ntl | Sage marks this package experimental |
 | `r_jupyter` | - | unknown | not packaged | native, distros | notebook rpy2 | Sage marks this package experimental |
 | `rpy2_rinterface` | 3.6.6 | unknown | not packaged | native | cffi \| $(PYTHON_TOOLCHAIN) pycparser $(PYTHON) | native source package needing build work |
-| `sagemath_categories` | 10.9.post3 | unknown | not packaged | pip, native | sagemath_objects \| $(PYTHON_TOOLCHAIN) sagemath_environment sage_setup cython pkgconfig python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
+| `sagemath_categories` | 10.9.post4 | unknown | not packaged | pip, native | sagemath_objects \| $(PYTHON_TOOLCHAIN) sagemath_environment sage_setup cython pkgconfig python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
 | `sagemath_doc_html` | - | unknown | not packaged | native | sagelib sphinx sphinx_copybutton sphinx_inline_tabs pplpy_doc \| $(SAGERUNTIME) maxima networkx scipy sympy matplotlib pillow mathjax mpmath ipykernel jupyter_client conway_polynomials tachyon ipywidgets sage_docbuild elliptic_curves furo fpylll graphs typing_extensions | modular Sage split package, not a Sagelite optional target |
 | `sagemath_doc_pdf` | - | unknown | not packaged | native | sagemath_doc_html texlive texlive_luatex free_fonts xindy | modular Sage split package, not a Sagelite optional target |
-| `sagemath_environment` | 10.9.post3 | unknown | not packaged | pip, native | \| $(PYTHON_TOOLCHAIN) python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
+| `sagemath_environment` | 10.9.post4 | unknown | not packaged | pip, native | \| $(PYTHON_TOOLCHAIN) python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
 | `sagemath_giac` | 0.1.3 | unknown | not packaged | native | cysignals cython giac gmpy2 sagelib \| $(PYTHON_TOOLCHAIN) $(PYTHON) | modular Sage split package, not a Sagelite optional target |
-| `sagemath_objects` | 10.9.post3 | unknown | not packaged | pip, native | FORCE  cysignals gmpy2 \| $(PYTHON_TOOLCHAIN) sagemath_environment sage_setup cython pkgconfig python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
-| `sagemath_repl` | 10.9.post3 | unknown | not packaged | pip, native | sagemath_objects sagemath_environment ipython ipywidgets \| $(PYTHON_TOOLCHAIN) python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
+| `sagemath_objects` | 10.9.post4 | unknown | not packaged | pip, native | FORCE  cysignals gmpy2 \| $(PYTHON_TOOLCHAIN) sagemath_environment sage_setup cython pkgconfig python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
+| `sagemath_repl` | 10.9.post4 | unknown | not packaged | pip, native | sagemath_objects sagemath_environment ipython ipywidgets \| $(PYTHON_TOOLCHAIN) python_build $(PYTHON) | modular Sage split package, not a Sagelite optional target |
 | `scip` | 9.0.1 | unknown | not packaged | native, patches, distros | $(MP_LIBRARY) readline soplex papilo bliss \| cmake | native source package needing build work |
 | `scip_sdp` | 4.3.0 | unknown | not packaged | native | scip dsdp \| cmake | native source package needing build work |
 | `semigroups` | 5.6.0 | unknown | not packaged | native, patches, distros | gap gap_packages libsemigroups \| $(SAGERUNTIME) | native source package needing build work |
@@ -151,7 +141,9 @@ Tier meanings:
 |---|---:|---|---|---|---|---|
 | `4ti2` | 1.6.10 | unknown | extra -> companion | native, distros | $(MP_LIBRARY) glpk | already represented in Sagelite metadata |
 | `benzene` | 20130630 | Benzene is licensed under the GNU General Public License v2 or later | extra -> companion | native, distros | - | already represented in Sagelite metadata |
+| `biopython` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `buckygen` | 1.1 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
+| `clarabel` | 0.11.1 | unknown | extra -> PyPI/system | pip | numpy scipy cffi \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `csdp` | 6.2.p1 | unknown | extra -> companion | native, patches, distros | $(BLAS) | already represented in Sagelite metadata |
 | `cunningham_tables` | 1.0 | unknown | extra -> companion | native, distros | - | already represented in Sagelite metadata |
 | `cvxpy` | 1.8.2 | unknown | extra -> PyPI/system | pip, native, distros | numpy scipy glpk cvxopt osqp_python ecos_python scs clarabel highspy \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
@@ -168,6 +160,7 @@ Tier meanings:
 | `database_stein_watkins_mini` | 20070827 | Public Domain | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
 | `database_symbolic_data` | 20070206 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
 | `dot2tex` | 2.11.3.p0 | unknown | base dependency | pip, native, patches, distros | \| $(PYTHON_TOOLCHAIN) pyparsing $(PYTHON) | already represented in Sagelite metadata |
+| `ecos_python` | 2.0.14 | unknown | extra -> PyPI/system | pip, native, distros | numpy scipy \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `ffmpeg` | - | "FFmpeg is licensed under the GNU Lesser General Public License (LGPL) version 2.1 or later. However, FFmpeg incorporates several optional parts and optimizations that are covered by the GNU General Public License (GPL) version | extra -> PyPI/system | distros | - | already represented in Sagelite metadata |
 | `fricas` | 1.3.12 | unknown | extra -> companion | native, distros | ecl | already represented in Sagelite metadata |
 | `frobby` | 0.9.0.p2 | unknown | extra -> companion | native, patches, distros | $(MP_LIBRARY) | already represented in Sagelite metadata |
@@ -190,6 +183,7 @@ Tier meanings:
 | `matroid_database` | 0.3 | unknown | base dependency | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `meataxe` | 1.0.2 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
 | `msolve` | 0.8.0 | unknown | extra -> companion | native | $(MP_LIBRARY) flint mpfr | already represented in Sagelite metadata |
+| `osqp_python` | 1.1.1 | unknown | extra -> PyPI/system | pip, native, distros | qdldl_python numpy scipy jinja2 joblib \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | already represented in Sagelite metadata |
 | `pandoc` | - | unknown | extra -> PyPI/system | distros | - | already represented in Sagelite metadata |
 | `pari_elldata` | 20161017 | unknown | extra -> companion | native, distros | pari_seadata_small | already represented in Sagelite metadata |
 | `pari_galpol` | 20180625 | unknown | extra -> companion | native, distros | pari_seadata_small | already represented in Sagelite metadata |
@@ -199,19 +193,25 @@ Tier meanings:
 | `phitigra` | - | unknown | base dependency | pip | ipywidgets pillow numpy \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `plantri` | 5.8 | unknown | extra -> companion | native, distros | # no dependencies | already represented in Sagelite metadata |
 | `polytopes_db_4d` | 1.0 | unknown | extra -> companion | native, huge, distros | - | already represented in Sagelite metadata |
+| `pybtex` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `pycosat` | 0.6.3 | unknown | base dependency | pip, native, distros | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pycryptosat` | - | unknown | base dependency | pip, distros | m4ri libpng \| cmake $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pynormaliz` | 2.24 | unknown | base dependency | pip, native, distros | normaliz \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `pyscipopt` | 6.1.0 | unknown | extra -> PyPI/system | pip, native, distros | scip numpy \| $(PYTHON_TOOLCHAIN) cython $(PYTHON) | already represented in Sagelite metadata |
+| `python_flint` | 0.8.0 | unknown | extra -> PyPI/system | pip, native | flint \| $(PYTHON_TOOLCHAIN) cython $(PYTHON) | already represented in Sagelite metadata |
 | `python_igraph` | 1.0.0 | unknown | extra -> PyPI/system | pip, native, distros | igraph texttable  \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
+| `qdldl_python` | 0.1.9.post1 | unknown | extra -> PyPI/system | pip, native, distros | pybind11 numpy scipy \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | already represented in Sagelite metadata |
 | `qepcad` | 1.74 | unknown | extra -> companion | native, patches, distros | readline saclib | already represented in Sagelite metadata |
 | `r` | - | unknown | extra -> PyPI/system | distros | - | already represented in Sagelite metadata |
 | `regina` | - | unknown | base dependency | pip | $(PYTHON) \| $(PYTHON_TOOLCHAIN) numpy | already represented in Sagelite metadata |
 | `rubiks` | 20070912.p21 | unknown | extra -> companion | native, patches, distros | # no dependencies | already represented in Sagelite metadata |
 | `sage_numerical_backends_coin` | 10.4 | unknown | extra -> PyPI/system | pip, native, distros | cbc cysignals $(SAGE_SRC)/sage/numerical/backends/generic_backend.pxd $(SAGE_SRC)/sage/cpython/string.pxd $(SAGE_SRC)/sage/cpython/string_impl.h \| $(SAGERUNTIME) $(PYTHON_TOOLCHAIN) cython ipywidgets $(PYTHON) | already represented in Sagelite metadata |
+| `scs` | 3.2.11 | unknown | extra -> PyPI/system | pip, native, distros | numpy scipy \| $(PYTHON_TOOLCHAIN) cmake $(PYTHON) | already represented in Sagelite metadata |
 | `sirocco` | 2.1.1 | unknown | extra -> companion | native, distros | mpfr | already represented in Sagelite metadata |
+| `sqlalchemy` | - | unknown | extra -> PyPI/system | pip, distros | - | already represented in Sagelite metadata |
 | `symengine` | 0.14.0 | unknown | base dependency | native, distros | $(MP_LIBRARY) ecm flint mpc mpfr \| cmake | already represented in Sagelite metadata |
 | `symengine_py` | 0.14.1 | symengine.py is MIT licensed and uses several LGPL, BSD-3 and MIT | extra -> PyPI/system | pip, native, distros | symengine  \| cmake cython $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
+| `texttable` | 1.7.0 | unknown | extra -> PyPI/system | pip, native, distros | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `tides` | 2.0.p0 | unknown | extra -> companion | native, patches, distros | $(MP_LIBRARY) mpfr | already represented in Sagelite metadata |
 | `topcom` | 1.1.2 | unknown | extra -> companion | native, patches, distros | cddlib | already represented in Sagelite metadata |
 

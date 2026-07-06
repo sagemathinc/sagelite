@@ -36,7 +36,7 @@ function rootIndex() {
       <li><a href="/dev/linux-aarch64-cp312/simple/">Linux aarch64 CPython 3.12 simple index</a></li>
     </ul>
     <p>Example:</p>
-    <pre>python3.12 -m venv sage-pip-test &amp;&amp; sage-pip-test/bin/python -m pip install --upgrade pip &amp;&amp; sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post3'</pre>
+    <pre>python3.12 -m venv sage-pip-test &amp;&amp; sage-pip-test/bin/python -m pip install --upgrade pip &amp;&amp; sage-pip-test/bin/python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ 'sagelite==10.9.post4'</pre>
 `);
 }
 
