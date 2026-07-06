@@ -20,6 +20,45 @@ Scratch output:
 /scratch/sagelite-optional-probes/linux-x86_64-cp312-20260706-060205
 ```
 
+## Low-Risk Batch Install Smoke
+
+After the package-availability probe, a fresh Linux `x86_64` CPython 3.12
+environment successfully installed `sagelite==10.9.post3` plus this low-risk
+optional batch using only binary wheels:
+
+```bash
+python -m pip install --no-cache-dir --only-binary=:all: \
+  --extra-index-url https://sagelite.sagemath.org/dev/simple/ \
+  "sagelite==10.9.post3" \
+  biopython pybtex python-flint sqlalchemy texttable \
+  clarabel ecos osqp qdldl scs
+```
+
+Scratch output:
+
+```text
+/scratch/sagelite-optional-probes/install-low-risk-x86_64-cp312-20260706-060617
+```
+
+Validation:
+
+- `pip check`: `No broken requirements found.`
+- Sage polynomial arithmetic smoke passed.
+- Sage integer matrix arithmetic smoke passed.
+- GAP invocation through Sagelite returned `4`.
+- Imports passed for `Bio`, `pybtex`, `flint`, `sqlalchemy`, `texttable`,
+  `clarabel`, `ecos`, `osqp`, `qdldl`, and `scs`.
+- Installed virtual environment size: 5.0 GB.
+
+This smoke initially exposed a missing standard-stack binary wheel:
+`pycosat==0.6.6` for Linux `x86_64` CPython 3.12. A repaired manylinux wheel
+was built and published to the Sagelite dev index, and the successful smoke
+then selected:
+
+```text
+pycosat-0.6.6-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
+```
+
 ## Wheel-Ready Candidates
 
 These packages downloaded wheel files with `--only-binary=:all:`:
