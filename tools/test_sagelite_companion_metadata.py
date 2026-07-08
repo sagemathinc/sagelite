@@ -688,6 +688,7 @@ BASE_SAGELITE_STANDARD_PYPI_RUNTIME_DEPENDENCIES = {
 OPTIONAL_CVXPY_SOLVER_RUNTIME_DEPENDENCIES = {
     "cvxpy": "cvxpy >=1.6.7",
     "cylp": "cylp >=0.92.3",
+    "highspy": "highspy >=1.13.1",
     "ortools": "ortools >=9.11",
     "pyscipopt": "pyscipopt >=5.1.1",
 }

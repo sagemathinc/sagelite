@@ -208,6 +208,8 @@ optional-wheel-ready = [
   'cylp >=0.92.3',
   'ecos >=2.0.14; sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13"',
   'GitPython >=3.1.50',
+  'highspy >=1.13.1',
+  'joblib >=1.5.3',
   'nibabel >=5.4.2',
   'osqp >=1.1.3',
   'pybtex >=0.26.1',
@@ -227,6 +229,8 @@ optional_wheel_ready = [
   'cylp >=0.92.3',
   'ecos >=2.0.14; sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13"',
   'GitPython >=3.1.50',
+  'highspy >=1.13.1',
+  'joblib >=1.5.3',
   'nibabel >=5.4.2',
   'osqp >=1.1.3',
   'pybtex >=0.26.1',
@@ -345,6 +349,8 @@ fplll_data = ['sagelite-fplll-data >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
 fricas = ['sagelite-fricas-runtime >=10.9,<10.10']
 ffmpeg = ['imageio-ffmpeg >=0.6.0']
+highspy = ['highspy >=1.13.1']
+joblib = ['joblib >=1.5.3']
 pandoc = ['pypandoc-binary >=1.17']
 extra = [
   'cvxopt >=1.3.3',
@@ -353,6 +359,8 @@ extra = [
   'dot2tex >=2.11.3',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
+  'highspy >=1.13.1',
+  'joblib >=1.5.3',
   "khoca >=1.4; python_version < '3.14'",
   "py >=1.11,<2; python_version < '3.14'",
   'ortools >=9.11',
@@ -378,6 +386,8 @@ full = [
   'imageio-ffmpeg >=0.6.0',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
+  'highspy >=1.13.1',
+  'joblib >=1.5.3',
   "khoca >=1.4; python_version < '3.14'",
   "py >=1.11,<2; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',
@@ -781,6 +791,8 @@ runtime = [
   'imageio-ffmpeg >=0.6.0',
   'igraph',
   'jupyter-jsmol >=2022.1.0',
+  'highspy >=1.13.1',
+  'joblib >=1.5.3',
   "khoca >=1.4; python_version < '3.14'",
   "py >=1.11,<2; python_version < '3.14'",
   'lrcalc ~=2.1; sys_platform != "win32"',

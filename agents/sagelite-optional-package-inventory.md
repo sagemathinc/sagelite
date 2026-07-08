@@ -14,8 +14,8 @@ python tools/sagelite_optional_package_inventory.py > agents/sagelite-optional-p
 
 - Optional/experimental package directories: 165
 - By Sage type: experimental=8, optional=157
-- By triage tier: excluded=2, tier 0=79, tier 1=14, tier 2=27, tier 3=43
-- By Sagelite status: base dependency=12, extra -> PyPI/system=25, extra -> companion=42, not packaged=86
+- By triage tier: excluded=2, tier 0=81, tier 1=14, tier 2=26, tier 3=42
+- By Sagelite status: base dependency=12, extra -> PyPI/system=27, extra -> companion=42, not packaged=84
 
 Tier meanings:
 
@@ -53,7 +53,6 @@ Tier meanings:
 | `free_fonts` | - | unknown | not packaged | distros | - | metadata needs manual review |
 | `gp2c` | 0.0.14 | unknown | not packaged | native, distros | pari | native source package with distro package names |
 | `isl` | 0.20 | isl is released under the MIT license, but depends on the LGPL GMP | not packaged | native, distros | $(MP_LIBRARY) | native source package with distro package names |
-| `joblib` | 1.5.3 | unknown | not packaged | - | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | metadata needs manual review |
 | `libgraphviz` | - | unknown | not packaged | distros | - | metadata needs manual review |
 | `libjpeg` | - | unknown | not packaged | distros | - | metadata needs manual review |
 | `libnauty` | - | unknown | not packaged | native, distros | $(SAGE_LOCAL)/$(SPKG_INST_RELDIR)/nauty-$(vers_nauty) | native source package with distro package names |
@@ -101,7 +100,6 @@ Tier meanings:
 | `gdb` | - | unknown | not packaged | distros | - | developer/build tooling, not user-facing Sage functionality |
 | `git` | - | unknown | not packaged | distros | - | developer/build tooling, not user-facing Sage functionality |
 | `github_cli` | - | unknown | not packaged | distros | - | developer/build tooling, not user-facing Sage functionality |
-| `highspy` | 1.13.1 | unknown | not packaged | native | numpy \| $(PYTHON_TOOLCHAIN) scikit_build_core pybind11 cmake $(PYTHON) | native source package needing build work |
 | `llvm` | - | unknown | not packaged | distros | - | developer/build tooling, not user-facing Sage functionality |
 | `modular_resolution` | 1.1 | Copyright (C) 2018 Simon A. King <simon.king@uni-jena.de> Copyright (C) 2011 Simon A. King <simon.king@uni-jena.de> Copyright (C) 2009 Simon A. | not packaged | native | singular meataxe | native source package needing build work |
 | `notedown` | 1.5.1 | unknown | not packaged | pip, native, patches, distros | nbformat nbconvert six pandoc_attributes \| $(PYTHON) $(PYTHON_TOOLCHAIN) | native source package needing build work |
@@ -167,9 +165,11 @@ Tier meanings:
 | `gitpython` | - | unknown | extra -> PyPI/system | pip | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `glucose` | 4.1 | unknown | extra -> companion | native, patches, distros | - | already represented in Sagelite metadata |
 | `graphviz` | - | unknown | extra -> companion | distros | - | already represented in Sagelite metadata |
+| `highspy` | 1.13.1 | unknown | extra -> PyPI/system | native | numpy \| $(PYTHON_TOOLCHAIN) scikit_build_core pybind11 cmake $(PYTHON) | already represented in Sagelite metadata |
 | `igraph` | 0.10.15 | unknown | base dependency | native, distros | $(MP_LIBRARY) glpk $(BLAS) \| cmake | already represented in Sagelite metadata |
 | `imagemagick` | - | unknown | extra -> companion | distros | - | already represented in Sagelite metadata |
 | `jmol` | 14.29.52 | unknown | extra -> companion | native, distros | - | already represented in Sagelite metadata |
+| `joblib` | 1.5.3 | unknown | extra -> PyPI/system | - | \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `jupyter_jsmol` | 2022.1.0 | unknown | base dependency | pip, distros | ipywidgets \| $(PYTHON_TOOLCHAIN) $(PYTHON) | already represented in Sagelite metadata |
 | `kenzo` | 1.1.10 | unknown | extra -> companion | native, distros | ecl | already represented in Sagelite metadata |
 | `khoca` | 1.4 | unknown | extra -> PyPI/system | pip, native | ipython cypari \| $(PYTHON_TOOLCHAIN) sagelib $(PYTHON) | already represented in Sagelite metadata |
