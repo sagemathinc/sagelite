@@ -25,9 +25,15 @@ The second low-risk batch added to `sagelite[optional-wheel-ready]` is:
 - `nibabel >=5.4.2`
 - `pygraphviz >=2.0`
 
+The third install-smoke batch added to `sagelite[optional-wheel-ready]` is:
+
+- `cvxpy >=1.6.7`
+- `cylp >=0.92.3`
+- `pyscipopt >=5.1.1`
+
 Validation:
 
-- Public-index install: `sagelite[optional-wheel-ready]==10.9.post6`
+- Public-index install: `sagelite[optional-wheel-ready]==10.9.post8`
 - Install mode: `pip install --no-cache-dir --only-binary=:all: --extra-index-url https://sagelite.sagemath.org/dev/simple/`
 - Passed on Linux `x86_64`, CPython 3.12, 3.13, and 3.14: `pip check`,
   Sage polynomial arithmetic, Sage matrix arithmetic, GAP invocation, and
@@ -40,10 +46,12 @@ Validation:
   container after installing system `git` for `GitPython`. The earlier
   `pygraphviz` runtime-library-path issue is fixed by
   `sagelite-graphviz-runtime==10.9.post3`.
+- The third batch smoke also solves a tiny `cvxpy` problem with CLARABEL,
+  instantiates `CyClpSimplex`, and optimizes a tiny PySCIPOpt model.
 - `10.9.post6` is a metadata-only preview refresh from `10.9.post5` that makes
-  `ecos` conditional. `ecos` remains enabled on macOS arm64 and Linux
-  `x86_64` CPython 3.12, and is skipped where no compatible wheel was found:
-  Linux `x86_64` CPython 3.13/3.14 and Linux `aarch64` CPython 3.12.
+  `ecos` conditional. `10.9.post8` narrows `ecos` to Linux `x86_64` CPython
+  <3.13 after macOS arm64 binary-only resolution failed for current Homebrew
+  Python environments.
 
 Deferred candidates from the wheel-ready table:
 

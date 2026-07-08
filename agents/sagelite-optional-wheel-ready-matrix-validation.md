@@ -1,14 +1,14 @@
 # Sagelite Optional Wheel-Ready Matrix Validation
 
 This records the public-index validation of
-`sagelite[optional-wheel-ready]==10.9.post6`.
+`sagelite[optional-wheel-ready]==10.9.post8`.
 
 The validation command shape was:
 
 ```bash
 python -m pip install --no-cache-dir --only-binary=:all: \
   --extra-index-url https://sagelite.sagemath.org/dev/simple/ \
-  "sagelite[optional-wheel-ready]==10.9.post6"
+  "sagelite[optional-wheel-ready]==10.9.post8"
 python -m pip check
 python - <<'PY'
 from sage.all import QQ, gap, matrix, polygen
@@ -20,21 +20,23 @@ PY
 ```
 
 The optional import smoke also imports `admcycles`, `biopython`, `clarabel`,
-`GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `python-flint`,
-`qdldl`, `scs`, `SQLAlchemy`, and `texttable` where selected by environment
-markers.
+`cvxpy`, `cylp`, `GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`,
+`pyscipopt`, `python-flint`, `qdldl`, `scs`, `SQLAlchemy`, and `texttable`
+where selected by environment markers. It also solves a tiny `cvxpy` problem
+with CLARABEL, instantiates `CyClpSimplex`, and optimizes a tiny PySCIPOpt
+model.
 
 ## Result
 
 | Platform | Python | Result | Log |
 |---|---:|---|---|
-| Linux `x86_64` | 3.12 | pass | `/scratch/sagelite-matrix-validation/20260708-043658-linux-x86_64-post6/cp312/install-smoke.log` |
-| Linux `x86_64` | 3.13 | pass | `/scratch/sagelite-matrix-validation/20260708-043658-linux-x86_64-post6/cp313/install-smoke.log` |
-| Linux `x86_64` | 3.14 | pass | `/scratch/sagelite-matrix-validation/20260708-043658-linux-x86_64-post6/cp314/install-smoke.log` |
-| macOS arm64 | 3.12 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-044450-macos-arm64-post6/cp312/install-smoke.log` |
-| macOS arm64 | 3.13 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-044450-macos-arm64-post6/cp313/install-smoke.log` |
-| macOS arm64 | 3.14 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-044450-macos-arm64-post6/cp314/install-smoke.log` |
-| Linux `aarch64` | 3.12 | install and `pip check` pass; optional import smoke passes with caveats | `/mnt/cocalc/sagelite-matrix-validation/20260708-044819-linux-aarch64-cp312-post6/smoke-with-system-git-and-graphviz-ldpath.log` |
+| Linux `x86_64` | 3.12 | pass | `/scratch/sagelite-matrix-validation/20260708-062950-linux-x86_64-post8/python3.12/install-smoke.log` |
+| Linux `x86_64` | 3.13 | pass | `/scratch/sagelite-matrix-validation/20260708-062950-linux-x86_64-post8/python3.13/install-smoke.log` |
+| Linux `x86_64` | 3.14 | pass | `/scratch/sagelite-matrix-validation/20260708-062950-linux-x86_64-post8/python3.14/install-smoke.log` |
+| macOS arm64 | 3.12 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-061620-macos-arm64-post8/python3.12/install-smoke.log` |
+| macOS arm64 | 3.13 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-061620-macos-arm64-post8/python3.13/install-smoke.log` |
+| macOS arm64 | 3.14 | pass | `/Volumes/sage/sagelite-matrix-validation/20260708-061620-macos-arm64-post8/python3.14/install-smoke.log` |
+| Linux `aarch64` | 3.12 | install and `pip check` pass; optional import smoke passes with system `git` installed | `/mnt/cocalc/sagelite-matrix-validation/20260708-063616-linux-aarch64-cp312-post8/smoke-with-system-git.log` |
 
 ## Metadata Refresh
 
@@ -45,33 +47,42 @@ has no compatible wheel there:
 - Linux `x86_64`, CPython 3.14
 - Linux `aarch64`, CPython 3.12
 
-`10.9.post6` makes `ecos` conditional:
+`10.9.post6` made `ecos` conditional:
 
 ```toml
 ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")
 ```
 
-This keeps `ecos` enabled on the tested platforms where compatible wheels were
-available and skips it elsewhere.
+`10.9.post8` adds this optional batch:
+
+- `cvxpy >=1.6.7`
+- `cylp >=0.92.3`
+- `pyscipopt >=5.1.1`
+
+It also narrows `ecos` again because current macOS arm64 Homebrew Python
+environments no longer resolve an `ecos>=2.0.14` binary wheel:
+
+```toml
+ecos >=2.0.14; sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13"
+```
 
 ## Linux Aarch64 Caveats
 
 Linux `aarch64` was validated under qemu/binfmt in a
 `python:3.12-slim-bookworm` container on the Linux build host.
 
-The binary-only install and `pip check` passed without system packages in:
+For `10.9.post8`, the binary-only install and `pip check` passed without
+system packages in:
 
-`/mnt/cocalc/sagelite-matrix-validation/20260708-044819-linux-aarch64-cp312-post6/install-smoke.log`
+`/mnt/cocalc/sagelite-matrix-validation/20260708-063616-linux-aarch64-cp312-post8/install-smoke.log`
 
-That first smoke then exposed two runtime expectations:
+That first smoke then exposed one runtime expectation:
 
 - `GitPython` needs a `git` executable on `PATH`.
-- `pygraphviz` needed the Sagelite Graphviz runtime library directory visible
-  to the dynamic loader with `sagelite-graphviz-runtime==10.9.post2`.
 
-The passing follow-up smoke with those original conditions is:
+The passing follow-up smoke with system `git` installed is:
 
-`/mnt/cocalc/sagelite-matrix-validation/20260708-044819-linux-aarch64-cp312-post6/smoke-with-system-git-and-graphviz-ldpath.log`
+`/mnt/cocalc/sagelite-matrix-validation/20260708-063616-linux-aarch64-cp312-post8/smoke-with-system-git.log`
 
 The `pygraphviz` issue is fixed by `sagelite-graphviz-runtime==10.9.post3`,
 which adds a Linux startup preload hook. A focused public-index check passed
