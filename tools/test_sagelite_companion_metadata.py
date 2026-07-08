@@ -3303,6 +3303,7 @@ def test_glucose_runtime_declares_console_scripts():
 def test_graphviz_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-graphviz-runtime")
 
+    assert pyproject["project"]["version"] == "10.9.post3"
     assert pyproject["project"]["scripts"] == {
         "circo": "sagelite_graphviz.runtime:circo",
         "dot": "sagelite_graphviz.runtime:dot",
@@ -3310,6 +3311,27 @@ def test_graphviz_runtime_declares_console_scripts():
         "neato": "sagelite_graphviz.runtime:neato",
         "twopi": "sagelite_graphviz.runtime:twopi",
     }
+
+
+def test_graphviz_runtime_preloads_libraries_for_pygraphviz():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-graphviz-runtime" / "setup.py"
+    ).read_text()
+    autoload_py = (
+        ROOT
+        / "companion-packages"
+        / "sagelite-graphviz-runtime"
+        / "src"
+        / "sagelite_graphviz"
+        / "_autoload.py"
+    ).read_text()
+
+    assert "sagelite_graphviz_runtime_autoload.pth" in setup_py
+    assert "import sagelite_graphviz._autoload" in setup_py
+    assert 'find_spec("pygraphviz")' in autoload_py
+    assert "ctypes.CDLL" in autoload_py
+    assert "ctypes.RTLD_GLOBAL" in autoload_py
+    assert "_HANDLES.append(handle)" in autoload_py
 
 
 def test_imagemagick_runtime_is_exposed_by_sagelite_extras():

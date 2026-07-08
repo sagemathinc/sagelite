@@ -160,6 +160,8 @@ class build_py(_build_py):
                 shutil.copy2(library, lib_target / library.name)
 
         super().run()
+        pth = Path(self.build_lib) / "sagelite_graphviz_runtime_autoload.pth"
+        pth.write_text("import sagelite_graphviz._autoload\n")
 
 
 cmdclass = {"build_py": build_py}

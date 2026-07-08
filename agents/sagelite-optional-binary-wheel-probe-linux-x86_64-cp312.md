@@ -37,9 +37,9 @@ Validation:
   for all packages selected by `optional-wheel-ready`.
 - Passed on Linux `aarch64`, CPython 3.12: binary-only install and
   `pip check`. The optional import smoke also passes in a Debian slim
-  container after installing system `git` for `GitPython` and adding the
-  Sagelite Graphviz runtime library directory to `LD_LIBRARY_PATH` for
-  `pygraphviz`.
+  container after installing system `git` for `GitPython`. The earlier
+  `pygraphviz` runtime-library-path issue is fixed by
+  `sagelite-graphviz-runtime==10.9.post3`.
 - `10.9.post6` is a metadata-only preview refresh from `10.9.post5` that makes
   `ecos` conditional. `ecos` remains enabled on macOS arm64 and Linux
   `x86_64` CPython 3.12, and is skipped where no compatible wheel was found:

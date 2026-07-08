@@ -63,9 +63,10 @@ metadata on Linux `x86_64` CPython 3.13/3.14 and Linux `aarch64` CPython
 Two packages in this optional batch have non-Python runtime expectations:
 
 - `GitPython` expects a `git` executable on `PATH`.
-- `pygraphviz` may need the Sagelite Graphviz runtime library directory in
-  `LD_LIBRARY_PATH` on minimal Linux images. This is known to affect Debian
-  slim Linux `aarch64` containers.
+- `pygraphviz` needs compatible Graphviz shared libraries. The staged
+  `sagelite-graphviz-runtime >=10.9.post3` wheels include a startup preload
+  hook for Linux so imports work in minimal containers without setting
+  `LD_LIBRARY_PATH`.
 
 Disk-space guidance:
 
@@ -120,6 +121,10 @@ Test status:
   3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`,
   including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
   invocation, and imports of the optional wheel-ready package batch.
+- Fresh copy-paste public-index installs of `sagelite==10.9.post6` have passed
+  on Linux `x86_64`, macOS arm64, and Linux `aarch64` for CPython 3.12. These
+  installs used the documented command line and picked up
+  `sagelite-graphviz-runtime==10.9.post3`.
 - Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
   3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`, including
   `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
@@ -128,8 +133,7 @@ Test status:
   for CPython 3.12 with `sagelite[optional-wheel-ready]==10.9.post6`. The
   binary-only install and `pip check` pass without system packages. The
   optional import smoke also passes in a Debian slim container after adding
-  system `git` for `GitPython` and exposing the Sagelite Graphviz runtime
-  library path for `pygraphviz`. Linux `aarch64` should still be treated as
+  system `git` for `GitPython`. Linux `aarch64` should still be treated as
   needing more real-world feedback before PyPI promotion.
 
 Feedback is welcome. Please open issues at

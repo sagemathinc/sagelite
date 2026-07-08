@@ -66,14 +66,15 @@ The binary-only install and `pip check` passed without system packages in:
 That first smoke then exposed two runtime expectations:
 
 - `GitPython` needs a `git` executable on `PATH`.
-- `pygraphviz` imports on Debian slim after
-  `LD_LIBRARY_PATH` includes the Sagelite Graphviz runtime library directory,
-  for example:
+- `pygraphviz` needed the Sagelite Graphviz runtime library directory visible
+  to the dynamic loader with `sagelite-graphviz-runtime==10.9.post2`.
 
-```bash
-export LD_LIBRARY_PATH="$VIRTUAL_ENV/lib/python3.12/site-packages/sagelite_graphviz/data/lib:$LD_LIBRARY_PATH"
-```
-
-The passing follow-up smoke with those conditions is:
+The passing follow-up smoke with those original conditions is:
 
 `/mnt/cocalc/sagelite-matrix-validation/20260708-044819-linux-aarch64-cp312-post6/smoke-with-system-git-and-graphviz-ldpath.log`
+
+The `pygraphviz` issue is fixed by `sagelite-graphviz-runtime==10.9.post3`,
+which adds a Linux startup preload hook. A focused public-index check passed
+without `LD_LIBRARY_PATH`:
+
+`/mnt/cocalc/sagelite-matrix-validation/graphviz-post3-public/20260708-053546-linux-aarch64-cp312/pygraphviz-import.log`
