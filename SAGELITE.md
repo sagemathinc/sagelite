@@ -25,10 +25,10 @@ wheel-first distribution before PyPI publication.
 To test in a fresh virtual environment, use:
 
 ```bash
-python3.12 -m venv sagelite-test
+python3.14 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
 python -c "from sage.all import *; x = polygen(QQ); print((x**4 - 1).factor()); print(gap.eval('2+2'))"
 ```
 
@@ -40,25 +40,24 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
 ```
 
 An initial batch of optional packages that are available as compatible wheels
 can also be requested explicitly:
 
 ```bash
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post6"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post8"
 ```
 
-This currently adds `admcycles`, `biopython`, `clarabel`, `ecos`,
-`GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `python-flint`,
-`qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal Python package
-indexes. It is not the full Sage optional package set.
+This currently adds `admcycles`, `biopython`, `clarabel`, `cvxpy`, `cylp`,
+`ecos`, `GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `pyscipopt`,
+`python-flint`, `qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal
+Python package indexes. It is not the full Sage optional package set.
 
 `ecos` is included only where compatible wheels are currently available:
-macOS arm64 and Linux `x86_64` on CPython 3.12. It is skipped by package
-metadata on Linux `x86_64` CPython 3.13/3.14 and Linux `aarch64` CPython
-3.12.
+Linux `x86_64` on CPython 3.12. It is skipped by package metadata on Linux
+`x86_64` CPython 3.13/3.14, Linux `aarch64` CPython 3.12, and macOS arm64.
 
 Two packages in this optional batch have non-Python runtime expectations:
 
@@ -80,12 +79,71 @@ Disk-space guidance:
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
   than a smoke test. Use a filesystem with tens of GB free for full-suite
   validation.
+
+### Preconfigured Pip For Images
+
+For a managed image such as cocalc.ai, configure pip once instead of asking
+users to remember the Sagelite staging index. A system-wide config is:
+
+```ini
+# /etc/pip.conf
+[global]
+extra-index-url = https://sagelite.sagemath.org/dev/simple/
+```
+
+With that in place, users can run ordinary commands such as:
+
+```bash
+python -m pip install "sagelite==10.9.post8"
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post8"
+python -m pip install pynormaliz
+```
+
+Do not set `only-binary = :all:` globally in a general-purpose image. It is
+useful for validation, but it will surprise users who intentionally install a
+source distribution. Use `--only-binary=:all:` only in controlled smoke tests
+or release validation.
+
+For a single virtual environment, the same setting can go in:
+
+```text
+$VIRTUAL_ENV/pip.conf
+```
+
+That avoids changing the whole image while still making `pip install sagelite`
+and `pip install sagelite[optional-wheel-ready]` work naturally inside that
+environment.
+
+For a small cocalc.ai-style base image, the recommended shape is:
+
+```bash
+python3.14 -m venv /opt/sagelite
+/opt/sagelite/bin/python -m pip install --upgrade pip
+printf '%s\n' '[global]' 'extra-index-url = https://sagelite.sagemath.org/dev/simple/' > /opt/sagelite/pip.conf
+/opt/sagelite/bin/python -m pip install --no-cache-dir "sagelite==10.9.post8"
+/opt/sagelite/bin/python -m pip cache purge
+```
+
+Then put `/opt/sagelite/bin` on `PATH` for notebooks and terminals. This keeps
+the base image focused on the standard Sage install. Users can add optional
+packages later with ordinary commands such as:
+
+```bash
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post8"
+python -m pip install pynormaliz
+python -m pip install pygraphviz
+```
+
+`pynormaliz` is already part of the current standard `sagelite` dependency set
+on supported non-Windows platforms, so a standard Sagelite image should cover
+Sage's Normaliz-backed polyhedron use case without an additional optional
+install.
 
 Current preview platform support:
 
@@ -118,19 +176,19 @@ Test status:
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
-  3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`,
+  3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`,
   including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
   invocation, and imports of the optional wheel-ready package batch.
-- Fresh copy-paste public-index installs of `sagelite==10.9.post6` have passed
+- Fresh copy-paste public-index installs of `sagelite==10.9.post8` have passed
   on Linux `x86_64`, macOS arm64, and Linux `aarch64` for CPython 3.12. These
   installs used the documented command line and picked up
   `sagelite-graphviz-runtime==10.9.post3`.
 - Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
-  3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`, including
+  3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`, including
   `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
   invocation, and imports of the optional wheel-ready package batch.
 - A fresh public-index install and smoke test has passed on Linux `aarch64`
-  for CPython 3.12 with `sagelite[optional-wheel-ready]==10.9.post6`. The
+  for CPython 3.12 with `sagelite[optional-wheel-ready]==10.9.post8`. The
   binary-only install and `pip check` pass without system packages. The
   optional import smoke also passes in a Debian slim container after adding
   system `git` for `GitPython`. Linux `aarch64` should still be treated as
