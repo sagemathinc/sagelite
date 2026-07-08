@@ -204,7 +204,7 @@ optional-wheel-ready = [
   'admcycles >=1.4',
   'biopython >=1.87',
   'clarabel >=0.11.1',
-  'ecos >=2.0.14',
+  'ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")',
   'GitPython >=3.1.50',
   'nibabel >=5.4.2',
   'osqp >=1.1.3',
@@ -220,7 +220,7 @@ optional_wheel_ready = [
   'admcycles >=1.4',
   'biopython >=1.87',
   'clarabel >=0.11.1',
-  'ecos >=2.0.14',
+  'ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")',
   'GitPython >=3.1.50',
   'nibabel >=5.4.2',
   'osqp >=1.1.3',
@@ -318,9 +318,9 @@ databases = [
 dvipng = ['sagelite-dvipng-runtime >=10.9,<10.10']
 ecl = ['sagelite-ecl-runtime >=10.9,<10.10']
 ecm = ['sagelite-ecm-runtime >=10.9,<10.10']
-ecos = ['ecos >=2.0.14']
-ecos-python = ['ecos >=2.0.14']
-ecos_python = ['ecos >=2.0.14']
+ecos = ['ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")']
+ecos-python = ['ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")']
+ecos_python = ['ecos >=2.0.14; sys_platform == "darwin" or (sys_platform == "linux" and platform_machine == "x86_64" and python_version < "3.13")']
 ellcurves = ['sagelite-database-ellcurves >=10.9,<10.10']
 elliptic-curves = [
   'sagelite-database-cremona-mini >=10.9.post1,<10.10',

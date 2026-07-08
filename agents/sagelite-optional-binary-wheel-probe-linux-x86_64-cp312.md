@@ -27,11 +27,23 @@ The second low-risk batch added to `sagelite[optional-wheel-ready]` is:
 
 Validation:
 
-- Public-index install: `sagelite[optional-wheel-ready]==10.9.post5`
-- Platform: Linux `x86_64`, CPython 3.12
+- Public-index install: `sagelite[optional-wheel-ready]==10.9.post6`
 - Install mode: `pip install --no-cache-dir --only-binary=:all: --extra-index-url https://sagelite.sagemath.org/dev/simple/`
-- Passed: `pip check`, Sage polynomial arithmetic, Sage matrix arithmetic, GAP invocation, and imports for all packages in `optional-wheel-ready`.
-- Scratch venv: `/scratch/sagelite-optional-probes/public-install-optional-wheel-ready-post5-x86_64-cp312-20260706-215345/venv`
+- Passed on Linux `x86_64`, CPython 3.12, 3.13, and 3.14: `pip check`,
+  Sage polynomial arithmetic, Sage matrix arithmetic, GAP invocation, and
+  imports for all packages selected by `optional-wheel-ready`.
+- Passed on macOS arm64, CPython 3.12, 3.13, and 3.14: `pip check`, Sage
+  polynomial arithmetic, Sage matrix arithmetic, GAP invocation, and imports
+  for all packages selected by `optional-wheel-ready`.
+- Passed on Linux `aarch64`, CPython 3.12: binary-only install and
+  `pip check`. The optional import smoke also passes in a Debian slim
+  container after installing system `git` for `GitPython` and adding the
+  Sagelite Graphviz runtime library directory to `LD_LIBRARY_PATH` for
+  `pygraphviz`.
+- `10.9.post6` is a metadata-only preview refresh from `10.9.post5` that makes
+  `ecos` conditional. `ecos` remains enabled on macOS arm64 and Linux
+  `x86_64` CPython 3.12, and is skipped where no compatible wheel was found:
+  Linux `x86_64` CPython 3.13/3.14 and Linux `aarch64` CPython 3.12.
 
 Deferred candidates from the wheel-ready table:
 

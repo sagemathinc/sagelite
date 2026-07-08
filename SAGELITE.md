@@ -28,7 +28,7 @@ To test in a fresh virtual environment, use:
 python3.12 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
 python -c "from sage.all import *; x = polygen(QQ); print((x**4 - 1).factor()); print(gap.eval('2+2'))"
 ```
 
@@ -40,20 +40,32 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
 ```
 
 An initial batch of optional packages that are available as compatible wheels
 can also be requested explicitly:
 
 ```bash
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post5"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post6"
 ```
 
 This currently adds `admcycles`, `biopython`, `clarabel`, `ecos`,
 `GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `python-flint`,
 `qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal Python package
 indexes. It is not the full Sage optional package set.
+
+`ecos` is included only where compatible wheels are currently available:
+macOS arm64 and Linux `x86_64` on CPython 3.12. It is skipped by package
+metadata on Linux `x86_64` CPython 3.13/3.14 and Linux `aarch64` CPython
+3.12.
+
+Two packages in this optional batch have non-Python runtime expectations:
+
+- `GitPython` expects a `git` executable on `PATH`.
+- `pygraphviz` may need the Sagelite Graphviz runtime library directory in
+  `LD_LIBRARY_PATH` on minimal Linux images. This is known to affect Debian
+  slim Linux `aarch64` containers.
 
 Disk-space guidance:
 
@@ -67,7 +79,7 @@ Disk-space guidance:
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post5"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post6"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
@@ -105,20 +117,20 @@ Test status:
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
-  3.12, 3.13, and 3.14 with `sagelite==10.9.post3`, including `pip check`,
-  polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
+  3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`,
+  including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
+  invocation, and imports of the optional wheel-ready package batch.
 - Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
-  3.13, and 3.14 with `sagelite==10.9.post3`, including `pip check`,
-  polynomial arithmetic, integer matrix arithmetic, and GAP invocation.
-- A fresh public-index smoke test has passed on Linux `aarch64` for CPython
-  3.12 with `sagelite==10.9.post3`, including a binary-only install,
-  `pip check`, polynomial arithmetic, integer matrix arithmetic, and GAP
-  invocation. Linux `aarch64` should still be treated as needing more
-  real-world feedback before PyPI promotion.
-- A fresh public-index smoke test has passed on Linux `x86_64` for CPython
-  3.12 with `sagelite[optional-wheel-ready]==10.9.post5`, including
+  3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post6`, including
   `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
   invocation, and imports of the optional wheel-ready package batch.
+- A fresh public-index install and smoke test has passed on Linux `aarch64`
+  for CPython 3.12 with `sagelite[optional-wheel-ready]==10.9.post6`. The
+  binary-only install and `pip check` pass without system packages. The
+  optional import smoke also passes in a Debian slim container after adding
+  system `git` for `GitPython` and exposing the Sagelite Graphviz runtime
+  library path for `pygraphviz`. Linux `aarch64` should still be treated as
+  needing more real-world feedback before PyPI promotion.
 
 Feedback is welcome. Please open issues at
 https://github.com/sagemathinc/sagelite/issues with the platform, Python
