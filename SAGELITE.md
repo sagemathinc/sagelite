@@ -28,7 +28,7 @@ To test in a fresh virtual environment, use:
 python3.14 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
 python -c "from sage.all import *; x = polygen(QQ); print((x**4 - 1).factor()); print(gap.eval('2+2'))"
 ```
 
@@ -40,20 +40,21 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
 ```
 
 An initial batch of optional packages that are available as compatible wheels
 can also be requested explicitly:
 
 ```bash
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post8"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post9"
 ```
 
 This currently adds `admcycles`, `biopython`, `clarabel`, `cvxpy`, `cylp`,
-`ecos`, `GitPython`, `nibabel`, `osqp`, `pybtex`, `pygraphviz`, `pyscipopt`,
-`python-flint`, `qdldl`, `scs`, `SQLAlchemy`, and `texttable` from normal
-Python package indexes. It is not the full Sage optional package set.
+`ecos`, `GitPython`, `highspy`, `joblib`, `nibabel`, `osqp`, `pybtex`,
+`pygraphviz`, `pyscipopt`, `python-flint`, `qdldl`, `scs`, `SQLAlchemy`, and
+`texttable` from normal Python package indexes. It is not the full Sage
+optional package set.
 
 `ecos` is included only where compatible wheels are currently available:
 Linux `x86_64` on CPython 3.12. It is skipped by package metadata on Linux
@@ -79,7 +80,7 @@ Disk-space guidance:
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post8"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
@@ -100,8 +101,8 @@ extra-index-url = https://sagelite.sagemath.org/dev/simple/
 With that in place, users can run ordinary commands such as:
 
 ```bash
-python -m pip install "sagelite==10.9.post8"
-python -m pip install "sagelite[optional-wheel-ready]==10.9.post8"
+python -m pip install "sagelite==10.9.post9"
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post9"
 python -m pip install pynormaliz
 ```
 
@@ -126,7 +127,7 @@ For a small cocalc.ai-style base image, the recommended shape is:
 python3.14 -m venv /opt/sagelite
 /opt/sagelite/bin/python -m pip install --upgrade pip
 printf '%s\n' '[global]' 'extra-index-url = https://sagelite.sagemath.org/dev/simple/' > /opt/sagelite/pip.conf
-/opt/sagelite/bin/python -m pip install --no-cache-dir "sagelite==10.9.post8"
+/opt/sagelite/bin/python -m pip install --no-cache-dir "sagelite==10.9.post9"
 /opt/sagelite/bin/python -m pip cache purge
 ```
 
@@ -135,7 +136,7 @@ the base image focused on the standard Sage install. Users can add optional
 packages later with ordinary commands such as:
 
 ```bash
-python -m pip install "sagelite[optional-wheel-ready]==10.9.post8"
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post9"
 python -m pip install pynormaliz
 python -m pip install pygraphviz
 ```
@@ -179,6 +180,10 @@ Test status:
   3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`,
   including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
   invocation, and imports of the optional wheel-ready package batch.
+- A fresh public-index smoke test has passed on Linux `x86_64` for CPython
+  3.14 with `sagelite[optional-wheel-ready]==10.9.post9`, including
+  `pip check`, Sage import, basic matrix arithmetic, `joblib` import,
+  `highspy` import, and a tiny HiGHS solve through `highspy`.
 - Fresh copy-paste public-index installs of `sagelite==10.9.post8` have passed
   on Linux `x86_64`, macOS arm64, and Linux `aarch64` for CPython 3.12. These
   installs used the documented command line and picked up

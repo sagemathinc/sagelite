@@ -40,6 +40,22 @@ model.
 
 ## Metadata Refresh
 
+`10.9.post9` adds this optional batch:
+
+- `highspy >=1.13.1`
+- `joblib >=1.5.3`
+
+The public `dev` simple index was refreshed from a merged 177-wheel wheelhouse
+that keeps the existing `10.9.post8` primary wheels and adds `10.9.post9`
+primary wheels for the same staged platforms. A fresh public-index smoke test
+passed on Linux `x86_64`, CPython 3.14:
+
+`/scratch/sagelite-r2-work/smoke-public-post9-cp314-x86_64-20260709-171841`
+
+That smoke installed `sagelite[optional-wheel-ready]==10.9.post9`, ran
+`pip check`, imported `sage.all`, `joblib`, and `highspy`, did basic Sage
+matrix arithmetic, and solved a tiny HiGHS model through `highspy`.
+
 `10.9.post5` failed binary-only resolution for these targets because `ecos`
 has no compatible wheel there:
 

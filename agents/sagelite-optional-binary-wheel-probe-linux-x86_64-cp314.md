@@ -32,6 +32,11 @@ Validation:
   `sagelite==10.9.post8`, `joblib`, and `highspy` passed `pip check`.
 - The runtime smoke imports `joblib`, imports `highspy`, runs basic Sage
   matrix arithmetic, and optimizes a tiny HiGHS model through `highspy`.
+- These packages are included in the published `10.9.post9`
+  `sagelite[optional-wheel-ready]` metadata. The public-index smoke at
+  `/scratch/sagelite-r2-work/smoke-public-post9-cp314-x86_64-20260709-171841`
+  passed with `sagelite[optional-wheel-ready]==10.9.post9`, `pip check`,
+  Sage import, `joblib` import, `highspy` import, and a tiny HiGHS solve.
 
 Rejected or deferred from the top-level wheel table:
 
