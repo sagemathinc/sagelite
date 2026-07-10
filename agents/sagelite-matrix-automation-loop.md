@@ -97,12 +97,12 @@ arm64 backend before starting the first Linux aarch64 build. If that requires
 administrator action, stop and ask the user; do not move the build to `host`.
 
 After its changed address was corrected, `host` was reachable again and
-reported `x86_64` with both Docker and Podman installed. Its
-`/mnt/cocalc-scratch` filesystem had about 47 GiB free, below the heavy-build
-threshold in this runbook. It is suitable for lightweight validation, but
-clean or enlarge that filesystem before another full x86_64 rebuild. Treat
-future SSH reachability failures as a preflight problem, not as evidence that
-the host assignment has changed.
+reported `x86_64` with both Docker and Podman installed. Its bulk scratch
+filesystem was enlarged and had about 104 GiB free at the latest controller
+check, just above the heavy-build threshold in this runbook. It is suitable
+for an x86_64 rebuild, but monitor space closely and retain the deliberate
+cleanup policy. Treat future SSH reachability failures as a preflight problem,
+not as evidence that the host assignment has changed.
 
 ## Scratch Layout
 
