@@ -7,15 +7,7 @@
 name: Synchronize labels
 
 on:
-  issues:
-    types: [opened, reopened, closed, labeled, unlabeled]
-  pull_request_review:
-    types: [submitted]
-  pull_request_target:
-    types: [opened, reopened, closed, ready_for_review, converted_to_draft, synchronize, labeled, unlabeled]
-  schedule:
-    # run cleaning of warning comments twice a day
-    - cron: '00 6,18 * * *'
+  workflow_dispatch:
 
 jobs:
   synchronize:

@@ -1,12 +1,6 @@
 name: Static type check
 
 on:
-  merge_group:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
   workflow_dispatch:
     # Allow to run manually
 

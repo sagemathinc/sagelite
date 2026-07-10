@@ -1,24 +1,6 @@
 name: Companion Packages
 
 on:
-  push:
-    branches:
-      - develop
-    paths:
-      - 'companion-packages/**'
-      - 'src/sage/env.py'
-      - 'src/sage/env_test.py'
-      - 'src/sage/libs/pari/__init__.py'
-      - 'src/sage/libs/singular/function.pyx'
-      - '.github/workflows/companion-packages.yml'
-  pull_request:
-    paths:
-      - 'companion-packages/**'
-      - 'src/sage/env.py'
-      - 'src/sage/env_test.py'
-      - 'src/sage/libs/pari/__init__.py'
-      - 'src/sage/libs/singular/function.pyx'
-      - '.github/workflows/companion-packages.yml'
   workflow_dispatch:
     inputs:
       publish_to_pypi:

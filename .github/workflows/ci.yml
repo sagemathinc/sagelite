@@ -1,15 +1,6 @@
 name: CI Linux
 
 on:
-  push:
-    tags:
-      - '*'
-  pull_request:
-    paths:
-      - '**.build'
-      - 'uv.lock'
-      - 'subprojects/**'
-      - '.github/workflows/ci.yml'
   workflow_dispatch:
     # Allow to run manually
 

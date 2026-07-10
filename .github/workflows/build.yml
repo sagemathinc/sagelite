@@ -1,14 +1,6 @@
 name: Build & Test
 
 on:
-  pull_request:
-  merge_group:
-  push:
-    branches:
-      - master
-      - develop
-    # Ignore pushes on tags to prevent two uploads of codecov reports
-    tags-ignore: ['**']
   workflow_dispatch:
     # Allow to run manually
     inputs:

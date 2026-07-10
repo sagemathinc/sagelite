@@ -1,11 +1,6 @@
 name: Build & Test using Meson
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
   workflow_dispatch:
     # Allow to run manually
 
