@@ -304,9 +304,8 @@ label the result non-authoritative. Before final validation:
    tree in place.
 
 Prefer a git clone, git bundle, or an explicitly verified source archive over
-an opaque recursive copy. Never assume `origin/develop` contains local commits;
-the canonical branch may be ahead of the remote and automation is not
-authorized to push by default.
+an opaque recursive copy. Use `origin/develop` as a remote build source only
+after the current commit has been pushed and its remote SHA verified.
 
 ### 4. Build The Wheel Contract
 
@@ -478,10 +477,23 @@ For every completed change set:
 3. run relevant focused repository tests;
 4. inspect `git diff --check` and `git status --short`;
 5. commit automatically using the repository's required area-prefixed subject
-   and useful markdown body.
+   and useful markdown body;
+6. immediately push the commit with `git push origin HEAD:develop`;
+7. verify that `git ls-remote origin refs/heads/develop` reports the committed
+   SHA before beginning another change set.
 
-Do not amend earlier commits by default. Do not push unless the user explicitly
-asks. Never revert or absorb unrelated worktree changes.
+The configured upstream for this loop is
+`git@github.com:sagemathinc/sagelite.git`, branch `develop`. A validated commit
+is not complete until its push is verified. Retry transient network failures
+reasonably. If a push is rejected because the remote changed, fetch and inspect
+the remote commits, then reconcile without discarding either side. Never use a
+force push, rewrite published history, or push to another repository or branch
+without explicit user direction. If a safe push cannot be completed, preserve
+the local commit, report the exact failure, and stop before accumulating more
+local-only commits.
+
+Do not amend earlier commits by default. Never revert or absorb unrelated
+worktree changes.
 
 Use exact claims:
 
@@ -576,6 +588,8 @@ Stop the affected target and provide a precise status when:
 - administrator action is required to start or authenticate the Linux arm64
   backend on `m1`;
 - an SSH alias remains unreachable after reasonable retries;
+- an automation-created commit cannot be pushed and verified on
+  `origin/develop` after reasonable retries and safe reconciliation;
 - the assigned bulk filesystem lacks space and safe automation-owned cleanup
   cannot restore the threshold;
 - work would require publishing to PyPI, changing DNS, rotating secrets, or
