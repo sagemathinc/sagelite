@@ -4,6 +4,7 @@ import importlib.util
 import os
 import shutil
 import sqlite3
+import tempfile
 
 
 def run_optional_sage_guava_smoke():
@@ -632,6 +633,25 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-imagemagick-runtime":
         check=True,
     )
     assert "imagemagick" in result.stdout.lower()
+    with tempfile.TemporaryDirectory() as directory:
+        ppm_path = os.path.join(directory, "input.ppm")
+        png_path = os.path.join(directory, "intermediate.png")
+        gif_path = os.path.join(directory, "output.gif")
+        with open(ppm_path, "wb") as handle:
+            handle.write(b"P6\n1 1\n255\n\xff\x00\x00")
+        subprocess.run(
+            ["convert", ppm_path, png_path],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        subprocess.run(
+            ["convert", png_path, gif_path],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        assert os.path.getsize(gif_path) > 0
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-info-runtime":

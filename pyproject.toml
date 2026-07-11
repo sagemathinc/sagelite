@@ -182,7 +182,7 @@ all-needed-extras = [
   'sagelite-gap3-runtime >=10.9.post1,<10.10',
   'sagelite-giac-runtime >=10.9,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
-  'sagelite-imagemagick-runtime >=10.9.post1,<10.10',
+  'sagelite-imagemagick-runtime >=10.9.post2,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
   'sagelite-jmol-runtime >=10.9,<10.10',
   'sagelite-kenzo-runtime >=10.9,<10.10',
@@ -267,7 +267,7 @@ cylp = ['cylp >=0.92.3']
 cubic-hecke = ['database-cubic-hecke ==2022.4.4']
 cunningham-tables = ['sagelite-cunningham-tables >=10.9,<10.10']
 cunningham_tables = ['sagelite-cunningham-tables >=10.9,<10.10']
-convert = ['sagelite-imagemagick-runtime >=10.9.post1,<10.10']
+convert = ['sagelite-imagemagick-runtime >=10.9.post2,<10.10']
 d3js = ['sagelite-d3js-runtime >=10.9,<10.10']
 database-cremona-ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
 database_cremona_ellcurve = ['sagelite-database-cremona-ellcurve >=10.9,<10.10']
@@ -683,7 +683,7 @@ gitpython = ['GitPython >=3.1.50']
 graphviz = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 igraph = ['igraph']
-imagemagick = ['sagelite-imagemagick-runtime >=10.9.post1,<10.10']
+imagemagick = ['sagelite-imagemagick-runtime >=10.9.post2,<10.10']
 info = ['sagelite-info-runtime >=10.9,<10.10']
 python_igraph = ['igraph']
 jones = ['sagelite-database-jones-numfield >=10.9,<10.10']
@@ -728,7 +728,7 @@ gentourng = ['sagelite-nauty-runtime >=10.9,<10.10']
 gentreeg = ['sagelite-nauty-runtime >=10.9,<10.10']
 neato = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
 nibabel = ['nibabel >=5.4.2']
-magick = ['sagelite-imagemagick-runtime >=10.9.post1,<10.10']
+magick = ['sagelite-imagemagick-runtime >=10.9.post2,<10.10']
 odlyzko = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 odlyzko-zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
 odlyzko_zeta = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']

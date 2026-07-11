@@ -3340,7 +3340,7 @@ def test_imagemagick_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-imagemagick-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-imagemagick-runtime >=10.9.post2,<10.10"
 
     assert extras["imagemagick"] == [requirement]
     assert extras["magick"] == [requirement]
@@ -3361,6 +3361,9 @@ def test_imagemagick_runtime_declares_console_scripts():
     }
     assert "MAGICK_CONFIGURE_PATH" in setup_py
     assert "MAGICK_CODER_MODULE_PATH" in setup_py
+    assert 'prefixes.extend([Path("/"), Path("/usr"), Path("/usr/local")])' in setup_py
+    assert 'libroot.glob("*/ImageMagick-*")' in setup_py
+    assert 'runtime_binaries.extend(directory.glob("*.so"))' in setup_py
 
 
 def test_kissat_runtime_is_exposed_by_sagelite_extras():
@@ -4141,7 +4144,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     )
     assert "sagelite-gap3-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-fplll-data >=10.9,<10.10" in validation_requirements
-    assert "sagelite-imagemagick-runtime >=10.9.post1,<10.10" in validation_requirements
+    assert "sagelite-imagemagick-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post1,<10.10" in validation_requirements

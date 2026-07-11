@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sagelite-imagemagick-runtime"
-version = "10.9.post1"
+version = "10.9.post2"
 description = "Optional ImageMagick runtime companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"

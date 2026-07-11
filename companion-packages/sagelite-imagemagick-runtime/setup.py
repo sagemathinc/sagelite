@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 import os
 import shutil
 import subprocess
@@ -54,7 +55,7 @@ def _find_executables() -> dict[str, Path]:
     )
 
 
-def _runtime_libraries(executables: dict[str, Path]) -> list[Path]:
+def _runtime_libraries(binaries: Iterable[Path]) -> list[Path]:
     libraries: dict[str, Path] = {}
     skipped = (
         "ld-linux",
@@ -69,9 +70,9 @@ def _runtime_libraries(executables: dict[str, Path]) -> list[Path]:
         "libstdc++.",
     )
 
-    for executable in executables.values():
+    for binary in binaries:
         output = subprocess.run(
-            ["ldd", os.fspath(executable)],
+            ["ldd", os.fspath(binary)],
             check=True,
             capture_output=True,
             text=True,
@@ -103,7 +104,9 @@ def _candidate_prefixes(executables: dict[str, Path]) -> list[Path]:
             prefixes.append(executable.parents[1])
         except IndexError:
             pass
-    prefixes.extend([Path("/usr"), Path("/usr/local")])
+    # Distribution packages keep global ImageMagick configuration below
+    # /etc even though their executable prefix is /usr.
+    prefixes.extend([Path("/"), Path("/usr"), Path("/usr/local")])
     deduped = {}
     for prefix in prefixes:
         if prefix.exists():
@@ -131,9 +134,13 @@ def _resource_directories(executables: dict[str, Path]) -> dict[str, list[Path]]
             ]
         )
         for libroot in (prefix / "lib64", prefix / "lib"):
-            resources["configure"].extend(libroot.glob("ImageMagick-*/config-*"))
-            resources["coders"].extend(libroot.glob("ImageMagick-*/modules-*/coders"))
-            resources["filters"].extend(libroot.glob("ImageMagick-*/modules-*/filters"))
+            magick_roots = list(libroot.glob("ImageMagick-*"))
+            # Debian multiarch installs use lib/<triplet>/ImageMagick-*.
+            magick_roots.extend(libroot.glob("*/ImageMagick-*"))
+            for magick_root in magick_roots:
+                resources["configure"].extend(magick_root.glob("config-*"))
+                resources["coders"].extend(magick_root.glob("modules-*/coders"))
+                resources["filters"].extend(magick_root.glob("modules-*/filters"))
 
     deduped = {}
     for key, paths in resources.items():
@@ -207,10 +214,14 @@ class build_py(_build_py):
         if "convert" not in real_names and "magick" in real_names:
             _write_wrapper(target / "convert", real_names["magick"])
 
-        for library in _runtime_libraries(sources):
+        resources = _resource_directories(sources)
+        runtime_binaries = list(sources.values())
+        for resource_name in ("coders", "filters"):
+            for directory in resources[resource_name]:
+                runtime_binaries.extend(directory.glob("*.so"))
+        for library in _runtime_libraries(runtime_binaries):
             shutil.copy2(library, lib_target / library.name)
 
-        resources = _resource_directories(sources)
         _copy_directory_contents(resources["configure"], config_target)
         _copy_directory_contents(resources["coders"], lib_target / "coders")
         _copy_directory_contents(resources["filters"], lib_target / "filters")
