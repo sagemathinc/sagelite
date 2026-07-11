@@ -696,8 +696,8 @@ def suggested_package(result: ModuleResult) -> str:
             return package
 
     return {
-        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post14",
-        "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post14",
+        "maxima-runtime-abi-mismatch": "sagelite-maxima-runtime >=10.9.post15",
+        "maxima-library-mode-missing": "sagelite-maxima-runtime >=10.9.post15",
         "maxima-lisp-module-missing": "sagelite-maxima-runtime",
         "maxima-symbolic-runtime-variant": "sagelite-maxima-runtime parity investigation",
         "fricas-runtime-error": "sagelite-fricas-runtime",

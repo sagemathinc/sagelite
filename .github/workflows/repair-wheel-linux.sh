@@ -1797,11 +1797,6 @@ build_database_stein_watkins_companion() {
 }
 
 build_maxima_runtime_companion() {
-  case "$(basename "$raw_wheel")" in
-    *-cp312-cp312-*) ;;
-    *) return 0 ;;
-  esac
-
   local maxima_prefix
   maxima_prefix="$(
     find "$prefix" \

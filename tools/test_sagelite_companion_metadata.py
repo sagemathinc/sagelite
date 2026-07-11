@@ -645,7 +645,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-graphviz-runtime >=10.9.post2,<10.10",
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
-    "sagelite-maxima-runtime >=10.9.post14,<10.10",
+    "sagelite-maxima-runtime >=10.9.post15,<10.10",
     "sagelite-meataxe-runtime >=10.9,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
@@ -896,7 +896,7 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" not in dependencies
     assert "sagelite-gap-runtime >=10.9.post4,<10.10" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" not in dependencies
-    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" in dependencies
+    assert "sagelite-maxima-runtime >=10.9.post15,<10.10" in dependencies
     assert "sagelite-meataxe-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-nauty-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in dependencies
@@ -3650,7 +3650,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
         ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
     ).read_text()
 
-    assert pyproject["project"]["version"] == "10.9.post14"
+    assert pyproject["project"]["version"] == "10.9.post15"
     assert pyproject["project"]["dependencies"] == [
         "sagelite-ecl-runtime >=10.9,<10.10",
     ]
@@ -4108,7 +4108,7 @@ def test_maxima_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-maxima-runtime >=10.9.post14,<10.10"
+    requirement = "sagelite-maxima-runtime >=10.9.post15,<10.10"
 
     assert extras["maxima"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -4123,7 +4123,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     extras = pyproject["project"]["optional-dependencies"]
     validation_requirements = set(extras["all-needed-extras"])
 
-    assert "sagelite-maxima-runtime >=10.9.post14,<10.10" in validation_requirements
+    assert "sagelite-maxima-runtime >=10.9.post15,<10.10" in validation_requirements
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-polytopes-4d >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-sloane >=10.9,<10.10" in validation_requirements
@@ -4445,6 +4445,7 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
         "build_imagemagick_runtime_companion",
         "build_jmol_runtime_companion",
         "build_kenzo_runtime_companion",
+        "build_maxima_runtime_companion",
     ]
     for call in required_calls:
         assert f"\n{call}\n" in repair
@@ -4453,6 +4454,11 @@ def test_linux_repair_builds_all_needed_extra_companion_wheels():
     assert 'SAGELITE_GAP_ROOTS="$gap_package_roots"' in repair
     assert "SAGELITE_BUILD_POLYTOPES_4D" in repair
     assert "Skipping sagelite-database-polytopes-4d" in repair
+
+    maxima_builder = repair.split("build_maxima_runtime_companion() {", 1)[1].split(
+        "build_meataxe_runtime_companion() {", 1
+    )[0]
+    assert "cp312-cp312" not in maxima_builder
 
 
 def test_linux_repair_builds_requested_base_dependency_companion_wheels():
