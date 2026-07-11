@@ -75,3 +75,17 @@ The follow-up source change removes that CPython 3.12-only guard, assigns
 runtime dependency floors. A fresh CPython 3.13 primary/companion rebuild is
 required before the short gate can be rerun. No public artifacts were
 published in this iteration.
+
+The first exact-SHA `post11` rebuild attempt is preserved at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-153620-633637de44f
+```
+
+It exited before wheel creation because the persistent compiled prefix's
+cached `config.status` still embedded `vers_sagelib = 10.9.post10`. Replaying
+that file made `make` request `sagelib-10.9.post10` from the `post11` source,
+which `sage-spkg` correctly rejected. The Linux before-all helper now compares
+the cached configuration's embedded Sage version with `VERSION.txt` and
+reconfigures when they differ. This preserves reusable compiled dependencies
+without carrying release-version metadata into the next preview build.

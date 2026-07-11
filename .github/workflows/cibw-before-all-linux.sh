@@ -191,6 +191,12 @@ export SAGE_FFLAS_FFPACK_SKIP_AUTOTUNE=yes
 
 if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
   chmod +x config.status
+  source_version="$(cat VERSION.txt)"
+  configured_version="$(sed -n 's/^S\["VERSION"\]="\(.*\)"$/\1/p' config.status)"
+  if [ "${configured_version}" != "${source_version}" ]; then
+    echo "Discarding cached config.status for Sage ${configured_version:-unknown}; source is ${source_version}"
+    rm -f config.status
+  fi
 fi
 
 if [ -x ./config.status ]; then

@@ -4431,6 +4431,15 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     assert '[ -x "$candidate/magick" ] || [ -x "$candidate/convert" ]' in repair
 
 
+def test_linux_before_all_rejects_stale_cached_configuration():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+
+    assert 'source_version="$(cat VERSION.txt)"' in before_all
+    assert 'configured_version="$(sed -n' in before_all
+    assert 'if [ "${configured_version}" != "${source_version}" ]; then' in before_all
+    assert 'rm -f config.status' in before_all
+
+
 def test_linux_repair_builds_all_needed_extra_companion_wheels():
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 
