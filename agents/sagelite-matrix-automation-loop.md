@@ -89,12 +89,16 @@ Rules:
   remote host, include it in logs, or commit it.
 - Publish to R2 from the controller. Do not publish directly from a builder.
 
-As of the last review, `m1` is reachable and has about 242 GiB free on
-`/Volumes/sage`. Homebrew Python 3.12, 3.13, and 3.14, `multipass`, and
-`docker` are installed. The Docker daemon was not running, and Multipass
-reported that its client was not authenticated. Establish one native Linux
-arm64 backend before starting the first Linux aarch64 build. If that requires
-administrator action, stop and ask the user; do not move the build to `host`.
+As of the latest preflight, `m1` is reachable and has about 239 GiB free on
+`/Volumes/sage`. Homebrew Python 3.12, 3.13, and 3.14 are installed. The native
+Linux arm64 backend is a persistent Lima 2.1.4 Ubuntu 24.04 VM named
+`sagelite-linux-arm64`, using QEMU/HVF with 8 CPUs, 20 GiB memory, and a
+160 GiB disk below `/Volumes/sage/.lima`. Its guest reports `Linux` and
+`aarch64`, has about 151 GiB free, runs Docker 29.6.1 as `linux/arm64`, and
+passed a native arm64 container probe with no block or ext4 errors. Multipass
+1.16.3 is also installed and authenticated, but its test guests did not
+complete DHCP on this macOS host; do not move the build to `host` merely to
+avoid the working Lima backend.
 
 After its changed address was corrected, `host` was reachable again and
 reported `x86_64` with both Docker and Podman installed. Its bulk scratch
