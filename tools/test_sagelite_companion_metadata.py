@@ -3548,7 +3548,7 @@ def test_msolve_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-msolve-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-msolve-runtime >=10.9.post2,<10.10"
 
     assert extras["msolve"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -3557,10 +3557,13 @@ def test_msolve_runtime_is_exposed_by_sagelite_extras():
 
 def test_msolve_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-msolve-runtime")
+    setup_py = _companion_file("sagelite-msolve-runtime", "setup.py").read_text()
 
+    assert pyproject["project"]["version"] == "10.9.post2"
     assert pyproject["project"]["scripts"] == {
         "msolve": "sagelite_msolve.runtime:msolve",
     }
+    assert '"libgomp.so"' in setup_py
 
 
 def test_lie_runtime_declares_console_script():
@@ -4147,7 +4150,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-imagemagick-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
-    assert "sagelite-msolve-runtime >=10.9.post1,<10.10" in validation_requirements
+    assert "sagelite-msolve-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in validation_requirements
 

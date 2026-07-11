@@ -191,7 +191,7 @@ all-needed-extras = [
   'sagelite-lrslib-runtime >=10.9.post1,<10.10',
   'sagelite-maxima-runtime >=10.9.post15,<10.10',
   'sagelite-meataxe-runtime >=10.9,<10.10',
-  'sagelite-msolve-runtime >=10.9.post1,<10.10',
+  'sagelite-msolve-runtime >=10.9.post2,<10.10',
   'sagelite-nauty-runtime >=10.9,<10.10',
   'sagelite-planarity-runtime >=10.9,<10.10',
   'sagelite-plantri-runtime >=10.9,<10.10',
@@ -717,7 +717,7 @@ meataxe = ['sagelite-meataxe-runtime >=10.9,<10.10']
 mutation-class = ['sagelite-database-mutation-class >=10.9,<10.10']
 mutation_class = ['sagelite-database-mutation-class >=10.9,<10.10']
 mwrank = ['sagelite-mwrank-runtime >=10.9,<10.10']
-msolve = ['sagelite-msolve-runtime >=10.9.post1,<10.10']
+msolve = ['sagelite-msolve-runtime >=10.9.post2,<10.10']
 nauty = ['sagelite-nauty-runtime >=10.9,<10.10']
 directg = ['sagelite-nauty-runtime >=10.9,<10.10']
 genbg = ['sagelite-nauty-runtime >=10.9,<10.10']

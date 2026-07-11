@@ -92,8 +92,13 @@ class msolve(Executable):
 #                                f"nonzero exit status {msolve_out.returncode}")
         output = msolve_out.stdout + msolve_out.stderr
         if b'msolve library for polynomial system solving' not in output:
+            detail = output.decode(errors="replace").strip()
             return FeatureTestResult(self, False,
-                                     reason="output of msolve -h not recognized")
+                                     reason=(
+                                         "output of msolve -h not recognized "
+                                         f"(exit status {msolve_out.returncode}): "
+                                         f"{detail or '<no output>'}"
+                                     ))
         return FeatureTestResult(self, True)
 
 

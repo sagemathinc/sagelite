@@ -42,6 +42,7 @@ RUNTIME_LIBRARY_PREFIXES = (
     "libneogb.so",
     "libflint.so",
     "libgmp.so",
+    "libgomp.so",
     "libmpfr.so",
 )
 

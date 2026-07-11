@@ -222,6 +222,24 @@ def test_msolve_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     assert feature.absolute_filename() == os.fspath(executable)
 
 
+def test_msolve_functional_failure_reports_loader_error(monkeypatch):
+    feature = msolve()
+    monkeypatch.setattr(feature, "absolute_filename", lambda: "/fake/msolve")
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwds: subprocess.CompletedProcess(
+            args[0], 127, b"", b"error while loading shared libraries: libgomp.so.1"
+        ),
+    )
+
+    result = feature.is_functional()
+
+    assert not result
+    assert "exit status 127" in result.reason
+    assert "libgomp.so.1" in result.reason
+
+
 def test_imagemagick_executable_discovers_sagelite_companion(monkeypatch, tmp_path):
     executable = _write_fake_runtime(
         tmp_path, "sagelite_imagemagick", "convert", "executable_path"
