@@ -89,3 +89,69 @@ which `sage-spkg` correctly rejected. The Linux before-all helper now compares
 the cached configuration's embedded Sage version with `VERSION.txt` and
 reconfigures when they differ. This preserves reusable compiled dependencies
 without carrying release-version metadata into the next preview build.
+
+## Post11 rebuild and short-gate result
+
+The corrected exact-SHA rebuild from committed source
+`07a8f627683c4ca7229c626a75c8a75d1bb13178` completed at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-162439-07a8f627683c
+```
+
+It produced these repaired wheels with build exit code zero:
+
+```text
+sagelite-10.9.post11-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=4adfddd72adb13628a11ecd745458092241c6fa211961427d3dddfaccf56850b
+size=227681874
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=d0b05e3f8af81eb3ddfa5f944b9bbedabebacdb5a5965e66a2704b334b00f4fc
+size=66578984
+```
+
+The strict repaired-wheelhouse short run staged 177 wheels totaling
+16,502,009,111 bytes. A fresh wheel-only install of
+`sagelite[all-needed-extras]==10.9.post11` and `python -m pip check` passed.
+The matching Maxima `post15` runtime passed the selftest probe. The installed
+standard doctest run reported all 3,953 modules passed with zero failed
+modules, and the packaged pytest run reported 212 passed and 2 skipped.
+
+The validator nevertheless exited 1 because `sagelite-selftest` found two
+other companion-runtime defects: the ImageMagick `post1` wheel could not load
+its PNG coder dependencies, and the msolve executable help output was not
+recognized. The durable artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-162439-07a8f627683c/validation/short-post11/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-162439-07a8f627683c/validation/short-post11/doctest-installed-linux-aarch64-cp313-post11-short-20260711-203137.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-162439-07a8f627683c/validation/short-post11/doctest-installed-linux-aarch64-cp313-post11-short-20260711-203137.selftest.log
+```
+
+## ImageMagick companion fix
+
+Commit `8c540d167ab0f7e6b4ab69c57f9615e5ba4f0e06` adds the missing global
+ImageMagick configuration, discovers Debian multiarch module directories, and
+bundles the transitive library closure of coder and filter modules. It raises
+the companion to `10.9.post2` and adds a PPM-to-PNG-to-GIF regression smoke.
+The native aarch64 wheel build and fresh standalone smoke passed at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-imagemagick-20260711-212222-8c540d167ab0
+```
+
+The wheel is:
+
+```text
+sagelite_imagemagick_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=6d12180f508b6b1b38fa9f3018e5367f4db359102e1cb1eaa00fc44a7820f0aa
+size=21778153
+```
+
+Replacing only ImageMagick `post1` with this wheel in the preserved installed
+environment made the exact `_check_imagemagick_runtime` selftest probe pass.
+That focused modified-venv rerun is regression evidence, not final acceptance.
+The next iteration should address the independent msolve probe and then create
+one fresh, coherent exact-SHA primary/companion wheelhouse before rerunning the
+short gate.

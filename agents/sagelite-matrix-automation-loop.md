@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post10`, local) | wheel-only install and `pip check` pass after adding matching `cysignals 1.12.6`; short gate blocked by a Maxima ECL ABI mismatch; first `post11` rebuild attempt exposed and fixed stale cached `config.status` reuse, so a fresh `post11`/Maxima `post15` rebuild is required | none |
+| Linux aarch64 | 3.13 | yes (`post11`, local) | repaired primary and matching Maxima `post15` built; fresh wheel-only install and `pip check` pass; Maxima selftest passes; all 3,953 doctest modules and packaged pytest (212 passed, 2 skipped) pass; gate remains failed on the separate msolve selftest probe. ImageMagick `post2` fixes its earlier selftest failure in a focused modified-venv rerun, so one coherent exact-SHA rebuild remains required | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
