@@ -215,3 +215,52 @@ preserves the existing direct `-lz` fallback. The preview version advances to
 `10.9.post13`; all 110 focused `src/sage/env_test.py` tests pass. A fresh
 exact-SHA primary rebuild and clean short gate are required before this cell
 can be marked full.
+
+## Post13 exact-SHA rebuild and short gate
+
+Committed source `23663717f78ed5c3ba34dbfb103f386c32177ea6`
+(`sagelite 10.9.post13`) was rebuilt natively in the durable run:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e
+```
+
+The repaired source-built wheel set is:
+
+```text
+sagelite-10.9.post13-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=6bee6ff8cb6c01f1408665772d9696b55150d73a32383d93b2a4a1165b582563
+
+sagelite_imagemagick_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=6d12180f508b6b1b38fa9f3018e5367f4db359102e1cb1eaa00fc44a7820f0aa
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=c1511938660c18ed6c22e16c0ed0d278252ed5cb9f582a5518e55a1b72eb8b98
+
+sagelite_msolve_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=c95ba44172176a881ebabdb37f8ccd9448e41ab0395aa43e6ac4848ce8cf9be3
+```
+
+The strict repaired-wheelhouse gate staged 177 wheels: one primary, 68
+companions, and 108 third-party wheels, totaling 16,513,786,069 bytes. All
+wheel filename, tag, dependency, and compatibility preflights passed. The
+fresh wheel-only installation of `sagelite[all-needed-extras]==10.9.post13`,
+`python -m pip check`, runtime manifest, and every `sagelite-selftest` probe
+passed without adding `pkg-config` to the minimal validation image.
+
+The installed `--optional=sage` short doctest sweep passed all 3,953 modules
+with zero failed modules. Packaged pytest reported 213 passed and 2 skipped.
+The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation/short-post13/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation/short-post13/doctest-installed-linux-aarch64-cp313-post13-short-20260712-121820.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation/short-post13/doctest-installed-linux-aarch64-cp313-post13-short-20260712-121820.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation-short-exit-code
+```
+
+The short-gate exit code is zero. A durable watcher started the fresh full
+installed standard-suite validation from the same exact-SHA wheel contract at
+`2026-07-12T13:11:48Z`; this cell remains below `full` until that process and
+its reduced analysis both pass.
