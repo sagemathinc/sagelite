@@ -297,3 +297,28 @@ The same in-progress sweep also emitted a resource-sensitive nested doctest
 failure in `sage.doctest.forker` after a slow-test warning crossed the
 five-second threshold. That is a separate failure class to reassess from the
 completed reduced analysis or a focused rerun after the Graphviz iteration.
+
+## Post14 rebuild start
+
+The invalid `post13` full run completed its doctest phase with the known
+Graphviz failures followed by cascading timeouts and resource failures. It
+then stopped making progress during packaged pytest. The automation loop
+terminated only that disposable Docker validation container; its durable
+wrapper recorded exit code 137 and retained the log and validation artifacts.
+
+The focused `post14` exact-SHA rebuild is running under a durable follow-on
+process at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61
+```
+
+Its metadata selects committed source
+`d691bc7cff614078b7e62f6b4f128b003ea6feb6`, Sagelite `10.9.post14`, and the
+native Linux `aarch64` CPython 3.13 CIBW contract. Before starting, the
+follow-on removed only the superseded 41 GiB `post13` validation install; the
+guest then had 119 GiB free, above the 100 GiB heavy-build threshold. At the
+latest checkpoint the clean clone was still in progress, so wheel-build or
+exact-checkout completion is not yet claimed. Top-level progress is in
+`command.log`, and the durable wrappers will write `exit-code` and
+`follow-on-exit-code`.

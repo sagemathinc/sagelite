@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post13`, local) | exact-SHA repaired primary plus matching ImageMagick `post2`, Maxima `post15`, and msolve `post2` built; the strict 177-wheel short gate passes fresh wheel-only install, `pip check`, every selftest probe, 3,953 installed doctest modules with 0 failures, and packaged pytest with 213 passed and 2 skipped. The full installed `--optional=sage` retry is still running but has exposed non-executable Graphviz package data; the focused `post14`/Graphviz `post4` source fix awaits an exact-SHA rebuild | none |
+| Linux aarch64 | 3.13 | yes (`post13`, local) | exact-SHA repaired primary plus matching ImageMagick `post2`, Maxima `post15`, and msolve `post2` built; the strict 177-wheel short gate passes fresh wheel-only install, `pip check`, every selftest probe, 3,953 installed doctest modules with 0 failures, and packaged pytest with 213 passed and 2 skipped. The invalid full installed `--optional=sage` retry exposed non-executable Graphviz package data and later hung after cascading resource failures; the focused `post14`/Graphviz `post4` exact-SHA rebuild is running natively on `m1` | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
