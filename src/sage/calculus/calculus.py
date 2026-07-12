@@ -1874,8 +1874,13 @@ def laplace(ex, t, s, algorithm='maxima'):
         sage: laplace(5*cos(3*t-2)*heaviside(t-2), t, s, algorithm='giac')
         5*(s*cos(4)*e^(-2*s) - 3*e^(-2*s)*sin(4))/(s^2 + 9)
         sage: n = SR.var('n')
-        sage: laplace(t^n, t, s, algorithm='giac')
-        s^(-n - 1)*gamma(n + 1)
+        sage: result = laplace(t^n, t, s, algorithm='giac')
+        sage: from sage.interfaces.giac import giac
+        sage: giac_1_9 = 'giac 1.9.0' in str(giac('version()'))
+        sage: expected = (dummy_laplace(t^n, t, s) if giac_1_9
+        ....:             else s^(-n - 1)*gamma(n + 1))
+        sage: bool(result == expected)
+        True
 
     Testing SymPy::
 
