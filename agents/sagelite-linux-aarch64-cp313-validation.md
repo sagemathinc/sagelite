@@ -322,3 +322,40 @@ latest checkpoint the clean clone was still in progress, so wheel-build or
 exact-checkout completion is not yet claimed. Top-level progress is in
 `command.log`, and the durable wrappers will write `exit-code` and
 `follow-on-exit-code`.
+
+## Post14 build and corrected short-gate start
+
+The exact-SHA native build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post14-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=da84ab601310bf0e7a9aa71752564294c5ec6d57c2a1db05c02f6dd13324d0d6
+size=227682043
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=c74f07738d35774422b4e6bbb908d1c5f8e524cab641014ad7696e94342af4a6
+size=66578984
+```
+
+The first validation watcher correctly rejected the inherited Graphviz
+`post3` wheel against the primary's `>=10.9.post4` requirement. The focused
+Graphviz wheel was then built from the same exact source checkout in the
+native `manylinux_2_28_aarch64` image:
+
+```text
+sagelite_graphviz_runtime-10.9.post4-py3-none-manylinux_2_28_aarch64.whl
+sha256=3e2542227a1fc84e0318f08371ac12ea6da9cfd3d2d7c1e7fe3774d127c8b6c8
+size=20882212
+```
+
+A fresh `python:3.13-slim-bookworm` wheel-only smoke installed the companion,
+restored the packaged `dot` execute bit, and generated SVG successfully with
+`dot -Tsvg`. The corrected strict closure contains 177 wheels totaling
+16,513,108,365 bytes and includes Graphviz `post4` rather than `post3`.
+
+The durable strict short gate started at `2026-07-12T20:15:48Z` with the
+required `--optional sage` setting. Its watcher PID is recorded in
+`validation-retry-pid`, its controller log is `validation-follow.log`, and
+the validator log is `validation-short-command.log`. It will start the full
+installed sweep only after the fresh wheel-only short gate passes. This cell
+remains below `full` while that validation is running.
