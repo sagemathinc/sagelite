@@ -642,7 +642,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-frobby-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post4,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
-    "sagelite-graphviz-runtime >=10.9.post2,<10.10",
+    "sagelite-graphviz-runtime >=10.9.post4,<10.10",
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post15,<10.10",
@@ -2396,7 +2396,7 @@ def test_graphviz_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-graphviz-runtime >=10.9.post2,<10.10"
+    requirement = "sagelite-graphviz-runtime >=10.9.post4,<10.10"
 
     assert extras["graphviz"] == [requirement]
     assert extras["dot"] == [requirement]
@@ -3304,7 +3304,7 @@ def test_glucose_runtime_declares_console_scripts():
 def test_graphviz_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-graphviz-runtime")
 
-    assert pyproject["project"]["version"] == "10.9.post3"
+    assert pyproject["project"]["version"] == "10.9.post4"
     assert pyproject["project"]["scripts"] == {
         "circo": "sagelite_graphviz.runtime:circo",
         "dot": "sagelite_graphviz.runtime:dot",

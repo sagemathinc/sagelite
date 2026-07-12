@@ -264,3 +264,36 @@ The short-gate exit code is zero. A durable watcher started the fresh full
 installed standard-suite validation from the same exact-SHA wheel contract at
 `2026-07-12T13:11:48Z`; this cell remains below `full` until that process and
 its reduced analysis both pass.
+
+## Post13 full-run Graphviz failure
+
+The durable full retry remained healthy and continued running under the native
+aarch64 Docker container during the 2026-07-12 automation iteration. It
+exposed deterministic `dot2tex`/Graphviz failures in
+`sage.categories.loop_crystals` and `sage.combinat.posets.posets`. The
+authoritative in-progress log is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-033749-23663717f78e/validation-full-command.log
+```
+
+Focused inspection showed that the Graphviz `post3` wheel archive recorded
+every embedded wrapper and real executable with mode `0600`; pip consequently
+installed `sagelite_graphviz/data/bin/dot` as non-executable. The generated
+venv `dot` entry point was executable but failed with `PermissionError` when
+it dispatched to that package-data wrapper. `sage.env` correctly declined to
+add the non-executable companion directory to `PATH`, so `have_dot2tex()`
+returned false and graph LaTeX behavior diverged from the installed optional
+feature tags.
+
+The focused source correction restores execute bits for both files during
+Graphviz runtime discovery, raises the companion to `10.9.post4`, raises all
+dependency floors, and advances Sagelite to `10.9.post14`. Its new mode
+regression and focused companion metadata tests pass. The running `post13`
+environment was not modified. A new exact-SHA primary/companion rebuild and
+fresh strict gate are required; the current cell is not `full`.
+
+The same in-progress sweep also emitted a resource-sensitive nested doctest
+failure in `sage.doctest.forker` after a slow-test warning crossed the
+five-second threshold. That is a separate failure class to reassess from the
+completed reduced analysis or a focused rerun after the Graphviz iteration.

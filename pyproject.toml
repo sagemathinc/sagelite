@@ -130,7 +130,7 @@ dependencies = [
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9.post2,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post4,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lcalc-runtime >=10.9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',
@@ -250,7 +250,7 @@ buckygen = ['sagelite-buckygen-runtime >=10.9,<10.10']
 cddlib = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cddexec = ['sagelite-cddlib-runtime >=10.9,<10.10']
 cddexec_gmp = ['sagelite-cddlib-runtime >=10.9,<10.10']
-circo = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+circo = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 cremona = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
 cremona-mini = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
 cremona_mini = ['sagelite-database-cremona-mini >=10.9.post1,<10.10']
@@ -340,9 +340,9 @@ elliptic_curves = [
   'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
 ]
-dot = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+dot = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
-fdp = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+fdp = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
 fplll-data = ['sagelite-fplll-data >=10.9,<10.10']
 fplll_data = ['sagelite-fplll-data >=10.9,<10.10']
@@ -428,7 +428,7 @@ full = [
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9.post2,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post4,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lcalc-runtime >=10.9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',
@@ -655,7 +655,7 @@ tomlib = [
   'sagelite-gap-runtime >=10.9.post4,<10.10',
   'sagelite-gap-package-tomlib >=10.9,<10.10',
 ]
-twopi = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+twopi = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 gap-transgrp = [
   'sagelite-gap-runtime >=10.9.post4,<10.10',
   'sagelite-gap-package-primgrp >=10.9,<10.10',
@@ -680,7 +680,7 @@ giac = ['sagelite-giac-runtime >=10.9,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
 glucose-syrup = ['sagelite-glucose-runtime >=10.9,<10.10']
 gitpython = ['GitPython >=3.1.50']
-graphviz = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+graphviz = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 graphs = ['sagelite-database-graphs >=10.9,<10.10']
 igraph = ['igraph']
 imagemagick = ['sagelite-imagemagick-runtime >=10.9.post2,<10.10']
@@ -726,7 +726,7 @@ genktreeg = ['sagelite-nauty-runtime >=10.9,<10.10']
 genposetg = ['sagelite-nauty-runtime >=10.9,<10.10']
 gentourng = ['sagelite-nauty-runtime >=10.9,<10.10']
 gentreeg = ['sagelite-nauty-runtime >=10.9,<10.10']
-neato = ['sagelite-graphviz-runtime >=10.9.post2,<10.10']
+neato = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 nibabel = ['nibabel >=5.4.2']
 magick = ['sagelite-imagemagick-runtime >=10.9.post2,<10.10']
 odlyzko = ['sagelite-database-odlyzko-zeta >=10.9,<10.10']
@@ -821,7 +821,7 @@ runtime = [
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
-  'sagelite-graphviz-runtime >=10.9.post2,<10.10',
+  'sagelite-graphviz-runtime >=10.9.post4,<10.10',
   'sagelite-latte-runtime >=10.9,<10.10',
   'sagelite-lcalc-runtime >=10.9,<10.10',
   'sagelite-mathjax-runtime >=10.9,<10.10',

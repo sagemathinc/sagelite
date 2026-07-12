@@ -16,10 +16,24 @@ def bin_dir() -> Path:
     return data_dir() / "bin"
 
 
+def _ensure_executable(path: Path) -> Path:
+    """Restore execute bits stripped from wheel package data."""
+    if path.is_file() and not os.access(path, os.X_OK):
+        try:
+            path.chmod(path.stat().st_mode | 0o111)
+        except OSError:
+            # A read-only installation will report the normal execution error
+            # from ``run_program`` instead of failing during path discovery.
+            pass
+    return path
+
+
 def executable_path(program: str = "dot") -> Path:
     if program not in PROGRAMS:
         raise ValueError(f"unknown Graphviz program: {program}")
-    return bin_dir() / program
+    root = bin_dir()
+    _ensure_executable(root / f"{program}-real")
+    return _ensure_executable(root / program)
 
 
 def library_dir() -> Path:
