@@ -359,3 +359,32 @@ required `--optional sage` setting. Its watcher PID is recorded in
 the validator log is `validation-short-command.log`. It will start the full
 installed sweep only after the fresh wheel-only short gate passes. This cell
 remains below `full` while that validation is running.
+
+## Post14 short-gate pass and full-run start
+
+The corrected strict gate completed with exit code zero at
+`2026-07-12T21:08:28Z`. It validated the exact-SHA 177-wheel closure totaling
+16,513,108,365 bytes and identified by wheelhouse SHA256
+`70ea3a99e49397a936f09c75d2c04f3f250f2556276c39bea9374935e7c486cf`.
+The fresh wheel-only install of
+`sagelite[all-needed-extras]==10.9.post14`, `python -m pip check`, runtime
+manifest, and every `sagelite-selftest` probe passed, including the corrected
+Graphviz runtime.
+
+The installed `--optional=sage` short doctest sweep passed all 3,953 modules
+with zero failed modules. Packaged pytest reported 213 passed and 2 skipped.
+The authoritative short-gate artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/short-post14/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/short-post14/doctest-installed-linux-aarch64-cp313-post14-short-20260712-202021.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/short-post14/doctest-installed-linux-aarch64-cp313-post14-short-20260712-202021.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation-short-exit-code
+```
+
+The durable watcher started the full installed standard-suite run from the
+same wheel contract at `2026-07-12T21:08:37Z`. Its validator log is
+`validation-full-command.log`, and it will write `validation-full-exit-code`
+when complete. This cell remains below `full` until both that exit code and
+the completed reduced analysis pass.
