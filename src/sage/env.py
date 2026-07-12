@@ -1747,7 +1747,7 @@ def cython_aliases(required_modules=None, optional_modules=None):
             try:
                 pc = pkgconfig.parse('zlib')
                 libs = pkgconfig.libs(lib)
-            except pkgconfig.PackageNotFoundError:
+            except (pkgconfig.PackageNotFoundError, OSError):
                 from collections import defaultdict
                 pc = defaultdict(list, {'libraries': ['z']})
                 libs = "-lz"
@@ -1772,7 +1772,7 @@ def cython_aliases(required_modules=None, optional_modules=None):
                 aliases[var + "CFLAGS"] = pkgconfig.cflags(lib).split()
                 pc = pkgconfig.parse(lib)
                 libs = pkgconfig.libs(lib)
-            except pkgconfig.PackageNotFoundError:
+            except (pkgconfig.PackageNotFoundError, OSError):
                 if required and not (
                     using_default_required_modules and installed_without_source_tree
                 ):

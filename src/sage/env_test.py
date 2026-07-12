@@ -50,6 +50,27 @@ def test_cython_aliases_keeps_explicit_required_pkgconfig_strict(monkeypatch):
         env.cython_aliases(required_modules=("missing-required",), optional_modules=())
 
 
+def test_cython_aliases_skips_optional_module_without_pkgconfig_command(monkeypatch):
+    import pkgconfig
+
+    def missing_command(package):
+        raise OSError("pkg-config is not installed")
+
+    monkeypatch.setattr(pkgconfig, "cflags", missing_command)
+
+    aliases = env.cython_aliases(
+        required_modules=(), optional_modules=("missing-optional",)
+    )
+
+    assert "MISSINGOPTIONAL_LIBRARIES" not in aliases
+    assert aliases["NTL_LIBRARIES"] == ["ntl"]
+
+    with pytest.raises(OSError, match="pkg-config is not installed"):
+        env.cython_aliases(
+            required_modules=("missing-required",), optional_modules=()
+        )
+
+
 @pytest.fixture(autouse=True)
 def clean_runtime_environment(monkeypatch):
     keys = [

@@ -155,3 +155,63 @@ That focused modified-venv rerun is regression evidence, not final acceptance.
 The next iteration should address the independent msolve probe and then create
 one fresh, coherent exact-SHA primary/companion wheelhouse before rerunning the
 short gate.
+
+## Post12 coherent rebuild and gate
+
+Committed source `2e9887be5df63851d6e5d747b0e886a2ea751404`
+(`sagelite 10.9.post12`) bundles `libgomp` in the msolve companion and raises
+its dependency floor to `10.9.post2`. The native exact-SHA run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-214536-2e9887be5df
+```
+
+The build completed with exit code zero and produced this coherent set of
+source-built repaired wheels:
+
+```text
+sagelite-10.9.post12-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=2fd18a87471b60ee3fc7319790902a5a068bf41176ce95e490ffe52f61af7ea6
+size=227681950
+
+sagelite_imagemagick_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=6d12180f508b6b1b38fa9f3018e5367f4db359102e1cb1eaa00fc44a7820f0aa
+size=21778153
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=4059cca2f788f7d9dd66b56af8a52125994a36dfe29783b1007d929f4e10e9e8
+size=66578984
+
+sagelite_msolve_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=c95ba44172176a881ebabdb37f8ccd9448e41ab0395aa43e6ac4848ce8cf9be3
+size=27423132
+```
+
+The strict repaired-wheelhouse gate installed
+`sagelite[all-needed-extras]==10.9.post12` into a fresh venv using wheels only.
+The install and `python -m pip check` passed. Every `sagelite-selftest` probe
+passed, including the repaired ImageMagick, matching Maxima, and repaired
+msolve runtimes. Packaged pytest reported 212 passed and 2 skipped.
+
+The gate exited 1 because the installed doctest sweep found one failed module
+out of 3,954. `sage.env.cython_aliases(required_modules=())` attempted to
+probe the default optional LAPACK module with the Python `pkgconfig` package;
+in the current minimal `python:3.13-slim-bookworm` validation image, the
+`pkg-config` executable itself is absent, so `pkgconfig` raised `OSError`
+rather than `PackageNotFoundError`. The reduced analysis classifies only this
+`sage.env` runtime exception. Durable evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-214536-2e9887be5df/validation/short-post12/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-214536-2e9887be5df/validation/short-post12/doctest-installed-linux-aarch64-cp313-post12-short-20260712-024820.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-214536-2e9887be5df/validation/short-post12/doctest-installed-linux-aarch64-cp313-post12-short-20260712-024820.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260711-214536-2e9887be5df/validation-short-command.log
+```
+
+The focused source correction treats an absent `pkg-config` command like a
+missing package for optional modules and for the installed-runtime default
+module set, while explicit required-module requests remain strict. It also
+preserves the existing direct `-lz` fallback. The preview version advances to
+`10.9.post13`; all 110 focused `src/sage/env_test.py` tests pass. A fresh
+exact-SHA primary rebuild and clean short gate are required before this cell
+can be marked full.
