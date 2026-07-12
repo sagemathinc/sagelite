@@ -451,3 +451,31 @@ and exit-code artifacts use the same names as the preceding exact-SHA runs.
 At launch, the durable PIDs were alive and both watcher logs recorded their
 start at `2026-07-12T22:00:49Z`. This cell remains below `full` until the new
 wheel build, strict short gate, and complete reduced full analysis all pass.
+
+## Post15 watcher recovery
+
+The first two `post15` watcher processes were reaped when their launching SSH
+session ended. They left neither phase output nor exit-code artifacts, and the
+`post14` full-validation container remained healthy, so no build or validation
+work was duplicated. At `2026-07-12T22:19:00Z`, the same preserved scripts
+were relaunched as transient user-systemd services in the Lima guest:
+
+```text
+sagelite-post15-follow.service   MainPID=1252476
+sagelite-post15-validate.service MainPID=1252514
+```
+
+The guest user has lingering enabled, and both services were active in their
+own user-manager cgroups after the launching session exited. The follow-on is
+still waiting for the invalidated `post14` sweep to finish; that Docker
+container, its validator, and its doctest workers were active, and
+`validation-full-command.log` was still growing. The guest had about 95 GiB
+free while retaining the disposable `post14` install, below the heavy-build
+threshold. The follow-on will remove only that install after the old validator
+writes `validation-full-exit-code`, then recheck the 100 GiB threshold before
+starting the exact-SHA `post15` build.
+
+The public project page was also rechecked with a pip user agent and continued
+to list seven `post8` and seven `post9` primary wheels; no `post15` artifact is
+public. This recovery changes orchestration evidence only. The cell remains
+below `full`.
