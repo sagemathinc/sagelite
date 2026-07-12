@@ -498,3 +498,18 @@ The public `dev/manifest.json` was fetched again with a pip user agent and
 contained 177 wheel entries. Its fourteen Sagelite primary entries were the
 seven `post8` and seven `post9` wheels; there was still no public `post15`
 primary. No publication was attempted.
+
+The orphan termination traps had written `follow-on-exit-code`,
+`follow-on-finished-at`, `validation-follow-exit-code`,
+`validation-follow-finished-at`, and `disk-after-validation.txt` into the
+shared `post15` run root after the systemd-owned replacements had started.
+Those stale completion markers did not affect either replacement script: the
+build watcher waits on the `post14` full-run exit code, and the validation
+watcher waits on the new run's build `exit-code`. They could nevertheless
+mislead a later reconciliation, so only those five orphan-written files were
+removed. Both intended services remained active afterward. At approximately
+`2026-07-12T22:31Z`, the `post14` validator and doctest workers were still
+CPU-active, its validator log was still growing, the Linux guest had
+100,509,392,896 bytes free, and `/Volumes/sage` had about 181 GiB free. The
+public manifest still contained 177 wheels, fourteen Sagelite primaries, and
+no `post15` primary.
