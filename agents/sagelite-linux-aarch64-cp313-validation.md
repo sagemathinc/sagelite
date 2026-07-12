@@ -454,11 +454,12 @@ wheel build, strict short gate, and complete reduced full analysis all pass.
 
 ## Post15 watcher recovery
 
-The first two `post15` watcher processes were reaped when their launching SSH
-session ended. They left neither phase output nor exit-code artifacts, and the
-`post14` full-validation container remained healthy, so no build or validation
-work was duplicated. At `2026-07-12T22:19:00Z`, the same preserved scripts
-were relaunched as transient user-systemd services in the Lima guest:
+The first two `post15` watcher processes appeared to have been reaped when
+their launching SSH session ended. They left neither phase output nor
+exit-code artifacts, and the `post14` full-validation container remained
+healthy, so no build or validation work was duplicated. At
+`2026-07-12T22:19:00Z`, the same preserved scripts were relaunched as
+transient user-systemd services in the Lima guest:
 
 ```text
 sagelite-post15-follow.service   MainPID=1252476
@@ -479,3 +480,21 @@ The public project page was also rechecked with a pip user agent and continued
 to list seven `post8` and seven `post9` primary wheels; no `post15` artifact is
 public. This recovery changes orchestration evidence only. The cell remains
 below `full`.
+
+A subsequent process-tree reconciliation found that the original watcher
+shells had actually survived as PID-1 orphans, each waiting on a `sleep 60`
+child. They had not reached any build or validation phase, but leaving them
+alive would have allowed duplicate work after the `post14` exit-code artifact
+appeared. The two orphan watcher trees were terminated at approximately
+`2026-07-12T22:22Z`; the active `post14` validation container and the two
+systemd-owned watcher processes were left untouched. A post-cleanup check
+showed exactly the intended watcher pair, with main PIDs `1252476` and
+`1252514`, both active under the guest user manager. The `post14` validator
+was still running and its log was still advancing through the installed
+doctest sweep. The guest had about 94 GiB free while retaining that disposable
+install, and the macOS host had about 181 GiB free on `/Volumes/sage`.
+
+The public `dev/manifest.json` was fetched again with a pip user agent and
+contained 177 wheel entries. Its fourteen Sagelite primary entries were the
+seven `post8` and seven `post9` wheels; there was still no public `post15`
+primary. No publication was attempted.
