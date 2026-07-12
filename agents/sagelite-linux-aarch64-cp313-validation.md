@@ -414,3 +414,40 @@ the `post15` commit. The current authoritative in-progress log remains:
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation-full-command.log
 ```
+
+## Post15 durable follow-on start
+
+The canonical controller was clean and synchronized with `origin/develop` at
+committed source `9f1fa2c9e5555e435cbd541f3bca878add8874ba`
+(`sagelite 10.9.post15`). The public preview Sagelite project page still
+listed only the existing `post8` and `post9` primaries; no local aarch64
+CPython 3.13 artifact was assumed to be published.
+
+At preflight, `m1` reported macOS `arm64` with 185 GiB free on
+`/Volumes/sage`. Its Lima guest reported Linux `aarch64`; the guest had
+105,359,421,440 bytes free while the retained `post14` full validation was
+using its disposable install. The full-validation container and durable
+wrapper were both alive, the validator log was growing, and the container was
+actively using CPU. No duplicate validation or heavy build was started.
+
+A durable exact-SHA follow-on is staged at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55
+```
+
+Its build watcher PID is recorded in `follow-on-pid`, and its validation
+watcher PID is recorded in `validation-watcher-pid`. The follow-on waits for
+the existing `post14` full run to write its exit code, preserves its
+wheelhouse, summaries, reduced analysis, metadata, and logs, and removes only
+the completed run's disposable install. It then rechecks the 100 GiB heavy
+build threshold before cloning and building the exact `post15` SHA. After a
+successful build, the validation watcher assembles a fresh strict closure,
+runs the required wheel-only `--optional sage --short 600` gate, and starts
+the full gate only if the short gate passes. Top-level progress is in
+`follow-on.log`, `command.log`, and `validation-follow.log`; the phase logs
+and exit-code artifacts use the same names as the preceding exact-SHA runs.
+
+At launch, the durable PIDs were alive and both watcher logs recorded their
+start at `2026-07-12T22:00:49Z`. This cell remains below `full` until the new
+wheel build, strict short gate, and complete reduced full analysis all pass.
