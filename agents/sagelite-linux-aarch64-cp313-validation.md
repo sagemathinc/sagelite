@@ -513,3 +513,34 @@ CPU-active, its validator log was still growing, the Linux guest had
 100,509,392,896 bytes free, and `/Volumes/sage` had about 181 GiB free. The
 public manifest still contained 177 wheels, fourteen Sagelite primaries, and
 no `post15` primary.
+
+## Post14 in-progress failure inventory
+
+At approximately `2026-07-12T22:56Z`, the invalidated `post14` full sweep was
+still healthy and advancing through `sage.rings`. Its validator, dispatcher,
+and eight-worker doctest tree were CPU-active, the log was growing, and no
+`validation-full-exit-code` existed. Exactly the intended two `post15`
+user-systemd services remained active and waiting; no duplicate build or
+validation container had started. The Linux guest had about 97 GiB free and
+the macOS host had about 183 GiB free on `/Volumes/sage`, so the build watcher
+correctly remained below the 100 GiB heavy-build threshold until it can remove
+the completed `post14` install.
+
+A provisional reduction of the still-growing log was saved on the controller
+at:
+
+```text
+/scratch/sagelite-automation/reconcile-20260712-2256/post14-in-progress.analysis.md
+/scratch/sagelite-automation/reconcile-20260712-2256/post14-in-progress.analysis.json
+```
+
+Because the doctest stats and final footer do not exist until the sweep
+finishes, its nine current failed-module buckets are triage leads rather than
+final counts. In addition to the already-fixed Giac Laplace result, the log
+shows independent failures involving the `flatter` executable, fpylll strategy
+data, compiler-dependent doctests in the minimal installed image, GAP3 and
+Giac 1.9 protocol output, and the known resource-sensitive nested dispatcher
+test. These are preserved for later coherent iterations; they do not broaden
+or invalidate the current Giac-focused `post15` rebuild. The public manifest
+still contained 177 wheels and the public Sagelite page still listed only the
+seven `post8` and seven `post9` primaries.
