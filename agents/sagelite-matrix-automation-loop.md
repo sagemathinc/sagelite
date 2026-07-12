@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post14`, local) | corrected exact-SHA `post14` strict short gate passed natively on `m1`: repaired 177-wheel closure, fresh wheel-only install, `pip check`, every selftest probe, 3,953 installed doctest modules with 0 failures, and packaged pytest with 213 passed and 2 skipped. The full installed standard-suite run started from the same wheel contract at `2026-07-12T21:08:37Z` | none |
+| Linux aarch64 | 3.13 | yes (`post14`, local) | corrected exact-SHA `post14` strict short gate passed natively on `m1`: repaired 177-wheel closure, fresh wheel-only install, `pip check`, every selftest probe, 3,953 installed doctest modules with 0 failures, and packaged pytest with 213 passed and 2 skipped. Its still-running full sweep exposed the bundled Giac 1.9 versus Giac 2.x Laplace-result split; the exact version-aware fix is committed for `post15`, which requires a fresh primary rebuild and both gates | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |

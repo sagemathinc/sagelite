@@ -388,3 +388,29 @@ same wheel contract at `2026-07-12T21:08:37Z`. Its validator log is
 `validation-full-command.log`, and it will write `validation-full-exit-code`
 when complete. This cell remains below `full` until both that exit code and
 the completed reduced analysis pass.
+
+## Post14 full-run Giac failure
+
+The native `post14` full run remained healthy and active, but reproduced a
+deterministic failure in `sage.calculus.calculus`: the bundled
+`sagelite-giac-runtime 10.9` contains Giac 1.9.0.15p0, which leaves
+`laplace(t^n, t, s)` as a formal unevaluated transform. The Sage doctest had
+been changed upstream to require the computed
+`s^(-n - 1)*gamma(n + 1)` result introduced by Giac 2.0.0.19. Sage's own Giac
+SPKG recipe still selects 1.9.0.15p0, so this version split also affects a
+Sage-distributed optional Giac build rather than being specific to aarch64.
+
+Commit `65605f1570ba9523c86ea4b3292433e93e879ce5` makes the regression exact for
+both runtime generations: Giac 1.9 must return the formal transform, while
+newer Giac must return the computed expression. The focused assertion passed
+inside the fresh `post14` wheel-only validation container against the actual
+companion runtime. The change advances Sagelite to `10.9.post15`.
+
+The in-progress `post14` full run is retained to collect its complete reduced
+analysis, but it cannot certify the cell after this source change. A new
+exact-SHA primary rebuild, strict short gate, and full run are required from
+the `post15` commit. The current authoritative in-progress log remains:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation-full-command.log
+```
