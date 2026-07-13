@@ -1876,6 +1876,7 @@ def laplace(ex, t, s, algorithm='maxima'):
         sage: n = SR.var('n')
         sage: result = laplace(t^n, t, s, algorithm='giac')
         sage: from sage.interfaces.giac import giac
+        sage: from sage.calculus.calculus import dummy_laplace
         sage: giac_1_9 = 'giac 1.9.0' in str(giac('version()'))
         sage: expected = (dummy_laplace(t^n, t, s) if giac_1_9
         ....:             else s^(-n - 1)*gamma(n + 1))
