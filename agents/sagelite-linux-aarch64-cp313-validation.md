@@ -804,3 +804,26 @@ wheel entries. Its fourteen Sagelite primary entries remain the seven
 `post8` and seven `post9` wheels; no `post15` or `post16` primary is public.
 No duplicate work or publication was started, and this checkpoint makes no
 new wheel, install, smoke, or full-suite claim.
+
+## Post16 native compilation checkpoint
+
+The next scheduled reconciliation at `2026-07-13T09:02:21Z` found the same
+two intended guest user-systemd services active with main PIDs `1388226` and
+`1388238`. The follow service continued to own the only CIBW build, and the
+validation watcher still had not started a container because no build
+`exit-code` artifact existed. The exact source checkout remained clean at
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` with version
+`10.9.post16`.
+
+The native `aarch64` build container was CPU-active and had advanced from
+Cython generation into compiled extension target 643 of 1,794. Its Sagelib
+package log was growing at the checkpoint. The Linux guest had about 110 GiB
+free, the outer macOS host had about 197 GiB free on `/Volumes/sage`, and the
+controller had about 103 GiB free on `/scratch`; all filesystems remained
+above their applicable thresholds.
+
+The public `dev/manifest.json` still contained 177 wheels and the Sagelite
+project page still listed only the seven `post8` and seven `post9` primary
+wheels. No duplicate build, validation, or publication was started. The cell
+remains below `full`, and this checkpoint makes no wheel, install, smoke, or
+full-suite claim.
