@@ -1107,3 +1107,65 @@ thresholds. The directly fetched public manifest still contained 177 wheels
 and fourteen `post8`/`post9` Sagelite primaries, with no public `post15` or
 `post16` primary. No publication was attempted. The cell remains below
 `full` until the complete full sweep and reduced analysis pass.
+
+## Post16 full result and post17 msolve iteration
+
+The exact-SHA `post16` full validation finished at
+`2026-07-13T15:49:34Z` with validator exit code 21 after 8,230 seconds. The
+fresh strict 177-wheel command installed
+`sagelite[all-needed-extras]==10.9.post16`, passed `pip check`, runtime
+collection, every selftest probe, and packaged pytest with 213 passed and two
+skipped. The full installed `--optional=sage` sweep completed 3,958 modules
+and failed 21. Its reducer classified 10 `core-supported`, eight
+`performance-only`, two `optional-external`, and one `optional-data` module.
+The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation/full-post16/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation/full-post16/doctest-installed-linux-aarch64-cp313-post16-full-20260713-133738.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation/full-post16/doctest-installed-linux-aarch64-cp313-post16-full-20260713-133738.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation-full-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation-full-exit-code
+```
+
+The selected coherent failure class was the msolve parser diagnostic affecting
+`sage.rings.polynomial.msolve` and
+`sage.rings.polynomial.multi_polynomial_ideal`. The bundled runtime returned
+valid Sage-readable list payloads followed by a single terminal colon. The
+existing payload extractor retained that delimiter, so `sage_eval` raised a
+syntax error for every Gröbner-basis and variety result.
+
+Committed and pushed source
+`3e6ff4288595e458add14482065345d67f63c36e` strips only that terminal
+delimiter, adds one-line and multiline regression examples, and allocates
+Sagelite `10.9.post17`. Local syntax, version-consistency, and focused payload
+checks passed. An exact-SHA source checkout was then tested in a fresh native
+Linux aarch64 container against the untouched installed `post16` runtime. The
+bundled msolve successfully computed a finite-field Gröbner basis, a rational
+Gröbner basis, and a rational variety through the corrected module. This is
+focused regression evidence rather than wheel acceptance. Its durable
+artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260713-232928-3e6ff4288595/focused-msolve.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260713-232928-3e6ff4288595/focused-msolve-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260713-232928-3e6ff4288595/run-metadata.txt
+```
+
+After preserving the full `post16` summary, reduced analysis, wheelhouse, and
+logs, the iteration removed only its 21 GiB disposable validation install.
+The guest then had about 111 GiB free, above the 100 GiB heavy-build threshold.
+Exactly one native exact-SHA rebuild and one gated validation watcher started
+as the transient user services `sagelite-post17-build.service` and
+`sagelite-post17-validate.service`. Their shared run root is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260713-232928-3e6ff4288595
+```
+
+The watcher will assemble a fresh strict closure and run wheel-only
+`--optional sage` short and full gates only after the build succeeds. The
+public manifest was rechecked with a pip user agent and still contained 177
+wheels and fourteen `post8`/`post9` Sagelite primaries; no `post16` or
+`post17` primary is public. No publication was attempted, no `post17` wheel is
+claimed yet, and this cell remains below `full`.
