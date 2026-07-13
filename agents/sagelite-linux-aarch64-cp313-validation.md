@@ -780,3 +780,27 @@ validation watcher remained active and had not started early. The public
 manifest still contained 177 wheels and fourteen `post8`/`post9` primaries,
 with no `post15` or `post16` primary. No duplicate job or publication was
 started, and no `post16` wheel or validation result is claimed yet.
+
+## Post16 native build progress checkpoint
+
+The recovered-session preflight at `2026-07-13T08:31:31Z` found the same two
+intended guest user-systemd services active. The follow service still owned
+the only CIBW build, and the validation service was waiting for the build
+exit-code artifact; no validation container had started early. The source
+checkout was clean at the exact committed SHA
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` and reported
+`10.9.post16` from `VERSION.txt`.
+
+The sole build container reported native `aarch64` and was actively using its
+CPUs. Its Sagelib package log had reached Cython source 365 of 1,794, with
+live Cython workers providing forward-progress evidence even though the
+top-level log was temporarily quiet while package output was redirected. No
+build or validation exit-code artifact existed yet. The Linux guest had
+118,274,359,296 bytes free, above the heavy-build threshold, and the outer
+macOS host had about 197 GiB free on `/Volumes/sage`.
+
+The public `dev/manifest.json` was fetched directly and still contained 177
+wheel entries. Its fourteen Sagelite primary entries remain the seven
+`post8` and seven `post9` wheels; no `post15` or `post16` primary is public.
+No duplicate work or publication was started, and this checkpoint makes no
+new wheel, install, smoke, or full-suite claim.
