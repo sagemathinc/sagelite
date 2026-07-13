@@ -975,3 +975,71 @@ wheels and fourteen Sagelite primaries, all from `post8` and `post9`; no
 `post15` or `post16` primary is public. No duplicate build, validation, or
 publication was started. The cell remains below `full`, and this checkpoint
 makes no new wheel, install, smoke, or full-suite claim.
+
+## Post16 wheel completion and corrected strict-gate retry
+
+The exact-SHA native CIBW build completed successfully at
+`2026-07-13T12:16:40Z`. Its clean source checkout remains at
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` with Sagelite
+`10.9.post16`. The build produced:
+
+```text
+sagelite-10.9.post16-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=c13515c47b7f9ac9110b753841dcac7de14fd5f0eaf9f30863fcdd34103b5e3a
+size=227682159
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=2600203fae81624e6ac9fe71ca8514d89775272552fc1764fec002b74f233282
+size=66578984
+```
+
+The first strict short attempt exited 2 before installation because its
+inherited closure still contained
+`sagelite_flatter_runtime-10.9-py3-none-manylinux_2_28_aarch64.whl`, while
+the `post16` primary correctly requires `>=10.9.post1,<10.10`. Its summary
+and command evidence were preserved as:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation/short-post16-preflight1/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/preflight1-validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/preflight1-validation-short-exit-code
+```
+
+A focused native build used the exact committed companion package definition,
+the cached manylinux 2.28 aarch64 build image, and the preceding manylinux
+flatter payload. The resulting wheel is:
+
+```text
+sagelite_flatter_runtime-10.9.post1-py3-none-manylinux_2_28_aarch64.whl
+sha256=944df1933cd835b6e3282b3a8dbf68158569730e90dfd29494becbeed32d198c
+size=45086686
+```
+
+Its archive contains `libgomp.so.1`. Auditwheel found its external symbol set
+compatible with manylinux 2.27 aarch64, which is within the advertised
+manylinux 2.28 contract. A fresh `python:3.13-slim-bookworm` wheel-only smoke
+passed import, help execution, and a two-dimensional unimodular lattice
+reduction without inherited library paths. On aarch64 flatter returns the
+identity basis with its rows permuted; the semantic smoke verifies the same
+row set and determinant rather than imposing row order. Durable focused
+artifacts are under:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/flatter-post1-build
+```
+
+The corrected exact-SHA build inventory now contains the primary, Maxima, and
+flatter wheels. A durable strict retry started at `2026-07-13T12:39:09Z`.
+Its repaired wheelhouse preflight accepted 177 wheels: one primary, 68
+companions, and 108 third-party wheels totaling 16,513,214,933 bytes, with
+wheelhouse digest
+`564efab23f48f6d5a6b7ff08383d279f499deffeef0316db2922733491217288`.
+The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post16` was active at the checkpoint. The
+retry is owned by `sagelite-post16-validate-retry1.service`; it will start the
+full gate only after the short gate passes. No installation, short-suite, or
+full-suite pass is claimed yet.
+
+The directly fetched public manifest remains unchanged at 177 wheels and
+fourteen `post8`/`post9` Sagelite primaries, with no public `post15` or
+`post16` primary. No publication was attempted.
