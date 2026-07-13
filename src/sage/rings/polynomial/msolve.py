@@ -51,9 +51,11 @@ def _msolve_payload(output):
         sage: from sage.rings.polynomial.msolve import _msolve_payload
         sage: _msolve_payload("Restarting with another random linear form\n[0, [1]]\n")
         '[0, [1]]'
+        sage: _msolve_payload("[0, [1]]:\n")
+        '[0, [1]]'
         sage: _msolve_payload("\nstatus: retrying\n\n[foo, bar]\n")
         '[foo, bar]'
-        sage: _msolve_payload("[0,\n [[1]]]\nRestarting with another random linear form\n")
+        sage: _msolve_payload("[0,\n [[1]]]:\nRestarting with another random linear form\n")
         '[0,\n [[1]]]'
         sage: _msolve_payload("\n")
         Traceback (most recent call last):
@@ -79,7 +81,10 @@ def _msolve_payload(output):
             break
 
     if payload_lines:
-        return "\n".join(payload_lines).strip()
+        payload = "\n".join(payload_lines).strip()
+        # Some msolve builds terminate their otherwise Sage-readable output
+        # with a colon after the closing bracket.
+        return payload.removesuffix(":").rstrip()
 
     raise NotImplementedError(
         "unsupported msolve output format: no Sage-readable payload "
