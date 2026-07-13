@@ -1043,3 +1043,29 @@ full-suite pass is claimed yet.
 The directly fetched public manifest remains unchanged at 177 wheels and
 fourteen `post8`/`post9` Sagelite primaries, with no public `post15` or
 `post16` primary. No publication was attempted.
+
+## Post16 strict-gate runtime checkpoint
+
+The scheduled reconciliation at `2026-07-13T13:02:30Z` found the corrected
+strict gate healthy under the sole
+`sagelite-post16-validate-retry1.service`. The exact remote source checkout
+remained clean at committed source
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46`, and the validation container
+reported native Linux `aarch64`.
+
+The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post16` completed successfully, and
+`python -m pip check` reported no broken requirements. Runtime manifest and
+summary collection completed, and every `sagelite-selftest` probe passed,
+including the corrected flatter help and runtime operation probe. The
+installed `--optional=sage` short sweep then started all 3,953 modules with
+eight workers. At the checkpoint its log was growing, the dispatcher and
+workers were CPU-active, and no validation exit-code artifact existed.
+
+The Linux guest had 97,798,500,352 bytes free, above the test-only threshold;
+the outer macOS host had about 178 GiB free on `/Volumes/sage`, and the
+controller had 110,488,498,176 bytes free on `/scratch`. The public
+`dev/manifest.json` still contained 177 wheels and fourteen Sagelite
+primaries, all from `post8` and `post9`; no `post16` primary is public. No
+duplicate work or publication was started. The cell remains below `full`
+until the short gate and subsequent full reduced analysis complete.
