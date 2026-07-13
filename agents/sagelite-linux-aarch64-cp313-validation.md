@@ -544,3 +544,54 @@ test. These are preserved for later coherent iterations; they do not broaden
 or invalidate the current Giac-focused `post15` rebuild. The public manifest
 still contained 177 wheels and the public Sagelite page still listed only the
 seven `post8` and seven `post9` primaries.
+
+## Post14 completion and post15 strict-gate start
+
+The invalidated `post14` full sweep completed at `2026-07-12T23:35:55Z`
+and wrote validator exit code 21. Its final reduced analysis reports 28 failed
+modules out of 3,958: 13 performance/resource timeouts, 12
+`core-supported` failures, two `optional-external` failures, and one
+`optional-data` failure. The completed artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/full-post14/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/full-post14/doctest-installed-linux-aarch64-cp313-post14-full-20260712-211422.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-142916-d691bc7cff61/validation/full-post14/doctest-installed-linux-aarch64-cp313-post14-full-20260712-211422.analysis.json
+```
+
+The intended systemd-owned `post15` follow-on then removed only the completed
+run's disposable install and built committed source
+`9f1fa2c9e5555e435cbd541f3bca878add8874ba` successfully. The build finished
+at `2026-07-13T04:13:27Z` and produced these repaired native wheels:
+
+```text
+sagelite-10.9.post15-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=a3a5ac0b6e3c7d8e334c16557ae39df59103b83cda0189e66e56a64166ca1b01
+size=227682129
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=74d038b255f97e393888c03a023fa0d2be3783573650bd5a845feddda9c567f8
+size=66578984
+```
+
+The exact checkout is clean and matches the recorded SHA. The validation
+watcher assembled a strict closure of 177 wheels totaling 16,513,108,451
+bytes; its `SHA256SUMS` file hashes to
+`09f66a5c2b8f8cb43199456c04d7c9bd34a2bf1720288a07157eedc9e525cc00`.
+A fresh `python:3.13-slim-bookworm` short gate started at
+`2026-07-13T04:15:02Z` with the required wheel-only
+`sagelite[all-needed-extras]==10.9.post15`, strict repaired-wheelhouse
+preflight, `--optional sage`, `--short 600`, and eight threads. At the latest
+checkpoint the container was alive, installing from the local wheelhouse, and
+the guest had 123,775,545,344 bytes free. The same durable watcher will remove
+the short install and start the full gate only if the short gate passes.
+
+The authoritative new run root is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55
+```
+
+The public `dev/manifest.json` remains unchanged at 177 wheel entries, and
+the public Sagelite page still lists only seven `post8` and seven `post9`
+primary wheels. No publication was attempted. The cell remains below `full`.
