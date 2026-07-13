@@ -595,3 +595,34 @@ The authoritative new run root is:
 The public `dev/manifest.json` remains unchanged at 177 wheel entries, and
 the public Sagelite page still lists only seven `post8` and seven `post9`
 primary wheels. No publication was attempted. The cell remains below `full`.
+
+## Post15 strict-gate runtime checkpoint
+
+The durable validation service remains active and owns the only `post15`
+validation container. The exact remote checkout is clean at
+`9f1fa2c9e5555e435cbd541f3bca878add8874ba`, and the completed build and
+follow-on exit codes are both zero. No short- or full-validation exit code has
+yet been written.
+
+The strict preflight accepted all 177 staged wheels: one repaired primary, 68
+companions, and 108 compatible third-party wheels totaling 16,513,108,451
+bytes. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post15` passed, as did `python -m pip
+check`. The runtime manifest and summary completed, and every
+`sagelite-selftest` probe passed, including Maxima, Graphviz, ImageMagick,
+flatter, fpylll data, msolve, and the standard companion databases.
+
+The installed `--optional=sage` short sweep began doctesting all 3,953 modules
+with eight native arm64 workers and was still healthy and advancing at this
+checkpoint. Its active command log is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation-short-command.log
+```
+
+The Linux guest reported 102,009,171,968 bytes free, above the 30 GiB
+test-only threshold, and `/Volumes/sage` had about 182 GiB free. The public
+manifest was rechecked and remained at 177 wheel entries with no public
+`post15` primary. No duplicate work or publication was started. The cell
+remains below `full` until the short gate and subsequent complete reduced full
+analysis both pass.

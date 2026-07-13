@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-10
+Last reviewed: 2026-07-13
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post15`, local) | corrected exact-SHA `post14` strict short gate passed natively on `m1`; its invalidated full sweep completed with 28 failed modules out of 3,958 and confirmed the fixed Giac 1.9 versus Giac 2.x Laplace-result split plus independent failure classes. The recovered user-systemd follow-on built the exact committed `post15` primary and matching Maxima wheels successfully. A fresh strict 177-wheel `post15` short gate is now running; the cell remains below `full` | none |
+| Linux aarch64 | 3.13 | yes (`post15`, local) | corrected exact-SHA `post14` strict short gate passed natively on `m1`; its invalidated full sweep completed with 28 failed modules out of 3,958 and confirmed the fixed Giac 1.9 versus Giac 2.x Laplace-result split plus independent failure classes. The recovered user-systemd follow-on built the exact committed `post15` primary and matching Maxima wheels successfully. The fresh strict 177-wheel `post15` gate has passed wheel-only installation, `pip check`, and every selftest probe; its 3,953-module short doctest sweep is running under the durable validation service. The cell remains below `full` | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
