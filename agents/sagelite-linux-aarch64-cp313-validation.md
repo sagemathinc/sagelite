@@ -696,3 +696,40 @@ with no `post15` or `post16` primary. No publication was attempted. The next
 iteration should correct the Giac doctest namespace failure, preserve the
 completed `post15` reduced inventory, and only then start an exact-SHA rebuild
 from the resulting coherent commit.
+
+## Post16 Giac correction and durable follow-on
+
+Committed and pushed source
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` imports `dummy_laplace`
+explicitly into the isolated doctest namespace. A focused probe in the
+untouched `post15` wheel-only container used the bundled Giac 1.9 runtime and
+confirmed that the actual and expected results are both the same formal
+`laplace(t^n, t, s)` expression. Python compilation and `git diff --check`
+also passed. The commit retains Sagelite `10.9.post16`, so it forms one
+coherent source revision with the preceding flatter `post1` correction.
+
+At preflight, `m1` reported macOS `arm64` and about 181 GiB free on
+`/Volumes/sage`. Its Lima guest reported Linux `aarch64` with 101,358,800,896
+bytes free. The only Sagelite container remained the active native `post15`
+full validation, and its log continued to grow; no
+`validation-full-exit-code` existed. The public manifest was unchanged at 177
+wheel entries and fourteen `post8`/`post9` Sagelite primaries.
+
+A durable exact-SHA follow-on is staged at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9
+```
+
+The guest user-systemd services `sagelite-post16-follow.service` and
+`sagelite-post16-validate.service` were active after the controller SSH
+session exited, with main PIDs `1388226` and `1388238`. The first service is
+waiting for the `post15` full exit artifact. It will preserve that run's
+wheelhouse, summaries, reduced analysis, metadata, and logs; remove only its
+disposable install; recheck the 100 GiB heavy-build threshold; and then build
+the exact pushed `post16` commit. The validation service will assemble a fresh
+strict closure and run the required wheel-only `--optional sage` short and
+full gates only after a successful build. Progress and terminal artifacts are
+recorded in `follow-on.log`, `command.log`, `validation-follow.log`, and the
+phase-specific exit-code files. No `post16` wheel, installation, or smoke
+result is claimed yet.
