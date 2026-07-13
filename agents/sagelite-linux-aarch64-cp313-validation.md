@@ -1069,3 +1069,41 @@ controller had 110,488,498,176 bytes free on `/scratch`. The public
 primaries, all from `post8` and `post9`; no `post16` primary is public. No
 duplicate work or publication was started. The cell remains below `full`
 until the short gate and subsequent full reduced analysis complete.
+
+## Post16 strict-gate pass and full-run start
+
+The corrected exact-SHA strict short gate finished at
+`2026-07-13T13:31:30Z` with exit code zero. Its authoritative summary is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation/short-post16/validation-summary.md
+```
+
+The strict preflight accepted one repaired primary, 68 companion wheels, and
+108 third-party wheels: 177 wheels totaling 16,513,214,933 bytes, with
+wheelhouse digest
+`564efab23f48f6d5a6b7ff08383d279f499deffeef0316db2922733491217288`.
+The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post16`, `python -m pip check`, runtime
+manifest, and every `sagelite-selftest` probe passed. The installed
+`--optional=sage` short sweep passed all 3,953 modules with zero failed
+modules, and packaged pytest reported 213 passed and 2 skipped.
+
+The sole durable validation service removed the completed short install and
+started a separate fresh full run from the same exact-SHA wheel contract at
+`2026-07-13T13:31:36Z`. Its native Linux `aarch64` container invokes the
+strict repaired-wheelhouse profile with explicit `--optional sage`, `--full`,
+and eight workers. The active validator log is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9/validation-full-command.log
+```
+
+At handoff, `sagelite-post16-validate-retry1.service` remained active and
+owned the only Sagelite validation container. The Linux guest had about 92
+GiB free, the outer macOS host had 178 GiB free on `/Volumes/sage`, and the
+controller had 103 GiB free on `/scratch`, all above their applicable
+thresholds. The directly fetched public manifest still contained 177 wheels
+and fourteen `post8`/`post9` Sagelite primaries, with no public `post15` or
+`post16` primary. No publication was attempted. The cell remains below
+`full` until the complete full sweep and reduced analysis pass.
