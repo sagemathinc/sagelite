@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sagelite-flatter-runtime"
-version = "10.9"
+version = "10.9.post1"
 description = "Optional flatter executable companion package for sagelite"
 readme = "README.md"
 requires-python = ">=3.12"

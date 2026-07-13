@@ -548,7 +548,16 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-flatter-runtime":
         text=True,
         capture_output=True,
     )
+    assert result.returncode == 0, result.stderr
     assert "flatter" in (result.stdout + result.stderr).lower()
+    result = subprocess.run(
+        ["flatter"],
+        input="[[1 0]\n[0 1]]\n",
+        text=True,
+        capture_output=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "[[1 0]\n[0 1]]"
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-fplll-data":

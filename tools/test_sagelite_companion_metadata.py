@@ -638,7 +638,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-cddlib-runtime >=10.9,<10.10",
     "sagelite-dvipng-runtime >=10.9,<10.10",
     "sagelite-ecm-runtime >=10.9,<10.10",
-    "sagelite-flatter-runtime >=10.9,<10.10",
+    "sagelite-flatter-runtime >=10.9.post1,<10.10",
     "sagelite-frobby-runtime >=10.9,<10.10",
     "sagelite-gap-runtime >=10.9.post4,<10.10",
     "sagelite-gfan-runtime >=10.9,<10.10",
@@ -3061,7 +3061,7 @@ def test_flatter_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-flatter-runtime >=10.9,<10.10"
+    requirement = "sagelite-flatter-runtime >=10.9.post1,<10.10"
 
     assert extras["flatter"] == [requirement]
     assert requirement in extras["runtime"]
@@ -3071,6 +3071,7 @@ def test_flatter_runtime_is_exposed_by_sagelite_extras():
 def test_flatter_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-flatter-runtime")
 
+    assert pyproject["project"]["version"] == "10.9.post1"
     assert pyproject["project"]["scripts"] == {
         "flatter": "sagelite_flatter.runtime:flatter",
     }
@@ -3081,6 +3082,7 @@ def test_flatter_runtime_bundles_openblas_dependency():
 
     assert '"libopenblas.so",' in setup_py
     assert '"libgfortran.so",' in setup_py
+    assert '"libgomp.so",' in setup_py
     assert '"libquadmath.so",' in setup_py
 
 

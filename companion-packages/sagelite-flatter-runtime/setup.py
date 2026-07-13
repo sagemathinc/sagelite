@@ -53,6 +53,8 @@ def _runtime_libraries(executable: Path) -> list[Path]:
         "libfplll.",
         "libgfortran.so",
         "libgfortran.",
+        "libgomp.so",
+        "libgomp.",
         "libopenblas.so",
         "libopenblas.",
         "libgmp.so",

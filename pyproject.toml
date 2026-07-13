@@ -114,7 +114,7 @@ dependencies = [
   'sagelite-database-cremona-mini >=10.9.post1,<10.10',
   'sagelite-database-ellcurves >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
-  'sagelite-flatter-runtime >=10.9,<10.10',
+  'sagelite-flatter-runtime >=10.9.post1,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gap-runtime >=10.9.post4,<10.10',
   'sagelite-gap-package-gapdoc >=10.9,<10.10',
@@ -343,7 +343,7 @@ elliptic_curves = [
 dot = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
 dot2tex = ['dot2tex >=2.11.3']
 fdp = ['sagelite-graphviz-runtime >=10.9.post4,<10.10']
-flatter = ['sagelite-flatter-runtime >=10.9,<10.10']
+flatter = ['sagelite-flatter-runtime >=10.9.post1,<10.10']
 fplll-data = ['sagelite-fplll-data >=10.9,<10.10']
 fplll_data = ['sagelite-fplll-data >=10.9,<10.10']
 frobby = ['sagelite-frobby-runtime >=10.9,<10.10']
@@ -424,7 +424,7 @@ full = [
   'sagelite-database-stein-watkins-mini >=10.9,<10.10',
   'sagelite-database-symbolic-data >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
-  'sagelite-flatter-runtime >=10.9,<10.10',
+  'sagelite-flatter-runtime >=10.9.post1,<10.10',
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
@@ -817,7 +817,7 @@ runtime = [
   'sagelite-d3js-runtime >=10.9,<10.10',
   'sagelite-dvipng-runtime >=10.9,<10.10',
   'sagelite-ecm-runtime >=10.9,<10.10',
-  'sagelite-flatter-runtime >=10.9,<10.10',
+  'sagelite-flatter-runtime >=10.9.post1,<10.10',
   'sagelite-fplll-data >=10.9,<10.10',
   'sagelite-frobby-runtime >=10.9,<10.10',
   'sagelite-gfan-runtime >=10.9,<10.10',
