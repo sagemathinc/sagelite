@@ -827,3 +827,27 @@ project page still listed only the seven `post8` and seven `post9` primary
 wheels. No duplicate build, validation, or publication was started. The cell
 remains below `full`, and this checkpoint makes no wheel, install, smoke, or
 full-suite claim.
+
+## Post16 midpoint compilation checkpoint
+
+The scheduled reconciliation at `2026-07-13T09:31:25Z` found the same two
+intended guest user-systemd services active with main PIDs `1388226` and
+`1388238`. The follow service still owned the only CIBW build container, and
+the validation watcher was still correctly waiting for the build exit-code
+artifact. No build or validation exit-code artifact existed. The exact source
+checkout remained clean at
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` and reported Sagelite
+`10.9.post16`.
+
+The native `aarch64` build was CPU-active and had reached compiled extension
+target 946 of 1,794. Its Sagelib package log was growing and eight concurrent
+compiler processes supplied additional forward-progress evidence. The Linux
+guest had about 108 GiB free, the outer macOS host had about 195 GiB free on
+`/Volumes/sage`, and the controller had about 103 GiB free on `/scratch`; all
+filesystems remained above their applicable thresholds.
+
+The directly fetched public `dev/manifest.json` still contained 177 wheels
+and fourteen Sagelite primary wheels: seven `post8` and seven `post9`. No
+`post15` or `post16` primary is public. No duplicate build, validation, or
+publication was started. The cell remains below `full`, and this checkpoint
+makes no new wheel, install, smoke, or full-suite claim.
