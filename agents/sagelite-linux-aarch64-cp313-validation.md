@@ -733,3 +733,50 @@ full gates only after a successful build. Progress and terminal artifacts are
 recorded in `follow-on.log`, `command.log`, `validation-follow.log`, and the
 phase-specific exit-code files. No `post16` wheel, installation, or smoke
 result is claimed yet.
+
+## Post15 full inventory completion and post16 build start
+
+The exact-SHA `post15` full validation finished at `2026-07-13T07:25:32Z`
+with exit code 21 after 8,274 seconds. The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation/full-post15/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation/full-post15/doctest-installed-linux-aarch64-cp313-post15-full-20260713-051221.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation/full-post15/doctest-installed-linux-aarch64-cp313-post15-full-20260713-051221.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation-full-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation-full-exit-code
+```
+
+The fresh strict wheel-only command installed
+`sagelite[all-needed-extras]==10.9.post15` from the same 177-wheel contract as
+the passing short gate, then ran the complete installed suite with
+`--optional sage --full --nthreads 8`. Installation, `pip check`, the runtime
+manifest, every selftest probe, and packaged pytest still passed. The complete
+doctest reducer saw 3,958 modules and 24 failed modules: 14 core-supported,
+seven timeout/performance, two optional-external, and one optional-data.
+
+The selected `post16` corrections cover the Giac doctest namespace failure and
+the flatter loader failures. The preserved inventory also identifies separate
+future classes: four modules requiring `gcc` or `pkg-config` during runtime
+doctests, two msolve modules receiving colon-terminated output, fpylll strategy
+data or portability failures, Giac/FriCAS/GAP3 protocol differences, numerical
+and interrupt-timing sensitivity, and seven module timeouts or aborts. These
+classes are not treated as fixed by inference and will be triaged from the
+fresh `post16` result.
+
+The durable follow-on observed the full exit artifact, preserved the evidence,
+removed only the disposable `post15` install, and started the clean exact-SHA
+`post16` rebuild at `2026-07-13T07:26:35Z` from:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260713-060447-39fd8bb94c9
+```
+
+At `2026-07-13T07:32:35Z`, the checked-out source reported
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46`, the native CIBW aarch64
+container was active, the build log continued to grow, the Linux guest had
+119,699,353,600 bytes free, and `/Volumes/sage` had about 199 GiB free. The
+validation watcher remained active and had not started early. The public
+manifest still contained 177 wheels and fourteen `post8`/`post9` primaries,
+with no `post15` or `post16` primary. No duplicate job or publication was
+started, and no `post16` wheel or validation result is claimed yet.
