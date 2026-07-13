@@ -626,3 +626,37 @@ manifest was rechecked and remained at 177 wheel entries with no public
 `post15` primary. No duplicate work or publication was started. The cell
 remains below `full` until the short gate and subsequent complete reduced full
 analysis both pass.
+
+## Post15 strict-gate pass and full-run start
+
+The exact-SHA `post15` strict short gate completed with exit code zero at
+`2026-07-13T05:07:16Z`. Its authoritative summary is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation/short-post15/validation-summary.md
+```
+
+The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post15`, `python -m pip check`, runtime
+manifest, and every `sagelite-selftest` probe passed. The installed
+`--optional=sage` sweep passed all 3,953 modules with zero failed modules, and
+packaged pytest reported 213 passed and 2 skipped. The strict preflight
+validated one repaired primary, 68 companion wheels, and 108 third-party
+wheels, 177 wheels and 16,513,108,451 bytes in total. Its wheelhouse digest was
+`17b9de665848c5fa74352f975f9cce5e9a00c388a16f5c003ba4933ed61006a2`.
+
+The durable validation service removed the completed short install and
+started a separate fresh full validation at `2026-07-13T05:07:21Z` with the
+same exact-SHA wheel contract, strict repaired-wheelhouse preflight, explicit
+`--optional sage`, and eight native aarch64 workers. Its active log is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260712-215857-9f1fa2c9e55/validation-full-command.log
+```
+
+At the transition, the full validation container was the only Sagelite
+container, the user-systemd validation service remained active, and the Linux
+guest had about 116 GiB free. The public manifest still contained 177 wheels,
+14 `post8`/`post9` Sagelite primaries, and no public `post15` primary. No
+publication was attempted. The cell remains below `full` until the complete
+full sweep and reduced analysis pass.
