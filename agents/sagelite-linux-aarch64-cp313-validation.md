@@ -660,3 +660,39 @@ guest had about 116 GiB free. The public manifest still contained 177 wheels,
 14 `post8`/`post9` Sagelite primaries, and no public `post15` primary. No
 publication was attempted. The cell remains below `full` until the complete
 full sweep and reduced analysis pass.
+
+## Post15 full-run early failures and flatter correction
+
+The fresh `post15` full sweep confirmed that the preceding Giac expectation
+change is incomplete. In `sage.calculus.calculus`, the Giac 1.9 branch refers
+to `dummy_laplace`, which is not defined in the isolated doctest namespace;
+the example raises `NameError` and its dependent comparison also fails. This
+is the earliest real failure currently recorded in the still-running full log
+and requires a separate focused source correction before another primary
+rebuild.
+
+An independent exact operation in the same untouched wheel-only container
+also reproduced one of the completed `post14` failure classes. Both
+`/run/install/full-post15/bin/flatter -h` and a two-by-two identity-matrix
+input exited 127 because the packaged `flatter-real` could not load
+`libgomp.so.1`. The previous companion smoke accepted the word `flatter` from
+this loader error without checking the exit status.
+
+Committed and pushed source
+`50d9c58916a8faa14503e41ad5b1b424fec7f71d` allocates Sagelite
+`10.9.post16` and flatter runtime `10.9.post1`, includes `libgomp` in the
+companion runtime closure, raises every Sagelite dependency floor, and makes
+the companion smoke require successful help and matrix operations. The
+focused companion/dependency-floor tests report 5 passed, and Python syntax
+and `git diff --check` validation passed. This is source-level regression
+evidence only; the corrected companion wheel has not yet been built, so no
+wheel or install claim is made.
+
+At `2026-07-13T05:41:12Z`, the durable `post15` validation service and its
+native aarch64 workers remained active, the guest had 101,949,771,776 bytes
+free, and no full exit-code artifact existed. The public `dev/manifest.json`
+still contained 177 wheels and fourteen `post8`/`post9` Sagelite primaries,
+with no `post15` or `post16` primary. No publication was attempted. The next
+iteration should correct the Giac doctest namespace failure, preserve the
+completed `post15` reduced inventory, and only then start an exact-SHA rebuild
+from the resulting coherent commit.
