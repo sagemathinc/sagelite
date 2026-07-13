@@ -950,3 +950,28 @@ and fourteen Sagelite primaries, all from `post8` and `post9`; no `post15` or
 `post16` primary is public. No duplicate build, validation, or publication was
 started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, or full-suite claim.
+
+## Post16 final wheel-construction checkpoint
+
+The scheduled reconciliation at `2026-07-13T12:04:35Z` found the same two
+intended guest user-systemd services active. The follow service continued to
+own the only native aarch64 CIBW container, and the validation service still
+waited for the absent build exit-code artifact. No completed wheel or
+validation container existed. The exact source checkout remained clean at
+`39fd8bb94c90c7249ff8d1f80a13d2ab9a93cc46` with Sagelite
+`10.9.post16`.
+
+The wheel-build Ninja log had advanced to 1,811 completed records. Sage's
+extension compilation had cleared, including the large symbolic-expression
+object; the remaining live child work was the bundled Maxima external project
+generating its manual and index files. Those Perl processes were CPU-active,
+and the Maxima build log continued to grow. The Linux guest had about 105 GiB
+free, the outer macOS host had about 191 GiB free on `/Volumes/sage`, and both
+the controller and `host` bulk filesystems had about 103 GiB free. All remained
+above the applicable thresholds.
+
+The public `dev/manifest.json` was fetched directly and still contained 177
+wheels and fourteen Sagelite primaries, all from `post8` and `post9`; no
+`post15` or `post16` primary is public. No duplicate build, validation, or
+publication was started. The cell remains below `full`, and this checkpoint
+makes no new wheel, install, smoke, or full-suite claim.
