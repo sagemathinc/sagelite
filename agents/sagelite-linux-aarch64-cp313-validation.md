@@ -3231,3 +3231,32 @@ free on `/Volumes/sage`, and controller `/scratch` has about 103 GiB free.
 The public manifest remains unchanged at 177 wheels and fourteen
 `post8`/`post9` Sagelite primaries. No `post33` wheel, install, smoke, short,
 or full result is claimed yet, and no publication was attempted.
+
+## Post33 pinned-frontend compilation checkpoint
+
+The scheduled reconciliation at `2026-07-14T22:01:57Z` found exactly the two
+intended guest user-systemd services active. The build service retained main
+PID `3284026` and owned the sole CIBW container; the validation watcher
+retained main PID `3284033` and remained correctly gated on the absent build
+exit artifact. No completed wheel, build exit artifact, validation exit
+artifact, or validation summary existed, so no duplicate work was started.
+
+The clean detached source checkout remained at exact pushed SHA
+`ddf660b7c871d4ae70f70feb993f1ccc21d29d11` and reported Sagelite
+`10.9.post33`. The actual CIBW container reported native Linux `aarch64`.
+The build had entered the 1,795-step Sagelib Ninja phase and was generating
+the bundled Maxima project. A progress sample showed the container using
+approximately all eight guest CPUs while native compiler processes remained
+active; the top-level command log was still buffered at that point. This is
+direct forward-progress evidence, not a wheel or validation result.
+
+The already-started build had 96,478,400,512 bytes free in the Linux guest;
+its pre-build check had passed the 100 GiB heavy-build threshold. The outer
+macOS host had 185,236,984 KiB free on `/Volumes/sage`, and controller
+`/scratch` had 109,861,904,384 bytes free. Controller `develop` and verified
+`origin/develop` were synchronized at
+`fdd267d301c140b733568ff2e1fd391b48dc4f84`. The directly fetched public
+`dev/manifest.json`, generated at `2026-07-09T17:17:42.743310+00:00`, remained
+unchanged at 177 wheel entries and fourteen Sagelite primaries, all from
+`post8` and `post9`; no `post33` primary is public. No publication was
+attempted, and this cell remains below `full`.
