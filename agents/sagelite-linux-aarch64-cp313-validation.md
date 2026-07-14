@@ -2471,3 +2471,33 @@ fresh-install acceptance. Durable artifacts are:
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-qepcad.log
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-qepcad-passed
 ```
+
+## Post28 exact-SHA rebuild start
+
+The correction was committed and pushed as
+`f239768d9a1c3f8b25e6926370c19095e386f5e3`, advancing Sagelite to
+`10.9.post28`. The verified `origin/develop` SHA matched that commit before
+the rebuild started.
+
+After preserving the `post27` wheels, strict summary, selftest log, partial
+doctest log, and focused evidence, the iteration removed only the 21 GiB
+disposable failed install. The guest then had 109,275,881,472 bytes free,
+above the 100 GiB heavy-build threshold.
+
+Exactly one native build and one gated validation watcher started as
+`sagelite-post28-build.service` and `sagelite-post28-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1
+```
+
+The services survived the launching SSH session with main PIDs `2626199` and
+`2626222`. The clean source checkout reports the exact pushed SHA, and the
+actual manylinux container reports Linux `aarch64`. The watcher will assemble
+a fresh strict 178-wheel closure and run wheel-only `--optional sage` short
+and full gates in sequence only after build success.
+
+At launch, `/Volumes/sage` had about 186 GiB free. The directly fetched public
+manifest remained unchanged at 177 wheels and fourteen Sagelite primaries,
+all from `post8` and `post9`. No `post28` wheel, install, smoke, short, or full
+result is claimed yet, and no publication was attempted.
