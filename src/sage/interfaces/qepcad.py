@@ -757,12 +757,16 @@ def _qepcad_cmd(memcells=None):
 
     EXAMPLES::
 
-        sage: from sage.interfaces.qepcad import _qepcad_cmd
+        sage: import shlex
+        sage: from sage.interfaces.qepcad import _qepcad_cmd, _qepcad_executable, _qepcad_root
         sage: s = _qepcad_cmd()
-        sage: s == 'env qe=%s qepcad '%SAGE_LOCAL
+        sage: args = shlex.split(s)
+        sage: args[:2] == ['env', f'qe={_qepcad_root()}']
+        True
+        sage: args[-1] == _qepcad_executable()
         True
         sage: s = _qepcad_cmd(memcells=8000000)
-        sage: s == 'env qe=%s qepcad +N8000000'%SAGE_LOCAL
+        sage: shlex.split(s)[-2:] == [_qepcad_executable(), '+N8000000']
         True
     """
     if memcells is not None:
