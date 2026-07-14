@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-13
+Last reviewed: 2026-07-14
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post16`, local) | the exact committed `post16` primary, matching Maxima wheel, and flatter `post1` companion passed the fresh strict 177-wheel short gate. The subsequent full installed sweep completed all 3,958 modules but failed 21: 10 core-supported, eight timeout/performance, two optional-external, and one optional-data. Committed `post17` source `3e6ff4288595e458add14482065345d67f63c36e` corrects the two-module msolve parser class and passes focused native operations against the bundled runtime. Its exact-SHA rebuild and gated validation are active; no `post17` wheel is claimed yet. The cell remains below `full` | none |
+| Linux aarch64 | 3.13 | yes (`post16`, local) | the exact committed `post16` primary, matching Maxima wheel, and flatter `post1` companion passed the fresh strict 177-wheel short gate. The subsequent full installed sweep completed all 3,958 modules but failed 21: 10 core-supported, eight timeout/performance, two optional-external, and one optional-data. Committed `post17` source `3e6ff4288595e458add14482065345d67f63c36e` corrects the two-module msolve parser class and passes focused native operations against the bundled runtime. Its sole exact-SHA native rebuild is healthy in the wheel-construction phase, and its gated validation service is waiting for build completion; no `post17` wheel is claimed yet. The cell remains below `full` | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |

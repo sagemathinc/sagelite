@@ -1169,3 +1169,27 @@ public manifest was rechecked with a pip user agent and still contained 177
 wheels and fourteen `post8`/`post9` Sagelite primaries; no `post16` or
 `post17` primary is public. No publication was attempted, no `post17` wheel is
 claimed yet, and this cell remains below `full`.
+
+## Post17 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T00:02:03Z` found the same two
+intended guest user-systemd services active. The build service owned the only
+CIBW container, while the validation service remained correctly blocked on
+the absent build exit-code artifact. No validation container had started and
+no completed `post17` wheel existed. The exact source checkout was clean at
+`3e6ff4288595e458add14482065345d67f63c36e` and reported Sagelite
+`10.9.post17`.
+
+The actual build environment reported native Linux `aarch64`. The build had
+entered its 1,795-target wheel-construction phase and was actively completing
+the bundled Maxima installation; live `make`, documentation generator, and
+Ninja processes supplied forward-progress evidence. The Linux guest had
+about 100 GiB free, the outer macOS host had about 187 GiB free on
+`/Volumes/sage`, and the controller had about 103 GiB free on `/scratch`.
+All remained above the applicable thresholds.
+
+The public `dev/manifest.json` was fetched directly and remained unchanged at
+177 wheels and fourteen Sagelite primaries, all from `post8` and `post9`.
+No `post17` primary is public. No duplicate build, validation, or publication
+was started. The cell remains below `full`, and this checkpoint makes no new
+wheel, install, smoke, or full-suite claim.
