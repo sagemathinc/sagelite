@@ -2395,3 +2395,27 @@ survived the launching SSH session, with main PIDs `2548082` and `2548087`.
 The public manifest remained at 177 wheels and fourteen `post8`/`post9`
 Sagelite primaries. No `post27` wheel, install, smoke, short, or full result is
 claimed yet, and no publication was attempted.
+
+## Post27 native compilation checkpoint
+
+The scheduled reconciliation at `2026-07-14T12:34:29Z` found exactly the two
+intended guest user-systemd services active. The build service, main PID
+`2548082`, owned the sole CIBW container, while the validation watcher, main
+PID `2548087`, remained correctly blocked on the absent build exit artifact.
+No validation container or short/full validation exit artifact existed.
+
+The exact source checkout was clean at committed SHA
+`b9c7d52af26cf35581ba17b5109a22b6da3aa1b8`. The native build environment
+reported Linux `aarch64` and had reached Sagelite extension compilation.
+Concurrent Cython, GCC, and G++ processes used all eight guest CPUs even while
+the top-level build log was buffered, providing forward-progress evidence.
+
+The Linux guest had 104,775,196,672 bytes free after the build began above
+the 100 GiB heavy-build threshold. The outer macOS host had about 186 GiB
+free on `/Volumes/sage`, and controller `/scratch` had about 103 GiB free.
+The controller was clean at `f7af7064ca1a02e7241de9cb87f92dfec57d4364`,
+and `origin/develop` reported the same SHA. The directly fetched public
+`dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
+Sagelite primaries, all from `post8` and `post9`; no `post27` primary is
+public. No duplicate build, validation, or publication was started. This
+checkpoint makes no new wheel, install, smoke, short, or full-suite claim.
