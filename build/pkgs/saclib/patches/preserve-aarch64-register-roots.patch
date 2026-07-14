@@ -9,10 +9,10 @@ Last-Update: 2026-07-14
 
 --- a/sysdep/linuxX86_64/GC.c
 +++ b/sysdep/linuxX86_64/GC.c
-@@ -15,6 +15,27 @@
- 
+@@ -16,4 +16,25 @@
  void GC(void)
  {
+-
 +#if defined(__aarch64__)
 +     unsigned long registers[10];
 +
@@ -34,14 +34,11 @@ Last-Update: 2026-07-14
 +        below the local array, so begin the scan at our frame boundary. */
 +     GCSI(sizeof(Word), (char *)__builtin_frame_address(0));
 +#else
- 
++
       Word top_of_stack;
- #define r(R) register int R = gc_dummy()
-@@ -23,6 +44,7 @@
+@@ -23,4 +44,4 @@
       r1 = gc_dummy(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16);
- 
+-
       GCSI(sizeof(Word),(char *)&top_of_stack);
 +#endif
  }
- 
- 
