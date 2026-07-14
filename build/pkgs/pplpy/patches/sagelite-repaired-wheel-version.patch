@@ -7,12 +7,10 @@ globally and can interpose on FLINT's lazy GMP bindings in Sagelite.
 diff --git a/meson.build b/meson.build
 --- a/meson.build
 +++ b/meson.build
-@@ -2,7 +2,7 @@ project(
+@@ -2,5 +2,5 @@ project(
      'pplpy',
      'cpp',
      'cython',
 -    version: '0.9.0',
 +    version: '0.9.0.post1',
  )
- 
- py = import('python').find_installation(pure: false)
