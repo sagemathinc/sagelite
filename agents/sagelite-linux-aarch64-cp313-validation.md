@@ -1974,3 +1974,89 @@ public `dev/manifest.json` remained at 177 wheel entries and fourteen Sagelite
 primaries, all from `post8` and `post9`; no `post23` artifact is public. No
 duplicate build or publication was started, and this cell remains below
 `full`.
+
+## Post23 short result and focused post24 FPLLL repair
+
+The exact-SHA native `post23` build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post23-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=d09d2087339ff6cb902542c4386b0a7c2140d9a96a4eb775097e7c2f6180a8de
+size=236405480
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=4cd3134e6fb17e12c45e4a65f4b26874b2ce844db3d437bd56c704902729bdcb
+size=66578984
+```
+
+The validation watcher assembled a fresh strict closure of 178 wheels totaling
+16,617,147,724 bytes. Its `SHA256SUMS` file has digest
+`1204220946779b02dfea5b5e9f2acad67d9e852fcdd8465422ed8a9ac055db86`.
+Every repaired-wheelhouse filename, dependency, tag, ABI, architecture, and
+version preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post23`, `python -m pip check`, runtime
+manifest, selftest, and packaged pytest all passed; pytest reported 215 passed
+and two skipped.
+
+The installed `--optional=sage --short 600` sweep nevertheless exited one. Its
+reduced analysis covered 3,954 modules and found three failures:
+
+```text
+sage.modules.free_module_integer
+sage.interfaces.qepcad
+sage.interfaces.gap3
+```
+
+The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-073737-9ca961f7c25/validation/short-post23/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-073737-9ca961f7c25/validation/short-post23/doctest-installed-linux-aarch64-cp313-post23-short-20260714-081505.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-073737-9ca961f7c25/validation/short-post23/doctest-installed-linux-aarch64-cp313-post23-short-20260714-081505.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-073737-9ca961f7c25/validation-short-exit-code
+```
+
+The selected coherent failure class was FPLLL strategy relocation. Sagelite
+already redirected `fpylll.config` and the public `BKZ.DEFAULT_STRATEGY`
+attribute to the packaged `sagelite-fplll-data` file. However,
+`BKZ.EasyParam` reads a separate module-level value copied by the Cython
+`fpylll.fplll.bkz_param` module during import. The stale private copy caused
+`L.shortest_vector()` to raise `RuntimeError: Cannot open strategies file`,
+and the subsequent virtual doctest observed the unmatched signal guard.
+
+Committed and pushed source `bd7e96a663bc612dcebb1abab34a7cba796ed75b`
+updates that private path copy alongside the public values, adds a regression
+assertion, and advances Sagelite to `10.9.post24`. Seven focused environment
+tests pass locally. A native focused probe mounted the exact committed
+`env.py` over the otherwise untouched failed `post23` install. It verified all
+three FPLLL path copies point to the existing companion strategy file,
+constructed `BKZ.EasyParam`, and passed all 152 doctests in
+`sage.modules.free_module_integer`. Its durable evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-fplll-focused-20260714-083615-bd7e96a663b/run-metadata.txt
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-fplll-focused-20260714-083615-bd7e96a663b/validation/focused.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-fplll-focused-20260714-083615-bd7e96a663b/validation/focused-exit-code
+```
+
+This is focused evidence, not a repaired `post24` wheel or short-suite pass.
+QEPCAD and GAP3 remain independent failure classes. After preserving the
+failed wheelhouse and final validation artifacts, the iteration removed only
+named disposable installs and superseded source trees. The guest then had
+106,339,316 KiB free, above the 100 GiB heavy-build threshold.
+
+Exactly one native `post24` build and one gated validation watcher started as
+`sagelite-post24-build.service` and `sagelite-post24-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b
+```
+
+The build records exact pushed source
+`bd7e96a663bc612dcebb1abab34a7cba796ed75b` and the native Linux aarch64
+CPython 3.13 CIBW contract. The watcher waits for the build exit artifact and
+will assemble a fresh strict closure, then run the short and full
+`--optional=sage` gates in sequence after build success. No `post24` wheel,
+install, smoke, short, or full result is claimed yet. The public manifest
+remains at 177 wheels and fourteen `post8`/`post9` Sagelite primaries; no
+publication was attempted, and this cell remains below `full`.
