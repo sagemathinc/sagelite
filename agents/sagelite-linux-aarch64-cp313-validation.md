@@ -3035,3 +3035,86 @@ The outer macOS host had about 179 GiB free on `/Volumes/sage`, and controller
 `dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
 Sagelite primaries, all from `post8` and `post9`; no `post32` primary is
 public. No publication was attempted, and this cell remains below `full`.
+
+## Post32 wheel result and pplpy/GMP diagnosis
+
+The exact pushed `post32` build from
+`7779ed60f7bccb52f2cbc07df66b590f2acc988c` completed with exit code zero
+at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-191407-7779ed60f7bc
+```
+
+It produced these repaired native Linux aarch64 wheels:
+
+```text
+sagelite-10.9.post32-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=07788a1f08d459cdac7bcf2d2d3c40659d5f65043b6c34c763a152c3762177e5
+size=236407149
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=bec71bf4eea2b0de2d97e92d5eaa1691739adb2a9867f790144052fdd8983127
+size=66578984
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256=c5bbe3e3f7cdd7fc573035fd05683705ca10f807c0429303e08807a7ef75d57a
+size=5242722
+```
+
+The watcher staged a strict closure of one primary, 68 companions, and 109
+third-party wheels. The 178 wheels total 16,617,148,903 bytes and have
+wheelhouse digest
+`9b4ec99170f96beb282ebab99fe09ea4ede50d7bcadefd6f31b017bca4ffebf8`.
+Every strict filename, dependency, tag, ABI, architecture, version, and
+repaired-primary preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post32`, `pip check`, runtime collection,
+and every selftest probe passed.
+
+The installed `--optional=sage --short 600` runner doctested 3,953 files.
+The reducer recorded one failed module out of 3,954 and two failed examples,
+both the sparse and dense `(1+x+t)^(3^10)` examples in
+`sage.rings.polynomial.polynomial_element`. GAP3 passed, validating the
+`post32` correction from a fresh wheel-only install. FriCAS and QEPCAD also
+remained clean. The watcher correctly did not start the full gate. The
+authoritative short summary and log are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-191407-7779ed60f7bc/validation/short-post32/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-191407-7779ed60f7bc/validation/short-post32/doctest-installed-linux-aarch64-cp313-post32-short-20260714-195105.log
+```
+
+The polynomial power itself passed repeatedly in a clean process. Reducing
+the preceding doctest state identified `newton_polytope()` as the trigger.
+The PyPI `pplpy 0.9.0` aarch64 wheel statically embeds PPL and GMP in each
+extension and globally defines GMP symbols such as `__gmpn_mul_fft`. Loading
+that wheel after Sagelite's repaired FLINT interposes its private GMP on
+FLINT's lazy bindings. The minimal polyhedron-then-power sequence then emits:
+
+```text
+FLINT exception (General error): FFT prime 1108307720798209 does not satisfy bounds for arithmetic
+```
+
+A focused wheel built `pplpy 0.9.0.post1` against the shared PPL/GMP prefix
+and repaired it with auditwheel. Its extension modules require the repaired
+hashed PPL and GMP libraries and define no GMP symbols. The focused wheel is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-191407-7779ed60f7bc/focused-flint-post32/pplpy-dynamic-build/repaired/pplpy-0.9.0.post1-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+sha256=b3d55bfcd438426b7c324965033f2d8e2d9b21a92a8f28500a6bfdec8b65abf0
+size=9351850
+```
+
+Installed only into a hard-linked clone of the failed validation venv, that
+wheel made the minimal trigger pass and made the entire polynomial-element
+module pass all 2,848 doctests under the exact original seed
+`98678129836975045758112824357275503531`. The durable focused log is
+`focused-flint-post32/pplpy-post1-focused.log`. This is modified-venv focused
+proof, not acceptance evidence.
+
+The `post33` source correction makes this a Linux packaging contract: Linux
+requires `pplpy >=0.9.0.post1`, the Linux repair workflow builds that version
+from the checksummed Sage SPKG against the shared prefix, auditwheel repairs
+it, and the helper rejects extensions exporting GMP symbols. A fresh
+exact-SHA `post33` build and wheel-only short/full gate remain required. No
+publication was attempted, and this cell remains below `full`.

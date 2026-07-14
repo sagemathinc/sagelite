@@ -1,0 +1,18 @@
+The Linux repair workflow builds pplpy against Sage's shared PPL and GMP
+prefix.  Give that binary-compatible but materially different wheel a local
+version so dependency resolution cannot silently replace it with upstream's
+statically linked Linux wheel.  That wheel exports its private GMP symbols
+globally and can interpose on FLINT's lazy GMP bindings in Sagelite.
+
+diff --git a/meson.build b/meson.build
+--- a/meson.build
++++ b/meson.build
+@@ -2,7 +2,7 @@ project(
+     'pplpy',
+     'cpp',
+     'cython',
+-    version: '0.9.0',
++    version: '0.9.0.post1',
+ )
+ 
+ py = import('python').find_installation(pure: false)

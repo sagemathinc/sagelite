@@ -1676,6 +1676,37 @@ def test_linux_repair_builds_pari_data_companion_wheel():
     assert "SAGELITE_PARI_DATA_DIR" in repair_text
 
 
+def test_linux_uses_repaired_dynamically_linked_pplpy_wheel():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    dependencies = set(pyproject["project"]["dependencies"])
+    assert 'pplpy >=0.9.0.post1; sys_platform == "linux"' in dependencies
+    assert (
+        'pplpy >=0.8.6; sys_platform != "win32" and sys_platform != "linux"'
+        in dependencies
+    )
+
+    patch = (
+        ROOT
+        / "build/pkgs/pplpy/patches/sagelite-repaired-wheel-version.patch"
+    ).read_text()
+    assert "version: '0.9.0.post1'" in patch
+
+    repair_text = (
+        ROOT / ".github/workflows/repair-wheel-linux.sh"
+    ).read_text()
+    assert "build_pplpy_wheel()" in repair_text
+    assert "download_sage_spkg pplpy" in repair_text
+    assert "auditwheel repair" in repair_text
+    assert "pplpy.libs/$library-*.so*" in repair_text
+    assert "nm -D --defined-only" in repair_text
+    assert "awk '$3 ~ /^__gmp/" in repair_text
+    assert "Shared library: \\[libppl-" in repair_text
+    assert "Shared library: \\[libgmp-" in repair_text
+    assert "\nbuild_pplpy_wheel\n" in repair_text
+
+
 def test_linux_repair_builds_pari_runtime_companion_wheel():
     repair_script = ROOT / ".github" / "workflows" / "repair-wheel-linux.sh"
     repair_text = repair_script.read_text()

@@ -79,6 +79,109 @@ extract_tarball() {
   tar -xf "$tarball" -C "$extract_dir"
 }
 
+build_pplpy_wheel() {
+  local build_root="$tmpdir/pplpy-wheel"
+  local extract_dir="$build_root/source"
+  local raw_dir="$build_root/raw"
+  local inspect_dir="$build_root/inspect"
+  local tarball
+  local source_dir
+  local raw_pplpy_wheel
+  local repaired_pplpy_wheel
+  local needed
+  local -a extensions
+
+  tarball="$(download_sage_spkg pplpy)"
+  extract_tarball "$tarball" "$extract_dir"
+  source_dir="$(find "$extract_dir" -mindepth 1 -maxdepth 1 -type d -print -quit)"
+  if [ -z "$source_dir" ] || [ ! -f "$source_dir/meson.build" ]; then
+    echo "pplpy source directory not found below $extract_dir" >&2
+    exit 1
+  fi
+
+  patch -d "$source_dir" -p1 \
+    < /project/build/pkgs/pplpy/patches/sagelite-repaired-wheel-version.patch
+
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade \
+    build meson-python Cython cysignals gmpy2
+  mkdir -p "$raw_dir" "$dest_dir"
+  env -u PIP_CONSTRAINT \
+    PATH="$prefix/bin:$PATH" \
+    LD_LIBRARY_PATH="$prefix/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+    LIBRARY_PATH="$prefix/lib${LIBRARY_PATH:+:$LIBRARY_PATH}" \
+    CPATH="$prefix/include${CPATH:+:$CPATH}" \
+    PKG_CONFIG_PATH="$prefix/lib/pkgconfig:$prefix/share/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" \
+    CMAKE_PREFIX_PATH="$prefix${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" \
+    SAGE_LOCAL="$prefix" \
+    "$python_bin" -m build \
+      --wheel \
+      --no-isolation \
+      --outdir "$raw_dir" \
+      "$source_dir"
+
+  raw_pplpy_wheel="$(find "$raw_dir" -maxdepth 1 -type f \
+    -name 'pplpy-0.9.0.post1-*.whl' -print -quit)"
+  if [ -z "$raw_pplpy_wheel" ]; then
+    echo "pplpy build did not produce the expected 0.9.0.post1 wheel" >&2
+    find "$raw_dir" -maxdepth 1 -type f -print >&2
+    exit 1
+  fi
+
+  auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$raw_pplpy_wheel"
+  repaired_pplpy_wheel="$(find "$dest_dir" -maxdepth 1 -type f \
+    -name 'pplpy-0.9.0.post1-*.whl' -print -quit)"
+  if [ -z "$repaired_pplpy_wheel" ]; then
+    echo "auditwheel did not produce the expected repaired pplpy wheel" >&2
+    exit 1
+  fi
+
+  rm -rf "$inspect_dir"
+  mkdir -p "$inspect_dir"
+  "$python_bin" - "$repaired_pplpy_wheel" "$inspect_dir" <<'PY'
+from pathlib import Path
+import sys
+import zipfile
+
+wheel = Path(sys.argv[1])
+destination = Path(sys.argv[2])
+with zipfile.ZipFile(wheel) as archive:
+    archive.extractall(destination)
+PY
+
+  for library in libppl libgmp libgmpxx; do
+    if ! compgen -G "$inspect_dir/pplpy.libs/$library-*.so*" >/dev/null; then
+      echo "repaired pplpy wheel does not bundle $library" >&2
+      exit 1
+    fi
+  done
+
+  mapfile -t extensions < <(
+    find "$inspect_dir/ppl" -maxdepth 1 -type f -name '*.so' -print
+  )
+  if [ "${#extensions[@]}" -eq 0 ]; then
+    echo "repaired pplpy wheel contains no extension modules" >&2
+    exit 1
+  fi
+  for extension in "${extensions[@]}"; do
+    if nm -D --defined-only "$extension" |
+       awk '$3 ~ /^__gmp/ { found = 1 } END { exit !found }'; then
+      echo "pplpy extension exports private GMP symbols: $extension" >&2
+      exit 1
+    fi
+  done
+
+  needed="$(find "$inspect_dir/ppl" -maxdepth 1 -type f -name '*.so' \
+    -exec readelf -d {} \;)"
+  if ! grep -Eq 'Shared library: \[libppl-[^]]+\.so' <<<"$needed" ||
+     ! grep -Eq 'Shared library: \[libgmp-[^]]+\.so' <<<"$needed"; then
+    echo "pplpy extensions do not dynamically require repaired PPL and GMP" >&2
+    printf '%s\n' "$needed" >&2
+    exit 1
+  fi
+
+  ls -lh "$repaired_pplpy_wheel"
+}
+
 build_gap_runtime_companion() {
   case "$(basename "$raw_wheel")" in
     *-cp312-cp312-*) ;;
@@ -2463,6 +2566,7 @@ fi
 
 auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
 verify_repaired_sagelite_wheel
+build_pplpy_wheel
 build_cunningham_tables_companion
 build_d3js_runtime_companion
 build_mathjax_runtime_companion
