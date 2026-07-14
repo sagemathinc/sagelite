@@ -1812,3 +1812,52 @@ wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`;
 no `post22` primary is public. No duplicate build, validation, or publication
 was started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, or full-suite claim.
+
+## Post22 wheel completion and strict-gate runtime checkpoint
+
+The exact-SHA native build completed with exit code zero at
+`2026-07-14T06:20:20Z`. Its source checkout is clean at
+`2efaab7ea74e19c6169c3da8eca5e1b28cf9697c` with Sagelite
+`10.9.post22`. It produced:
+
+```text
+sagelite-10.9.post22-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=47c2fdb65f31416854cf8f9b13cb0691e814b2b37a1dcb4251855ed5f01a6c24
+size=227683669
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=23d51565e76abeaaaac9d1a896bc13672612d041eb52ff87ab9113ecbdce5c60
+size=66578984
+```
+
+The validation watcher added the compatible pinned
+`ziglang 0.16.0` aarch64 wheel and assembled a fresh strict closure of one
+primary, 68 companions, and 109 third-party wheels. The 178 staged wheels
+total 16,608,425,913 bytes, with validator wheelhouse digest
+`e892d24d54d66f2ccba7b0ba0d5c8cfe3cf501bf03b5e921e45fc5d19d4db985`
+and `SHA256SUMS` file digest
+`82bb1d0b3a0d9bf273595039fe0233f1e01033a1ae3f1ce4235b7d9121be3755`.
+Every repaired-wheelhouse filename, dependency, tag, ABI, architecture, and
+version preflight passed.
+
+The fresh native Linux aarch64 wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post22` and `python -m pip check` passed.
+Runtime manifest and summary collection completed, and every
+`sagelite-selftest` probe passed. The installed `--optional=sage --short 600`
+sweep then started all 3,953 modules with eight workers. The Zig fallback is
+being invoked by installed Cython compilation, but the still-running sweep
+has exposed that the general `sage.misc.cython` examples also require
+packaged development headers such as `factory/factory.h`. This is a remaining
+installed compiler-runtime closure issue rather than a successful short gate.
+The log has also reproduced the independent GAP3 protocol, fpylll strategy
+data, and QEPCAD runtime classes already present in the `post21` inventory.
+
+At the checkpoint, `sagelite-post22-validate.service` was active and owned the
+only Sagelite container, which reported native `aarch64` and sustained
+multi-core progress. No short-validation exit code or reduced final analysis
+existed. The Linux guest had 84,054,908,928 bytes free, above the 30 GiB
+test-only threshold; `/Volumes/sage` had about 165 GiB free, and the
+controller had about 103 GiB free on `/scratch`. The public
+`dev/manifest.json` remained unchanged at 177 wheels and fourteen
+`post8`/`post9` Sagelite primaries; no `post22` primary is public. No duplicate
+work or publication was started, and this cell remains below `full`.
