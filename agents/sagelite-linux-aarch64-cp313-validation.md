@@ -3202,3 +3202,32 @@ pplpy contract tests pass, as do shell syntax and `git diff --check`. This is
 repair-tool evidence only; a fresh exact-SHA build and wheel-only gates remain
 required. The public manifest still contains 177 wheels and fourteen
 `post8`/`post9` primaries, and no publication was attempted.
+
+## Post33 pinned-frontend rebuild start
+
+The correction was committed and pushed as exact source
+`ddf660b7c871d4ae70f70feb993f1ccc21d29d11`, retaining Sagelite
+`10.9.post33`. The verified `origin/develop` SHA matched that commit before
+launch. The failed run's command log, metadata, exit artifacts, and disk
+records remain preserved; it had no durable wheel or validation environment.
+Removing only its 1.5 GiB disposable source clone and small host venv raised
+the Linux guest to 104,992,180 KiB free, just above the 100 GiB heavy-build
+threshold.
+
+Exactly one native replacement build and one gated watcher started as
+`sagelite-post33-retry-build.service` and
+`sagelite-post33-retry-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-214151-ddf660b7c87
+```
+
+After the controller SSH session exited, both transient user-systemd services
+remained active with main PIDs `3284026` and `3284033`. The build began a
+clean exact-SHA clone while the watcher remained blocked on the absent build
+exit artifact. The actual backend reports Linux `aarch64`; no competing
+Sagelite process or container exists. The outer macOS host has about 185 GiB
+free on `/Volumes/sage`, and controller `/scratch` has about 103 GiB free.
+The public manifest remains unchanged at 177 wheels and fourteen
+`post8`/`post9` Sagelite primaries. No `post33` wheel, install, smoke, short,
+or full result is claimed yet, and no publication was attempted.
