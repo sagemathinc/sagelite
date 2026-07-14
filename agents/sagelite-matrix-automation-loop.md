@@ -169,8 +169,8 @@ https://sagelite.sagemath.org/dev/simple/
 ```
 
 The current preview release is `10.9.post9`. At the last review, the public
-R2 manifest contained 177 wheel files and seven `sagelite-10.9.post9` primary
-wheels.
+R2 manifest contained 177 wheel files and fourteen Sagelite primary wheels:
+seven each for `10.9.post8` and `10.9.post9`.
 
 Status meanings:
 
@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post17`, local) | the exact committed `post17` primary and matching Maxima wheel built successfully. Its fresh strict 177-wheel install, `pip check`, selftest, and packaged pytest passed, but the standard sweep failed 11 modules: nine core-supported and two optional-external. The parser correction worked; the remaining msolve failures showed that native msolve reports coordinates in a different variable order. Committed `post18` source `8c0f5c742d38ff40ca885d1d45e469280c0c252b` preserves the polynomial ring's canonical generator order and passes focused native rational, real, and finite-field operations against the untouched `post17` install. The exact-SHA native `post18` rebuild is CPU-active in its sole CIBW container, and its gated validation watcher is waiting for build completion. No `post18` wheel is claimed yet. The cell remains below `full` | none |
+| Linux aarch64 | 3.13 | yes (`post18`, local) | the exact committed `post18` primary and matching Maxima wheel built successfully. Its fresh strict 177-wheel install, `pip check`, selftest, and packaged pytest passed, but the standard sweep failed 12 modules: ten core-supported and two optional-external. The msolve values and key associations were correct; Sage's doctest pretty printer re-sorted the converting dictionaries into polynomial monomial order, and four remaining msolve examples also needed deterministic solution ordering. Exact committed `post19` source `8f8586207b37010efd2d82e545cb23fa330c0f1e` preserves `KeyConvertingDict` insertion order and stabilizes those result checks. Against the untouched `post18` install, all 76 converting-dictionary and 57 msolve focused doctests pass natively. Its exact-SHA rebuild and gated validation watcher are active; no `post19` wheel is claimed yet. The cell remains below `full` | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |

@@ -1289,3 +1289,78 @@ entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
 `post17` or `post18` primary is public. No duplicate build, validation, or
 publication was started. The cell remains below `full`, and this checkpoint
 makes no new wheel, install, smoke, or full-suite claim.
+
+## Post18 wheel result and post19 display-order iteration
+
+The exact-SHA native `post18` build completed with exit code zero and
+produced:
+
+```text
+sagelite-10.9.post18-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=736e708f8b5e37371a147f5ddf2e0a375a47e6f0409ec3c4ea170f61aaae89e7
+size=227682377
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=4f0cb673c5e195244acbaf4c1496222735fdc8de4e348987a4dd7ea12a5794b7
+size=66578984
+```
+
+The fresh strict short gate staged one primary, 68 companions, and 108
+third-party wheels: 177 wheels totaling 16,513,215,151 bytes, with
+wheelhouse digest
+`68525ff9947c5b2be0a2bbba8015813b9e76a2c63a64c06124a3cecf270f14e3`.
+The wheel-only install of
+`sagelite[all-needed-extras]==10.9.post18`, `python -m pip check`, runtime
+manifest, every selftest probe, and packaged pytest with 213 passed and two
+skipped all passed. The installed `--optional=sage` sweep completed 3,954
+modules but failed 12: ten `core-supported` and two `optional-external`.
+Its authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-003540-8c0f5c742d3/validation/short-post18/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-003540-8c0f5c742d3/validation/short-post18/doctest-installed-linux-aarch64-cp313-post18-short-20260714-011315.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-003540-8c0f5c742d3/validation/short-post18/doctest-installed-linux-aarch64-cp313-post18-short-20260714-011315.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-003540-8c0f5c742d3/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-003540-8c0f5c742d3/validation-short-exit-code
+```
+
+The `post18` msolve correction preserved every coordinate value and its
+variable association, but the Sage doctest rich-output hook re-sorted
+`KeyConvertingDict` keys by polynomial monomial comparison order. That
+changed canonical `x, y` presentation back to `y, x`. Three explicitly
+sorted finite-field checks and one complex-root check also retained
+platform-sensitive solution ordering.
+
+Committed and pushed `post19` source
+`8f8586207b37010efd2d82e545cb23fa330c0f1e` makes the established
+`KeyConvertingDict` pretty-print hook retain insertion order, keeps ordinary
+doctest dictionaries deterministically sorted, and stabilizes the affected
+msolve solution checks. An exact-commit native container overlaid only the
+corrected pure-Python modules on the untouched `post18` installed wheel.
+All 76 converting-dictionary tests and all 57 msolve tests passed. This is
+focused regression evidence rather than wheel acceptance:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-post19-focused-20260714-8f8586207b3/focused-doctest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-post19-focused-20260714-8f8586207b3/focused-doctest-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-post19-focused-20260714-8f8586207b3/run-metadata.txt
+```
+
+After preserving the `post18` wheelhouse, validation summary, reduced
+analysis, and logs, the iteration removed only its 21 GiB disposable failed
+install through its owning validation container environment. The guest then
+had 113,125,724,160 bytes free, above the 100 GiB heavy-build threshold.
+Exactly one native rebuild and one gated watcher started as
+`sagelite-post19-build.service` and `sagelite-post19-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3
+```
+
+The services record exact source checkout verification before building and
+will assemble a fresh strict closure and run wheel-only `--optional sage`
+short and full gates only after build success. At the checkpoint the clean
+source clone was in progress and the watcher was waiting. The public manifest
+remained unchanged at 177 wheels and fourteen `post8`/`post9` Sagelite
+primaries. No publication was attempted, no `post19` wheel is claimed yet,
+and this cell remains below `full`.
