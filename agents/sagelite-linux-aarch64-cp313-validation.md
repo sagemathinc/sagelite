@@ -1435,3 +1435,63 @@ and fourteen Sagelite primaries, all from `post8` and `post9`; no `post19`
 primary is public. No publication was attempted. The cell remains below
 `full` until the short gate, its reduced analysis, and the gated full run all
 complete successfully.
+
+## Post19 short result and post20 display follow-up
+
+The exact-SHA `post19` short gate finished with exit code one. Its fresh
+wheel-only installation, `python -m pip check`, runtime manifest, every
+`sagelite-selftest` probe, and packaged pytest with 213 passed and two skipped
+all passed. Reduced analysis covered 3,954 modules and found 13 failed
+modules: eleven `core-supported` and two `optional-external`. The actionable
+buckets were five runtime exceptions, four output mismatches, two numeric
+tolerance failures, one GAP3 runtime error, and one stale-build-path failure.
+The authoritative failure artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation/short-post19/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation/short-post19/doctest-installed-linux-aarch64-cp313-post19-short-20260714-022718.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation/short-post19/doctest-installed-linux-aarch64-cp313-post19-short-20260714-022718.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation-short-exit-code
+```
+
+One coherent five-example class was the follow-through from the `post19`
+`KeyConvertingDict` insertion-order change. The msolve numeric tolerance
+marker was on a continuation line, which the doctest tolerance parser does
+not inspect, while msolve-backed polynomial ideals and Boolean polynomial
+sequences still expected the old sorted-key rendering. Exact committed and
+pushed `post20` source
+`87330f2482d5fd788cfb737c4a7c4f4f32c06301` moves the tolerance marker to
+the parsed source line and aligns those expectations without changing values
+or key associations. It retains the established finite-field solution sorter
+after a `key=str` experiment changed the fragile randomized solver result.
+
+Against the untouched installed `post19` runtime, pure-Python `post20`
+overlays passed all 54 msolve, 986 multivariate ideal, and 314 Boolean
+polynomial sequence doctests together. The 986-test ideal module also passed
+three independent repeat runs. This is focused regression evidence, not
+wheel acceptance:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post20-focused-20260714-working/focused-doctest-final.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post20-focused-20260714-working/focused-final-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post20-focused-20260714-working/focused-ideal-repeat.log
+```
+
+After preserving the `post19` wheelhouse, validation summary, reduced
+analysis, metadata, and logs, the iteration removed only its 21 GiB
+disposable failed install. The guest then had 111,254,667,264 bytes free,
+above the 100 GiB heavy-build threshold. The exact-SHA native rebuild and
+gated short/full watcher started as `sagelite-post20-build.service` and
+`sagelite-post20-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d
+```
+
+The clean source checkout exactly matched the recorded commit and reported
+`10.9.post20`. The active CIBW container reported Linux `aarch64`, while the
+watcher remained correctly blocked on the absent build exit artifact. The
+public manifest remained at 177 wheels and fourteen `post8`/`post9` Sagelite
+primaries. No publication was attempted, no `post20` wheel is claimed, and
+the cell remains below `full`.
