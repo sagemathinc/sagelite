@@ -99,11 +99,8 @@ def test_cython_compiler_commands_silence_zig_internal_warnings(monkeypatch):
     monkeypatch.setattr(env.importlib_metadata, "version", lambda package: "0.16.0")
 
     assert env._cython_compiler_commands() == {
-        "CC": f"{sys.executable} -m ziglang cc -w",
-        "CXX": (
-            f"{sys.executable} -m ziglang c++ -w "
-            "-Wno-nullability-completeness"
-        ),
+        "CC": f"{sys.executable} -m ziglang cc",
+        "CXX": f"{sys.executable} -m ziglang c++ -Wno-nullability-completeness",
     }
 
 

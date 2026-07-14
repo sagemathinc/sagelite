@@ -1591,13 +1591,12 @@ def _cython_compiler_commands() -> dict[str, str]:
         return {}
 
     commands = {
-        "CC": shlex.join([sys.executable, "-m", "ziglang", "cc", "-w"]),
+        "CC": shlex.join([sys.executable, "-m", "ziglang", "cc"]),
         "CXX": shlex.join([
             sys.executable,
             "-m",
             "ziglang",
             "c++",
-            "-w",
             "-Wno-nullability-completeness",
         ]),
     }
