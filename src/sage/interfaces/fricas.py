@@ -203,6 +203,7 @@ from sage.env import DOT_SAGE, LOCAL_IDENTIFIER
 from sage.interfaces.tab_completion import ExtraTabCompletion
 from sage.interfaces.expect import Expect, ExpectElement, FunctionElement, ExpectFunction
 from sage.misc.instancedoc import instancedoc
+from sage.misc.temporary_file import tmp_dir
 from sage.rings.integer_ring import ZZ
 from sage.rings.rational_field import QQ
 from sage.misc.lazy_import import lazy_import
@@ -350,12 +351,12 @@ class FriCAS(ExtraTabCompletion, Expect):
         self.eval(FRICAS_HELPER_CODE, reformat=False)
         # compile fricas.spad
         in_path = files('sage.interfaces').joinpath("fricas.spad")
-        out_path = os.path.join(DOT_SAGE, 'fricas')
-        try:
-            os.makedirs(out_path)
-        except OSError:
-            if not os.path.isdir(out_path):
-                raise
+        # The FriCAS compiler writes several constructor files with fixed
+        # names.  A shared directory lets parallel doctest workers overwrite
+        # each other's partially written files, leaving constructors such as
+        # ``UnaryExport`` unavailable.  Each interface process already
+        # recompiles these helpers, so keep its output private and disposable.
+        out_path = tmp_dir(name='fricas_')
         self.eval(f")cd {out_path}")
         self.eval(f")compile {in_path}")
         # register translations between SymbolicRing and FriCAS Expression
