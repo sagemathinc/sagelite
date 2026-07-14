@@ -2854,3 +2854,31 @@ fetched public manifest remains at 177 wheels and fourteen `post8`/`post9`
 Sagelite primaries; no `post30` or `post31` primary is public. No `post31`
 wheel, install, smoke, short, or full result is claimed yet, and no
 publication was attempted.
+
+## Post31 native compilation checkpoint
+
+The scheduled reconciliation at `2026-07-14T18:01:41Z` found exactly the two
+intended guest user-systemd services active. The build service, main PID
+`3016238`, owned the sole CIBW container, while the validation watcher, main
+PID `3016240`, remained correctly blocked on the absent build exit artifact.
+No validation container, completed `post31` wheel, build exit artifact, or
+validation exit artifact existed.
+
+The clean detached source checkout remained at exact pushed SHA
+`b50050c219cfb6ef8a13ea8807448a65e7870d9d` and reported Sagelite
+`10.9.post31`. The actual build environment reported native Linux `aarch64`.
+Its Sagelib build had advanced into compiled matrix and matroid extensions;
+eight concurrent GCC and G++ compiler processes sustained approximately all
+eight guest CPUs, providing direct forward-progress evidence while the
+top-level command log was buffered.
+
+The Linux guest had 100,718,071,808 bytes free after the build began above
+the 100 GiB heavy-build threshold. The outer macOS host had about 181 GiB
+free on `/Volumes/sage`, and controller `/scratch` had 109,861,953,536 bytes
+free. The controller and verified `origin/develop` were synchronized at
+`0aa613541942639b810ce9535d1685e612490e55`. The directly fetched public
+`dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
+Sagelite primaries, all from `post8` and `post9`; no `post31` primary is
+public. No duplicate build, validation, or publication was started. The cell
+remains below `full`, and this checkpoint makes no new wheel, install, smoke,
+short, or full-suite claim.
