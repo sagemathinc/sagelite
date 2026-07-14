@@ -1391,3 +1391,47 @@ wheels and fourteen Sagelite primaries, all from `post8` and `post9`; no
 `post19` primary is public. No duplicate build, validation, or publication
 was started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, or full-suite claim.
+
+## Post19 wheel completion and strict-gate checkpoint
+
+The exact-SHA native build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post19-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=ad8feb0fb8a8c66acd813568bb063cd9b3dba0ff3b0b67bfa1d3254ba726b899
+size=227682587
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=dfe99433da28e83e7f7b7ee7adc0048c59ecb2539d79a554c3b52bc5aea9de48
+size=66578984
+```
+
+The validation watcher assembled a fresh strict closure of one primary, 68
+companions, and 108 third-party wheels: 177 wheels totaling 16,513,215,361
+bytes. Its `SHA256SUMS` digest is
+`4461265f420ca1d3e98ebabe64ae83ecd0b2e2c6add8b52aabf781b961ddf681`.
+Every repaired-wheelhouse preflight passed. The fresh wheel-only installation
+of `sagelite[all-needed-extras]==10.9.post19`, `python -m pip check`, runtime
+manifest, and every `sagelite-selftest` probe also passed.
+
+At `2026-07-14T02:33:05Z`, the installed `--optional=sage` short gate was
+healthy and running all 3,953 modules across eight native aarch64 workers. It
+had emitted only a slow-test warning and no failure, while the container used
+approximately eight CPUs. The validation service remains the only active
+automation-owned job for this target, and no duplicate was started. Its
+durable artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation/short-post19/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation/short-post19/doctest-installed-linux-aarch64-cp313-post19-short-20260714-022718.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-msolve-20260714-014940-8f8586207b3/validation-short-command.log
+```
+
+The Linux guest had about 84 GiB free, the outer macOS host had about 170 GiB
+free on `/Volumes/sage`, and the controller had about 103 GiB free on
+`/scratch`. The public `dev/manifest.json` remained unchanged at 177 wheels
+and fourteen Sagelite primaries, all from `post8` and `post9`; no `post19`
+primary is public. No publication was attempted. The cell remains below
+`full` until the short gate, its reduced analysis, and the gated full run all
+complete successfully.
