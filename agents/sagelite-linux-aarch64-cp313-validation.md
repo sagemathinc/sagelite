@@ -3302,3 +3302,60 @@ Controller `develop` and verified `origin/develop` both reported exact SHA
 `2026-07-09T17:17:42.743310+00:00`, remained at 177 wheels and fourteen
 Sagelite primaries, all from `post8` and `post9`. No `post33` wheel, install,
 smoke, short, or full result is claimed yet, and no publication was attempted.
+
+## Post33 fixed-interpreter rebuild start
+
+The exact pushed `17c0fb4d05e3c0ff94ed057472bb9840d23244ae`
+replacement completed with build and watcher exit code one. Its frontend
+overlay itself succeeded and the immediate probe loaded complete
+`build 1.2.2.post1` from `/opt/python/cp313-cp313`. The pplpy phase then
+prepended the Sage prefix to `PATH` while `python_bin` was still the bare name
+`python3`; that changed interpreter startup through the prefix's `python3`
+symlink and selected its incomplete site-packages layer. The resulting
+`python -m build` invocation failed exactly as before. The repaired primary
+existed only inside cibuildwheel's disposable container, no durable wheel was
+emitted, and validation never started. The preserved failed run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-223711-17c0fb4d05e3
+```
+
+Committed and pushed source
+`f67e0eadcb7486dce2dda3340bbd1edecee992f6` resolves cibuildwheel's selected
+Python to an absolute path before any repair phase changes `PATH`. A focused
+native arm64 probe against the same persistent Sage prefix and the exact
+manylinux image proved both sides of the diagnosis: bare `python3` reproduced
+the damaged prefix frontend, while the resolved
+`/opt/python/cp313-cp313/bin/python3` continued to load the complete pinned
+frontend and ran `python -m build` after the prefix was prepended. Its durable
+log is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post33-python-selection-focused-20260714/native-python-selection.log
+```
+
+Five focused repair and pplpy contract tests pass, as do shell syntax and
+`git diff --check`. After preserving the failed run's metadata, exit files,
+and logs, only its 1.5 GiB disposable source and 17 MiB host venv were removed.
+The guest then had 107,507,675,136 bytes free, just above the 100 GiB
+heavy-build threshold.
+
+Exactly one native replacement build and one gated watcher are running as
+`sagelite-post33-python-build.service` and
+`sagelite-post33-python-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74
+```
+
+The clean detached checkout reports the exact pushed SHA `f67e0eadcb7` and
+Sagelite `10.9.post33`. The active manylinux build container reports Linux
+`aarch64`; it is preparing the persistent native prefix, and the watcher
+remains correctly blocked on the absent build exit artifact. The outer macOS
+host has 194,717,216 KiB free on `/Volumes/sage`, and controller `/scratch`
+has 109,861,867,520 bytes free.
+
+The directly fetched public `dev/manifest.json`, generated at
+`2026-07-09T17:17:42.743310+00:00`, remains at 177 wheels and fourteen
+Sagelite primaries, all from `post8` and `post9`. No `post33` wheel, install,
+smoke, short, or full result is claimed yet, and no publication was attempted.
