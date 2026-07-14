@@ -3144,3 +3144,31 @@ running the wheel-only short and full gates. The directly fetched public
 manifest remains at 177 wheels and fourteen `post8`/`post9` Sagelite
 primaries. No `post33` wheel, install, smoke, short, or full result is claimed
 yet, and no publication was attempted.
+
+## Post33 native compilation checkpoint
+
+The scheduled reconciliation at `2026-07-14T21:01:47Z` found exactly the two
+intended guest user-systemd services active. The build service, main PID
+`3222695`, owned the sole CIBW container, while the validation watcher, main
+PID `3222899`, remained correctly blocked on the absent build exit artifact.
+No completed wheel, build exit artifact, validation exit artifact, validation
+container, or validation summary existed, so no duplicate work was started.
+
+The clean detached source checkout remained at exact pushed SHA
+`c615947f2bc1dd67f96f4ecd5d4527074445c1b0` and its run metadata reported
+Sagelite `10.9.post33`. The actual CIBW container reported Linux `aarch64`.
+The build had reached the 1,795-step Sagelib Ninja phase and was generating
+the bundled Maxima project; compiler and documentation processes continued to
+consume the guest CPUs during the progress sample even though the top-level
+command log was buffered. This is direct forward-progress evidence, not a
+wheel or validation result.
+
+The already-started build used a guest filesystem with 95,840,186,368 bytes
+free at this checkpoint; its pre-build check had passed the 100 GiB heavy-build
+threshold. The outer macOS host had 189,037,772,800 bytes free on
+`/Volumes/sage`, and controller `/scratch` had 109,861,904,384 bytes free.
+Controller `develop` and verified `origin/develop` were synchronized at
+`fff5ac30239312b6ff9288b2a54d05a7782ade44`. The directly fetched public
+`dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
+Sagelite primaries, all from `post8` and `post9`; no `post33` primary is
+public. No publication was attempted, and this cell remains below `full`.
