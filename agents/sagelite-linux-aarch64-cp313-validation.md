@@ -3118,3 +3118,29 @@ from the checksummed Sage SPKG against the shared prefix, auditwheel repairs
 it, and the helper rejects extensions exporting GMP symbols. A fresh
 exact-SHA `post33` build and wheel-only short/full gate remain required. No
 publication was attempted, and this cell remains below `full`.
+
+## Post33 repaired-pplpy rebuild start
+
+The Linux packaging correction was committed and pushed through exact source
+`c615947f2bc1dd67f96f4ecd5d4527074445c1b0` (`sagelite 10.9.post33`). The
+native Linux aarch64 guest removed only the disposable `post32` source and
+the two hard-linked validation venv paths after preserving the wheelhouses,
+wheel outputs, summaries, reduced analysis, focused logs, and repaired
+focused pplpy wheel. The guest then had 107,523,883,008 bytes free, above the
+100 GiB heavy-build threshold. The outer macOS host had about 165 GiB free
+on `/Volumes/sage`, and controller `/scratch` had 109,861,949,440 bytes free.
+
+Exactly one native build and one gated watcher started as
+`sagelite-post33-build.service` and `sagelite-post33-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-203232-c615947f2bc
+```
+
+The clean detached checkout reports exact pushed SHA `c615947f2bc` and
+`10.9.post33`; the actual build environment reports Linux `aarch64`. The
+watcher waits for build success before assembling a fresh strict closure and
+running the wheel-only short and full gates. The directly fetched public
+manifest remains at 177 wheels and fourteen `post8`/`post9` Sagelite
+primaries. No `post33` wheel, install, smoke, short, or full result is claimed
+yet, and no publication was attempted.
