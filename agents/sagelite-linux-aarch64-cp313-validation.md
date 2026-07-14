@@ -1518,3 +1518,87 @@ wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`.
 No duplicate build, validation, or publication was started. The cell remains
 below `full`, and this checkpoint makes no wheel, install, smoke, or
 full-suite claim.
+
+## Post20 wheel result and post21 Giac completion iteration
+
+The exact-SHA native `post20` build completed with exit code zero and
+produced:
+
+```text
+sagelite-10.9.post20-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=a56716f1ce9c06bc8b7159c171dfd905252b62541b16d7639522955df88c4c94
+size=227682598
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=2e2d538fc12ec9f5d0dd5cf889002dc1e210d288c750d6cd0309527fa170f9ae
+size=66578984
+```
+
+The fresh strict short gate staged one primary, 68 companions, and 108
+third-party wheels: 177 wheels totaling 16,513,215,372 bytes. The SHA256SUMS
+digest is `e2510c4c40a9dba6db4b7e5fb44d0b9c4385f22c0d9d8a7c565c076c8c2165a0`.
+Its wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post20`, `python -m pip check`, runtime
+manifest, every selftest probe, and packaged pytest with 213 passed and two
+skipped all passed. The installed `--optional=sage` sweep completed 3,954
+modules but failed ten: eight `core-supported` and two `optional-external`.
+The `post20` msolve, polynomial-ideal, and Boolean-sequence display class is
+absent. The authoritative failed-gate artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d/validation/short-post20/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d/validation/short-post20/doctest-installed-linux-aarch64-cp313-post20-short-20260714-034729.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d/validation/short-post20/doctest-installed-linux-aarch64-cp313-post20-short-20260714-034729.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-031029-87330f2482d/validation-short-exit-code
+```
+
+The selected coherent class was the six Giac command-completion mismatches.
+Giac 1.9 reads its completion list from `share/giac/aide_cas`; the existing
+companion relocated the executable and libraries but not that database, so
+every completion query returned an empty list. Exact committed and pushed
+source `396f11c604fd63438235c6bf825571bd7a8851c2` bundles the database, sets a
+relative `XCAS_HELP` path in the companion wrapper, adds a real completion
+selftest, allocates Sagelite `10.9.post21` and Giac runtime `10.9.post1`, and
+raises both Giac dependency floors.
+
+The exact-commit native companion wheel is:
+
+```text
+sagelite_giac_runtime-10.9.post1-py3-none-manylinux_2_28_aarch64.whl
+sha256=98393e6bcf9e8079b7aad543deeb22d727896acbbfded9a5fd76e285b5880b0f
+size=126275378
+```
+
+A fresh minimal CPython 3.13 container installed that exact wheel, found the
+packaged 718,654-byte completion database, and retrieved `cas_setup` and
+`case` from the bundled Giac without inherited Sage or library paths. Before
+the exact rebuild, the same change was installed over the untouched failed
+`post20` environment: all Giac interface doctests passed, 1,873 commands
+were returned, and the new selftest probe passed. The exact companion and
+focused artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-giac-post1-20260714-042000-396f11c604f/wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-giac-post1-20260714-042000-396f11c604f/validation/focused-giac.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-giac-post1-20260714-042000-396f11c604f/validation/focused-giac-exit-code
+```
+
+After preserving the `post20` wheelhouse, summary, reduced analysis,
+metadata, and logs, the iteration removed only its 21 GiB disposable failed
+install. The guest then had 108,363,984,896 bytes free, above the 100 GiB
+heavy-build threshold. Exactly one native `post21` build and one gated
+validation watcher started as `sagelite-post21-build.service` and
+`sagelite-post21-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f
+```
+
+Both services remained active after the launching SSH session exited. The
+validator will add the exact Giac `post1` wheel to the new build output,
+assemble a fresh strict closure, and run wheel-only `--optional sage` short
+and full gates only after the primary build succeeds. The public manifest
+remains unchanged at 177 wheels and fourteen `post8`/`post9` Sagelite
+primaries. No publication was attempted, no `post21` primary is claimed, and
+the cell remains below `full`.
