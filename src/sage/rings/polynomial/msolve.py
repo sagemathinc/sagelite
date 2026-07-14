@@ -388,4 +388,14 @@ def variety(ideal, ring, *, proof=True):
                    for l in data[1][1:]
                    for point in l]
 
-    return [KeyConvertingDict(out_ring, zip(vars, point)) for point in variety]
+    points = []
+    for point in variety:
+        coordinates = dict(zip(vars, point))
+        # msolve may list variables in an order different from the polynomial
+        # ring.  Preserve the coordinate association while returning mappings
+        # in the ring's canonical generator order.
+        points.append(KeyConvertingDict(
+            out_ring,
+            ((var, coordinates[var]) for var in out_ring.gens()),
+        ))
+    return points
