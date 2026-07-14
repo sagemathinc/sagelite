@@ -1787,3 +1787,28 @@ wheel-only `--optional sage` short and full gates in sequence. Both services
 remained active after their launching SSH session exited. No `post22` wheel,
 install, smoke, or suite result is claimed yet, and no publication was
 attempted.
+
+## Post22 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T06:01:45Z` found exactly the two
+intended guest user-systemd services active. The build service owned the sole
+CIBW container, while the validation watcher remained correctly blocked on
+the absent build exit-code artifact. No validation container, completed wheel,
+or validation exit-code artifact existed.
+
+The source checkout was clean at the exact committed SHA
+`2efaab7ea74e19c6169c3da8eca5e1b28cf9697c` and reported Sagelite
+`10.9.post22`. The actual build container reported Linux `aarch64`. It had
+reached the Sagelite extension-build phase, with native compiler processes
+active across approximately all eight guest CPUs during a 15-second sample.
+This supplied forward-progress evidence while the top-level command log was
+buffered after announcing the `sagelib-10.9.post22` package build.
+
+The Linux guest had about 94 GiB free after the build began above the 100 GiB
+heavy-build threshold. The outer macOS host had about 181 GiB free on
+`/Volumes/sage`, and the controller had about 103 GiB free on `/scratch`.
+The directly fetched public `dev/manifest.json` remained unchanged at 177
+wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`;
+no `post22` primary is public. No duplicate build, validation, or publication
+was started. The cell remains below `full`, and this checkpoint makes no new
+wheel, install, smoke, or full-suite claim.
