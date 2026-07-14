@@ -2762,3 +2762,95 @@ entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
 `post30` primary is public. No duplicate build, validation, or publication was
 started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, short, or full-suite claim.
+
+## Post30 wheel result and post31 FriCAS concurrency correction
+
+The exact committed `post30` build from
+`7cd5cb5f82d7ec6275082de618114b79dd64ab74` completed with exit code zero
+at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d
+```
+
+It produced these repaired native Linux aarch64 wheels:
+
+```text
+sagelite-10.9.post30-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=b0c66483ccb55b2c73c93e985524c534f0c6676fead414d1f850dc3912bdf95c
+size=236406459
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256=456e5bf3fc028395a74bc09dca763c4ad812f6d8ad14be2b557a1f10b5321bd9
+size=5242722
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=12619c5d296a8072bac8060938fd38fa130b1b1a918e577b9200b6660909d9a9
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of one primary, 68 companions,
+and 109 third-party wheels. The 178 staged wheels total 16,617,148,213 bytes,
+with validator wheelhouse digest
+`1577e0aff9bcc2098bc150e667b85028d0ec515ce51e3bad516451b0231efa40`
+and `SHA256SUMS` digest
+`f5474f4f64b80e4864632bfed061aeb4f823d98b219767ad84d23418406f26fe`.
+Every strict filename, dependency, tag, ABI, architecture, version, and
+repaired-primary preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post30`, `pip check`, runtime collection,
+and every selftest probe passed. Packaged pytest reported 215 passed and two
+skipped.
+
+The installed `--optional=sage --short 600` sweep tested 3,954 modules and
+failed three. The earlier QEPCAD command-construction failures are gone. The
+remaining failures were one FriCAS conversion, five GAP3 protocol examples,
+and two FLINT polynomial-power aborts. The full gate correctly did not start.
+Authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/validation/short-post30/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/validation/short-post30/doctest-installed-linux-aarch64-cp313-post30-short-20260714-171933.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/validation/short-post30/doctest-installed-linux-aarch64-cp313-post30-short-20260714-171933.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/validation-short-exit-code
+```
+
+Focused reproduction identified the FriCAS failure as a concurrency race,
+not a mathematical or protocol mismatch. Each interface process compiled the
+same generated export constructors into `$DOT_SAGE/fricas`. Two sequential
+processes passed, but eight processes started together against a new home
+directory all observed partially written fixed-name constructor files and all
+failed with `InputFormExport` or `UnaryExport` unavailable. Exact pushed
+source `b50050c219cfb6ef8a13ea8807448a65e7870d9d` (`10.9.post31`) instead
+uses Sage's process-private, automatically cleaned temporary directory. The
+exact transferred source file had SHA256
+`c1e555651a273e05200b2eeffcf0745fc7cc148dfb32e29754c5f0285cc2fc71`;
+all eight simultaneous conversions then passed against the otherwise
+untouched `post30` wheel-only install. This is focused regression evidence,
+not fresh-install acceptance:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/focused-post30-fricas/concurrent
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/focused-post30-fricas/concurrent-post31
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d/focused-post30-fricas/fricas-post31.py
+```
+
+After preserving the `post30` wheelhouse, validation artifacts, and focused
+evidence, the iteration removed only its disposable 22.2 GB install and 1.6
+GB source clone. Guest free space rose to 108,240,195,584 bytes, above the
+100 GiB heavy-build threshold. Exactly one native `post31` build and one
+gated watcher started as `sagelite-post31-build.service` and
+`sagelite-post31-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf
+```
+
+Their initial main PIDs were `3016238` and `3016240`. The clean detached
+source checkout was verified at the exact pushed `post31` SHA, and the guest
+reported Linux `aarch64`. The watcher will assemble a new strict closure and
+run the wheel-only short and full gates only after build success. The directly
+fetched public manifest remains at 177 wheels and fourteen `post8`/`post9`
+Sagelite primaries; no `post30` or `post31` primary is public. No `post31`
+wheel, install, smoke, short, or full result is claimed yet, and no
+publication was attempted.
