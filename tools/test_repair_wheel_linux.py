@@ -43,3 +43,14 @@ def test_repair_wheel_linux_pins_build_frontend():
     assert install_lines
     assert all("'build==1.2.2.post1'" in line for line in install_lines)
     assert "    'build==1.2.2.post1' meson-python" in script
+
+    frontend = script.split("prepare_repair_build_frontend() {", 1)[1].split(
+        "build_companion_wheel() {", 1
+    )[0]
+    assert "--ignore-installed" in frontend
+    assert "--no-deps" in frontend
+    assert "'build==1.2.2.post1'" in frontend
+    assert '"$python_bin" -m build --version' in frontend
+    assert script.index("prepare_repair_build_frontend\n") < script.index(
+        "build_pplpy_wheel\n"
+    )

@@ -12,6 +12,19 @@ dest_dir="$2"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
+prepare_repair_build_frontend() {
+  # The cibuildwheel interpreter can see the persistent Sage prefix through
+  # PYTHONPATH.  A damaged or incomplete build package in that prefix shadows
+  # the working copy installed in /opt/python, while pip may still report the
+  # latter as satisfying the requirement.  Overlay a complete pinned copy in
+  # the interpreter's own site-packages without uninstalling either layer.
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install \
+    --ignore-installed \
+    --no-deps \
+    'build==1.2.2.post1'
+  "$python_bin" -m build --version
+}
+
 build_companion_wheel() {
   local package="$1"
   shift
@@ -2566,6 +2579,7 @@ fi
 
 auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
 verify_repaired_sagelite_wheel
+prepare_repair_build_frontend
 build_pplpy_wheel
 build_cunningham_tables_companion
 build_d3js_runtime_companion
