@@ -65,6 +65,31 @@ def _cython_compiler_environment():
             os.environ.pop(variable, None)
 
 
+def _filter_zig_libcxx_diagnostics(messages):
+    """
+    Suppress Zig's linker-time libc++ nullability diagnostics.
+
+    Zig 0.16 builds parts of its bundled libc++ while linking C++ extensions
+    and emits thousands of lines for a Clang nullability warning.  Its driver
+    does not pass warning controls through to that internal build.  Preserve
+    the complete output unless every warning is this known toolchain warning
+    and the compiler reported no error.
+    """
+    if "ziglang/lib/libcxx/" not in messages:
+        return messages
+
+    warning_lines = [line for line in messages.splitlines() if "warning:" in line]
+    if not warning_lines or any(
+        "ziglang/lib/libcxx/" not in line
+        or "[-Wnullability-completeness]" not in line
+        for line in warning_lines
+    ):
+        return messages
+    if re.search(r"(?:^|\s)(?:fatal )?error:", messages, re.MULTILINE):
+        return messages
+    return ""
+
+
 def _deduplicate_existing_dirs(dirs):
     """
     Return existing directories from ``dirs`` without duplicates.
@@ -761,7 +786,7 @@ def cython(filename, verbose=0, compile_message=False,
                     dist.run_command("build")
             finally:
                 errfile.seek(0)
-                distutils_messages = errfile.read()
+                distutils_messages = _filter_zig_libcxx_diagnostics(errfile.read())
     except Exception as msg:
         msg = str(msg) + "\n" + distutils_messages
         raise RuntimeError(msg.strip())

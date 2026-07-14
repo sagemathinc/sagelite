@@ -12,13 +12,7 @@ def test_cython_compiler_environment_uses_ziglang_fallback(monkeypatch):
         "_cython_compiler_commands",
         lambda: {
             "CC": shlex.join([sys.executable, "-m", "ziglang", "cc"]),
-            "CXX": shlex.join([
-                sys.executable,
-                "-m",
-                "ziglang",
-                "c++",
-                "-Wno-nullability-completeness",
-            ]),
+            "CXX": shlex.join([sys.executable, "-m", "ziglang", "c++"]),
         },
     )
 
@@ -34,7 +28,6 @@ def test_cython_compiler_environment_uses_ziglang_fallback(monkeypatch):
             "-m",
             "ziglang",
             "c++",
-            "-Wno-nullability-completeness",
         ]
 
     assert "CC" not in cython.os.environ
@@ -49,3 +42,22 @@ def test_cython_compiler_environment_preserves_explicit_compilers(monkeypatch):
     with cython._cython_compiler_environment():
         assert cython.os.environ["CC"] == "custom-cc"
         assert cython.os.environ["CXX"] == "custom-cxx"
+
+
+def test_filter_zig_libcxx_diagnostics_is_narrow():
+    warning = (
+        "In file included from site-packages/ziglang/lib/libcxx/src/chrono.cpp:\n"
+        "site-packages/ziglang/lib/libcxx/include/string:1078:80: warning: "
+        "pointer is missing a nullability type specifier "
+        "[-Wnullability-completeness]\n"
+        "note: insert '_Nullable' if the pointer may be null\n"
+        "119 warnings generated.\n"
+    )
+
+    assert cython._filter_zig_libcxx_diagnostics(warning) == ""
+
+    with_error = warning + "extension.cpp:12:3: fatal error: missing header\n"
+    assert cython._filter_zig_libcxx_diagnostics(with_error) == with_error
+
+    with_other_warning = warning + "extension.cpp:12:3: warning: user warning\n"
+    assert cython._filter_zig_libcxx_diagnostics(with_other_warning) == with_other_warning
