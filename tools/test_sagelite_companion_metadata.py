@@ -4190,7 +4190,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post2,<10.10" in validation_requirements
-    assert "sagelite-qepcad-runtime >=10.9.post2,<10.10" in validation_requirements
+    assert "sagelite-qepcad-runtime >=10.9.post3,<10.10" in validation_requirements
     assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in validation_requirements
 
 
@@ -4213,6 +4213,9 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
     package_version = (
         ROOT / "build" / "pkgs" / "qepcad" / "package-version.txt"
     ).read_text().strip()
+    saclib_version = (
+        ROOT / "build" / "pkgs" / "saclib" / "package-version.txt"
+    ).read_text().strip()
     patch = (
         ROOT
         / "build"
@@ -4221,15 +4224,27 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
         / "patches"
         / "qepcad-unsigned-char-eof.patch"
     ).read_text()
+    saclib_patch = (
+        ROOT
+        / "build"
+        / "pkgs"
+        / "saclib"
+        / "patches"
+        / "preserve-aarch64-register-roots.patch"
+    ).read_text()
     repair = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
     qepcad_repair = repair.split("build_qepcad_runtime_companion()", 1)[1].split(
         "build_tachyon_runtime_companion()", 1
     )[0]
 
-    assert pyproject["project"]["version"] == "10.9.post2"
-    assert package_version == "1.74.p1"
+    assert pyproject["project"]["version"] == "10.9.post3"
+    assert package_version == "1.74.p2"
+    assert saclib_version == "2.2.8.p1"
     assert patch.count("+    int c = in.get();") == 2
     assert patch.count("+      s += static_cast<char>(c);") == 2
+    assert '"stp x19, x20, [%0, #0]\\n\\t"' in saclib_patch
+    assert '"stp x27, x28, [%0, #64]\\n\\t"' in saclib_patch
+    assert "+     GCSI(sizeof(Word), (char *)__builtin_frame_address(0));" in saclib_patch
     assert "cp312-cp312" not in qepcad_repair
 
 

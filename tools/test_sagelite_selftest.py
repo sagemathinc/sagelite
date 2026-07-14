@@ -774,9 +774,12 @@ def test_selftest_qepcad_probe_reaches_input_prompt(monkeypatch, tmp_path):
     qepcad_calls = []
     qepcad_module = types.ModuleType("sage.interfaces.qepcad")
 
-    def qepcad(formula, *, vars):
-        qepcad_calls.append((formula, vars))
-        return "b - a < 0"
+    def qepcad(formula, *, vars, memcells):
+        qepcad_calls.append((formula, vars, memcells))
+        return (
+            "2 x - 1 > 0 /\\ z > 0 /\\ z - y < 0 /\\ "
+            "3 z + 3 y + x - 1 < 0"
+        )
 
     qepcad_module.qepcad = qepcad
     monkeypatch.setitem(sys.modules, "sage.interfaces.qepcad", qepcad_module)
@@ -795,9 +798,20 @@ def test_selftest_qepcad_probe_reaches_input_prompt(monkeypatch, tmp_path):
                 "timeout": 30,
                 "env": {**selftest.os.environ, "qe": str(root)},
             },
-        )
+        ),
     ]
-    assert qepcad_calls == [("a > b", "(a,b)")]
+    assert qepcad_calls == [
+        (
+            "[-z < 0 /\\ -y + z < 0 /\\ "
+            "x^2 + x y + 2 x z + 2 y z - x < 0 /\\ "
+            "x^2 + x y + 3 x z + 2 y z + 2 z^2 - x - z < 0 /\\ "
+            "-2 x + 1 < 0 /\\ "
+            "-x y - x z - 2 y z - 2 z^2 + z < 0 /\\ "
+            "x + 3 y + 3 z - 1 < 0]",
+            "(x,y,z)",
+            3000000,
+        ),
+    ]
 
 
 def test_selftest_runs_gap_guava_leon_after_gap_package_checks(monkeypatch):

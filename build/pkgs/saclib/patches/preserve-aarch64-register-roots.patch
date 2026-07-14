@@ -1,0 +1,47 @@
+Description: Preserve aarch64 register-held roots during garbage collection.
+ SACLIB's GC entry point tries to make the compiler spill registers by passing
+ sixteen dummy register variables to an unprototyped function.  On aarch64,
+ live Word values can remain in the x19-x28 callee-saved registers and be
+ reclaimed by the stack-scanning collector.  Explicitly save those registers
+ in the scanned stack interval before collecting.
+Forwarded: no
+Last-Update: 2026-07-14
+
+--- a/sysdep/linuxX86_64/GC.c
++++ b/sysdep/linuxX86_64/GC.c
+@@ -15,6 +15,27 @@
+ 
+ void GC(void)
+ {
++#if defined(__aarch64__)
++     unsigned long registers[10];
++
++     /* A caller must already spill values held in caller-saved registers
++        before invoking GC.  Preserve the integer callee-saved registers,
++        which may legally hold live SACLIB Word values across that call. */
++     __asm__ volatile (
++          "stp x19, x20, [%0, #0]\n\t"
++          "stp x21, x22, [%0, #16]\n\t"
++          "stp x23, x24, [%0, #32]\n\t"
++          "stp x25, x26, [%0, #48]\n\t"
++          "stp x27, x28, [%0, #64]\n\t"
++          :
++          : "r" (registers)
++          : "memory");
++
++     /* GCC may use x29 as a general callee-saved register when the caller
++        omits its frame pointer.  This function's prologue saves that value
++        below the local array, so begin the scan at our frame boundary. */
++     GCSI(sizeof(Word), (char *)__builtin_frame_address(0));
++#else
+ 
+      Word top_of_stack;
+ #define r(R) register int R = gc_dummy()
+@@ -23,6 +44,7 @@
+      r1 = gc_dummy(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16);
+ 
+      GCSI(sizeof(Word),(char *)&top_of_stack);
++#endif
+ }
+ 
+ 

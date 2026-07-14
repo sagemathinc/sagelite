@@ -2527,3 +2527,71 @@ wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`;
 no `post28` primary is public. No duplicate build, validation, or publication
 was started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, short, or full-suite claim.
+
+## Post28 build, strict short gate, and QEPCAD aarch64 GC diagnosis
+
+The exact committed `post28` build from
+`f239768d9a1c3f8b25e6926370c19095e386f5e3` completed successfully. It
+produced the following repaired native Linux aarch64 artifacts:
+
+```text
+sagelite-10.9.post28-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=5ec6c7ccf0287566f923f2caee4484df7b2b009a1dad997bbcca51612042d598
+size=236406281
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=7b75294227c0cb4dac6abac0ce3d5b3965bc4ee36041eb169eeefe701194f5b3
+size=66578984
+
+sagelite_qepcad_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=49742fa225993f3b873ad1a41339901a07ad25d4565afff3c3ba3635bfbc2e34
+size=5241590
+```
+
+The gated watcher assembled a fresh strict 178-wheel closure. Wheelhouse
+preflight, wheel-only installation of `sagelite[all-needed-extras]`, `pip
+check`, and `sagelite-selftest` all passed. The 3,954-module short installed
+doctest sweep exited 1, so the full gate did not start. Its thirteen failed
+examples comprised eight independent GAP3 protocol failures, two independent
+`polynomial_element` FLINT aborts, and three QEPCAD failures. Two QEPCAD
+failures were exact command-string expectations made stale by the intentional
+child `PATH`; the remaining complex CAD operation returned an empty answer.
+No publication was attempted.
+
+Direct reproduction showed that the complex QEPCAD operation segfaulted in
+`ADV -> MBPROD -> AFCSBM -> AFCSBMDB -> CONSTRUCT -> TICAD -> QEPCAD` on
+aarch64, while the same input passed on x86_64. Disabling Singular did not
+change the crash. The actual defect was SACLIB's conservative collector:
+`GC.c` tried to force register spills with sixteen dummy `register int`
+arguments, but aarch64 callers can retain live SACLIB handles in callee-saved
+x19-x29. The collector scanned the stack without those roots and reclaimed
+live matrices. A broad `setjmp` experiment made the exact regression pass ten
+times and confirmed the missing-register diagnosis.
+
+The focused production correction advances SACLIB to `2.2.8.p1` and QEPCAD
+to `1.74.p2`. On aarch64, SACLIB now explicitly stores x19-x28 and starts its
+scan at the GC frame boundary, which also includes the caller's saved x29.
+The linked binary's disassembly contains all five register-pair stores. In a
+native manylinux container, the exact complex operation with its documented
+3,000,000-cell allocation returned
+`2 x - 1 > 0 /\\ z > 0 /\\ z - y < 0 /\\ 3 z + 3 y + x - 1 < 0` in ten of
+ten runs. The one-million-cell form still reports 94,553 cells reclaimed,
+essentially identical to the broad experiment's 94,557 and below SACLIB's
+100,000 threshold; this regression is documented upstream with the explicit
+three-million-cell allocation.
+
+The change also advances the QEPCAD runtime companion to `10.9.post3`, raises
+both dependency floors, advances Sagelite to `10.9.post29`, and makes
+`sagelite-selftest` exercise the complex three-million-cell operation. These
+are focused source and rebuilt-runtime results only. A fresh committed
+`post29` primary and `post3` companion build, wheel-only installation, short
+gate, and full gate are still required. Durable evidence is under:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/validation/short-post28
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/qepcad-gdb.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/qepcad-valgrind.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/setjmp-register-fix/gc-frame-boundary-disassembly.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/setjmp-register-fix/frame-boundary-container-3000000-failures
+```
