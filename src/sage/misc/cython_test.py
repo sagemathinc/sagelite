@@ -51,6 +51,7 @@ def test_filter_zig_libcxx_diagnostics_is_narrow():
         "pointer is missing a nullability type specifier "
         "[-Wnullability-completeness]\n"
         "note: insert '_Nullable' if the pointer may be null\n"
+        "site-packages/ziglang/lib/libcxx/include/system_error:152:\n"
         "119 warnings generated.\n"
     )
 
@@ -61,3 +62,15 @@ def test_filter_zig_libcxx_diagnostics_is_narrow():
 
     with_other_warning = warning + "extension.cpp:12:3: warning: user warning\n"
     assert cython._filter_zig_libcxx_diagnostics(with_other_warning) == with_other_warning
+
+    interleaved_warning = warning + (
+        ":2503:1: warning: pointer is missing a nullability type specifier "
+        "[-Wnullability-completeness]\n"
+        "_Nullablewarning: \n"
+    )
+    assert cython._filter_zig_libcxx_diagnostics(interleaved_warning) == ""
+
+    with_other_category = warning + (
+        "extension.cpp:12:3: warning: unused variable [-Wunused-variable]\n"
+    )
+    assert cython._filter_zig_libcxx_diagnostics(with_other_category) == with_other_category

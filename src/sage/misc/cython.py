@@ -78,14 +78,26 @@ def _filter_zig_libcxx_diagnostics(messages):
     if "ziglang/lib/libcxx/" not in messages:
         return messages
 
-    warning_lines = [line for line in messages.splitlines() if "warning:" in line]
-    if not warning_lines or any(
-        "ziglang/lib/libcxx/" not in line
-        or "[-Wnullability-completeness]" not in line
-        for line in warning_lines
-    ):
+    categories = set(re.findall(r"\[(-W[^]]+)\]", messages))
+    if categories != {"-Wnullability-completeness"}:
         return messages
     if re.search(r"(?:^|\s)(?:fatal )?error:", messages, re.MULTILINE):
+        return messages
+
+    diagnostic = re.compile(r":\d+:\d+:\s*(?:fatal )?(?:warning|error):")
+    for line in messages.splitlines():
+        match = diagnostic.search(line)
+        if match is None:
+            continue
+        if match.group().endswith("error:"):
+            return messages
+        # Parallel Zig jobs occasionally interleave output and leave a
+        # location-only fragment such as ``:2503:1: warning:``.  A complete
+        # diagnostic from anywhere other than the bundled libc++ is not safe
+        # to suppress.
+        if "ziglang/lib/libcxx/" not in line and line[:match.start()].strip():
+            return messages
+    if "warning:" not in messages:
         return messages
     return ""
 
