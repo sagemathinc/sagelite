@@ -174,6 +174,15 @@ def init_sage(controller: DocTestController | None = None) -> None:
 
         sage: {'a':23, 'b':34, 'au':56, 'bbf':234, 'aaa':234}
         {'a': 23, 'aaa': 234, 'au': 56, 'b': 34, 'bbf': 234}
+
+    A :class:`~sage.misc.converting_dict.KeyConvertingDict` retains its
+    insertion order because that order can carry meaning, for example the
+    generator order of a polynomial ring::
+
+        sage: from sage.misc.converting_dict import KeyConvertingDict
+        sage: d = KeyConvertingDict(str, [('z', 1), ('a', 2)])
+        sage: d
+        {'z': 1, 'a': 2}
     """
     try:
         # We need to ensure that the Matplotlib font cache is built to
@@ -201,6 +210,16 @@ def init_sage(controller: DocTestController | None = None) -> None:
     # Also modifications of code may affect the order.
     # So here we fore sorted dict printing.
     IPython.lib.pretty.for_type(dict, _sorted_dict_pprinter_factory('{', '}'))
+
+    # KeyConvertingDict is used for mappings whose insertion order can be
+    # semantically meaningful, such as the canonical generator order in a
+    # polynomial variety.  Do not replace that order with the comparison
+    # order of the converted keys.
+    from sage.misc.converting_dict import KeyConvertingDict
+    IPython.lib.pretty.for_type(
+        KeyConvertingDict,
+        IPython.lib.pretty._dict_pprinter_factory('{', '}'),
+    )
 
     if controller is None:
         import sage.repl.ipython_kernel.all_jupyter
