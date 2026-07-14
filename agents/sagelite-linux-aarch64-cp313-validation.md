@@ -2882,3 +2882,69 @@ Sagelite primaries, all from `post8` and `post9`; no `post31` primary is
 public. No duplicate build, validation, or publication was started. The cell
 remains below `full`, and this checkpoint makes no new wheel, install, smoke,
 short, or full-suite claim.
+
+## Post31 wheel result and FriCAS regression validation
+
+The exact committed and pushed `post31` build from
+`b50050c219cfb6ef8a13ea8807448a65e7870d9d` completed with exit code zero
+at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf
+```
+
+It produced these repaired native Linux aarch64 wheels:
+
+```text
+sagelite-10.9.post31-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=8a8f452ba6e653a7a962455c4756453cdf308c4ad0ee6449e09f448da3a7e21d
+size=236406598
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256=7f852e6362a9e2ec00b12534375936480e22736e23dacb62bcccbb240ae35a54
+size=5242722
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=e2cf1cfc045f75a1a429cdbef975caf47f72efa20310e6e75b298f525bdb550b
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of one primary, 68 companions,
+and 109 third-party wheels. The 178 staged wheels total 16,617,148,352 bytes,
+with validator wheelhouse digest
+`a2caf463703989ddbdb12635431b85a87c857fe76e818f788412a0e8954f3e9b`
+and `SHA256SUMS` digest
+`7710c117800b16b271dd4c339d081b32e4639080a56211f50092b7f536a3b629`.
+Every strict filename, dependency, tag, ABI, architecture, version, and
+repaired-primary preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post31`, `pip check`, runtime collection,
+and every selftest probe passed.
+
+The installed `--optional=sage --short 600` runner doctested 3,953 files. The
+reducer recorded two failed modules out of 3,954: five GAP3 protocol examples
+and the two previously observed FLINT polynomial-power aborts. FriCAS passed,
+so the process-private helper-compilation correction is now validated from a
+fresh `post31` wheel-only install. QEPCAD also remained clean. Because the
+short gate exited one, the watcher correctly did not start the full gate.
+Authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf/validation/short-post31/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf/validation/short-post31/doctest-installed-linux-aarch64-cp313-post31-short-20260714-182508.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf/validation/short-post31/doctest-installed-linux-aarch64-cp313-post31-short-20260714-182508.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-174742-b50050c219cf/validation-short-exit-code
+```
+
+No heavy build or validation container remains active. The iteration retained
+the exact wheelhouse, repaired wheel outputs, validation summaries, reduced
+analysis, and logs, then removed only its disposable 21 GB install and 1.5 GB
+source clone. The Linux guest had about 101 GiB free afterward, restoring the
+heavy-build threshold. The outer macOS host had about 165 GiB free on
+`/Volumes/sage`, and controller `/scratch` had about 103 GiB free.
+
+The directly fetched public `dev/manifest.json` still contained 177 wheel
+entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
+`post31` primary is public. No publication was attempted. This cell remains
+below `full`; GAP3 and FLINT are separate unresolved failure classes for
+future iterations.
