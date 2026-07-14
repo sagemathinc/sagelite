@@ -211,16 +211,6 @@ def init_sage(controller: DocTestController | None = None) -> None:
     # So here we fore sorted dict printing.
     IPython.lib.pretty.for_type(dict, _sorted_dict_pprinter_factory('{', '}'))
 
-    # KeyConvertingDict is used for mappings whose insertion order can be
-    # semantically meaningful, such as the canonical generator order in a
-    # polynomial variety.  Do not replace that order with the comparison
-    # order of the converted keys.
-    from sage.misc.converting_dict import KeyConvertingDict
-    IPython.lib.pretty.for_type(
-        KeyConvertingDict,
-        IPython.lib.pretty._dict_pprinter_factory('{', '}'),
-    )
-
     if controller is None:
         import sage.repl.ipython_kernel.all_jupyter
     else:

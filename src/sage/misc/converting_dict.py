@@ -98,6 +98,31 @@ class KeyConvertingDict(dict):
         if data:
             self.update(data)
 
+    def _repr_pretty_(self, printer, cycle):
+        r"""
+        Pretty-print this mapping in insertion order.
+
+        Sage's doctest display hook sorts ordinary dictionaries to make their
+        output deterministic.  The insertion order of a converting mapping
+        can carry meaning, however, such as the canonical generator order of
+        a polynomial ring, and is therefore retained::
+
+            sage: from sage.misc.converting_dict import KeyConvertingDict
+            sage: KeyConvertingDict(str, [('z', 1), ('a', 2)])
+            {'z': 1, 'a': 2}
+        """
+        if cycle:
+            return printer.text('{...}')
+        printer.begin_group(1, '{')
+        for index, (key, value) in printer._enumerate(self.items()):
+            if index:
+                printer.text(',')
+                printer.breakable()
+            printer.pretty(key)
+            printer.text(': ')
+            printer.pretty(value)
+        printer.end_group(1, '}')
+
     def __getitem__(self, key):
         r"""
         Retrieve an element from the dictionary.
