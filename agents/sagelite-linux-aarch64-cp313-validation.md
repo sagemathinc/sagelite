@@ -2650,3 +2650,89 @@ Sagelite primaries, all from `post8` and `post9`; no `post29` primary is
 public. No duplicate build, validation, or publication was started. The cell
 remains below `full`, and this checkpoint makes no new wheel, install, smoke,
 short, or full-suite claim.
+
+## Post29 wheel result and post30 QEPCAD expectation correction
+
+The exact committed `post29` build from
+`37e1224bcce63056cdb61734e4e037986965ff94` completed with exit code zero
+and produced:
+
+```text
+sagelite-10.9.post29-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=8164440e56a18a82760c2635be0c6e1b9c4ac46de354b46461495ef7bca5a249
+size=236406405
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256=1c4b6cc59292de8d9095535c86a866853ab1922197d70cb273e5b11245c0cfbe
+size=5242722
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=16f7d2614b221825cc5531e605b54d946a91ed22eca3985bd2272ba73f6a6507
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of one primary, 68 companions,
+and 109 third-party wheels. The 178 staged wheels total 16,617,148,159 bytes,
+with validator wheelhouse digest
+`6ef4c6b79d32bf4f0a8cba09dc3655a1425799e4a0c5c5bb7a72fbb827895e9f`
+and `SHA256SUMS` file digest
+`24d170ba859e518fac4edc654d42c442723bbb20bebc7b96f8f2c3e2b3e8eaf5`.
+Every strict filename, dependency, tag, ABI, architecture, version, and
+repaired-primary preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post29`, `pip check`, runtime collection,
+and every selftest probe passed, including the repaired complex QEPCAD
+three-million-cell operation. Packaged pytest reported 215 passed and two
+skipped.
+
+The installed `--optional=sage --short 600` sweep tested 3,954 modules and
+failed four. The thirteen failed examples were one FriCAS conversion, eight
+GAP3 protocol examples, two pre-existing FLINT polynomial-power aborts, and
+two QEPCAD command-construction expectations. The prior complex QEPCAD crash
+is absent. The two remaining QEPCAD examples assumed the traditional
+`SAGE_LOCAL` command verbatim, so they did not allow the intentional
+Singular-companion `PATH` assignment needed by wheel installs. The
+authoritative failed-gate artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/validation/short-post29/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/validation/short-post29/doctest-installed-linux-aarch64-cp313-post29-short-20260714-161854.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/validation/short-post29/doctest-installed-linux-aarch64-cp313-post29-short-20260714-161854.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/validation-short-exit-code
+```
+
+Committed and pushed source
+`7cd5cb5f82d7ec6275082de618114b79dd64ab74` makes the QEPCAD doctest
+validate the semantic argument layout while allowing optional child
+environment assignments and companion-resolved executable paths. It advances
+Sagelite to `10.9.post30`. Against the untouched failed `post29` wheel-only
+install, four focused source tests passed and a read-only overlay of the exact
+corrected module passed all 344 QEPCAD doctests. This is focused regression
+evidence rather than fresh-install acceptance:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/focused-post30/focused.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/focused-post30/focused-overlay-doctest-2.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce/focused-post30/focused-overlay-doctest-2-exit-code
+```
+
+After preserving the `post29` wheelhouse, summary, reduced analysis, logs,
+and focused evidence, the iteration removed only its disposable 21 GiB
+install and source clone, plus the superseded `post28` source clone. The
+guest then had 108,581,715,968 bytes free, above the 100 GiB heavy-build
+threshold.
+
+Exactly one native build and one gated watcher started as
+`sagelite-post30-build.service` and `sagelite-post30-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-164203-7cd5cb5f82d
+```
+
+The services record the exact pushed `post30` SHA and native Linux aarch64
+CPython 3.13 CIBW contract. The watcher will assemble a fresh strict closure
+and run wheel-only `--optional sage` short and full gates only after build
+success. No `post30` wheel, install, smoke, short, or full result is claimed
+yet. The public manifest remains at 177 wheels and fourteen `post8`/`post9`
+Sagelite primaries; no publication was attempted, and this cell remains below
+`full`.
