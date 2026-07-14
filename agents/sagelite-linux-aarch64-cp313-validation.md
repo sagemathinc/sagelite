@@ -1630,3 +1630,54 @@ unchanged at 177 wheel entries and fourteen Sagelite primaries, all from
 `post8` and `post9`; no `post21` primary is public. No duplicate build,
 validation, or publication was started. The cell remains below `full`, and
 this checkpoint makes no wheel, install, smoke, or full-suite claim.
+
+## Post21 wheel completion and strict-gate start
+
+The exact-SHA native build completed with exit code zero at approximately
+`2026-07-14T04:55Z`. Its source checkout is clean at
+`396f11c604fd63438235c6bf825571bd7a8851c2` with Sagelite
+`10.9.post21`. The build produced:
+
+```text
+sagelite-10.9.post21-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=d01d31a37855dbd8ae4b85d794a5261c136ddf92e860045cd476b283935f6b72
+size=227682709
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=9d0473b560a2e8924ded818217b7547d87dc4aabcadd2b1422e02675077bcc28
+size=66578984
+```
+
+The validation watcher added the separately built exact-commit Giac `post1`
+wheel and assembled a fresh strict closure of one primary, 68 companions,
+and 108 third-party wheels. The 177 staged wheels total 16,513,416,841 bytes,
+with wheelhouse digest
+`393433ca7384df3275274f8d8641b57087ea9d57db419666ea359fa1bd63ca3d`.
+Every repaired-wheelhouse filename, dependency, tag, ABI, architecture, and
+version preflight passed.
+
+The fresh native Linux aarch64 wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post21` and `python -m pip check` passed.
+At `2026-07-14T05:02:48Z`, runtime manifest collection was active inside the
+only Sagelite container and using CPU. The durable
+`sagelite-post21-validate.service` remained active and will run every selftest
+probe and the installed `--optional=sage --short 600` gate before starting a
+separate full sweep. Neither validation exit-code artifact exists yet, so no
+selftest, smoke, short-suite, or full-suite pass is claimed. The current
+artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation/short-post21/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation-short-command.log
+```
+
+The Linux guest had 84,604,633,088 bytes free, above the 30 GiB test-only
+threshold; `/Volumes/sage` had about 166 GiB free, and the controller and
+`host` bulk filesystems each had about 103 GiB free. The public manifest was
+fetched with a pip user agent and remained at 177 wheels and fourteen
+`post8`/`post9` Sagelite primaries; no `post21` primary is public. No
+duplicate work or publication was started, and the cell remains below
+`full`.

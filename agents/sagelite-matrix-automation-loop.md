@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post20`, local) | the exact committed `post20` primary and matching Maxima wheel built successfully. Its fresh strict 177-wheel installation, `pip check`, every selftest probe, and packaged pytest passed natively, but the 3,954-module `--optional=sage` short sweep failed ten modules: eight core-supported and two optional-external. The preceding five-example msolve/result-display class is absent. Exact pushed `post21` source `396f11c604fd63438235c6bf825571bd7a8851c2` relocates Giac's missing completion database; its exact-SHA Giac `post1` companion passed a clean native completion smoke, and its exact-SHA primary rebuild plus gated short/full watcher are active. No `post21` primary wheel is claimed, and the cell remains below `full` | none |
+| Linux aarch64 | 3.13 | yes (`post21`, local) | the exact committed `post21` primary, matching Maxima wheel, and Giac `post1` companion built successfully. The fresh strict 177-wheel preflight, wheel-only installation, and `pip check` passed natively; runtime collection, selftest, and the gated `--optional=sage` short/full watcher remain active. No `post21` smoke or suite pass is claimed, and the cell remains below `full` | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
