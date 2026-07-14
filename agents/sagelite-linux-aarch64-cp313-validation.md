@@ -2948,3 +2948,61 @@ entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
 `post31` primary is public. No publication was attempted. This cell remains
 below `full`; GAP3 and FLINT are separate unresolved failure classes for
 future iterations.
+
+## Post32 GAP3 protocol correction and rebuild start
+
+The next iteration selected only the GAP3 failure class from the exact
+`post31` short gate. A fresh wheel-only focused installation from the
+preserved 178-wheel strict closure reproduced the failure on native Linux
+`aarch64` CPython 3.13. With the validation environment's `PATH`, three
+unmodified `post31` runs failed deterministically. The focused root is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-gap3-post31-focused-20260714-b50050c219c
+```
+
+The failure combined three GAP3 interface defects. Explicitly unbinding a
+name returned it to the reuse pool while an older Python wrapper could still
+release that name later, overwriting newer interface values. The custom GAP3
+help parser stopped at the final normal-output marker but left the following
+input-prompt marker unread, shifting every later pexpect response by one
+command. Finally, the bundled Jean Michel runtime's `FormatLaTeX` returns a
+matrix row body rather than the complete array returned by older GAP3
+installations.
+
+Committed and pushed source `7779ed60f7bccb52f2cbc07df66b590f2acc988c`
+(`sagelite 10.9.post32`) keeps explicitly unbound names out of the reuse pool
+until their wrapper releases ownership, consumes the final help prompt, and
+wraps row-only rectangular matrix LaTeX while preserving already-wrapped
+output. The transferred source hashes were:
+
+```text
+src/sage/interfaces/gap.py   fdc38f1f6aa058d744a92de1c7e95b72afc3e5193c6986c8270e9a732bd0bafd
+src/sage/interfaces/gap3.py  a31eff2fc06bc9f8f04567b68581d86b5508f8f9394c87b417fa3621c8721301
+```
+
+Against the untouched `post31` wheel-only install with only those source
+files bind-mounted read-only, five independent GAP3 module runs each passed
+all 113 doctests. The generic GAP interface passed all 211 doctests, and the
+isolated `_check_gap3_runtime` probe passed. The durable final logs are
+`doctest-final-gap3-1.log` through `doctest-final-gap3-5.log`,
+`doctest-final-gap.log`, and `selftest-final-gap3.log` in the focused root.
+This is focused regression evidence, not fresh-install acceptance.
+
+After retaining those logs, the iteration removed only the disposable 21 GiB
+focused venv and its small temporary home directories. The guest then had
+about 101 GiB free, satisfying the heavy-build threshold. Exactly one native
+build and one gated watcher started as `sagelite-post32-build.service` and
+`sagelite-post32-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-191407-7779ed60f7bc
+```
+
+The services select exact pushed source `7779ed60f7b`, Sagelite
+`10.9.post32`, and the native Linux aarch64 CPython 3.13 CIBW contract. The
+watcher will assemble a fresh strict wheel closure and run the wheel-only
+short and full gates only after build success. The public `dev/manifest.json`
+remains at 177 wheels and fourteen `post8`/`post9` Sagelite primaries. No
+`post32` wheel, install, smoke, short, or full result is claimed yet, and no
+publication was attempted.
