@@ -2506,8 +2506,8 @@ class MPolynomialIdeal_singular_repr(
         See :mod:`~sage.rings.polynomial.msolve` for more information. ::
 
             sage: I.variety(RBF, algorithm='msolve', proof=False)   # optional - msolve
-            [{y: [0.361103080528647 +/- 4.53e-16], x: [2.76929235423863 +/- 2.08e-15]},
-             {y: 1.000000000000000, x: 1.000000000000000}]
+            [{x: [2.76929235423863 +/- 2.08e-15], y: [0.361103080528647 +/- 4.53e-16]},
+             {x: 1.000000000000000, y: 1.000000000000000}]
 
         Computation over floating point numbers may compute only a partial solution,
         or even none at all. Notice that x values are missing from the following variety::
@@ -2559,10 +2559,10 @@ class MPolynomialIdeal_singular_repr(
             sage: sorted(I.variety(algorithm='msolve',          # optional - msolve, needs sage.rings.finite_rings
             ....:                  proof=False),
             ....:        key=lambda d: str(sorted(d.items())))
-            [{y: 1, x: 1},
-             {y: 1, x: 536870908},
-             {y: 536870908, x: 1},
-             {y: 536870908, x: 536870908}]
+            [{x: 1, y: 1},
+             {x: 536870908, y: 1},
+             {x: 1, y: 536870908},
+             {x: 536870908, y: 536870908}]
 
         but may fail in small characteristic, especially with ideals of high
         degree with respect to the characteristic::

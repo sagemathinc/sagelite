@@ -266,8 +266,8 @@ def variety(ideal, ring, *, proof=True):
          {x: [0.707106781186547 +/- 6.29e-16], y: [0.707106781186547 +/- 6.29e-16]}]
         sage: sorted(Ideal(x^2 - 1, y^2 - 1).variety(QQ, algorithm='msolve', proof=False), key=str) # optional - msolve
         [{x: -1, y: -1}, {x: -1, y: 1}, {x: 1, y: -1}, {x: 1, y: 1}]
-        sage: sorted(Ideal(x^2-1, y^2-2).variety(CC, algorithm='msolve', proof=False),
-        ....:        key=lambda d: (d[y].real() > 0, d[x].real() > 0), reverse=True) # optional - msolve # abs tol 1e-13
+        sage: sorted(Ideal(x^2-1, y^2-2).variety(CC, algorithm='msolve', proof=False),  # optional - msolve # abs tol 1e-13
+        ....:        key=lambda d: (d[y].real() > 0, d[x].real() > 0), reverse=True)
         [{x: 1.00000000000000, y: 1.41421356237310},
          {x: -1.00000000000000, y: 1.41421356237309},
          {x: 1.00000000000000, y: -1.41421356237309},

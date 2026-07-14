@@ -1795,7 +1795,7 @@ class PolynomialSequence_gf2(PolynomialSequence_generic):
             sage: S = Sequence([x*y + z, y*z + x, x + y + z + 1])
             sage: sol = S.solve()
             sage: sol
-            [{z: 0, y: 1, x: 0}]
+            [{y: 1, z: 0, x: 0}]
 
         We check that it is actually a solution::
 
@@ -1806,7 +1806,7 @@ class PolynomialSequence_gf2(PolynomialSequence_generic):
 
             sage: sols = S.solve(n=Infinity)                                            # needs brial
             sage: sols                                                                  # needs brial
-            [{z: 0, y: 1, x: 0}, {z: 1, y: 1, x: 1}]
+            [{y: 1, z: 0, x: 0}, {y: 1, z: 1, x: 1}]
             sage: [S.subs(x) for x in sols]                                             # needs brial
             [[0, 0, 0], [0, 0, 0]]
 
