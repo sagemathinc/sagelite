@@ -2309,3 +2309,89 @@ launching SSH session, with main PIDs `2448681` and `2448692`.
 The public manifest remained at 177 wheels and fourteen `post8`/`post9`
 Sagelite primaries. No `post26` wheel, install, smoke, short, or full result is
 claimed yet, and no publication was attempted.
+
+## Post26 rebuilt-wheel result and Singular handoff diagnosis
+
+The exact committed `post26` build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post26-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=78cc65f755bae9bc1f16d656746538ae61ee07190ef4b5d9db63743c0fedad47
+size=236405887
+
+sagelite_qepcad_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=df93a79295aa444479e5e410d534899aa2574a886d58fe1c3aebaaab1a5f3980
+size=5241590
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=e9242320c7157e98a60bb073caef32e604ba74fbf06b2e21c0009afa5c0f0f3d
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of 178 wheels totaling
+16,617,146,509 bytes, with staged wheelhouse digest
+`a1cae0c409cc7f9ac9b2b00757d3cce6f5b4da25a346e12c50b58a618a1c9555`.
+Every strict filename, dependency, tag, ABI, architecture, version, and
+repaired-primary preflight passed. The fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post26` and `pip check` passed. Startup
+selftest passed, including the rebuilt QEPCAD prompt probe, so the cached
+unsigned-`char` executable and its `bad_alloc` are fixed.
+
+The installed short sweep nevertheless logged 66 failures in
+`sage.interfaces.qepcad` and ultimately timed out that module. The rebuilt
+executable remained alive through startup but died with signal 13 on its
+first `go` command, leaving echoed commands such as `go  &` in place of
+answers. QEPCAD's applied boolean-Singular patch launches uppercase
+`Singular` through `PATH`; the wheel-only process instead knew the companion
+only by its private package path. A focused run against the untouched install
+reproduced the failure, while prepending the directory returned by
+`sagelite_singular_runtime.runtime.executable_path()` made the same
+`qepcad(a > b)` operation return `b - a < 0`.
+
+After the failure class was established, the iteration stopped the remaining
+failed short sweep rather than starting a full run. Its exit code is 137 from
+that deliberate stop. The partial reducer reports QEPCAD's timeout and the
+already separate GAP3 runtime failure. Authoritative and focused artifacts
+are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3/validation/short-post26/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3/validation/short-post26/doctest-installed-linux-aarch64-cp313-post26-short-20260714-114454.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3/validation/short-post26/doctest-installed-linux-aarch64-cp313-post26-short-20260714-114454.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3/analysis-post26/doctest-installed-linux-aarch64-cp313-post26-short-partial-20260714-120351.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3/analysis-post26/doctest-installed-linux-aarch64-cp313-post26-short-partial-20260714-120351.analysis.json
+```
+
+Committed and pushed source
+`b9c7d52af26cf35581ba17b5109a22b6da3aa1b8` advances Sagelite to
+`10.9.post27`, exposes the Singular companion bindir only in QEPCAD's child
+environment, makes the `qepcad` extra request both companions, and strengthens
+selftest from a startup-only check to the Singular-backed elimination above.
+Twelve focused QEPCAD, selftest, feature, and companion-metadata tests passed;
+the broader metadata file still has eleven unrelated pre-existing failures.
+
+## Post27 exact-SHA rebuild start
+
+After preserving the `post26` wheelhouse, strict summary, selftest, full
+failure log, stats, and partial reduced analysis, the iteration removed only
+its 21 GiB disposable install and 1.5 GiB disposable source clone. The guest
+then had 111,159,603,200 bytes free, above the 100 GiB heavy-build threshold;
+`/Volumes/sage` had about 185 GiB free.
+
+Exactly one native build and one gated watcher started as
+`sagelite-post27-build.service` and `sagelite-post27-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26
+```
+
+The build records exact pushed source
+`b9c7d52af26cf35581ba17b5109a22b6da3aa1b8`, Sagelite `10.9.post27`, and
+the native Linux `aarch64` CPython 3.13 CIBW contract. The watcher waits for
+the build exit artifact and will assemble a fresh strict wheel closure before
+running wheel-only `--optional sage` short and full gates. Both services
+survived the launching SSH session, with main PIDs `2548082` and `2548087`.
+
+The public manifest remained at 177 wheels and fourteen `post8`/`post9`
+Sagelite primaries. No `post27` wheel, install, smoke, short, or full result is
+claimed yet, and no publication was attempted.
