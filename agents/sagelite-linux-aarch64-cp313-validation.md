@@ -1658,13 +1658,14 @@ version preflight passed.
 
 The fresh native Linux aarch64 wheel-only installation of
 `sagelite[all-needed-extras]==10.9.post21` and `python -m pip check` passed.
-At `2026-07-14T05:02:48Z`, runtime manifest collection was active inside the
-only Sagelite container and using CPU. The durable
-`sagelite-post21-validate.service` remained active and will run every selftest
-probe and the installed `--optional=sage --short 600` gate before starting a
-separate full sweep. Neither validation exit-code artifact exists yet, so no
-selftest, smoke, short-suite, or full-suite pass is claimed. The current
-artifacts are:
+Runtime manifest and summary collection also completed, and every
+`sagelite-selftest` probe passed, including the new Giac command-completion
+probe. At `2026-07-14T05:04:31Z`, the installed
+`--optional=sage --short 600` sweep was active across eight workers in the
+only Sagelite container, using approximately all eight guest CPUs. The
+durable `sagelite-post21-validate.service` will start a separate full sweep
+only if that gate passes. Neither validation exit-code artifact exists yet,
+so no short-suite or full-suite pass is claimed. The current artifacts are:
 
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/wheelhouse
