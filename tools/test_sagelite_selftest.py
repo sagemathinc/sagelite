@@ -771,6 +771,15 @@ def test_selftest_qepcad_probe_reaches_input_prompt(monkeypatch, tmp_path):
         )
 
     monkeypatch.setattr(selftest.subprocess, "run", run)
+    qepcad_calls = []
+    qepcad_module = types.ModuleType("sage.interfaces.qepcad")
+
+    def qepcad(formula, *, vars):
+        qepcad_calls.append((formula, vars))
+        return "b - a < 0"
+
+    qepcad_module.qepcad = qepcad
+    monkeypatch.setitem(sys.modules, "sage.interfaces.qepcad", qepcad_module)
 
     assert (
         selftest._check_qepcad_runtime()
@@ -788,6 +797,7 @@ def test_selftest_qepcad_probe_reaches_input_prompt(monkeypatch, tmp_path):
             },
         )
     ]
+    assert qepcad_calls == [("a > b", "(a,b)")]
 
 
 def test_selftest_runs_gap_guava_leon_after_gap_package_checks(monkeypatch):

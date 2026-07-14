@@ -706,6 +706,35 @@ def _qepcad_default_qepcadrc_path():
     return os.path.join(SAGE_LOCAL, 'etc', 'default.qepcadrc')
 
 
+def _qepcad_singular_bindir():
+    """
+    Return the bundled Singular executable directory, if available.
+
+    QEPCAD's ``SINGULAR yes`` configuration launches ``Singular`` through
+    ``PATH``.  Wheel installs keep that executable inside its companion
+    package, so make the directory available to the QEPCAD child without
+    modifying the parent Python process.
+    """
+    for entry in sys.path:
+        runtime_path = Path(entry, "sagelite_singular_runtime", "runtime.py")
+        if not runtime_path.is_file():
+            continue
+        spec = importlib_util.spec_from_file_location(
+            "_sage_qepcad_singular_runtime", runtime_path
+        )
+        if spec is None or spec.loader is None:
+            continue
+        module = importlib_util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(module)
+            executable = Path(module.executable_path())
+        except Exception:
+            continue
+        if executable.is_file() and os.access(executable, os.X_OK):
+            return os.fspath(executable.parent)
+    return None
+
+
 def _qepcad_atoms(formula):
     r"""
     Return the atoms of a qepcad quantifier-free formula, as a set of strings.
@@ -749,10 +778,12 @@ def _qepcad_cmd(memcells=None):
         memcells_arg = f'+N{memcells}'
     else:
         memcells_arg = ''
-    return (
-        f"env qe={shlex.quote(_qepcad_root())} "
-        f"{shlex.quote(_qepcad_executable())} {memcells_arg}"
-    )
+    environment = f"env qe={shlex.quote(_qepcad_root())}"
+    singular_bindir = _qepcad_singular_bindir()
+    if singular_bindir is not None:
+        path = singular_bindir + os.pathsep + os.environ.get("PATH", os.defpath)
+        environment += f" PATH={shlex.quote(path)}"
+    return f"{environment} {shlex.quote(_qepcad_executable())} {memcells_arg}"
 
 
 _command_info_cache = None

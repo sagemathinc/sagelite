@@ -44,6 +44,22 @@ def _write_fake_qepcad_runtime(tmp_path):
     return root
 
 
+def _write_fake_singular_runtime(tmp_path):
+    package = tmp_path / "sagelite_singular_runtime"
+    executable = package / "data" / "bin" / "Singular"
+    package.mkdir()
+    (package / "__init__.py").write_text("")
+    (package / "runtime.py").write_text(
+        "from pathlib import Path\n"
+        "def executable_path():\n"
+        "    return Path(__file__).resolve().parent / 'data' / 'bin' / 'Singular'\n"
+    )
+    executable.parent.mkdir(parents=True)
+    executable.write_text("#!/bin/sh\n")
+    executable.chmod(executable.stat().st_mode | stat.S_IXUSR)
+    return executable
+
+
 def test_qepcad_cmd_discovers_sagelite_companion(monkeypatch, tmp_path):
     root = _write_fake_qepcad_runtime(tmp_path)
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
@@ -54,6 +70,25 @@ def test_qepcad_cmd_discovers_sagelite_companion(monkeypatch, tmp_path):
     finally:
         sys.modules.pop("sagelite_qepcad", None)
         sys.modules.pop("sagelite_qepcad.runtime", None)
+
+
+def test_qepcad_cmd_exposes_singular_companion_to_child(monkeypatch, tmp_path):
+    root = _write_fake_qepcad_runtime(tmp_path)
+    singular = _write_fake_singular_runtime(tmp_path)
+    monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+
+    try:
+        command = qepcad_module._qepcad_cmd(memcells=123)
+        assert command == (
+            f"env qe={root} PATH={singular.parent}:/usr/bin:/bin "
+            f"{root / 'bin' / 'qepcad'} +N123"
+        )
+    finally:
+        sys.modules.pop("sagelite_qepcad", None)
+        sys.modules.pop("sagelite_qepcad.runtime", None)
+        sys.modules.pop("sagelite_singular_runtime", None)
+        sys.modules.pop("sagelite_singular_runtime.runtime", None)
 
 
 def test_qepcad_help_discovers_sagelite_companion(monkeypatch, tmp_path):

@@ -771,7 +771,10 @@ polytopes-db = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes_db = ['sagelite-database-polytopes >=10.9,<10.10']
 polytopes-db-4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
 polytopes_db_4d = ['sagelite-database-polytopes-4d >=10.9,<10.10']
-qepcad = ['sagelite-qepcad-runtime >=10.9.post2,<10.10']
+qepcad = [
+  'sagelite-qepcad-runtime >=10.9.post2,<10.10',
+  'sagelite-singular-runtime >=10.9.post2,<10.10',
+]
 pycryptosat = ["pycryptosat; python_version < '3.13' and (sys_platform == 'darwin' or (sys_platform == 'linux' and platform_machine == 'x86_64'))"]
 pycosat = ['pycosat >=0.6.3']
 pybtex = ['pybtex >=0.26.1']

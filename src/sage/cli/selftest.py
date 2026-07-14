@@ -1386,6 +1386,13 @@ def _check_qepcad_runtime():
         raise RuntimeError(
             f"QEPCAD companion failed its startup probe: {output[-500:]}"
         )
+    from sage.interfaces.qepcad import qepcad
+
+    answer = str(qepcad("a > b", vars="(a,b)"))
+    if answer != "b - a < 0":
+        raise RuntimeError(
+            f"QEPCAD companion failed its Singular-backed operation: {answer!r}"
+        )
     return status
 
 
