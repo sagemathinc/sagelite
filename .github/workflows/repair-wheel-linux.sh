@@ -24,7 +24,7 @@ build_companion_wheel() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   env -u PIP_CONSTRAINT "$@" "$python_bin" -m build \
     --wheel \
@@ -103,7 +103,7 @@ build_pplpy_wheel() {
     < /project/build/pkgs/pplpy/patches/sagelite-repaired-wheel-version.patch
 
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade \
-    build meson-python Cython cysignals gmpy2
+    'build==1.2.2.post1' meson-python Cython cysignals gmpy2
   mkdir -p "$raw_dir" "$dest_dir"
   env -u PIP_CONSTRAINT \
     PATH="$prefix/bin:$PATH" \
@@ -220,7 +220,7 @@ build_gap_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GAP_ROOTS="$gap_roots" \
   SAGELITE_GAP_BINDIR="$prefix/bin" \
@@ -252,7 +252,7 @@ build_gap_package_companions() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   local packages=(
     atlasrep
     ctbllib
@@ -312,7 +312,7 @@ build_gap3_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GAP3_ROOT="$gap3_root" \
   SAGELITE_GAP3_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -345,7 +345,7 @@ build_gfan_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GFAN_BINDIR="$gfan_bindir" \
   SAGELITE_GFAN_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -383,7 +383,7 @@ build_giac_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GIAC_BINDIR="$giac_bindir" \
   SAGELITE_GIAC_HELPFILE="$giac_helpfile" \
@@ -417,7 +417,7 @@ build_ecm_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_ECM_BINDIR="$ecm_bindir" \
   SAGELITE_ECM_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -450,7 +450,7 @@ build_frobby_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_FROBBY_BINDIR="$frobby_bindir" \
   SAGELITE_FROBBY_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -483,7 +483,7 @@ build_mwrank_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_MWRANK_BINDIR="$mwrank_bindir" \
   SAGELITE_MWRANK_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -516,7 +516,7 @@ build_sympow_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_SYMPOW_BINDIR="$sympow_bindir" \
   SAGELITE_SYMPOW_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -550,7 +550,7 @@ build_topcom_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_TOPCOM_BINDIR="$topcom_bindir" \
   SAGELITE_TOPCOM_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -586,7 +586,7 @@ build_four_ti_2_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_4TI2_BINDIR="$four_ti_2_bindir" \
   SAGELITE_4TI2_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -623,7 +623,7 @@ build_cddlib_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_CDDLIB_BINDIR="$cddlib_bindir" \
   SAGELITE_CDDLIB_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -656,7 +656,7 @@ build_csdp_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_CSDP_BINDIR="$csdp_bindir" \
   SAGELITE_CSDP_LIBDIR="$prefix/lib" \
@@ -693,7 +693,7 @@ build_dvipng_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_DVIPNG_BINDIR="$dvipng_bindir" \
   SAGELITE_DVIPNG_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -726,7 +726,7 @@ build_benzene_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_BENZENE_BINDIR="$benzene_bindir" \
   SAGELITE_BENZENE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -759,7 +759,7 @@ build_buckygen_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_BUCKYGEN_BINDIR="$buckygen_bindir" \
   SAGELITE_BUCKYGEN_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -793,7 +793,7 @@ build_glucose_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GLUCOSE_BINDIR="$glucose_bindir" \
   SAGELITE_GLUCOSE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -835,7 +835,7 @@ build_graphviz_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GRAPHVIZ_BINDIR="$graphviz_bindir" \
   SAGELITE_GRAPHVIZ_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -871,7 +871,7 @@ build_info_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_INFO_PREFIX="$info_prefix" \
   SAGELITE_INFO_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -904,7 +904,7 @@ build_kissat_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_KISSAT_BINDIR="$kissat_bindir" \
   SAGELITE_KISSAT_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -937,7 +937,7 @@ build_msolve_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_MSOLVE_BINDIR="$msolve_bindir" \
   SAGELITE_MSOLVE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -994,7 +994,7 @@ build_flatter_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_FLATTER_BINDIR="$flatter_bindir" \
   SAGELITE_FLATTER_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1028,7 +1028,7 @@ build_fplll_data_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_FPLLL_STRATEGIES_DIR="$strategies_dir" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
@@ -1061,7 +1061,7 @@ build_latte_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_LATTE_BINDIR="$latte_bindir" \
   SAGELITE_LATTE_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1094,7 +1094,7 @@ build_lcalc_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_LCALC_BINDIR="$lcalc_bindir" \
   SAGELITE_LCALC_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1128,7 +1128,7 @@ build_lrslib_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_LRSLIB_BINDIR="$lrslib_bindir" \
   SAGELITE_LRSLIB_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1164,7 +1164,7 @@ build_lie_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_LIE_BINDIR="$lie_bindir" \
   SAGELITE_LIE_INFO_DIR="$lie_info_dir" \
@@ -1198,7 +1198,7 @@ build_plantri_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PLANTRI_BINDIR="$plantri_bindir" \
   SAGELITE_PLANTRI_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1231,7 +1231,7 @@ build_planarity_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PLANARITY_BINDIR="$planarity_bindir" \
   SAGELITE_PLANARITY_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1267,7 +1267,7 @@ build_pdf2svg_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PDF2SVG_BINDIR="$pdf2svg_bindir" \
   SAGELITE_PDF2SVG_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1303,7 +1303,7 @@ build_poppler_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_POPPLER_BINDIR="$poppler_bindir" \
   SAGELITE_POPPLER_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1333,7 +1333,7 @@ build_qepcad_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_QEPCAD_ROOT="$qepcad_root" \
   SAGELITE_QEPCAD_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1366,7 +1366,7 @@ build_tachyon_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_TACHYON_BINDIR="$tachyon_bindir" \
   SAGELITE_TACHYON_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1399,7 +1399,7 @@ build_tides_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_TIDES_PREFIX="$prefix" \
   SAGELITE_TIDES_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -1987,7 +1987,7 @@ with zipfile.ZipFile(wheel_path) as wheel:
             target.write(source.read())
 PY
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_MAXIMA_PREFIX="$maxima_prefix" \
   SAGELITE_MAXIMA_FAS="$maxima_fas" \
@@ -2031,7 +2031,7 @@ build_meataxe_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   if [ -f "$meataxe_dir/p009.zzz" ]; then
     SAGELITE_MEATAXE_DIR="$meataxe_dir" \
@@ -2074,7 +2074,7 @@ build_nauty_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_NAUTY_BINDIR="$nauty_bindir" \
   SAGELITE_NAUTY_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -2109,7 +2109,7 @@ build_rubiks_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_RUBIKS_BINDIR="$rubiks_bindir" \
   SAGELITE_RUBIKS_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -2142,7 +2142,7 @@ build_palp_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PALP_BINDIR="$palp_bindir" \
   SAGELITE_PALP_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -2177,7 +2177,7 @@ build_pari_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PARI_BINDIR="$pari_bindir" \
   SAGELITE_PARI_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
@@ -2218,7 +2218,7 @@ build_pari_data_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_PARI_DATA_DIR="$pari_root" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
@@ -2260,7 +2260,7 @@ build_singular_runtime_companion() {
     exit 1
   fi
 
-  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
+  env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade 'build==1.2.2.post1' setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_SINGULAR_ROOT="$singular_root" \
   SAGELITE_SINGULAR_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \

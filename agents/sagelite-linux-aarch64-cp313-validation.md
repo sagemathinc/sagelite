@@ -3172,3 +3172,33 @@ Controller `develop` and verified `origin/develop` were synchronized at
 `dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
 Sagelite primaries, all from `post8` and `post9`; no `post33` primary is
 public. No publication was attempted, and this cell remains below `full`.
+
+## Post33 repair-frontend failure and correction
+
+The exact pushed `post33` build from
+`c615947f2bc1dd67f96f4ecd5d4527074445c1b0` finished with build and gated
+watcher exit code one. Sagelite compilation completed, the raw primary wheel
+was created, native headers were injected, and auditwheel wrote a repaired
+primary in its disposable container. The new pplpy repair phase then ran an
+unbounded `pip install --upgrade build`. In cibuildwheel's layered
+Sage-prefix venv this replaced the previously working `build 1.2.2.post1`
+frontend with `1.5.1`, after which the prefix interpreter could not resolve
+`build.__main__`. The repair command exited before copying any completed
+wheel to the durable wheelhouse, and the watcher correctly did not start
+validation. No `post33` wheel, install, smoke, short, or full result is
+claimed. The durable failed run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-203232-c615947f2bc
+```
+
+The focused correction pins `build 1.2.2.post1` in all 43 repair-time
+frontend installations, including the new pplpy build, and adds a regression
+test rejecting unbounded frontend upgrades. In the same native aarch64
+manylinux image, with the persistent Sage-prefix venv and source mounted at
+the same paths as cibuildwheel, the pinned installation kept the proven base
+frontend and `python -m build --version` exited zero. Four focused repair and
+pplpy contract tests pass, as do shell syntax and `git diff --check`. This is
+repair-tool evidence only; a fresh exact-SHA build and wheel-only gates remain
+required. The public manifest still contains 177 wheels and fourteen
+`post8`/`post9` primaries, and no publication was attempted.

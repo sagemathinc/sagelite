@@ -27,6 +27,19 @@ def test_repair_wheel_linux_injects_native_headers_before_auditwheel():
     assert 'prefix = "sage/include/"' in script
     assert "cp312-cp312" not in header_injector
     assert 'inject_native_include_headers "$repaired_input"' in script
-    assert script.index('inject_native_include_headers "$repaired_input"') < script.index(
+    assert script.index('inject_native_include_headers "$repaired_input"') < script.rindex(
         'auditwheel repair --plat "$AUDITWHEEL_PLAT"'
     )
+
+
+def test_repair_wheel_linux_pins_build_frontend():
+    script = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
+
+    install_lines = [
+        line
+        for line in script.splitlines()
+        if "pip install --upgrade" in line and "setuptools wheel" in line
+    ]
+    assert install_lines
+    assert all("'build==1.2.2.post1'" in line for line in install_lines)
+    assert "    'build==1.2.2.post1' meson-python" in script
