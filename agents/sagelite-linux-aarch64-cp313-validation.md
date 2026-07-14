@@ -1602,3 +1602,31 @@ and full gates only after the primary build succeeds. The public manifest
 remains unchanged at 177 wheels and fourteen `post8`/`post9` Sagelite
 primaries. No publication was attempted, no `post21` primary is claimed, and
 the cell remains below `full`.
+
+## Post21 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T04:31:56Z` found exactly the two
+intended guest user-systemd services active. The build service owned the sole
+CIBW container, and the validation service remained correctly blocked on the
+absent build exit-code artifact. No validation container or completed
+`post21` wheel existed. The exact source checkout was clean at
+`396f11c604fd63438235c6bf825571bd7a8851c2` and reported Sagelite
+`10.9.post21`; the actual manylinux build container reported native Linux
+`aarch64`.
+
+The build had reached the Sagelite extension-compilation phase. Its Ninja log
+contained 710 records and continued to advance, while live GCC processes used
+approximately all eight guest CPUs. This supplied forward-progress evidence
+while the top-level command log was buffered after announcing the
+`sagelib-10.9.post21` package build. None of `exit-code`,
+`follow-on-exit-code`, `validation-short-exit-code`, or
+`validation-full-exit-code` existed.
+
+The Linux guest had 102,720,352,256 bytes free after the build began above the
+100 GiB heavy-build threshold. The outer macOS host had about 183 GiB free on
+`/Volumes/sage`, and both the controller and `host` bulk filesystems had about
+103 GiB free. The directly fetched public `dev/manifest.json` remained
+unchanged at 177 wheel entries and fourteen Sagelite primaries, all from
+`post8` and `post9`; no `post21` primary is public. No duplicate build,
+validation, or publication was started. The cell remains below `full`, and
+this checkpoint makes no wheel, install, smoke, or full-suite claim.
