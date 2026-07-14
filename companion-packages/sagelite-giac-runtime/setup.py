@@ -38,6 +38,33 @@ def _find_executable() -> Path:
     )
 
 
+def _find_help_file(executable: Path) -> Path:
+    candidates = []
+    for variable in ("SAGELITE_GIAC_HELPFILE", "XCAS_HELP"):
+        if os.environ.get(variable):
+            candidates.append(Path(os.environ[variable]))
+    candidates.append(executable.parent.parent / "share" / "giac" / "aide_cas")
+    if os.environ.get("SAGE_LOCAL"):
+        candidates.append(
+            Path(os.environ["SAGE_LOCAL"]) / "share" / "giac" / "aide_cas"
+        )
+    candidates.extend(
+        [
+            Path("/usr/share/giac/aide_cas"),
+            Path("/usr/local/share/giac/aide_cas"),
+        ]
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    searched = "\n  ".join(os.fspath(path) for path in candidates)
+    raise RuntimeError(
+        "could not find the Giac aide_cas completion database. "
+        "Set SAGELITE_GIAC_HELPFILE to the Sage-built aide_cas file.\n"
+        f"Searched:\n  {searched}"
+    )
+
+
 def _runtime_libraries(executable: Path) -> list[Path]:
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
@@ -83,20 +110,31 @@ def _runtime_libraries(executable: Path) -> list[Path]:
 class build_py(_build_py):
     def run(self):
         source = _find_executable()
+        help_source = _find_help_file(source)
         target = Path(self.build_lib) / "sagelite_giac" / "data" / "bin"
         lib_target = Path(self.build_lib) / "sagelite_giac" / "data" / "lib"
+        help_target = (
+            Path(self.build_lib) / "sagelite_giac" / "data" / "share" / "giac"
+        )
         shutil.rmtree(target, ignore_errors=True)
         shutil.rmtree(lib_target, ignore_errors=True)
+        shutil.rmtree(help_target, ignore_errors=True)
         target.mkdir(parents=True, exist_ok=True)
         lib_target.mkdir(parents=True, exist_ok=True)
+        help_target.mkdir(parents=True, exist_ok=True)
 
         shutil.copy2(source, target / "giac-real")
+        shutil.copy2(help_source, help_target / "aide_cas")
         wrapper = target / "giac"
         wrapper.write_text(
             "#!/bin/sh\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
             "export LD_LIBRARY_PATH\n"
+            'if [ -z "${XCAS_HELP:-}" ]; then\n'
+            '  XCAS_HELP="$HERE/../share/giac/aide_cas"\n'
+            "  export XCAS_HELP\n"
+            "fi\n"
             'exec "$HERE/giac-real" "$@"\n'
         )
         wrapper.chmod(0o755)

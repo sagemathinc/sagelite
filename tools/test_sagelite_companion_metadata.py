@@ -169,7 +169,7 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_gfan": ["data/bin/*", "data/lib/*"],
     },
     "sagelite-giac-runtime": {
-        "sagelite_giac": ["data/bin/*", "data/lib/*"],
+        "sagelite_giac": ["data/bin/*", "data/lib/*", "data/share/giac/*"],
     },
     "sagelite-glucose-runtime": {
         "sagelite_glucose": ["data/bin/*"],
@@ -3096,6 +3096,38 @@ def test_giac_runtime_bundles_openblas_dependency():
     assert '"libtinfo",' in setup_py
     assert '"libssl",' in setup_py
     assert '"libcrypto",' in setup_py
+
+
+def test_giac_runtime_bundles_completion_database():
+    pyproject = _pyproject("sagelite-giac-runtime")
+    setup_py = _companion_file("sagelite-giac-runtime", "setup.py").read_text()
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+
+    assert pyproject["project"]["version"] == "10.9.post1"
+    assert "SAGELITE_GIAC_HELPFILE" in setup_py
+    assert 'help_target / "aide_cas"' in setup_py
+    assert 'XCAS_HELP="$HERE/../share/giac/aide_cas"' in setup_py
+    assert 'SAGELITE_GIAC_HELPFILE="$giac_helpfile"' in repair
+
+
+def test_giac_selftest_requires_command_completion():
+    selftest = (ROOT / "src/sage/cli/selftest.py").read_text()
+
+    assert '_GIAC_RUNTIME_PROBE = """' in selftest
+    assert 'giac.completions("cas")' in selftest
+    assert 'if "cas_setup" not in completions:' in selftest
+    assert '_run_subprocess_probe(_GIAC_RUNTIME_PROBE, "Giac runtime probe")' in selftest
+
+
+def test_giac_runtime_is_exposed_at_completion_capable_floor():
+    with (ROOT / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+
+    extras = pyproject["project"]["optional-dependencies"]
+    requirement = "sagelite-giac-runtime >=10.9.post1,<10.10"
+
+    assert extras["giac"] == [requirement]
+    assert requirement in extras["all-needed-extras"]
 
 
 def test_flatter_runtime_repair_builds_pinned_source_fallback():

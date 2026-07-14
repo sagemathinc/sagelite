@@ -180,7 +180,7 @@ all-needed-extras = [
   'sagelite-gap-package-smallgrp >=10.9,<10.10',
   'sagelite-gap-package-transgrp >=10.9,<10.10',
   'sagelite-gap3-runtime >=10.9.post1,<10.10',
-  'sagelite-giac-runtime >=10.9,<10.10',
+  'sagelite-giac-runtime >=10.9.post1,<10.10',
   'sagelite-glucose-runtime >=10.9,<10.10',
   'sagelite-imagemagick-runtime >=10.9.post2,<10.10',
   'sagelite-info-runtime >=10.9,<10.10',
@@ -676,7 +676,7 @@ gfan = ['sagelite-gfan-runtime >=10.9,<10.10']
 gfan_bases = ['sagelite-gfan-runtime >=10.9,<10.10']
 gfan_groebnercone = ['sagelite-gfan-runtime >=10.9,<10.10']
 gfan_render = ['sagelite-gfan-runtime >=10.9,<10.10']
-giac = ['sagelite-giac-runtime >=10.9,<10.10']
+giac = ['sagelite-giac-runtime >=10.9.post1,<10.10']
 glucose = ['sagelite-glucose-runtime >=10.9,<10.10']
 glucose-syrup = ['sagelite-glucose-runtime >=10.9,<10.10']
 gitpython = ['GitPython >=3.1.50']

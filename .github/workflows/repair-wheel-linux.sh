@@ -266,6 +266,11 @@ build_giac_runtime_companion() {
     find "$prefix" -maxdepth 4 -name giac -print >&2 || true
     exit 1
   fi
+  local giac_helpfile="$prefix/share/giac/aide_cas"
+  if [ ! -f "$giac_helpfile" ]; then
+    echo "GIAC aide_cas completion database not found: $giac_helpfile" >&2
+    exit 1
+  fi
 
   local project_dir="/project"
   local companion_dir="$project_dir/companion-packages/sagelite-giac-runtime"
@@ -278,6 +283,7 @@ build_giac_runtime_companion() {
   env -u PIP_CONSTRAINT "$python_bin" -m pip install --upgrade build setuptools wheel
   mkdir -p "$output_dir"
   SAGELITE_GIAC_BINDIR="$giac_bindir" \
+  SAGELITE_GIAC_HELPFILE="$giac_helpfile" \
   SAGELITE_GIAC_RUNTIME_PLAT_NAME="$AUDITWHEEL_PLAT" \
     env -u PIP_CONSTRAINT "$python_bin" -m build \
       --wheel \

@@ -880,12 +880,30 @@ def _check_frobby_runtime():
     )
 
 
+_GIAC_RUNTIME_PROBE = """
+from sage.interfaces.giac import Giac
+
+giac = Giac()
+try:
+    completions = giac.completions("cas")
+finally:
+    giac.quit()
+if "cas_setup" not in completions:
+    raise RuntimeError(f"Giac completion database is unavailable: {completions!r}")
+
+print("Giac command completion available")
+"""
+
+
 def _check_giac_runtime():
     from sage.features.giac import Giac
 
-    return _check_companion_feature(
+    feature_status = _check_companion_feature(
         "sagelite_giac", Giac, "Giac executable runtime"
     )
+    if feature_status == "not installed":
+        return feature_status
+    return _run_subprocess_probe(_GIAC_RUNTIME_PROBE, "Giac runtime probe")
 
 
 def _check_graphviz_runtime():
