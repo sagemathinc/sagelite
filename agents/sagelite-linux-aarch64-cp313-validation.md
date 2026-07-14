@@ -1754,3 +1754,36 @@ threshold. `/Volumes/sage` had about 166 GiB free. The public
 `dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
 `post8`/`post9` Sagelite primaries. No publication was attempted, and the cell
 remains below `full`.
+
+## Post22 exact-SHA rebuild start
+
+The next scheduled reconciliation found no active Sagelite service, process,
+or container in the native Linux backend. The public `dev/manifest.json` still
+contained 177 wheel entries and fourteen Sagelite primaries, all from `post8`
+and `post9`; no local CPython 3.13 aarch64 primary was assumed public.
+
+The completed failed `post21` run retained its strict wheelhouse, validation
+summary, install metadata, reduced analysis, and logs. The iteration removed
+only its 22,107,787,264-byte disposable validation install, plus disposable
+source and focused-build trees from the superseded `post16` run and an exited
+automation-owned `post12` container. The guest then had 108,451,287,040 bytes
+free, above the 100 GiB heavy-build threshold.
+
+Exactly one native build and one gated validation watcher started as the guest
+user-systemd services `sagelite-post22-build.service` and
+`sagelite-post22-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-compiler-20260714-054623-2efaab7ea74e
+```
+
+The build records committed and pushed source
+`2efaab7ea74e19c6169c3da8eca5e1b28cf9697c`, Sagelite `10.9.post22`, and the
+native Linux `aarch64` CPython 3.13 CIBW contract. The validation watcher is
+blocked on the build exit-code artifact. After a successful build it will
+replace the inherited primary and matching rebuilt companions, add the pinned
+compatible `ziglang 0.16.0` aarch64 wheel to the strict closure, and run fresh
+wheel-only `--optional sage` short and full gates in sequence. Both services
+remained active after their launching SSH session exited. No `post22` wheel,
+install, smoke, or suite result is claimed yet, and no publication was
+attempted.
