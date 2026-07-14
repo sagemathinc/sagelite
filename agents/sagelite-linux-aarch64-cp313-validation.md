@@ -1263,3 +1263,29 @@ full gates only after build success. The public manifest remains unchanged at
 177 wheels and fourteen `post8`/`post9` Sagelite primaries; no `post17` or
 `post18` primary is public. No publication was attempted, no `post18` wheel is
 claimed yet, and the cell remains below `full`.
+
+## Post18 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T01:02:14Z` found exactly the two
+intended guest user-systemd services active. The build service owned the only
+CIBW container, while the validation service remained correctly blocked on
+the absent build exit-code artifact. No validation container or completed
+`post18` wheel existed. The exact source checkout was clean at
+`8c0f5c742d38ff40ca885d1d45e469280c0c252b` and reported Sagelite
+`10.9.post18`; the actual build environment reported native Linux `aarch64`.
+
+The wheel-construction phase was CPU-active across all eight guest CPUs,
+compiling Sage matrix and numerical extensions while ECL compiled the bundled
+Maxima runtime. A 20-second sample continued to report approximately 790%
+container CPU usage, providing independent forward-progress evidence despite
+the buffered top-level command log. The Linux guest had about 99 GiB free,
+the outer macOS host had about 185 GiB free on `/Volumes/sage`, and the
+controller had about 103 GiB free on `/scratch`. The build began above the
+100 GiB heavy-build threshold, and the remaining filesystems stayed above
+their applicable thresholds.
+
+The directly fetched public `dev/manifest.json` still contained 177 wheel
+entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
+`post17` or `post18` primary is public. No duplicate build, validation, or
+publication was started. The cell remains below `full`, and this checkpoint
+makes no new wheel, install, smoke, or full-suite claim.
