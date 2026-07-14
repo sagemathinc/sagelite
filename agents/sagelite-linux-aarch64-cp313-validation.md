@@ -2085,3 +2085,64 @@ wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`;
 no `post24` primary is public. No duplicate build, validation, or publication
 was started. The cell remains below `full`, and this checkpoint makes no new
 wheel, install, smoke, or full-suite claim.
+
+## Post24 wheel completion and short-gate result
+
+The exact-SHA native build completed with exit code zero at
+`2026-07-14T09:13:11Z`. Its source checkout is clean at
+`bd7e96a663bc612dcebb1abab34a7cba796ed75b` and produced:
+
+```text
+sagelite-10.9.post24-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=0253c921c1430fc09410b492bf83aad01499f15d4545ffe1c5fb12001d8f7363
+size=236405650
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=8740d52ed7cdbe15a93f8f85586e0c2a09e020bbaf1a4b010a7a62a3af9f6a7d
+size=66578984
+```
+
+The validation watcher assembled a fresh strict closure of one primary, 68
+companions, and 109 third-party wheels. The 178 staged wheels total
+16,617,147,894 bytes, with validator wheelhouse digest
+`d5c44a3057e74ab17519bfcd3747e0a867f65abf4360ba37fc6bf3c0841a29a7`
+and `SHA256SUMS` file digest
+`6894e30c80e9290f7ca2d1e08dbcb20347f282f5d45ec964ec88c795a7f1fe5b`.
+Every repaired-wheelhouse filename, dependency, tag, ABI, architecture, and
+version preflight passed.
+
+The fresh native Linux aarch64 wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post24`, `python -m pip check`, runtime
+manifest, and every `sagelite-selftest` probe passed. Packaged pytest reported
+215 passed and two skipped. The installed `--optional=sage --short 600` sweep
+failed three of 3,954 modules:
+
+```text
+sage.interfaces.gap3
+sage.interfaces.qepcad
+sage.rings.polynomial.polynomial_element
+```
+
+The FPLLL relocation failure from `post23` is absent: the exact committed
+correction passed the authoritative fresh-wheel gate. The remaining failures
+are independent classes. GAP3 returned protocol and formatting results that
+the interface did not parse as expected. QEPCAD aborted during startup with
+`std::bad_alloc`. Two large polynomial-power examples raised
+`RuntimeError: Aborted` in FLINT's `nmod_poly` exponentiation. The gated
+watcher correctly did not start the full sweep. Its authoritative artifacts
+are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b/validation/short-post24/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b/validation/short-post24/doctest-installed-linux-aarch64-cp313-post24-short-20260714-091649.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b/validation/short-post24/doctest-installed-linux-aarch64-cp313-post24-short-20260714-091649.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-083918-bd7e96a663b/validation-short-exit-code
+```
+
+After validation, no Sagelite service, process, or container remained active.
+The Linux guest had 84,848,066,560 bytes free, above the 30 GiB test-only
+threshold; `/Volumes/sage` had about 165 GiB free, and controller `/scratch`
+had about 103 GiB free. The public `dev/manifest.json` remained at 177 wheels
+and fourteen `post8`/`post9` Sagelite primaries; no `post24` primary is
+public. No publication was attempted, and the cell remains below `full`.
