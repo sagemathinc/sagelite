@@ -11,8 +11,8 @@ def test_cython_compiler_environment_uses_ziglang_fallback(monkeypatch):
         cython,
         "_cython_compiler_commands",
         lambda: {
-            "CC": shlex.join([sys.executable, "-m", "ziglang", "cc"]),
-            "CXX": shlex.join([sys.executable, "-m", "ziglang", "c++"]),
+            "CC": shlex.join([sys.executable, "-m", "ziglang", "cc", "-w"]),
+            "CXX": shlex.join([sys.executable, "-m", "ziglang", "c++", "-w"]),
         },
     )
 
@@ -22,12 +22,14 @@ def test_cython_compiler_environment_uses_ziglang_fallback(monkeypatch):
             "-m",
             "ziglang",
             "cc",
+            "-w",
         ]
         assert shlex.split(cython.os.environ["CXX"]) == [
             sys.executable,
             "-m",
             "ziglang",
             "c++",
+            "-w",
         ]
 
     assert "CC" not in cython.os.environ

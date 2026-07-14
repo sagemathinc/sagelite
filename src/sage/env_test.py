@@ -92,6 +92,18 @@ def test_cython_compiler_commands_preserve_explicit_settings(monkeypatch):
     assert env._cython_compiler_commands() == {}
 
 
+def test_cython_compiler_commands_silence_zig_internal_warnings(monkeypatch):
+    monkeypatch.delenv("CC", raising=False)
+    monkeypatch.delenv("CXX", raising=False)
+    monkeypatch.setattr(env, "_compiler_command_available", lambda command: False)
+    monkeypatch.setattr(env.importlib_metadata, "version", lambda package: "0.16.0")
+
+    assert env._cython_compiler_commands() == {
+        "CC": f"{sys.executable} -m ziglang cc -w",
+        "CXX": f"{sys.executable} -m ziglang c++ -w",
+    }
+
+
 @pytest.fixture(autouse=True)
 def clean_runtime_environment(monkeypatch):
     keys = [
