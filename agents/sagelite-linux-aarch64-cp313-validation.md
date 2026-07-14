@@ -2595,3 +2595,31 @@ gate, and full gate are still required. Durable evidence is under:
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/setjmp-register-fix/gc-frame-boundary-disassembly.log
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-131434-f239768d9a1/focused-post28-qepcad/setjmp-register-fix/frame-boundary-container-3000000-failures
 ```
+
+## Post29 exact-SHA rebuild start
+
+The aarch64 GC correction and its whitespace-only patch normalization were
+committed and pushed as `c0889e8bd67` and `37e1224bcce`, respectively. The
+build source revision, verified against `origin/develop` before launch, is
+`37e1224bcce63056cdb61734e4e037986965ff94` and reports Sagelite
+`10.9.post29` plus QEPCAD runtime `10.9.post3`.
+
+The disposable `post28` validation install was removed after its strict logs,
+wheel closure, and focused diagnostic artifacts were preserved. This raised
+guest free space to 107,352,309,760 bytes, above the 100 GiB heavy-build
+threshold. No competing container or heavy process was active.
+
+Exactly one native build and one gated validation watcher are active as
+`sagelite-post29-build.service` and `sagelite-post29-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-154054-37e1224bcce
+```
+
+Their durable main PIDs are `2814796` and `2814800`. The clean source clone is
+at the exact pushed SHA, and the actual manylinux build has begun resolving
+its CPython 3.13 build environment. The watcher will reuse the preserved
+strict closure, replace packages built by this run, and run fresh wheel-only
+`--optional sage` short and full gates in sequence only after build success.
+No `post29` wheel, install, smoke, short, or full result is claimed yet, and
+no publication was attempted.
