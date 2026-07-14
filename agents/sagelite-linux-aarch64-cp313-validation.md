@@ -2736,3 +2736,29 @@ success. No `post30` wheel, install, smoke, short, or full result is claimed
 yet. The public manifest remains at 177 wheels and fourteen `post8`/`post9`
 Sagelite primaries; no publication was attempted, and this cell remains below
 `full`.
+
+## Post30 native wheel-construction checkpoint
+
+The scheduled reconciliation at `2026-07-14T17:02:04Z` found exactly the two
+intended guest user-systemd services active. The build service, main PID
+`2916260`, owned the sole CIBW container, while the validation watcher, main
+PID `2916266`, remained correctly blocked on the absent build exit artifact.
+No validation container, completed `post30` wheel, build exit artifact, or
+validation exit artifact existed.
+
+The clean detached source checkout was still at exact pushed SHA
+`7cd5cb5f82d7ec6275082de618114b79dd64ab74` and the native manylinux build
+reported `Linux`, `aarch64`, and Sagelite `10.9.post30`. Meson configured 1,795
+Ninja targets. The wheel-construction Ninja log advanced from 30 to 132
+records during the reconciliation sample, with concurrent Cython processes
+and approximately 793% container CPU usage providing direct forward-progress
+evidence despite the buffered top-level journal.
+
+The Linux guest had 97,924,575,232 bytes free after the build began above the
+100 GiB heavy-build threshold. The outer macOS host had about 180 GiB free on
+`/Volumes/sage`, and controller `/scratch` had about 103 GiB free. The
+directly fetched public `dev/manifest.json` remained unchanged at 177 wheel
+entries and fourteen Sagelite primaries, all from `post8` and `post9`; no
+`post30` primary is public. No duplicate build, validation, or publication was
+started. The cell remains below `full`, and this checkpoint makes no new
+wheel, install, smoke, short, or full-suite claim.
