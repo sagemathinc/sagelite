@@ -98,31 +98,6 @@ class KeyConvertingDict(dict):
         if data:
             self.update(data)
 
-    def _repr_pretty_(self, printer, cycle):
-        r"""
-        Pretty-print this mapping in insertion order.
-
-        Sage's doctest display hook sorts ordinary dictionaries to make their
-        output deterministic.  The insertion order of a converting mapping
-        can carry meaning, however, such as the canonical generator order of
-        a polynomial ring, and is therefore retained::
-
-            sage: from sage.misc.converting_dict import KeyConvertingDict
-            sage: KeyConvertingDict(str, [('z', 1), ('a', 2)])
-            {'z': 1, 'a': 2}
-        """
-        if cycle:
-            return printer.text('{...}')
-        printer.begin_group(1, '{')
-        for index, (key, value) in printer._enumerate(self.items()):
-            if index:
-                printer.text(',')
-                printer.breakable()
-            printer.pretty(key)
-            printer.text(': ')
-            printer.pretty(value)
-        printer.end_group(1, '}')
-
     def __getitem__(self, key):
         r"""
         Retrieve an element from the dictionary.
@@ -296,9 +271,10 @@ class KeyConvertingDict(dict):
         """
         For pretty printing in the Sage command prompt.
 
-        Since ``KeyConvertingDict`` inherits from ``dict``, we just use IPython's
-        built-in ``dict`` pretty printer.
-        When :issue:`36801` is fixed, this function will be redundant.
+        Retain insertion order because it can carry meaning, such as the
+        canonical generator order of a polynomial ring.  This differs from
+        Sage's doctest printer for ordinary dictionaries, which sorts their
+        keys to stabilize output.
 
         EXAMPLES::
 
@@ -309,9 +285,16 @@ class KeyConvertingDict(dict):
             sage: repr(d)    # dictionaries are insertion ordered
             '{3: 4, 1: 2}'
             sage: d          # indirect doctest
-            {1: 2, 3: 4}
-
-        The last example output will be ``{3: 4, 1: 2}`` outside of doctesting,
-        see :func:`sage.doctest.forker.init_sage`.
+            {3: 4, 1: 2}
         """
-        p.pretty(dict(self))
+        if cycle:
+            return p.text('{...}')
+        p.begin_group(1, '{')
+        for index, (key, value) in p._enumerate(self.items()):
+            if index:
+                p.text(',')
+                p.breakable()
+            p.pretty(key)
+            p.text(': ')
+            p.pretty(value)
+        p.end_group(1, '}')
