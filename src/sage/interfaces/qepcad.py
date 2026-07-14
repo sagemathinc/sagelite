@@ -608,6 +608,7 @@ import os
 import re
 import shlex
 import sys
+from importlib import import_module
 from importlib import util as importlib_util
 from pathlib import Path
 
@@ -715,23 +716,13 @@ def _qepcad_singular_bindir():
     package, so make the directory available to the QEPCAD child without
     modifying the parent Python process.
     """
-    for entry in sys.path:
-        runtime_path = Path(entry, "sagelite_singular_runtime", "runtime.py")
-        if not runtime_path.is_file():
-            continue
-        spec = importlib_util.spec_from_file_location(
-            "_sage_qepcad_singular_runtime", runtime_path
-        )
-        if spec is None or spec.loader is None:
-            continue
-        module = importlib_util.module_from_spec(spec)
-        try:
-            spec.loader.exec_module(module)
-            executable = Path(module.executable_path())
-        except Exception:
-            continue
-        if executable.is_file() and os.access(executable, os.X_OK):
-            return os.fspath(executable.parent)
+    try:
+        runtime = import_module("sagelite_singular_runtime.runtime")
+        executable = Path(runtime.executable_path())
+    except Exception:
+        return None
+    if executable.is_file() and os.access(executable, os.X_OK):
+        return os.fspath(executable.parent)
     return None
 
 

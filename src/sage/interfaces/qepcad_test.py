@@ -50,9 +50,9 @@ def _write_fake_singular_runtime(tmp_path):
     package.mkdir()
     (package / "__init__.py").write_text("")
     (package / "runtime.py").write_text(
-        "from pathlib import Path\n"
+        "from importlib.resources import files\n"
         "def executable_path():\n"
-        "    return Path(__file__).resolve().parent / 'data' / 'bin' / 'Singular'\n"
+        "    return files(__package__) / 'data' / 'bin' / 'Singular'\n"
     )
     executable.parent.mkdir(parents=True)
     executable.write_text("#!/bin/sh\n")
@@ -63,6 +63,7 @@ def _write_fake_singular_runtime(tmp_path):
 def test_qepcad_cmd_discovers_sagelite_companion(monkeypatch, tmp_path):
     root = _write_fake_qepcad_runtime(tmp_path)
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
+    monkeypatch.setattr(qepcad_module, "_qepcad_singular_bindir", lambda: None)
 
     try:
         command = qepcad_module._qepcad_cmd(memcells=123)
@@ -77,6 +78,10 @@ def test_qepcad_cmd_exposes_singular_companion_to_child(monkeypatch, tmp_path):
     singular = _write_fake_singular_runtime(tmp_path)
     monkeypatch.syspath_prepend(os.fspath(tmp_path))
     monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    monkeypatch.delitem(sys.modules, "sagelite_singular_runtime", raising=False)
+    monkeypatch.delitem(
+        sys.modules, "sagelite_singular_runtime.runtime", raising=False
+    )
 
     try:
         command = qepcad_module._qepcad_cmd(memcells=123)

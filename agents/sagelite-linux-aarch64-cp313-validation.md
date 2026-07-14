@@ -2419,3 +2419,55 @@ and `origin/develop` reported the same SHA. The directly fetched public
 Sagelite primaries, all from `post8` and `post9`; no `post27` primary is
 public. No duplicate build, validation, or publication was started. This
 checkpoint makes no new wheel, install, smoke, short, or full-suite claim.
+
+## Post27 rebuilt-wheel result and package-context diagnosis
+
+The exact committed `post27` build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post27-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=e30df39da85a1fe7861e787b9ecda714f5dbacf28f46422bd8fa8fc23fe869d9
+size=236406288
+
+sagelite_qepcad_runtime-10.9.post2-py3-none-manylinux_2_28_aarch64.whl
+sha256=ea2f208da7703806902e36125c4ad20ff850b6b7007dd7666314a806a1460def
+size=5241590
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=a01437b5cc2b38e684f1d1b8ad706075dc1e24f490f68c155032b5efaec2b41d
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of 178 wheels. Every repaired
+wheelhouse preflight passed, and a fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post27` plus `pip check` passed. The
+strengthened QEPCAD selftest nevertheless returned an empty answer, so no
+smoke result is claimed. The bounded doctest sweep was deliberately stopped
+after this coherent failure class was established; its durable short and
+watcher exit codes are 137.
+
+The failure was in the new Singular companion discovery rather than the
+rebuilt QEPCAD executable. The helper loaded `runtime.py` under a synthetic
+top-level module name, but that runtime locates its executable with
+`importlib.resources.files(__package__)`. Without the real package context,
+the lookup failed, `_qepcad_singular_bindir()` returned `None`, and the child
+command never received the intended `PATH` entry.
+
+The `post28` correction imports the optional runtime with its real package
+context and makes the test fixture exercise the same `importlib.resources`
+behavior. In the native CPython 3.13 validation image, 38 focused QEPCAD and
+selftest tests passed. Injecting only the corrected module into the untouched
+failed install made `_qepcad_singular_bindir()` return the companion bindir,
+added it to the QEPCAD child command, and made the exact strengthened
+`_check_qepcad_runtime()` pass. This is focused regression evidence, not
+fresh-install acceptance. Durable artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/validation/short-post27/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/validation/short-post27/doctest-installed-linux-aarch64-cp313-post27-short-20260714-130005.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/validation-short-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-unit.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-unit-passed
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-qepcad.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-120609-b9c7d52af26/focused-post28/focused-qepcad-passed
+```
