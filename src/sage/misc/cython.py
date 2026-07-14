@@ -20,6 +20,7 @@ AUTHORS:
 # ****************************************************************************
 
 import builtins
+from contextlib import contextmanager
 import importlib.util
 import os
 import re
@@ -29,11 +30,39 @@ import webbrowser
 from pathlib import Path
 
 from sage.config import get_include_dirs
-from sage.env import SAGE_LOCAL, SAGE_ROOT, cython_aliases
+from sage.env import (
+    SAGE_LOCAL,
+    SAGE_ROOT,
+    _cython_compiler_commands,
+    cython_aliases,
+)
 from sage.misc.cachefunc import cached_function
 from sage.misc.sage_ostools import redirection, restore_cwd
 from sage.misc.temporary_file import spyx_tmp, tmp_filename
 from sage.repl.user_globals import get_globals
+
+
+@contextmanager
+def _cython_compiler_environment():
+    """
+    Supply Zig's standalone C/C++ compiler to an installed wheel if needed.
+
+    Explicit ``CC`` and ``CXX`` settings are always preserved.  Otherwise,
+    the interpreter's configured compiler is used when it is available.  The
+    ``ziglang`` fallback is part of the complete installed-test dependency
+    closure, but remains optional for source builds and ordinary installs.
+    """
+    commands = _cython_compiler_commands()
+    if not commands:
+        yield
+        return
+
+    try:
+        os.environ.update(commands)
+        yield
+    finally:
+        for variable in commands:
+            os.environ.pop(variable, None)
 
 
 def _deduplicate_existing_dirs(dirs):
@@ -725,7 +754,10 @@ def cython(filename, verbose=0, compile_message=False,
                 # want to redirect the messages from GCC. These are sent
                 # to the actual stderr, regardless of what sys.stderr is.
                 sys.stderr.flush()
-                with redirection(2, errfile, close=False):
+                with (
+                    redirection(2, errfile, close=False),
+                    _cython_compiler_environment(),
+                ):
                     dist.run_command("build")
             finally:
                 errfile.seek(0)

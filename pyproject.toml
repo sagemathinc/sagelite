@@ -166,6 +166,7 @@ urls = { Homepage = "https://www.sagemath.org" }
 
 [project.optional-dependencies]
 all-needed-extras = [
+  'ziglang >=0.16,<0.17; sys_platform == "linux" or (sys_platform == "darwin" and platform_machine == "arm64")',
   'sagelite-csdp-runtime >=10.9,<10.10',
   'sagelite-database-cremona-ellcurve >=10.9,<10.10',
   'sagelite-database-polytopes-4d >=10.9,<10.10',

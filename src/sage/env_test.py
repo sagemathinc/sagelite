@@ -65,10 +65,31 @@ def test_cython_aliases_skips_optional_module_without_pkgconfig_command(monkeypa
     assert "MISSINGOPTIONAL_LIBRARIES" not in aliases
     assert aliases["NTL_LIBRARIES"] == ["ntl"]
 
-    with pytest.raises(OSError, match="pkg-config is not installed"):
+    with pytest.raises(pkgconfig.PackageNotFoundError, match="missing-required"):
         env.cython_aliases(
             required_modules=("missing-required",), optional_modules=()
         )
+
+
+def test_openmp_flags_are_disabled_for_zig_fallback(monkeypatch):
+    monkeypatch.setattr(env, "OPENMP_CFLAGS", "-fopenmp")
+    monkeypatch.setattr(
+        env,
+        "_cython_compiler_commands",
+        lambda: {"CC": f"{sys.executable} -m ziglang cc"},
+    )
+
+    aliases = env.cython_aliases(required_modules=(), optional_modules=())
+
+    assert aliases["OPENMP_CFLAGS"] == []
+
+
+def test_cython_compiler_commands_preserve_explicit_settings(monkeypatch):
+    monkeypatch.setenv("CC", "custom-cc")
+    monkeypatch.setenv("CXX", "custom-cxx")
+    monkeypatch.setattr(env.importlib_metadata, "version", lambda package: "0.16.0")
+
+    assert env._cython_compiler_commands() == {}
 
 
 @pytest.fixture(autouse=True)

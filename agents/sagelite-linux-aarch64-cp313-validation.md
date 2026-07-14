@@ -1682,3 +1682,75 @@ fetched with a pip user agent and remained at 177 wheels and fourteen
 `post8`/`post9` Sagelite primaries; no `post21` primary is public. No
 duplicate work or publication was started, and the cell remains below
 `full`.
+
+## Post21 short failure and post22 compiler correction
+
+The durable `post21` watcher finished without leaving an active service,
+doctest process, or container. The native build exit code is zero, while the
+strict short gate and its watcher both exited one. The fresh 177-wheel
+preflight, wheel-only install of
+`sagelite[all-needed-extras]==10.9.post21`, `python -m pip check`, runtime
+manifest, every selftest probe, and packaged pytest with 213 passed and two
+skipped all passed. The installed `--optional=sage --short 600` sweep tested
+3,954 modules and failed ten. Its authoritative evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation/short-post21/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation/short-post21/doctest-installed-linux-aarch64-cp313-post21-short-20260714-045904.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation/short-post21/doctest-installed-linux-aarch64-cp313-post21-short-20260714-045904.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-042300-396f11c604f/validation-short-exit-code
+```
+
+The selected coherent class was the absent installed compiler toolchain and
+`pkg-config` command. Four modules failed while dynamically compiling Cython
+snippets because the clean `python:3.13-slim-bookworm` image has no `gcc`:
+`sage.misc.session`, `sage.repl.ipython_tests`,
+`sage.rings.polynomial.ore_polynomial_element`, and
+`sage.rings.tate_algebra_ideal`. `sage.env` separately exposed an `OSError`
+from the Python `pkgconfig` wrapper instead of its documented
+`PackageNotFoundError` when the command itself was unavailable. The remaining
+FriCAS, GAP3, fpylll, Qepcad, and polynomial-power failures are independent
+classes and are not treated as fixed.
+
+The `post22` source correction adds the official standalone `ziglang` wheel to
+the `all-needed-extras` validation closure on the three target platforms.
+Ad hoc Cython builds preserve explicit `CC` and `CXX`, prefer an available
+interpreter-configured compiler, and otherwise use `zig cc` and `zig c++`.
+Because the standalone Zig wheel does not include OpenMP headers, installed
+Cython aliases omit inherited OpenMP flags only while that fallback is active;
+the existing doctest then correctly exercises its documented serial path.
+Explicit required `pkgconfig` lookups now translate an absent command into
+`PackageNotFoundError`, while optional and installed-default probes remain
+skippable.
+
+A non-authoritative focused probe installed the exact
+`ziglang-0.16.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl`
+in the preserved failed environment and mounted the corrected source modules
+read-only. With no `CC`, `CXX`, Sage build paths, or system packages supplied,
+all 970 examples in `sage.env` and the four compiler-dependent modules passed.
+The new and existing environment unit tests reported 114 passed. Durable
+focused artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post22-compiler-focused-20260714-053605-5f7ab60cd13/validation/focused-doctests-2.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post22-compiler-focused-20260714-053605-5f7ab60cd13/validation/focused-doctests-2-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post22-compiler-focused-20260714-053605-5f7ab60cd13/validation/focused-pytest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post22-compiler-focused-20260714-053605-5f7ab60cd13/validation/focused-pytest-exit-code
+```
+
+On the controller, Python compilation, dependency-marker parsing,
+`git diff --check`, all 43 wheelhouse-validator and runtime-regression tests,
+and the two relevant all-needed-extra metadata tests passed. The broader
+companion metadata file still has eleven unrelated pre-existing failures from
+stale generated egg metadata, the existing aarch64 Regina marker, and the
+Maxima helper test namespace; none overlaps this change. Sagelite advances to
+`10.9.post22`. This is focused source evidence only: an exact committed
+`post22` wheel, fresh install, short gate, and full sweep remain required.
+
+At reconciliation, the Linux guest reported native `aarch64` and about 79 GiB
+free, above the 30 GiB test-only threshold but below the 100 GiB heavy-build
+threshold. `/Volumes/sage` had about 166 GiB free. The public
+`dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
+`post8`/`post9` Sagelite primaries. No publication was attempted, and the cell
+remains below `full`.

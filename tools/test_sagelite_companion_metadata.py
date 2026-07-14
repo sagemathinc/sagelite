@@ -4163,6 +4163,11 @@ def test_all_needed_extras_match_installed_validation_plan():
     extras = pyproject["project"]["optional-dependencies"]
     validation_requirements = set(extras["all-needed-extras"])
 
+    assert (
+        'ziglang >=0.16,<0.17; sys_platform == "linux" or '
+        '(sys_platform == "darwin" and platform_machine == "arm64")'
+        in validation_requirements
+    )
     assert "sagelite-maxima-runtime >=10.9.post15,<10.10" in validation_requirements
     assert "sagelite-database-cremona-ellcurve >=10.9,<10.10" in validation_requirements
     assert "sagelite-database-polytopes-4d >=10.9,<10.10" in validation_requirements

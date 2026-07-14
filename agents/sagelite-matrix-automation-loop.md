@@ -186,7 +186,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post21`, local) | the exact committed `post21` primary, matching Maxima wheel, and Giac `post1` companion built successfully. The fresh strict 177-wheel preflight, wheel-only installation, `pip check`, runtime manifest, and every selftest probe passed natively; the installed `--optional=sage` short sweep is active, with the full sweep gated behind it. No `post21` suite pass is claimed, and the cell remains below `full` | none |
+| Linux aarch64 | 3.13 | yes (`post21`, local) | the exact committed `post21` primary, matching Maxima wheel, and Giac `post1` companion passed the fresh strict 177-wheel preflight, wheel-only installation, `pip check`, runtime manifest, and every selftest probe. The installed `--optional=sage` short sweep failed ten modules; its missing compiler and `pkg-config` class has a focused `post22` source correction with 970 doctest examples and 114 pytest tests passing, but no `post22` wheel or suite pass is claimed | none |
 | Linux aarch64 | 3.14 | missing | none | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |

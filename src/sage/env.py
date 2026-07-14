@@ -1555,11 +1555,55 @@ OPENMP_CFLAGS = var("OPENMP_CFLAGS", "")
 OPENMP_CXXFLAGS = var("OPENMP_CXXFLAGS", "")
 
 
-def _openmp_flags() -> list[str]:
+def _compiler_command_available(command: str | None) -> bool:
+    """
+    Return whether the executable starting ``command`` is available.
+    """
+    if not command:
+        return False
+    try:
+        executable = shlex.split(command)[0]
+    except (IndexError, ValueError):
+        return False
+    return shutil.which(executable) is not None
+
+
+def _cython_compiler_commands() -> dict[str, str]:
+    """
+    Return Zig compiler commands needed by the current Python installation.
+
+    Explicit compiler settings are preserved, and an available interpreter
+    default is preferred.  An empty result means no fallback is available or
+    needed.
+    """
+    missing = []
+    for variable in ("CC", "CXX"):
+        if variable in os.environ:
+            continue
+        if not _compiler_command_available(sysconfig.get_config_var(variable)):
+            missing.append(variable)
+
+    if not missing:
+        return {}
+    try:
+        importlib_metadata.version("ziglang")
+    except importlib_metadata.PackageNotFoundError:
+        return {}
+
+    commands = {
+        "CC": shlex.join([sys.executable, "-m", "ziglang", "cc"]),
+        "CXX": shlex.join([sys.executable, "-m", "ziglang", "c++"]),
+    }
+    return {variable: commands[variable] for variable in missing}
+
+
+def _openmp_flags(configured: str, compiler: str) -> list[str]:
     """
     Return OpenMP flags for ad hoc Cython builds.
     """
-    configured_flags = OPENMP_CFLAGS.split()
+    configured_flags = configured.split()
+    if compiler in _cython_compiler_commands():
+        return []
     if configured_flags and not (
         sys.platform == "darwin" and configured_flags == ["-fopenmp"]
     ):
@@ -1772,11 +1816,13 @@ def cython_aliases(required_modules=None, optional_modules=None):
                 aliases[var + "CFLAGS"] = pkgconfig.cflags(lib).split()
                 pc = pkgconfig.parse(lib)
                 libs = pkgconfig.libs(lib)
-            except (pkgconfig.PackageNotFoundError, OSError):
+            except (pkgconfig.PackageNotFoundError, OSError) as error:
                 if required and not (
                     using_default_required_modules and installed_without_source_tree
                 ):
-                    raise
+                    if isinstance(error, pkgconfig.PackageNotFoundError):
+                        raise
+                    raise pkgconfig.PackageNotFoundError(lib) from error
                 else:
                     continue
 
@@ -1825,8 +1871,10 @@ def cython_aliases(required_modules=None, optional_modules=None):
     aliases["NTL_LIBEXTRA"] = []
 
     # OpenMP
-    aliases["OPENMP_CFLAGS"] = _openmp_flags()
-    aliases["OPENMP_CXXFLAGS"] = OPENMP_CXXFLAGS.split() or aliases["OPENMP_CFLAGS"]
+    aliases["OPENMP_CFLAGS"] = _openmp_flags(OPENMP_CFLAGS, "CC")
+    aliases["OPENMP_CXXFLAGS"] = _openmp_flags(
+        OPENMP_CXXFLAGS or OPENMP_CFLAGS, "CXX"
+    )
 
     return aliases
 
