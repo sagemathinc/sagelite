@@ -2544,7 +2544,11 @@ if [ ! -d "$prefix" ]; then
   exit 1
 fi
 
-python_bin="${PYTHON:-python3}"
+# Keep every repair phase on cibuildwheel's selected interpreter.  Several
+# companion builds prepend the Sage prefix to PATH for native tools; leaving
+# this as the bare name "python3" would silently switch those phases to the
+# prefix interpreter.
+python_bin="$(command -v "${PYTHON:-python3}")"
 vendored_site="$tmpdir/cypari-site"
 
 # Build cypari2 from source against the same PARI that Sage linked against.

@@ -54,3 +54,10 @@ def test_repair_wheel_linux_pins_build_frontend():
     assert script.index("prepare_repair_build_frontend\n") < script.index(
         "build_pplpy_wheel\n"
     )
+
+
+def test_repair_wheel_linux_keeps_selected_python_when_prefix_leads_path():
+    script = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
+
+    assert 'python_bin="$(command -v "${PYTHON:-python3}")"' in script
+    assert 'PATH="$prefix/bin:$PATH"' in script
