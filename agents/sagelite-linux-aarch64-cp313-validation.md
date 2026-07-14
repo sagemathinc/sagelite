@@ -3006,3 +3006,32 @@ short and full gates only after build success. The public `dev/manifest.json`
 remains at 177 wheels and fourteen `post8`/`post9` Sagelite primaries. No
 `post32` wheel, install, smoke, short, or full result is claimed yet, and no
 publication was attempted.
+
+## Post32 native build reconciliation
+
+The scheduled reconciliation at `2026-07-14T19:31:57Z` found the exact two
+intended guest user-systemd services active. The build service, main PID
+`3118657`, owned the sole CIBW container, while the validation watcher, main
+PID `3118660`, remained correctly blocked on the absent build exit artifact.
+No validation container, completed wheel, build exit artifact, validation
+exit artifact, or validation summary existed, so no duplicate work was
+started.
+
+The clean detached source checkout remained at exact pushed SHA
+`7779ed60f7bccb52f2cbc07df66b590f2acc988c` and reported Sagelite
+`10.9.post32`. The actual build environment remained native Linux `aarch64`.
+The build had reached `sagelib-10.9.post32`; its sole container was using
+approximately all eight guest CPUs, and nine compiler processes were active
+in polynomial and symbolic extension builds. The automation-owned run used
+about 1.5 GiB at the snapshot. This is direct forward-progress evidence, not
+a wheel or validation result.
+
+The guest had 98,989,629,440 bytes free while the already-started build was
+active; its pre-build check had passed the 100 GiB heavy-build threshold.
+The outer macOS host had about 179 GiB free on `/Volumes/sage`, and controller
+`/scratch` had 109,861,953,536 bytes free. Controller `develop` and verified
+`origin/develop` were synchronized at
+`dedb8b9fa49f9451d7f191db0de6fc4bd4dcc531`. The directly fetched public
+`dev/manifest.json` remained unchanged at 177 wheel entries and fourteen
+Sagelite primaries, all from `post8` and `post9`; no `post32` primary is
+public. No publication was attempted, and this cell remains below `full`.
