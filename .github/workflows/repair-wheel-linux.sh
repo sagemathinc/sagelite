@@ -2375,11 +2375,6 @@ PY
 }
 
 inject_native_include_headers() {
-  case "$(basename "$1")" in
-    *-cp312-cp312-*) ;;
-    *) return 0 ;;
-  esac
-
   local wheel="$1"
   local include_dir="$prefix/include"
   local tmp_wheel="$tmpdir/native-headers-${wheel##*/}"
