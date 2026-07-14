@@ -1592,7 +1592,14 @@ def _cython_compiler_commands() -> dict[str, str]:
 
     commands = {
         "CC": shlex.join([sys.executable, "-m", "ziglang", "cc", "-w"]),
-        "CXX": shlex.join([sys.executable, "-m", "ziglang", "c++", "-w"]),
+        "CXX": shlex.join([
+            sys.executable,
+            "-m",
+            "ziglang",
+            "c++",
+            "-w",
+            "-Wno-nullability-completeness",
+        ]),
     }
     return {variable: commands[variable] for variable in missing}
 

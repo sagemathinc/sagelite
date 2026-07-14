@@ -100,7 +100,10 @@ def test_cython_compiler_commands_silence_zig_internal_warnings(monkeypatch):
 
     assert env._cython_compiler_commands() == {
         "CC": f"{sys.executable} -m ziglang cc -w",
-        "CXX": f"{sys.executable} -m ziglang c++ -w",
+        "CXX": (
+            f"{sys.executable} -m ziglang c++ -w "
+            "-Wno-nullability-completeness"
+        ),
     }
 
 
