@@ -2146,3 +2146,43 @@ threshold; `/Volumes/sage` had about 165 GiB free, and controller `/scratch`
 had about 103 GiB free. The public `dev/manifest.json` remained at 177 wheels
 and fourteen `post8`/`post9` Sagelite primaries; no `post24` primary is
 public. No publication was attempted, and the cell remains below `full`.
+
+## Post25 focused QEPCAD correction
+
+A one-worker rerun of `sage.interfaces.qepcad` in the otherwise untouched
+`post24` wheel-only install reproduced the same delayed `std::bad_alloc`, so
+the failure was not caused by the eight-worker short sweep. Reducing QEPCAD's
+configurable pool to `+N100000` cells also reproduced the failure.
+
+The packaged aarch64 executable contains debug information. A disposable
+`gdb` container caught the C++ exception and showed
+`slwcistream::slwcistream` appending byte 255 to a string whose requested size
+had reached 16,106,127,360 bytes. QEPCAD stored the result of
+`istream::get()` in plain `char`; because plain `char` is unsigned on
+aarch64, EOF became 255 and the configuration parser never terminated. The
+focused artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-qepcad-focused-20260714-094500-bd7e96a663b/validation/qepcad-focused.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-qepcad-focused-20260714-094500-bd7e96a663b/validation/qepcad-gdb.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post24-qepcad-focused-20260714-094500-bd7e96a663b/validation/gdb.commands
+```
+
+Committed and pushed source
+`185c5adec4c628809f194932916a9bdef66db456` preserves EOF in an `int` in
+both copies of QEPCAD's single-line stream parser and converts to `char` only
+after excluding EOF. It advances Sagelite to `10.9.post25`, advances the
+QEPCAD companion to `10.9.post1`, removes the CPython 3.12-only companion
+build guard, and raises both dependency floors. The companion CI smoke and
+`sagelite-selftest` now launch the real executable with an empty input stream,
+require the startup banner and input prompt within 30 seconds, and reject
+`bad_alloc` output.
+
+The complete Sage QEPCAD patch stack applied cleanly to the checksummed 1.74
+source. A focused C++ regression compiled with `-funsigned-char` parsed the
+last configuration line and terminated correctly at EOF. Python compilation,
+shell syntax, all 34 selftest unit tests, three focused QEPCAD/all-needed
+metadata tests, and `git diff --check` passed. This is focused source evidence
+only: an exact committed `post25` QEPCAD companion, primary wheel, fresh
+install, short gate, and full sweep remain required. GAP3 and polynomial
+exponentiation remain separate failure classes.
