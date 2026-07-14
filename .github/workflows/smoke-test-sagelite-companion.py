@@ -981,6 +981,21 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-qepcad-runtime":
     assert qepcad.exists()
     assert help_path.exists()
     assert default_qepcadrc.exists()
+    import subprocess
+    qepcad_env = os.environ.copy()
+    qepcad_env["qe"] = os.fspath(root)
+    result = subprocess.run(
+        [os.fspath(qepcad)],
+        input="",
+        text=True,
+        capture_output=True,
+        timeout=30,
+        env=qepcad_env,
+    )
+    output = result.stdout + result.stderr
+    assert "Quantifier Elimination" in output
+    assert "Enter an informal description" in output
+    assert "bad_alloc" not in output
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-rubiks-runtime":

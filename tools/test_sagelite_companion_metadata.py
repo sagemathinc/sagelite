@@ -4190,7 +4190,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post2,<10.10" in validation_requirements
-    assert "sagelite-qepcad-runtime >=10.9,<10.10" in validation_requirements
+    assert "sagelite-qepcad-runtime >=10.9.post1,<10.10" in validation_requirements
     assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in validation_requirements
 
 
@@ -4206,6 +4206,27 @@ def test_singular_runtime_wheel_declares_copied_runtime_data():
         "data/lib/*",
         "data/singular/**/*",
     ]
+
+
+def test_qepcad_runtime_requires_eof_safe_aarch64_build():
+    pyproject = _pyproject("sagelite-qepcad-runtime")
+    patch = (
+        ROOT
+        / "build"
+        / "pkgs"
+        / "qepcad"
+        / "patches"
+        / "qepcad-unsigned-char-eof.patch"
+    ).read_text()
+    repair = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
+    qepcad_repair = repair.split("build_qepcad_runtime_companion()", 1)[1].split(
+        "build_tachyon_runtime_companion()", 1
+    )[0]
+
+    assert pyproject["project"]["version"] == "10.9.post1"
+    assert patch.count("+    int c = in.get();") == 2
+    assert patch.count("+      s += static_cast<char>(c);") == 2
+    assert "cp312-cp312" not in qepcad_repair
 
 
 def test_singular_runtime_copies_factory_gftables():

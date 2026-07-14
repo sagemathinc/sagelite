@@ -36,6 +36,33 @@ def _stub_gap3_feature(monkeypatch):
     monkeypatch.setitem(sys.modules, "sage.features.gap3", gap3)
 
 
+def _stub_qepcad_runtime(monkeypatch, tmp_path):
+    sage = types.ModuleType("sage")
+    sage.__path__ = []
+    features = types.ModuleType("sage.features")
+    qepcad_feature = types.ModuleType("sage.features.qepcad")
+
+    class Qepcad:
+        pass
+
+    qepcad_feature.Qepcad = Qepcad
+    package = types.ModuleType("sagelite_qepcad")
+    package.__path__ = []
+    runtime = types.ModuleType("sagelite_qepcad.runtime")
+    root = tmp_path / "qepcad"
+    command = root / "bin" / "qepcad"
+    runtime.root_dir = lambda: root
+    runtime.executable_path = lambda: command
+    package.runtime = runtime
+
+    monkeypatch.setitem(sys.modules, "sage", sage)
+    monkeypatch.setitem(sys.modules, "sage.features", features)
+    monkeypatch.setitem(sys.modules, "sage.features.qepcad", qepcad_feature)
+    monkeypatch.setitem(sys.modules, "sagelite_qepcad", package)
+    monkeypatch.setitem(sys.modules, "sagelite_qepcad.runtime", runtime)
+    return root, command
+
+
 def _load_selftest():
     path = ROOT / "src" / "sage" / "cli" / "selftest.py"
     spec = importlib.util.spec_from_file_location("sage_cli_selftest", path)
@@ -719,6 +746,46 @@ def test_selftest_gap3_runs_isolated_probe(monkeypatch):
             selftest._GAP3_RUNTIME_PROBE,
             "GAP3 runtime probe",
             30,
+        )
+    ]
+
+
+def test_selftest_qepcad_probe_reaches_input_prompt(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    root, command = _stub_qepcad_runtime(monkeypatch, tmp_path)
+    calls = []
+
+    monkeypatch.setattr(
+        selftest,
+        "_check_companion_feature",
+        lambda module_name, feature_factory, description: (
+            "QEPCAD executable runtime available"
+        ),
+    )
+
+    def run(*args, **kwargs):
+        calls.append((args, kwargs))
+        return types.SimpleNamespace(
+            stdout="Quantifier Elimination\nEnter an informal description",
+            stderr="",
+        )
+
+    monkeypatch.setattr(selftest.subprocess, "run", run)
+
+    assert (
+        selftest._check_qepcad_runtime()
+        == "QEPCAD executable runtime available"
+    )
+    assert calls == [
+        (
+            ([str(command)],),
+            {
+                "input": "",
+                "text": True,
+                "capture_output": True,
+                "timeout": 30,
+                "env": {**selftest.os.environ, "qe": str(root)},
+            },
         )
     ]
 

@@ -1350,11 +1350,43 @@ def _check_planarity_runtime():
 
 
 def _check_qepcad_runtime():
+    try:
+        from sagelite_qepcad import runtime
+    except ImportError:
+        return "not installed"
+
     from sage.features.qepcad import Qepcad
 
-    return _check_companion_feature(
+    status = _check_companion_feature(
         "sagelite_qepcad", Qepcad, "QEPCAD executable runtime"
     )
+    root = runtime.root_dir()
+    command = runtime.executable_path()
+    environment = os.environ.copy()
+    environment["qe"] = os.fspath(root)
+    try:
+        result = subprocess.run(
+            [os.fspath(command)],
+            input="",
+            text=True,
+            capture_output=True,
+            timeout=30,
+            env=environment,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise RuntimeError(
+            "QEPCAD companion did not reach its input prompt"
+        ) from error
+    output = result.stdout + result.stderr
+    if (
+        "Quantifier Elimination" not in output
+        or "Enter an informal description" not in output
+        or "bad_alloc" in output
+    ):
+        raise RuntimeError(
+            f"QEPCAD companion failed its startup probe: {output[-500:]}"
+        )
+    return status
 
 
 def _check_rubiks_runtime():

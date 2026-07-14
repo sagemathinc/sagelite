@@ -1213,11 +1213,6 @@ build_poppler_runtime_companion() {
 }
 
 build_qepcad_runtime_companion() {
-  case "$(basename "$raw_wheel")" in
-    *-cp312-cp312-*) ;;
-    *) return 0 ;;
-  esac
-
   local qepcad_root="$prefix"
   if [ ! -x "$qepcad_root/bin/qepcad" ] ||
      [ ! -f "$qepcad_root/share/qepcad/qepcad.help" ] ||
