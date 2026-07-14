@@ -1495,3 +1495,26 @@ watcher remained correctly blocked on the absent build exit artifact. The
 public manifest remained at 177 wheels and fourteen `post8`/`post9` Sagelite
 primaries. No publication was attempted, no `post20` wheel is claimed, and
 the cell remains below `full`.
+
+## Post20 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T03:33:58Z` found exactly the two
+intended guest user-systemd services active. The build service owned the sole
+CIBW container, and the validation service remained correctly blocked on the
+absent build exit-code artifact. No validation container or completed
+`post20` wheel existed. The exact source checkout was clean at
+`87330f2482d5fd788cfb737c4a7c4f4f32c06301` and reported Sagelite
+`10.9.post20`; the actual build container reported native Linux `aarch64`.
+
+The build had reached its 1,795-target wheel-construction phase. Its Ninja log
+contained 872 records and continued to grow, while live GCC and ECL processes
+used approximately all eight guest CPUs. The Linux guest had
+100,021,075,968 bytes free after the build began above the 100 GiB heavy-build
+threshold. The outer macOS host had about 180 GiB free on `/Volumes/sage`, and
+the controller had about 103 GiB free on `/scratch`.
+
+The directly fetched public `dev/manifest.json` remained unchanged at 177
+wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`.
+No duplicate build, validation, or publication was started. The cell remains
+below `full`, and this checkpoint makes no wheel, install, smoke, or
+full-suite claim.
