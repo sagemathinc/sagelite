@@ -2216,3 +2216,96 @@ GiB free. The public `dev/manifest.json` remained at 177 wheels and fourteen
 `post8`/`post9` Sagelite primaries, with no public `post25` primary. No
 `post25` wheel, install, smoke, short, or full result is claimed yet, and no
 publication was attempted.
+
+## Post25 rebuilt-wheel result and cache-stamp diagnosis
+
+The exact committed `post25` build completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post25-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=c7686b254781769547f3723e2766c98728251073808375bb1c6706a890067d5e
+size=236405886
+
+sagelite_qepcad_runtime-10.9.post1-py3-none-manylinux_2_28_aarch64.whl
+sha256=a5af91bf6f39e536de1808e76243a945bf862d62a53222775b6daf855d6bceeb
+size=5242382
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=5b84498a5def60eb668b12d57ad40290ebcaa7cea15a95e8b2285aaa24157407
+size=66578984
+```
+
+The watcher assembled a fresh strict closure of one primary, 68 companions,
+and 109 third-party wheels. The 178 staged wheels total 16,617,147,300 bytes,
+with validator wheelhouse digest
+`ae4a9446001dfc44cad28604c33da67d8ce9a1fe06b4f4f281dd794930db213e`
+and `SHA256SUMS` file digest
+`e07ac26b71e4fb35807b27239862e3cb0e10b364bc1a261e06ea74dcd1e0f5c8`.
+Every strict filename, dependency, tag, ABI, architecture, and version
+preflight passed. The fresh wheel-only installation and `pip check` passed,
+and packaged pytest reported 215 passed and two skipped.
+
+Selftest nevertheless failed its new QEPCAD startup gate, and the installed
+`--optional=sage --short 600` sweep failed four of 3,954 modules:
+
+```text
+sage.interfaces.gap3
+sage.interfaces.qepcad
+sage.misc.cython
+sage.rings.polynomial.polynomial_element
+```
+
+QEPCAD still terminated with `std::bad_alloc`; therefore the rebuilt
+`post1` companion did not validate the signedness fix. The authoritative
+artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c/validation/short-post25/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c/validation/short-post25/doctest-installed-linux-aarch64-cp313-post25-short-20260714-103502.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c/validation/short-post25/doctest-installed-linux-aarch64-cp313-post25-short-20260714-103502.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c/validation-short-exit-code
+```
+
+A disposable debugger run against the installed `post25` binary reported the
+local variable `c` in `slwcistream` still had type `char` and value 255. The
+source patch was correct, but the persistent manylinux prefix already had a
+`qepcad-1.74` install marker. Because the upstream package version had not
+changed, `make qepcad` skipped compilation and the companion builder merely
+repackaged the old executable under the new `post1` distribution version.
+
+Committed and pushed source
+`6d670ebaaa384dc2efcd4e15afac2a76610f1e6b` advances the Sage package to
+`1.74.p1`, while continuing to resolve the checksummed `qepcad-1.74.tar.gz`.
+This invalidates the cached install marker through the standard Sage package
+patchlevel mechanism. It advances the QEPCAD companion to `10.9.post2`,
+Sagelite to `10.9.post26`, and both dependency floors without reusing the
+invalid `post1` filename. The real patch applies cleanly, a C++ regression
+compiled with `-funsigned-char` terminates at EOF, and three focused metadata
+and selftest tests pass.
+
+## Post26 exact-SHA rebuild start
+
+After preserving the `post25` wheelhouse, strict summary, reduced analysis,
+metadata, and logs, the iteration removed only its 21 GiB disposable install
+and 1.5 GiB disposable source clone. The guest then had 108,078,157,824 bytes
+free, just above the 100 GiB heavy-build threshold.
+
+Exactly one native build and one gated watcher started as
+`sagelite-post26-build.service` and `sagelite-post26-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-110419-6d670ebaaa3
+```
+
+The build records exact pushed source
+`6d670ebaaa384dc2efcd4e15afac2a76610f1e6b`, Sagelite `10.9.post26`, and
+the native Linux `aarch64` CPython 3.13 CIBW contract. The watcher waits for
+the build exit artifact and will replace the inherited primary and rebuilt
+companions, including QEPCAD `10.9.post2`, before running fresh strict
+wheel-only `--optional sage` short and full gates. Both services survived the
+launching SSH session, with main PIDs `2448681` and `2448692`.
+
+The public manifest remained at 177 wheels and fourteen `post8`/`post9`
+Sagelite primaries. No `post26` wheel, install, smoke, short, or full result is
+claimed yet, and no publication was attempted.
