@@ -1949,3 +1949,28 @@ exit-code artifact does not exist, and no `post23` wheel or authoritative
 install result is claimed. The public `dev/manifest.json` remains unchanged
 at 177 wheels and fourteen `post8`/`post9` Sagelite primaries. No publication
 was attempted, and the cell remains below `full`.
+
+## Post23 native build progress and validation watcher
+
+The scheduled reconciliation at `2026-07-14T08:01:29Z` found the exact-SHA
+native build healthy and still active. The source checkout is clean and
+detached at `9ca961f7c25822c658cc5f4b412e00a7439ccabb`, reports Sagelite
+`10.9.post23`, and the sole CIBW build container runs on Linux `aarch64`.
+The build had reached the 1,795-target native extension phase and continued to
+own active compiler processes; no build exit-code or completed `post23` wheel
+existed at this checkpoint.
+
+The iteration started exactly one durable guest user-systemd validation
+watcher, `sagelite-post23-validate.service`. It waits for the build's
+`exit-code` artifact and, only after a zero result, will assemble the strict
+wheel closure and run fresh wheel-only `--optional sage` short and full gates
+in sequence. No validation container was active while the build was still
+running.
+
+The Linux guest had about 90 GiB free during the build, after starting above
+the required 100 GiB heavy-build threshold. `/Volumes/sage` had about 177 GiB
+free, and controller `/scratch` had about 103 GiB free. The directly fetched
+public `dev/manifest.json` remained at 177 wheel entries and fourteen Sagelite
+primaries, all from `post8` and `post9`; no `post23` artifact is public. No
+duplicate build or publication was started, and this cell remains below
+`full`.
