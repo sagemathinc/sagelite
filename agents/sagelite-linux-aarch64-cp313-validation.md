@@ -1364,3 +1364,30 @@ source clone was in progress and the watcher was waiting. The public manifest
 remained unchanged at 177 wheels and fourteen `post8`/`post9` Sagelite
 primaries. No publication was attempted, no `post19` wheel is claimed yet,
 and this cell remains below `full`.
+
+## Post19 native wheel-build checkpoint
+
+The scheduled reconciliation at `2026-07-14T02:01:42Z` found exactly the two
+intended guest user-systemd services active. The build service owned the only
+CIBW container, and the validation watcher remained correctly blocked on the
+absent build exit-code artifact. No validation container or completed
+`post19` wheel existed. The exact source checkout was clean at
+`8f8586207b37010efd2d82e545cb23fa330c0f1e` and reported Sagelite
+`10.9.post19`.
+
+The actual manylinux build container reported Linux `aarch64`. It had reached
+the Sagelite extension build and was using approximately 800% CPU across the
+eight guest CPUs, with active GCC processes compiling matrix, geometry,
+combinatorics, and data-structure extensions. This supplied forward-progress
+evidence even though the buffered top-level command log did not grow during a
+15-second sample. None of `exit-code`, `validation-short-exit-code`,
+`validation-full-exit-code`, or `follow-on-exit-code` existed.
+
+The Linux guest had 106,458,218,496 bytes free after starting above the
+100 GiB heavy-build threshold. The outer macOS host had about 187 GiB free on
+`/Volumes/sage`, and the controller had about 103 GiB free on `/scratch`.
+The directly fetched public `dev/manifest.json` remained unchanged at 177
+wheels and fourteen Sagelite primaries, all from `post8` and `post9`; no
+`post19` primary is public. No duplicate build, validation, or publication
+was started. The cell remains below `full`, and this checkpoint makes no new
+wheel, install, smoke, or full-suite claim.
