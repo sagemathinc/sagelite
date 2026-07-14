@@ -3260,3 +3260,45 @@ macOS host had 185,236,984 KiB free on `/Volumes/sage`, and controller
 unchanged at 177 wheel entries and fourteen Sagelite primaries, all from
 `post8` and `post9`; no `post33` primary is public. No publication was
 attempted, and this cell remains below `full`.
+
+## Post33 prefix-overlay rebuild reconciliation
+
+The exact pushed `ddf660b7c871d4ae70f70feb993f1ccc21d29d11` retry completed
+with build and watcher exit code one. It again compiled Sagelite, created the
+raw primary, injected the native headers, and repaired the primary before the
+pplpy phase. Although pip reported the pinned `build 1.2.2.post1` requirement
+as satisfied in the outer CPython layer, the active Sage-prefix interpreter
+still resolved an incomplete shadowing package and failed the immediate
+`python -m build` invocation. It emitted no durable repaired wheel and never
+started validation. The preserved failed run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-214151-ddf660b7c87
+```
+
+Exact pushed source `17c0fb4d05e3c0ff94ed057472bb9840d23244ae`
+overlays a complete pinned frontend into the active prefix before companion
+repair and checks that interpreter immediately. Its single native replacement
+build and gated watcher are running as
+`sagelite-post33-overlay-build.service` and
+`sagelite-post33-overlay-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-223711-17c0fb4d05e3
+```
+
+The clean detached checkout and run metadata both report exact SHA
+`17c0fb4d05e` and Sagelite `10.9.post33`; the actual build environment reports
+Linux `aarch64`. The pre-build disk record shows 101 GiB free. At the
+`2026-07-14T23:01:43Z` reconciliation, the build owned the only CIBW container,
+used approximately all eight guest CPUs, and had reached the 1,795-step
+Sagelib Ninja phase. The watcher remained correctly blocked on the absent
+build exit artifact. The Linux guest had 96,120,741,888 bytes free, outer
+`/Volumes/sage` had about 176 GiB free, and controller `/scratch` had about
+103 GiB free.
+
+Controller `develop` and verified `origin/develop` both reported exact SHA
+`17c0fb4d05e`. The directly fetched public `dev/manifest.json`, generated at
+`2026-07-09T17:17:42.743310+00:00`, remained at 177 wheels and fourteen
+Sagelite primaries, all from `post8` and `post9`. No `post33` wheel, install,
+smoke, short, or full result is claimed yet, and no publication was attempted.
