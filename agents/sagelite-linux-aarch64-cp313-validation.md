@@ -1861,3 +1861,91 @@ controller had about 103 GiB free on `/scratch`. The public
 `dev/manifest.json` remained unchanged at 177 wheels and fourteen
 `post8`/`post9` Sagelite primaries; no `post22` primary is public. No duplicate
 work or publication was started, and this cell remains below `full`.
+
+## Post22 short result and focused post23 header repair
+
+The durable `post22` validation finished with short-gate and watcher exit code
+one; no service, doctest process, or container remained active. The native
+wheel build retained exit code zero, and the strict 178-wheel closure had
+already passed every preflight, fresh wheel-only installation, `pip check`,
+runtime-manifest, and selftest probe. The completed `--optional=sage --short
+600` sweep failed five of 3,954 modules:
+
+```text
+sage.misc.cython
+sage.modules.free_module_integer
+sage.interfaces.qepcad
+sage.interfaces.gap3
+sage.rings.polynomial.polynomial_element
+```
+
+The authoritative summary and reduced analysis are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-compiler-20260714-054623-2efaab7ea74e/validation/short-post22/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-compiler-20260714-054623-2efaab7ea74e/validation/short-post22/doctest-installed-linux-aarch64-cp313-post22-short-20260714-062352.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-compiler-20260714-054623-2efaab7ea74e/validation/short-post22/doctest-installed-linux-aarch64-cp313-post22-short-20260714-062352.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-compiler-20260714-054623-2efaab7ea74e/validation-short-exit-code
+```
+
+The first coherent failure class was `sage.misc.cython`. The repaired
+CPython 3.13 primary contained no `sage/include` files, so installed dynamic
+compilation could not find headers such as `factory/factory.h`. The Linux
+repair helper had limited native-header injection to a `cp312-cp312` wheel.
+Commit `ce7c50b0765e6cdeef70657857704632f4b42919` removes that ABI guard,
+adds a repair regression assertion, and advances Sagelite to `10.9.post23`.
+
+A focused wheel copied the exact `post22` primary and injected the native
+prefix headers using the corrected repair behavior. It contains 3,375
+`sage/include` entries, including `factory/factory.h`, and has:
+
+```text
+sha256=f22692cd06cf45abd864ec202e5cc193fb2f64fc72c993ceee89d8a9cf349efa
+size=236229724
+```
+
+A fresh `python:3.13-slim-bookworm` install of the complete package from the
+modified primary and preserved strict closure succeeded, and `pip check`
+passed. Restoring the headers removed the fatal missing-header failure but
+exposed Zig 0.16's linker-time bundled-libc++ nullability warning flood as
+unexpected doctest output. Zig's parallel internal build interleaves that
+stderr and does not propagate ordinary driver warning controls. Commits
+`f3b76fa55628533db3e3227a93d336739e289269` and
+`9ca961f7c25822c658cc5f4b412e00a7439ccabb` therefore filter only messages
+whose complete warning-category set is the known
+`-Wnullability-completeness` diagnostic from bundled libc++, while preserving
+compiler errors, other warning categories, and complete diagnostics from
+other sources.
+
+The final exact-source focused rerun used files whose checksums match committed
+SHA `9ca961f7c25822c658cc5f4b412e00a7439ccabb`. The dependency check passed,
+all 115 environment and Cython regression tests passed, and all 48 installed
+`sage.misc.cython` doctests passed. Its durable evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post23-headers-focused-20260714-070720-ce7c50b0765e/validation/header-inventory.txt
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post23-headers-focused-20260714-070720-ce7c50b0765e/validation/focused-post23-exact-6.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-post23-headers-focused-20260714-070720-ce7c50b0765e/validation/focused-post23-exact-6-exit-code
+```
+
+This is focused evidence, not an accepted wheel or short-suite result. The
+other four `post22` failure modules remain unresolved until the rebuilt wheel
+reaches the authoritative short gate.
+
+After preserving the `post22` wheelhouse and all final logs, the iteration
+removed only named automation-owned disposable installs, source copies, and a
+superseded duplicate validation wheelhouse. The Linux guest then had about
+101 GiB free, meeting the 100 GiB heavy-build threshold. A durable native
+`post23` build started as `sagelite-post23-build.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-073737-9ca961f7c25
+```
+
+It records the clean pushed source SHA
+`9ca961f7c25822c658cc5f4b412e00a7439ccabb` and the native Linux aarch64
+CPython 3.13 CIBW contract. At this checkpoint the service is active, its
+exit-code artifact does not exist, and no `post23` wheel or authoritative
+install result is claimed. The public `dev/manifest.json` remains unchanged
+at 177 wheels and fourteen `post8`/`post9` Sagelite primaries. No publication
+was attempted, and the cell remains below `full`.
