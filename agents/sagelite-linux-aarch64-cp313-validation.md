@@ -2186,3 +2186,33 @@ metadata tests, and `git diff --check` passed. This is focused source evidence
 only: an exact committed `post25` QEPCAD companion, primary wheel, fresh
 install, short gate, and full sweep remain required. GAP3 and polynomial
 exponentiation remain separate failure classes.
+
+## Post25 exact-SHA rebuild start
+
+After preserving the `post24` wheelhouse, summary, reduced analysis, metadata,
+and logs, the iteration removed only its 21 GiB disposable validation install
+and 1.5 GiB disposable source clone. The guest then had 108,556,218,368 bytes
+free, above the 100 GiB heavy-build threshold.
+
+Exactly one native build and one gated validation watcher started as the guest
+user-systemd services `sagelite-post25-build.service` and
+`sagelite-post25-validate.service` at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-095806-185c5adec4c
+```
+
+The build records exact pushed source
+`185c5adec4c628809f194932916a9bdef66db456`, Sagelite `10.9.post25`, and the
+native Linux `aarch64` CPython 3.13 CIBW contract. The watcher is blocked on
+the build exit artifact. After build success it will replace the inherited
+primary and matching rebuilt companions, including QEPCAD `10.9.post1`, then
+run fresh strict wheel-only `--optional sage` short and full gates in
+sequence. Both services remained active after the launching SSH session
+exited, with main PIDs `2349570` and `2349576`.
+
+At launch, the guest had about 101 GiB free and `/Volumes/sage` had about 166
+GiB free. The public `dev/manifest.json` remained at 177 wheels and fourteen
+`post8`/`post9` Sagelite primaries, with no public `post25` primary. No
+`post25` wheel, install, smoke, short, or full result is claimed yet, and no
+publication was attempted.
