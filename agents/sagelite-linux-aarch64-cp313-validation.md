@@ -2501,3 +2501,29 @@ At launch, `/Volumes/sage` had about 186 GiB free. The directly fetched public
 manifest remained unchanged at 177 wheels and fourteen Sagelite primaries,
 all from `post8` and `post9`. No `post28` wheel, install, smoke, short, or full
 result is claimed yet, and no publication was attempted.
+
+## Post28 native compilation checkpoint
+
+The scheduled reconciliation at `2026-07-14T13:32:31Z` found exactly the two
+intended guest user-systemd services active. The build service, main PID
+`2626199`, owned the sole CIBW container, while the validation watcher, main
+PID `2626222`, remained correctly blocked on the absent build exit artifact.
+No validation container, completed `post28` wheel, or validation exit-code
+artifact existed.
+
+The source checkout was clean at exact committed and pushed SHA
+`f239768d9a1c3f8b25e6926370c19095e386f5e3` and reported Sagelite
+`10.9.post28`. The actual build environment reported native Linux `aarch64`.
+Its Sagelib log had reached compiled extension target 1,105 of 1,794 and was
+growing, while concurrent compiler processes sustained approximately all
+eight guest CPUs. This supplies direct forward-progress evidence rather than
+relying on the buffered top-level log.
+
+The Linux guest had 100,504,064,000 bytes free, after the build began above
+the 100 GiB heavy-build threshold. The outer macOS host had about 181 GiB free
+on `/Volumes/sage`, and controller `/scratch` had 110,064,209,920 bytes free.
+The directly fetched public `dev/manifest.json` remained unchanged at 177
+wheel entries and fourteen Sagelite primaries, all from `post8` and `post9`;
+no `post28` primary is public. No duplicate build, validation, or publication
+was started. The cell remains below `full`, and this checkpoint makes no new
+wheel, install, smoke, short, or full-suite claim.
