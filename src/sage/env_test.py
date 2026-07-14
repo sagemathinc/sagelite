@@ -685,6 +685,11 @@ def test_bootstrap_sagelite_fplll_data_runtime_updates_stale_fpylll_config(
         b"/stale/share/fplll/strategies/default.json"
     )
     fpylll_config.__path__ = []
+    fpylll_bkz_param = types.ModuleType("fpylll.fplll.bkz_param")
+    fpylll_bkz_param.default_strategy_path = b"/stale/share/fplll/strategies"
+    fpylll_bkz_param.default_strategy = (
+        b"/stale/share/fplll/strategies/default.json"
+    )
     fpylll.BKZ = types.SimpleNamespace(
         DEFAULT_STRATEGY_PATH=fpylll_config.default_strategy_path,
         DEFAULT_STRATEGY=fpylll_config.default_strategy,
@@ -693,6 +698,9 @@ def test_bootstrap_sagelite_fplll_data_runtime_updates_stale_fpylll_config(
 
     monkeypatch.setitem(sys.modules, "fpylll", fpylll)
     monkeypatch.setitem(sys.modules, "fpylll.config", fpylll_config)
+    monkeypatch.setitem(
+        sys.modules, "fpylll.fplll.bkz_param", fpylll_bkz_param
+    )
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
@@ -710,6 +718,8 @@ def test_bootstrap_sagelite_fplll_data_runtime_updates_stale_fpylll_config(
     assert fpylll_config.default_strategy_path == env.os.fsencode(strategy_dir)
     assert fpylll.BKZ.DEFAULT_STRATEGY == env.os.fsencode(bundled_strategy)
     assert fpylll.BKZ.DEFAULT_STRATEGY_PATH == env.os.fsencode(strategy_dir)
+    assert fpylll_bkz_param.default_strategy == env.os.fsencode(bundled_strategy)
+    assert fpylll_bkz_param.default_strategy_path == env.os.fsencode(strategy_dir)
 
 
 def test_bootstrap_sagelite_fplll_data_runtime_replaces_stale_environment(

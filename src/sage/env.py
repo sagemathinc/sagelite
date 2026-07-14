@@ -491,6 +491,11 @@ def _bootstrap_sagelite_fplll_data_runtime() -> None:
     except ImportError:
         return
 
+    try:
+        fpylll_bkz_param = import_module("fpylll.fplll.bkz_param")
+    except ImportError:
+        fpylll_bkz_param = None
+
     default_strategy = (
         getattr(fpylll_config, "default_strategy", None) or "default.json"
     )
@@ -511,6 +516,11 @@ def _bootstrap_sagelite_fplll_data_runtime() -> None:
     fpylll_config.default_strategy_path = strategy_dir_bytes
     BKZ.DEFAULT_STRATEGY = strategy_bytes
     BKZ.DEFAULT_STRATEGY_PATH = strategy_dir_bytes
+    if fpylll_bkz_param is not None:
+        # BKZ.EasyParam reads copies imported into this Cython module when
+        # fpylll starts, rather than the public config or BKZ attributes.
+        fpylll_bkz_param.default_strategy = strategy_bytes
+        fpylll_bkz_param.default_strategy_path = strategy_dir_bytes
 
 
 def _gap_root_path_contains_gap(root: str | None) -> bool:
