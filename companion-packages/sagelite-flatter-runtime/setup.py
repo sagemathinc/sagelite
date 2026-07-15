@@ -102,6 +102,9 @@ def _darwin_linked_libraries(path: Path) -> list[Path]:
 def _darwin_runtime_libraries(executable: Path) -> list[Path]:
     """Return the complete non-system dylib closure for *executable*."""
     pending = _darwin_linked_libraries(executable)
+    sibling_libflatter = executable.parent.parent / "lib" / "libflatter.dylib"
+    if sibling_libflatter.is_file():
+        pending.append(sibling_libflatter)
     libraries: dict[Path, None] = {}
     while pending:
         library = pending.pop()

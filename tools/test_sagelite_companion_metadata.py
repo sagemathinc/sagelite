@@ -3120,6 +3120,7 @@ def test_flatter_runtime_bundles_openblas_dependency():
     assert 'if sys.platform == "darwin"' in setup_py
     assert '["otool", "-L", os.fspath(path)]' in setup_py
     assert "_darwin_runtime_libraries(executable)" in setup_py
+    assert 'executable.parent.parent / "lib" / "libflatter.dylib"' in setup_py
     assert '"@loader_path/../lib"' in setup_py
 
     assert '"libopenblas.so",' in setup_py
