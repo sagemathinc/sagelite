@@ -2,6 +2,7 @@ import importlib
 import importlib.metadata as metadata
 import importlib.util
 import os
+import re
 import shutil
 import sqlite3
 import tempfile
@@ -338,8 +339,17 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-giac-runtime":
         ["giac", "--version"],
         text=True,
         capture_output=True,
+        check=True,
     )
-    assert "giac" in (result.stdout + result.stderr).lower()
+    assert re.search(r"\b\d+\.\d+(?:\.\d+)+\b", result.stdout + result.stderr)
+    result = subprocess.run(
+        ["giac", "--sage"],
+        input="2+2;\nquit;\n",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert "\n4\n" in result.stdout
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-4ti2-runtime":

@@ -3142,6 +3142,14 @@ def test_planarity_runtime_bundles_macos_dylib():
 def test_giac_runtime_bundles_openblas_dependency():
     setup_py = _companion_file("sagelite-giac-runtime", "setup.py").read_text()
 
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert 'dependency.startswith(("@loader_path/", "@rpath/"))' in setup_py
+    assert "_darwin_runtime_libraries(executable)" in setup_py
+    assert 'f"@rpath/{source.name}" in linked' in setup_py
+    assert 'f"@loader_path/{relative_libdir}/{bundled.name}"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_py
+
     assert '"libopenblas",' in setup_py
     assert '"libgfortran",' in setup_py
     assert '"libquadmath",' in setup_py
@@ -3722,6 +3730,17 @@ def test_command_companion_smoke_covers_lie_and_gap3_calculations():
     assert '== "sagelite-gap3-runtime"' in smoke_text
     assert 'input="2+3;\\nquit;\\n"' in smoke_text
     assert '"gap> 5" in result.stdout' in smoke_text
+
+
+def test_giac_companion_smoke_accepts_numeric_version_and_checks_arithmetic():
+    smoke_text = (
+        ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    ).read_text()
+
+    assert 're.search(r"\\b\\d+\\.\\d+(?:\\.\\d+)+\\b"' in smoke_text
+    assert '["giac", "--sage"]' in smoke_text
+    assert 'input="2+2;\\nquit;\\n"' in smoke_text
+    assert 'assert "\\n4\\n" in result.stdout' in smoke_text
 
 
 def test_lrslib_runtime_declares_console_scripts():

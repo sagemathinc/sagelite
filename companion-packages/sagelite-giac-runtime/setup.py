@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -65,7 +66,7 @@ def _find_help_file(executable: Path) -> Path:
     )
 
 
-def _runtime_libraries(executable: Path) -> list[Path]:
+def _ldd_runtime_libraries(executable: Path) -> list[Path]:
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
         check=True,
@@ -107,6 +108,114 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     return libraries
 
 
+def _darwin_load_paths(path: Path) -> list[str]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return [
+        line.strip().split(" (", 1)[0]
+        for line in output.splitlines()[1:]
+    ]
+
+
+def _darwin_linked_libraries(path: Path) -> list[Path]:
+    libraries = []
+    for dependency in _darwin_load_paths(path):
+        if dependency.startswith(("@loader_path/", "@rpath/")):
+            candidate = path.parent / dependency.split("/", 1)[1]
+            if candidate.is_file():
+                libraries.append(candidate)
+            continue
+        if not dependency.startswith("/"):
+            continue
+        if dependency.startswith(("/System/Library/", "/usr/lib/")):
+            continue
+        libraries.append(Path(dependency))
+    return libraries
+
+
+def _darwin_runtime_libraries(executable: Path) -> list[Path]:
+    """Return the complete non-system dylib closure for *executable*."""
+    pending = _darwin_linked_libraries(executable)
+    libraries: dict[str, Path] = {}
+    visited: set[Path] = set()
+    while pending:
+        library = pending.pop()
+        resolved = library.resolve()
+        if resolved in visited:
+            continue
+        if not library.is_file():
+            raise RuntimeError(f"linked library does not exist: {library}")
+        visited.add(resolved)
+        previous = libraries.setdefault(library.name, library)
+        if previous.resolve() != resolved:
+            raise RuntimeError(
+                "distinct linked libraries have the same basename: "
+                f"{previous}, {library}"
+            )
+        pending.extend(_darwin_linked_libraries(library))
+    return sorted(libraries.values())
+
+
+def _runtime_libraries(executable: Path) -> list[Path]:
+    if sys.platform == "darwin":
+        return _darwin_runtime_libraries(executable)
+    return _ldd_runtime_libraries(executable)
+
+
+def _repair_macos_install_names(
+    executable: Path, libraries: dict[Path, Path]
+) -> None:
+    if sys.platform != "darwin":
+        return
+
+    for bundled in libraries.values():
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-id",
+                f"@loader_path/{bundled.name}",
+                os.fspath(bundled),
+            ],
+            check=True,
+        )
+
+    for binary in [executable, *libraries.values()]:
+        linked = set(_darwin_load_paths(binary))
+        relative_libdir = "../lib" if binary == executable else "."
+        for source, bundled in libraries.items():
+            original = os.fspath(source)
+            if original in linked:
+                load_path = original
+            elif f"@rpath/{source.name}" in linked:
+                load_path = f"@rpath/{source.name}"
+            elif f"@loader_path/{source.name}" in linked:
+                load_path = f"@loader_path/{source.name}"
+            else:
+                continue
+            replacement = f"@loader_path/{relative_libdir}/{bundled.name}"
+            subprocess.run(
+                [
+                    "install_name_tool",
+                    "-change",
+                    load_path,
+                    replacement,
+                    os.fspath(binary),
+                ],
+                check=True,
+            )
+
+    if shutil.which("codesign") is not None:
+        for binary in [*libraries.values(), executable]:
+            subprocess.run(
+                ["codesign", "--force", "--sign", "-", os.fspath(binary)],
+                check=True,
+            )
+
+
 class build_py(_build_py):
     def run(self):
         source = _find_executable()
@@ -123,14 +232,17 @@ class build_py(_build_py):
         lib_target.mkdir(parents=True, exist_ok=True)
         help_target.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(source, target / "giac-real")
+        real = target / "giac-real"
+        shutil.copy2(source, real)
+        real.chmod(real.stat().st_mode | 0o200)
         shutil.copy2(help_source, help_target / "aide_cas")
         wrapper = target / "giac"
         wrapper.write_text(
             "#!/bin/sh\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
-            "export LD_LIBRARY_PATH\n"
+            'DYLD_LIBRARY_PATH="$HERE/../lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"\n'
+            "export LD_LIBRARY_PATH DYLD_LIBRARY_PATH\n"
             'if [ -z "${XCAS_HELP:-}" ]; then\n'
             '  XCAS_HELP="$HERE/../share/giac/aide_cas"\n'
             "  export XCAS_HELP\n"
@@ -139,11 +251,14 @@ class build_py(_build_py):
         )
         wrapper.chmod(0o755)
 
-        libraries: dict[str, Path] = {}
+        libraries: dict[Path, Path] = {}
         for library in _runtime_libraries(source):
-            libraries.setdefault(library.name, library)
-        for library in libraries.values():
-            shutil.copy2(library, lib_target / library.name)
+            destination = lib_target / library.name
+            shutil.copy2(library, destination)
+            destination.chmod(destination.stat().st_mode | 0o200)
+            libraries[library] = destination
+
+        _repair_macos_install_names(real, libraries)
 
         super().run()
 
