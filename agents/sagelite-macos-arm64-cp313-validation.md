@@ -1,5 +1,61 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Giac Companion
+
+Exact pushed source `4075521634d7ec628c3dca2c158066a47261f7f6`
+made the Giac companion portable on macOS. The builder now discovers Giac's
+complete non-system Mach-O closure, including Homebrew GCC dependencies
+expressed through `@rpath`, copies that closure, rewrites executable and dylib
+references to loader-relative paths, assigns portable install IDs, and ad-hoc
+signs every modified Mach-O file. The Linux `ldd` path is unchanged. The
+shared companion smoke now accepts Giac's numeric-only macOS version output
+and requires a successful arithmetic calculation. Focused repository
+validation passed 4 tests. The complete companion metadata file had 252
+passes and the same 3 pre-existing failures involving generated Flatter
+egg-info and the Regina dependency expectation.
+
+The exact pushed revision reused the Giac native input built by exact source
+`24b5e7aec6d` and produced:
+
+```text
+sagelite_giac_runtime-10.9.post1-py3-none-macosx_26_0_arm64.whl
+  25,360,869 bytes
+  15c8ba839d67bd64b00f0e0a17a45627484e362fbe1b5799838662e7c651557f
+```
+
+Its metadata and wheel tag match the filename. An exhaustive audit covered
+all 20 Mach-O files and 71 load dependencies and found no absolute,
+unresolved, or escaping load path. A fresh CPython 3.13.14 venv installed the
+wheel using only the local wheelhouse, passed `pip check`, and completed the
+version and arithmetic smokes from a neutral environment with no inherited
+Sage or Homebrew path. The validation exit code is zero. The public manifest
+was rechecked with a pip user agent and remains unchanged at 177 wheels and
+fourteen Sagelite primary wheels; this artifact was not published.
+
+This reduces the missing `all-needed-extras` companion closure from 9
+distributions to 8: `sagelite-database-polytopes-4d`,
+`sagelite-fricas-runtime`, `sagelite-imagemagick-runtime`,
+`sagelite-info-runtime`, `sagelite-kenzo-runtime`,
+`sagelite-lrslib-runtime`, `sagelite-msolve-runtime`, and
+`sagelite-qepcad-runtime`. No strict Sagelite installation,
+`sagelite-selftest`, short run, full run, or publication result is claimed.
+Final cell validation must still build those companions and rebuild the
+primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-giac-20260715-180928-4075521634d/
+```
+
+The matching `m1` directory retains the exact detached source checkout,
+native input reference, wheel, clean install, and audit tree. Important
+evidence includes `wheelhouse/SHA256SUMS`,
+`validation/wheel-inventory.txt`, `validation/strict-macho-audit.txt`,
+`validation/install.txt`, `validation/pip-check.txt`,
+`validation/smoke.txt`, `run-metadata.txt`, `command.log`, and `exit-code`
+(`0`).
+
 ## 2026-07-15 Portable CSDP Companion
 
 Exact pushed source `099c31b802a9d02557076228f6651afbb2af60ad`
