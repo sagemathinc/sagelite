@@ -32,6 +32,24 @@ PY
 sage_site_packages="/host/sage-${AUDITWHEEL_PLAT}/lib/python${sage_python_version}/site-packages"
 sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
 
+# The native prefix is intentionally retained between ABI builds, but its
+# virtual-environment interpreter links are not portable between CPython
+# minors.  Python's venv machinery does not replace an existing python3
+# symlink when creating a new environment in place, which can leave launchers
+# such as meson running the previous ABI even after reconfiguration.
+cached_sage_python=""
+if [ -L "${sage_prefix}/bin/python3" ]; then
+  cached_sage_python="$(readlink "${sage_prefix}/bin/python3")"
+fi
+if [ -n "${cached_sage_python}" ] && [ "${cached_sage_python}" != "${SAGE_PYTHON}" ]; then
+  echo "Resetting cached Sage venv interpreter ${cached_sage_python}; requested ${SAGE_PYTHON}"
+  find "${sage_prefix}/bin" -maxdepth 1 -type l \
+    \( -name python -o -name python3 -o -name 'python3.*' -o -name '𝜋thon' \) \
+    -delete
+  rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*
+  "${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"
+fi
+
 cat > build/bin/cython <<EOF
 #!/usr/bin/env bash
 exec "${SAGE_PYTHON}" -m cython "\$@"

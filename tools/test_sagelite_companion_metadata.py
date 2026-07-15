@@ -4559,6 +4559,16 @@ def test_linux_before_all_rejects_stale_cached_version_or_python_configuration()
     assert 'rm -f config.status' in before_all
 
 
+def test_linux_before_all_resets_cross_python_cached_venv_interpreter():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+
+    assert 'cached_sage_python="$(readlink "${sage_prefix}/bin/python3")"' in before_all
+    assert '[ "${cached_sage_python}" != "${SAGE_PYTHON}" ]' in before_all
+    assert "-name 'python3.*'" in before_all
+    assert 'rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*' in before_all
+    assert '"${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"' in before_all
+
+
 def test_linux_repair_builds_all_needed_extra_companion_wheels():
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 

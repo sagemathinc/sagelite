@@ -4,9 +4,9 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The corrected native Linux `aarch64` CPython 3.14 `post33` build is active.
-No primary wheel, wheel-only install, smoke result, short-gate result, or
-full-suite result is claimed yet.
+The second native Linux `aarch64` CPython 3.14 `post33` build failed during
+native prerequisite staging. No primary wheel, wheel-only install, smoke
+result, short-gate result, or full-suite result is claimed yet.
 
 The authoritative run root is:
 
@@ -113,6 +113,30 @@ At `2026-07-15T02:05:58Z`, both services were active, no build exit artifact
 existed, and the detached guest checkout reported the exact pushed SHA with a
 clean status. The build was bootstrapping the source before entering CIBW;
 this is forward-progress evidence only.
+
+At `2026-07-15T02:07:54Z`, the replacement build exited 1 and its watcher
+again correctly stopped without starting validation. The version and Python
+minor guard did discard a cached `post30` CPython 3.14 `config.status` and
+reconfigured the `post33` source for CPython 3.14. The retained native prefix,
+however, still had this virtual-environment interpreter link:
+
+```text
+/sage-manylinux_2_28_aarch64/bin/python3 -> /opt/python/cp313-cp313/bin/python3
+```
+
+Python's venv setup did not replace the existing link when it created the
+CPython 3.14 marker in place. Prefix launchers such as `meson` use
+`/host/sage-manylinux_2_28_aarch64/bin/python3`, so Meson still ran CPython
+3.13 while the explicit Cython shim ran CPython 3.14. This produced the same
+mixed `cpython-313` extension names and missing `gmpy2.pxd` failure. The
+failed run produced no wheels.
+
+The follow-up source change detects a retained prefix interpreter whose link
+target differs from `SAGE_PYTHON`, removes only its venv interpreter symlinks
+and `python3_venv` marker, and recreates the venv interpreter layer with the
+selected ABI. This retains the expensive ABI-independent native prefix while
+allowing the existing module probes to invalidate Python build-tool markers
+against the correct interpreter. A new exact-SHA run is required.
 
 ## Public preview state
 
