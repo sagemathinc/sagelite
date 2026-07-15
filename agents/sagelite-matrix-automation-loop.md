@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post9`) | smoke only; exact-source local `post38` compilation produced a correctly tagged intermediate wheel, but its portability audit found 30 non-system absolute dylib dependencies and no bundled dylibs, so it was neither installed nor accepted | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,20 +218,20 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Build and clean-install validate Linux aarch64 CPython 3.13 on `m1`.
-2. Build and clean-install validate Linux aarch64 CPython 3.14 on `m1`.
-3. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
-   `host`; this is the highest-priority cocalc.ai target.
-4. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-5. Run and fix the full standard suite on macOS arm64 CPython 3.13.
-6. Run and fix the full standard suite on macOS arm64 CPython 3.14.
-7. Run and fix the full standard suite on native Linux aarch64, beginning
-   with CPython 3.12 and then 3.13 and 3.14.
-8. Select one release-candidate commit and rerun the full standard suite on
+1. Implement and audit the macOS primary-wheel dylib closure repair described
+   in `agents/sagelite-macos-arm64-cp313-validation.md`, then rebuild and
+   clean-install validate macOS arm64 CPython 3.13 from exact pushed source.
+2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
+   `host`; this remains the highest-priority cocalc.ai target when the required
+   heavy-build scratch storage is available.
+3. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
+4. Run and fix the full standard suite on macOS arm64 CPython 3.14.
+5. Run and fix the full standard suite on native Linux aarch64 CPython 3.12.
+6. Select one release-candidate commit and rerun the full standard suite on
    all nine cells, including the two earlier CPython 3.12 baselines.
-9. Validate the current optional-wheel-ready extra across all nine cells,
+7. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-10. Resume systematic optional-package expansion in install-smoke batches.
+8. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected
