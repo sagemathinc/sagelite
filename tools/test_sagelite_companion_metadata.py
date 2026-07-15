@@ -4396,10 +4396,11 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
     )[0]
 
     assert pyproject["project"]["version"] == "10.9.post3"
-    assert package_version == "1.74.p2"
+    assert package_version == "1.74.p3"
     assert saclib_version == "2.2.8.p1"
     assert patch.count("+    int c = in.get();") == 2
     assert patch.count("+      s += static_cast<char>(c);") == 2
+    assert patch.count("+    }while((c = in.get()) != EOF);") == 2
     assert '"stp x19, x20, [%0, #0]\\n\\t"' in saclib_patch
     assert '"stp x27, x28, [%0, #64]\\n\\t"' in saclib_patch
     assert "+     GCSI(sizeof(Word), (char *)__builtin_frame_address(0));" in saclib_patch

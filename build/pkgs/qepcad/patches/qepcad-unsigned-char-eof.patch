@@ -1,7 +1,7 @@
 Description: Preserve EOF when reading QEPCAD configuration streams.
  On platforms where plain char is unsigned, storing istream::get() in a char
- turns EOF into 255.  The single-line stream parser then appends that byte
- forever instead of terminating, eventually throwing std::bad_alloc.
+ turns EOF into 255.  Preserve the integer sentinel and compare against it
+ explicitly so the single-line stream parser terminates at end of input.
 Origin: upstream, https://github.com/chriswestbrown/qepcad
 Forwarded: no
 Last-Update: 2026-07-14
@@ -17,14 +17,15 @@ Last-Update: 2026-07-14
      if (opt == skipleadingws) 
        while(c != EOF && (isspace(c) || c == '\\' && isspace(in.peek()))) c = in.get();
      // States  : 0 = normal, 1 = in comment, 2 = just read a backslash
-@@ -39,7 +39,7 @@
+@@ -39,8 +39,8 @@
        if (state == 1) continue;
        if (state == 0 && c == '#') { state = 1; continue; }
        if (state == 0 && c == '\\') { state = 2; continue; }
 -      s += c;
 +      s += static_cast<char>(c);
        state = 0;
-     }while(c = in.get());
+-    }while(c = in.get());
++    }while((c = in.get()) != EOF);
      str(s);
 --- a/source/db/convenientstreams.h
 +++ b/source/db/convenientstreams.h
@@ -37,12 +38,13 @@ Last-Update: 2026-07-14
      if (opt == skipleadingws) 
        while(c != EOF && (isspace(c) || (c == '\\' && isspace(in.peek())))) c = in.get();
      // States  : 0 = normal, 1 = in comment, 2 = just read a backslash
-@@ -41,7 +41,7 @@
+@@ -41,8 +41,8 @@
        if (state == 1) continue;
        if (state == 0 && c == '#') { state = 1; continue; }
        if (state == 0 && c == '\\') { state = 2; continue; }
 -      s += c;
 +      s += static_cast<char>(c);
        state = 0;
-     }while((c = in.get()));
+-    }while((c = in.get()));
++    }while((c = in.get()) != EOF);
      str(s);
