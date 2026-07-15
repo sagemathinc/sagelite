@@ -106,18 +106,16 @@ def _darwin_libraries(paths: list[Path]) -> dict[str, Path]:
     """Return the complete non-system dylib closure for *paths*."""
     pending = [dependency for path in paths for dependency in _darwin_linked_libraries(path)]
     libraries: dict[str, Path] = {}
+    visited: set[Path] = set()
     while pending:
         library = pending.pop()
-        existing = libraries.get(library.name)
-        if existing is not None:
-            if existing != library:
-                raise RuntimeError(
-                    f"distinct linked libraries have the same basename: {existing}, {library}"
-                )
+        libraries[os.fspath(library)] = library
+        resolved = library.resolve()
+        if resolved in visited:
             continue
         if not library.is_file():
             raise RuntimeError(f"linked library does not exist: {library}")
-        libraries[library.name] = library
+        visited.add(resolved)
         pending.extend(_darwin_linked_libraries(library))
     return libraries
 
@@ -251,11 +249,20 @@ class build_py(_build_py):
 
         plugin_libraries = _copy_plugin_dir(plugin_source, plugin_target)
         copied_libraries = {}
+        copied_sources = {}
         for library in _ldd_libraries(executables + plugin_libraries).values():
             if library.exists():
                 destination = lib_target / library.name
-                shutil.copy2(library, destination)
-                destination.chmod(destination.stat().st_mode | 0o200)
+                existing_source = copied_sources.get(destination)
+                if existing_source is None:
+                    shutil.copy2(library, destination)
+                    destination.chmod(destination.stat().st_mode | 0o200)
+                    copied_sources[destination] = library
+                elif existing_source.resolve() != library.resolve():
+                    raise RuntimeError(
+                        "distinct linked libraries have the same basename: "
+                        f"{existing_source}, {library}"
+                    )
                 copied_libraries[library] = destination
 
         _fix_macos_install_names(

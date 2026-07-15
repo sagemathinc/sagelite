@@ -3401,6 +3401,8 @@ def test_graphviz_runtime_preloads_libraries_for_pygraphviz():
     assert 'if sys.platform == "darwin"' in setup_py
     assert '["otool", "-L", os.fspath(path)]' in setup_py
     assert "_darwin_libraries(paths)" in setup_py
+    assert "visited: set[Path]" in setup_py
+    assert "existing_source.resolve() != library.resolve()" in setup_py
     assert '"@loader_path/../lib"' in setup_py
     assert '"@loader_path/.."' in setup_py
     assert "import sagelite_graphviz._autoload" in setup_py
