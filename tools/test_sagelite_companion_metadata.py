@@ -3694,6 +3694,15 @@ def test_lie_runtime_bundles_macos_libraries():
     assert '["codesign", "--force", "--sign", "-", os.fspath(path)]' in setup_text
 
 
+def test_glucose_smoke_uses_supported_help_flag():
+    smoke_text = (
+        ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    ).read_text()
+
+    assert '["glucose", "--help"]' in smoke_text
+    assert '["glucose", "-help"]' not in smoke_text
+
+
 def test_lrslib_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-lrslib-runtime")
 

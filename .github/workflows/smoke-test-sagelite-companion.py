@@ -586,7 +586,7 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-glucose-runtime":
     assert shutil.which("glucose")
     assert shutil.which("glucose-syrup")
     result = subprocess.run(
-        ["glucose", "-help"],
+        ["glucose", "--help"],
         text=True,
         capture_output=True,
     )
