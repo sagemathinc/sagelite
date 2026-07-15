@@ -643,6 +643,8 @@ not folded into the standard-suite pass rate.
 
 - User-facing preview instructions and support status: `SAGELITE.md`
 - Historical runtime parity work: `agents/sagelite-pip-runtime-parity-plan.md`
+- macOS arm64 CPython 3.13 evidence:
+  `agents/sagelite-macos-arm64-cp313-validation.md`
 - Optional matrix evidence:
   `agents/sagelite-optional-wheel-ready-matrix-validation.md`
 - Optional package inventory: `agents/sagelite-optional-package-inventory.md`
