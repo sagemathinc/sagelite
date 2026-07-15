@@ -4547,12 +4547,15 @@ def test_system_tool_runtime_companions_are_staged_for_linux_wheels():
     assert '[ -x "$candidate/magick" ] || [ -x "$candidate/convert" ]' in repair
 
 
-def test_linux_before_all_rejects_stale_cached_configuration():
+def test_linux_before_all_rejects_stale_cached_version_or_python_configuration():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
 
     assert 'source_version="$(cat VERSION.txt)"' in before_all
     assert 'configured_version="$(sed -n' in before_all
-    assert 'if [ "${configured_version}" != "${source_version}" ]; then' in before_all
+    assert 'configured_python_minor="$(sed -n' in before_all
+    assert 'requested_python_minor="${sage_python_version#*.}"' in before_all
+    assert '[ "${configured_version}" != "${source_version}" ] ||' in before_all
+    assert '[ "${configured_python_minor}" != "${requested_python_minor}" ]' in before_all
     assert 'rm -f config.status' in before_all
 
 

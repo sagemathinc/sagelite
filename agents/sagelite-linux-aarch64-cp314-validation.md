@@ -4,9 +4,9 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The native Linux `aarch64` CPython 3.14 build is active. No primary wheel,
-wheel-only install, smoke result, short-gate result, or full-suite result is
-claimed yet.
+The first native Linux `aarch64` CPython 3.14 `post33` build failed during
+native prerequisite staging. No primary wheel, wheel-only install, smoke
+result, short-gate result, or full-suite result is claimed yet.
 
 The authoritative run root is:
 
@@ -73,6 +73,21 @@ At `2026-07-15T01:40:36Z`, both services were active, the command log was
 growing, and neither build nor validation had an exit artifact. The CIBW
 container was installing the native manylinux prerequisite set. This is
 forward-progress evidence only.
+
+At `2026-07-15T01:46:42Z`, the build exited 1 and the watcher correctly stopped
+without starting validation. The preserved build log shows that the cached
+`post33` prefix was still configured for CPython 3.13: `pplpy` generated
+`cpython-313` extension names while the build invoked
+`/opt/python/cp314-cp314/bin/cython`. The CIBW environment exposed only the
+CPython 3.14 Sage site-packages directory, so that stale CPython 3.13 build
+could not find `gmpy2.pxd` and failed. The failed run produced no wheels.
+
+This revealed that the existing cache guard rejected a `config.status` only
+when the Sage version changed. It did not reject a same-version configuration
+from another Python ABI. The follow-up source change also compares the cached
+`PYTHON_MINOR` with the selected `SAGE_PYTHON` before reusing the
+configuration. A new exact-SHA run is required; this failed run must not be
+resumed in place.
 
 ## Public preview state
 

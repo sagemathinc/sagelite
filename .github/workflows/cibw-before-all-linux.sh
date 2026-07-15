@@ -193,8 +193,11 @@ if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
   chmod +x config.status
   source_version="$(cat VERSION.txt)"
   configured_version="$(sed -n 's/^S\["VERSION"\]="\(.*\)"$/\1/p' config.status)"
-  if [ "${configured_version}" != "${source_version}" ]; then
-    echo "Discarding cached config.status for Sage ${configured_version:-unknown}; source is ${source_version}"
+  configured_python_minor="$(sed -n 's/^S\["PYTHON_MINOR"\]="\(.*\)"$/\1/p' config.status)"
+  requested_python_minor="${sage_python_version#*.}"
+  if [ "${configured_version}" != "${source_version}" ] || \
+     [ "${configured_python_minor}" != "${requested_python_minor}" ]; then
+    echo "Discarding cached config.status for Sage ${configured_version:-unknown} with Python 3.${configured_python_minor:-unknown}; source is ${source_version} with Python ${sage_python_version}"
     rm -f config.status
   fi
 fi
