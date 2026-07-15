@@ -1,5 +1,65 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable ImageMagick Companion
+
+Exact pushed source `b4fb12e6c624c184367d0a1f5e668f3925b7f253`
+made the ImageMagick companion portable on macOS. The package builder now
+discovers Homebrew's unversioned ImageMagick module layout, scans the main
+executables and every coder and filter module for their complete recursive
+non-system dylib closure, rewrites all Mach-O load paths relative to their
+packaged locations, and ad-hoc signs the repaired binaries. The packaged
+libtool modules use relocatable uninstalled metadata and `.libs` storage so
+they no longer redirect runtime loading to the Homebrew Cellar. The Linux
+`ldd` packaging path and its explicit `LD_LIBRARY_PATH` wrapper remain
+unchanged, while the macOS wrapper needs no library-path environment variable.
+Focused repository validation passed 2 tests. The complete companion metadata
+file had 256 passes and the same 3 pre-existing failures involving generated
+Flatter egg-info and the Regina dependency expectation.
+
+The exact pushed revision packaged Homebrew ImageMagick 7.1.2-27 and produced:
+
+```text
+sagelite_imagemagick_runtime-10.9.post3-py3-none-macosx_26_0_arm64.whl
+  8,614,326 bytes
+  a61df79f206166ed9c94841c3218f4868b18c9174f8a2dc3b4a50eef715776f1
+```
+
+Its embedded name, version, and wheel tag match the filename. An exhaustive
+audit covered all 149 Mach-O files and 1,150 load dependencies and found no
+disallowed, unresolved, or escaping load path. A fresh CPython 3.13.14 venv
+installed the wheel using only its local wheelhouse and passed `pip check`.
+The shared companion smoke resolved both packaged entry points, reported the
+bundled ImageMagick version, and converted a generated PPM image through PNG
+to GIF from a neutral environment with no inherited library path.
+
+The exploratory build first exposed Homebrew's `lib/ImageMagick/modules-*`
+layout, then showed that installed libtool metadata would load modules and a
+second MagickCore from absolute Cellar paths even after Mach-O repair. Those
+diagnostics are preserved separately; the authoritative exact-source run
+completed with exit code zero.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+This artifact was not published. Every previously missing
+`all-needed-extras` companion distribution now has a compatible local wheel,
+but they were built from successive exact commits. No strict complete-Sagelite
+installation, `sagelite-selftest`, short run, full run, or publication result
+is claimed. Final cell validation must rebuild the primary from the selected
+current coherent revision, assemble its complete closure, and run the named
+strict short and full gates.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-imagemagick-20260715-234707-b4fb12e6c62/
+```
+
+The matching `m1` directory retains the exact detached source, Homebrew input,
+wheel, clean install, unpacked audit tree, and build log. Important successful
+evidence includes `wheelhouse/SHA256SUMS`, `validation/wheel-inventory.txt`,
+`validation/strict-macho-audit.txt`, the install, `pip-check`, and smoke
+outputs, `run-metadata.txt`, `command.log`, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable FriCAS Companion
 
 Exact pushed source `a754d6ae457c7e23a89f884da0eb7194855926a5`
