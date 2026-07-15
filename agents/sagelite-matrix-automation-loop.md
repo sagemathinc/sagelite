@@ -102,11 +102,15 @@ avoid the working Lima backend.
 
 After its changed address was corrected, `host` was reachable again and
 reported `x86_64` with both Docker and Podman installed. Its bulk scratch
-filesystem was enlarged and had about 104 GiB free at the latest controller
-check, just above the heavy-build threshold in this runbook. It is suitable
-for an x86_64 rebuild, but monitor space closely and retain the deliberate
-cleanup policy. Treat future SSH reachability failures as a preflight problem,
-not as evidence that the host assignment has changed.
+filesystem was enlarged and had about 104 GiB free at that controller check.
+On 2026-07-15 the alias instead reached an `x86_64` staging host where the
+expected `/mnt/cocalc-scratch` mount was absent. That host had only 64 GiB free
+on `/mnt/cocalc`, below the 100 GiB heavy-build threshold, and provided Podman
+but not Docker or a host CPython 3.14. Do not start an x86_64 rebuild until the
+expected bulk volume is restored or another in-scope filesystem on `host` is
+explicitly shown to satisfy the threshold. Treat future SSH reachability or
+mount failures as a preflight problem, not as evidence that the host assignment
+has changed.
 
 ## Scratch Layout
 
