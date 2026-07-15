@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -82,6 +84,70 @@ exec "$LD/Lie.exe" initfile "$LD" "$@"
     path.chmod(0o755)
 
 
+def _macos_runtime_libraries(executable: Path) -> list[Path]:
+    if sys.platform != "darwin":
+        return []
+
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(executable)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    for line in output.splitlines()[1:]:
+        dependency = line.strip().split(" (", 1)[0]
+        if not dependency.startswith("/"):
+            continue
+        if dependency.startswith(("/System/Library/", "/usr/lib/")):
+            continue
+        libraries.append(Path(dependency))
+    return libraries
+
+
+def _bundle_macos_runtime(executable: Path, target: Path) -> None:
+    libraries = _macos_runtime_libraries(executable)
+    if not libraries:
+        return
+
+    target.mkdir(parents=True, exist_ok=True)
+    bundled = {}
+    for library in libraries:
+        destination = target / library.name
+        shutil.copy2(library, destination)
+        destination.chmod(destination.stat().st_mode | 0o200)
+        bundled[library] = destination
+
+    executable.chmod(executable.stat().st_mode | 0o200)
+    for library, destination in bundled.items():
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-change",
+                os.fspath(library),
+                f"@loader_path/lib/{destination.name}",
+                os.fspath(executable),
+            ],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-id",
+                f"@loader_path/{destination.name}",
+                os.fspath(destination),
+            ],
+            check=True,
+        )
+
+    if shutil.which("codesign") is not None:
+        for path in [*bundled.values(), executable]:
+            subprocess.run(
+                ["codesign", "--force", "--sign", "-", os.fspath(path)],
+                check=True,
+            )
+
+
 class build_py(_build_py):
     def run(self):
         command = _find_executable()
@@ -97,6 +163,7 @@ class build_py(_build_py):
         if not lie_executable.is_file():
             shutil.copy2(command, lie_executable)
         lie_executable.chmod(lie_executable.stat().st_mode | 0o111)
+        _bundle_macos_runtime(lie_executable, info_target / "lib")
         _write_lie_command(bin_target / "lie")
 
         super().run()

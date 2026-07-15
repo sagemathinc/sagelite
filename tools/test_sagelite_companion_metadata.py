@@ -3681,6 +3681,19 @@ def test_lie_runtime_builds_relocatable_wrapper():
     assert 'shutil.copy2(command, bin_target / "lie")' not in setup_text
 
 
+def test_lie_runtime_bundles_macos_libraries():
+    setup_text = (
+        ROOT / "companion-packages" / "sagelite-lie-runtime" / "setup.py"
+    ).read_text()
+
+    assert 'if sys.platform != "darwin"' in setup_text
+    assert '["otool", "-L", os.fspath(executable)]' in setup_text
+    assert 'dependency.startswith(("/System/Library/", "/usr/lib/"))' in setup_text
+    assert 'f"@loader_path/lib/{destination.name}"' in setup_text
+    assert 'f"@loader_path/{destination.name}"' in setup_text
+    assert '["codesign", "--force", "--sign", "-", os.fspath(path)]' in setup_text
+
+
 def test_lrslib_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-lrslib-runtime")
 
