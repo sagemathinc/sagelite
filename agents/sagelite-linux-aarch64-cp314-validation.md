@@ -17,13 +17,18 @@ on CPython 3.14.6. No short-gate or full-suite pass is claimed.
 Pushed fix `369ec99ad346f7d04458f6154c1d1304868995fd` upgrades the Linux
 wheel contract to cibuildwheel 3.4.1, removes the obsolete CPython prerelease
 opt-in, and rejects prerelease build interpreters inside the selected
-manylinux container. The stable-interpreter `post34` retry reached a repaired
-primary but exposed cibuildwheel 3.4.1's stricter single-output repair
-contract. Exact pushed `post35` source `a32742fac4a` separates the primary and
-companion repair destinations; its native rebuild and gated watcher are
-active. No `post34` or `post35` wheel or validation result is claimed yet.
+manylinux container. The stable-interpreter `post34` retry exposed
+cibuildwheel 3.4.1's stricter single-output repair contract, and `post35`
+exposed a primary lookup that still followed the companion destination.
+Exact pushed `post36` source `c483e52c63c5` produced the repaired primary and
+all three rebuilt companions, but its outer collector looked in the source
+checkout while cibuildwheel's `/host` bind mount had placed the companions at
+the guest filesystem root. Those exact artifacts have been recovered into a
+167-wheel strict closure, and the corrected recovery validation is active.
+No short-gate or full-suite pass is claimed yet. Exact pushed `post37` source
+`09cc51c9c452` corrects the staging-path contract for the next normal build.
 
-The authoritative run root is:
+The initial `post33` authoritative run root was:
 
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684
@@ -514,3 +519,64 @@ checkout reported the exact pushed SHA with a clean status, and CIBW had
 started its stable CPython 3.14 native aarch64 preparation. This is
 forward-progress evidence only; no `post36` wheel, install, smoke, short-gate,
 or full result is claimed yet.
+
+## Post36 collector recovery and post37 staging fix
+
+The `post36` build reached a repaired primary and completed all three companion
+builds. Cibuildwheel copied this primary into the run wheelhouse:
+
+```text
+sagelite-10.9.post36-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237279082 bytes
+sha256: 2d3134cd308b5462ef0646bd8b092effea702165efe1d4d92da7065930b2f4f2
+```
+
+The separate repair destination contained the rebuilt `pplpy`, Maxima, and
+QEPcad wheels, but `/host` inside cibuildwheel maps the outer guest filesystem
+root. The repair command therefore wrote them to
+`/sagelite-companion-wheelhouse`, while the outer wrapper inspected
+`source/sagelite-companion-wheelhouse`. The wrapper exited 1 with the exact
+error `repair completed without producing companion wheels`, and its watcher
+correctly did not start validation. The failed service artifacts remain at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-061101-c483e52c63c5
+```
+
+The exact root-staged companion artifacts were preserved and hash-inventoried
+with the primary in this recovery run:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-070525-c483e52c63c5
+
+pplpy-0.9.0.post1-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+sha256: b3ab72ec7367621dda18bfefcccdda9db17657aeebe71ce5d7489b04a8ad7553
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256: df649384f88f29bb0044f62992ab9adeeeb10aa4056151e9a2bd3c125300bb37
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256: 57f72eae9bde1b21255f16c95b4f7521cbe492ef8073feb104b9a4297741c411
+```
+
+The first recovery validation resolved all 167 wheels but exited 2 before the
+strict gate because its source checkout was a symlink whose target was outside
+the Docker bind mount. No install or test result is claimed from that attempt.
+The replacement uses an exact clean local copy of source
+`c483e52c63c5b4fab6181c420307c3cc85cf926a` and runs durably as:
+
+```text
+sagelite-post36-cp314-r13-recovery-validate.service
+```
+
+At `2026-07-15T07:08:22Z`, it was active and reassembling the 167-wheel closure
+before the explicit `--optional sage --short 600` strict gate. It will start a
+fresh explicit `--optional sage --full` validation only if the short gate
+passes. This is forward-progress evidence only.
+
+Exact pushed commit `09cc51c9c4525428a7d6bc42500fdc2251ea7999`
+replaces the fixed root-relative companion path with a marker that the outer
+wrapper expands to `/host` plus its actual absolute staging directory. It
+advances the preview version to `10.9.post37`; the six focused repair-contract
+tests and both Linux shell syntax checks pass. The remote `develop` ref was
+verified at that exact SHA. No `post37` wheel or validation result is claimed.
