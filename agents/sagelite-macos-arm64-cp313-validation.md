@@ -1,5 +1,83 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable lrslib, msolve, and QEPCAD Companions
+
+Exact pushed source `300764eac33f8e21cbcf24fddb2edcf241272ea7`
+made the lrslib, msolve, and QEPCAD companion builders portable on macOS. The
+builders now discover each executable's recursive non-system Mach-O closure,
+copy the required dylibs, rewrite executable and dylib references to
+loader-relative paths, assign portable install IDs, and ad-hoc sign every
+modified Mach-O file. The Linux `ldd` paths are unchanged. Focused repository
+validation passed the four portability tests. The complete companion metadata
+file had 253 passes and the same 3 pre-existing failures
+involving generated Flatter egg-info and the Regina dependency expectation.
+
+The lrslib and msolve wheels reused native inputs built from exact source
+`24b5e7aec6db357933703de8a425f10ab4fb0e79`. Their packaging source and the
+final exact QEPCAD source `55949b5b79a40e49f69332b186d3a7e1348c1801`
+produced:
+
+```text
+sagelite_lrslib_runtime-10.9.post1-py3-none-macosx_26_0_arm64.whl
+  361,593 bytes
+  d5e014b27968214dd0b5ba52921787122c63bb0702c756e86b60ea7ad5f0255c
+sagelite_msolve_runtime-10.9.post2-py3-none-macosx_26_0_arm64.whl
+  5,276,828 bytes
+  382b07cb8bc1719949a44feb5c23e52b3abf6753b75e0e58e021c1f4058475fb
+sagelite_qepcad_runtime-10.9.post3-py3-none-macosx_26_0_arm64.whl
+  527,740 bytes
+  4c17e33df1a16d8b4cc6df6a20a62caf651baced655c19d15bdfc4ee77a5f081
+```
+
+Their embedded names, versions, and wheel tags match the filenames. The
+exhaustive audits covered 4 Mach-O files and 11 dependencies for lrslib, 6 and
+23 for msolve, and 2 and 6 for QEPCAD: 12 Mach-O files and 40 dependencies in
+total, with no absolute, unresolved, or escaping load path. Fresh CPython
+3.13.14 venvs installed each wheel using only its local wheelhouse and passed
+`pip check`. Neutral-environment functional smokes located both `lrs` and
+`lrsnash`, exercised `msolve`, and started QEPCAD three independent times,
+requiring its banner and first prompt after piped input reached EOF. The final
+QEPCAD validation exit code is zero.
+
+QEPCAD required a native input correction in addition to wheel repair. Its
+legacy character reader redirected EOF to `/dev/tty`; with piped input it
+could wait on a controlling terminal or recursively read an invalid terminal
+descriptor. The patched `1.74.p10` input path preserves EOF for noninteractive
+standard input, guards a failed terminal open, preserves integer EOF sentinels
+in the configuration parsers, and exits before SACLIB's newline discard loop.
+The final patch passed both GNU `patch --fuzz=0` and macOS BSD `patch` checks.
+The preceding per-SHA runs preserve the initial timeout, unsafe teardown,
+terminal-fallback, patch-context, and missing-declaration diagnostics rather
+than treating intermittent crashes as successful smokes.
+
+The public manifest was rechecked with a pip user agent and remains unchanged:
+generated 2026-07-09, 177 wheels, and fourteen Sagelite primary wheels. These
+artifacts were not published. This reduces the missing `all-needed-extras`
+companion closure from 8 distributions to 5:
+`sagelite-database-polytopes-4d`, `sagelite-fricas-runtime`,
+`sagelite-imagemagick-runtime`, `sagelite-info-runtime`, and
+`sagelite-kenzo-runtime`. No strict Sagelite installation,
+`sagelite-selftest`, short run, full run, or publication result is claimed.
+Final cell validation must still build those companions and rebuild the
+primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-native-command-20260715-183617-300764eac33/
+/scratch/sagelite-automation/macos-arm64-cp313-qepcad-eof-20260715-200855-55949b5b79a/
+```
+
+The matching `m1` directories retain the exact sources, native inputs, wheels,
+clean installs, audits, smokes, and intermediate diagnostic runs. Important
+successful evidence includes `wheelhouse/SHA256SUMS`,
+`validation/wheel-inventory.txt`, `validation/strict-macho-audit.txt`, the
+install and `pip-check` files, the companion smoke files, `run-metadata.txt`,
+`command.log`, and `exit-code`. The native-command packaging run and final
+QEPCAD run both have exit code `0`; the superseded combined validation exit
+code remains `1` because it records the original QEPCAD timeout after the
+lrslib and msolve validations had passed.
+
 ## 2026-07-15 Portable Giac Companion
 
 Exact pushed source `4075521634d7ec628c3dca2c158066a47261f7f6`
