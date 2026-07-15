@@ -4,9 +4,9 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The third native Linux `aarch64` CPython 3.14 `post33` build is active. No
-primary wheel, wheel-only install, smoke result, short-gate result, or
-full-suite result is claimed yet.
+The third native Linux `aarch64` CPython 3.14 `post33` build contract is active
+after a source-transfer-only relaunch. No primary wheel, wheel-only install,
+smoke result, short-gate result, or full-suite result is claimed yet.
 
 The authoritative run root is:
 
@@ -17,9 +17,8 @@ The authoritative run root is:
 It is running in the persistent Lima guest `sagelite-linux-arm64` on `m1`.
 The exact source input is pushed commit
 `1e07983f06ae1a09c7c0a397288065200be2c9a1`, with Sagelite version
-`10.9.post33`. The durable startup script is cloning that commit and will
-verify the detached guest checkout's SHA and clean status before entering the
-build.
+`10.9.post33`. The detached guest checkout reports that exact SHA and a clean
+status.
 
 ## Preflight and cleanup
 
@@ -163,6 +162,42 @@ sagelite-post33-cp314-r3-validate.service
 At `2026-07-15T02:13:14Z`, both services were active, no exit artifact
 existed, and the build was cloning the exact pushed source. This is
 forward-progress evidence only.
+
+At `2026-07-15T03:01:59Z`, the GitHub clone was still transferring but had
+advanced by only 679,936 bytes over 20 seconds after running for 48 minutes.
+It had received about 91.6 MB of this repository's roughly 1.14 GiB packed
+history and had not produced a checkout or `HEAD`. The network socket and
+object writes proved that the process was not dead, but continuing that
+full-history transfer would have delayed the native build by hours.
+
+The watcher was stopped before the build service, and the stalled clone log,
+metadata, exit code, finish timestamp, and disk snapshot were retained with
+`r3-stalled-clone-*` names in the authoritative run root. Cleanup removed only
+the incomplete automation-owned source checkout. The guest then had
+108,167,819,264 bytes free, above the exact 100 GiB heavy-build threshold.
+
+The controller created a shallow Git bundle containing the exact pushed
+commit and its complete source tree. Its SHA256 is:
+
+```text
+8677f0d4b4f890d84200d6d4af42f7225ce5172147ae37a9af1afa8185d9f7c2
+```
+
+That hash matched on the controller, the outer Mac, and the Linux guest. The
+replacement launcher verifies the hash, imports the bundle into a new Git
+repository, records the exact commit as the shallow boundary, checks out the
+detached source SHA, requires a clean status, and runs `git fsck --full`
+before building. The build and gated watcher now run as:
+
+```text
+sagelite-post33-cp314-r4-build.service
+sagelite-post33-cp314-r4-validate.service
+```
+
+At `2026-07-15T03:07:53Z`, both services were active, no exit artifact
+existed, the checkout reported the exact pushed SHA with a clean status, and
+CIBW had started the native `manylinux_2_28_aarch64` container for
+`cp314-manylinux_aarch64`. This is forward-progress evidence only.
 
 ## Public preview state
 
