@@ -60,6 +60,17 @@ Last-Update: 2026-07-14
  };
 --- a/source/io/CREAD.c
 +++ b/source/io/CREAD.c
+@@ -15,5 +15,6 @@
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <fcntl.h>
+-
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++
+ #include <stack>
 @@ -109,9 +109,13 @@
  Step3: /* End of file. */
         if (C == EOF)
