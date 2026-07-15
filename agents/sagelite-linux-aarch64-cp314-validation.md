@@ -8,9 +8,17 @@ The native Linux `aarch64` CPython 3.14 `post33` build contract produced a
 repaired primary wheel from exact pushed source `5ab41cd4b684`. Binary closure
 assembly then exposed the two missing CPython 3.14 dependency wheels,
 `cysignals` and `pycosat`; both were built and repaired natively. The resulting
-167-wheel strict closure resolved successfully, and its fresh wheel-only short
-gate is active. No install, smoke, short-gate, or full-suite result is claimed
-yet.
+167-wheel strict closure resolved successfully. Its fresh wheel-only install,
+`pip check`, all 102 selftest probes, and packaged pytest passed, but the short
+doctest gate failed before executing examples because the primary wheel had
+been compiled against CPython 3.14.0b3 private interpreter headers and was run
+on CPython 3.14.6. No short-gate or full-suite pass is claimed.
+
+Pushed fix `369ec99ad346f7d04458f6154c1d1304868995fd` upgrades the Linux
+wheel contract to cibuildwheel 3.4.1, removes the obsolete CPython prerelease
+opt-in, rejects prerelease build interpreters inside the selected manylinux
+container, and advances the primary version to `10.9.post34`. A new exact-SHA
+primary rebuild is required.
 
 The authoritative run root is:
 
@@ -296,6 +304,48 @@ fresh strict short gate with explicit `--optional sage --short 600`; the clean
 wheel-only installation was active at the latest check. The guest had
 106,104,467,456 bytes free. This is forward-progress evidence only, not an
 install or short-gate pass.
+
+## First strict short-gate result
+
+The r8 validation service finished with exit code 16 at
+`2026-07-15T04:31:46Z`. The strict preflight accepted all 167 wheels. The fresh
+wheel-only installation of `sagelite[all-needed-extras]==10.9.post33` and
+`pip check` both passed. `sagelite-selftest` passed all 102 probes, including
+all required native imports and companion executable/data checks. Packaged
+pytest passed 215 tests with 2 skips.
+
+The installed doctest controller then reported 3,953 failed modules out of
+3,954. A one-file serial reproduction proved that this was one startup failure
+class, not 3,953 independent doctest failures:
+
+```text
+python -m sage.doctest --optional=sage --serial sage/version.py
+```
+
+That process received SIGSEGV in `sage.cpython.atexit._get_exithandlers()`.
+Calling `_get_exithandlers()` directly also exited 139. The primary build log
+records `Python 3.14.0b3`, while the clean validation container records Python
+3.14.6. `sage.cpython.atexit` uses the private `PyInterpreterState` layout to
+save and restore callbacks; the prerelease build headers therefore generated
+an extension that reads the wrong field offset in the stable validation
+runtime. The existing `cysignals` crash reporter made the gate's aggregate
+output look like per-module segmentation faults.
+
+The durable failure evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684/validation-short-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684/validation/short-post33/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684/validation/short-post33/doctest-installed-linux-aarch64-cp314-post33-short-20260715-041940.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684/validation/short-post33/doctest-installed-linux-aarch64-cp314-post33-short-20260715-041940.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684/validation/short-post33/doctest-installed-linux-aarch64-cp314-post33-short-20260715-041940.selftest.log
+```
+
+The fix is in exact pushed source
+`369ec99ad346f7d04458f6154c1d1304868995fd`. cibuildwheel 3.4.1 pins the
+manylinux aarch64 image dated 2026-03-20 and a stable CPython 3.14 build; the
+new in-container release-level guard prevents a future stale prerelease image
+from silently producing another advertised CPython 3.14 wheel.
 
 ## Public preview state
 
