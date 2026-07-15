@@ -4,10 +4,13 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The fourth native Linux `aarch64` CPython 3.14 `post33` build contract is
-active after the preceding run exposed stale pure-Python build-tool markers.
-No primary wheel, wheel-only install, smoke result, short-gate result, or
-full-suite result is claimed yet.
+The native Linux `aarch64` CPython 3.14 `post33` build contract produced a
+repaired primary wheel from exact pushed source `5ab41cd4b684`. Binary closure
+assembly then exposed the two missing CPython 3.14 dependency wheels,
+`cysignals` and `pycosat`; both were built and repaired natively. The resulting
+167-wheel strict closure resolved successfully, and its fresh wheel-only short
+gate is active. No install, smoke, short-gate, or full-suite result is claimed
+yet.
 
 The authoritative run root is:
 
@@ -235,6 +238,64 @@ At `2026-07-15T03:38:39Z`, both services were active, neither had an exit
 artifact, and the detached guest checkout reported the exact pushed SHA with
 a clean status. CIBW had started from the native Linux `aarch64` guest. This
 is forward-progress evidence only.
+
+## Repaired wheel and strict closure
+
+The fourth build completed successfully at `2026-07-15T04:06:11Z`. Its CIBW
+contract produced four repaired wheels in 27 minutes, including this primary:
+
+```text
+sagelite-10.9.post33-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237276641 bytes
+sha256: 3eb9e3bd1b4569f82923c86e756b3574e12c0b77f94491a735b5a9b62cb46989
+```
+
+The same contract rebuilt `pplpy`, `sagelite-maxima-runtime`, and
+`sagelite-qepcad-runtime`. The raw primary completed all 4,903 installation
+entries, the repair path built `cypari2` under CPython 3.14, injected 3,375
+native headers, and `auditwheel` assigned the expected
+`manylinux_2_27_aarch64.manylinux_2_28_aarch64` tags. The build exit artifact
+is zero, the exact source checkout remains clean, and the six-wheel build
+inventory with the two dependency additions below totals 318,952,451 bytes.
+
+The first validation attempt failed before validation because the closure
+assembler tried to hard-link a root-owned accepted CPython 3.13 companion
+wheel as the unprivileged guest user. Its inline Python failure did not stop
+the original launcher, so the subsequent incomplete closure predictably
+failed at `cysignals`. The failure evidence is preserved with the
+`r5-closure-` prefix in the run root. The recovery launcher uses privileged
+hard links and explicitly exits on closure-assembly failure; a direct probe
+proved that path before it was used.
+
+The corrected closure assembly exposed two genuine binary-wheel gaps. Direct
+CPython 3.14 probes confirmed that the other ABI-specific dependencies,
+including `cypari2`, `gmpy2`, `fpylll`, `primecountpy`, `pynormaliz`, PyYAML,
+SciPy, and SymEngine, already have compatible aarch64 wheels. These two were
+built from their published source releases in the same native
+`manylinux_2_28_aarch64` image and repaired with `auditwheel`:
+
+```text
+cysignals-1.12.6-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+size:   265700 bytes
+sha256: 1e72abc8f620adfcc8bb147a05392721f0b82c206dee80298e28dd2d21ed3d88
+
+pycosat-0.6.6-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl
+size:   207579 bytes
+sha256: 48a442857eb81da0f4f072254a670db3cf36e5fd0e68f233dbd5b45d5d19b190
+```
+
+The `cysignals` and `pycosat` build exit artifacts are both zero. Their first
+resolution failures are preserved with the `r6-cysignals-resolution-` and
+`r7-pycosat-resolution-` prefixes. No source rebuild was needed.
+
+Validation service `sagelite-post33-cp314-r8-validate.service` then assembled
+and hash-inventoried a 167-wheel, 16,620,397,617-byte strict closure. Binary-
+only resolution of `sagelite[all-needed-extras]==10.9.post33` and the required
+`ziglang==0.16.0` helper completed. At `2026-07-15T04:16:18Z` it started the
+fresh strict short gate with explicit `--optional sage --short 600`; the clean
+wheel-only installation was active at the latest check. The guest had
+106,104,467,456 bytes free. This is forward-progress evidence only, not an
+install or short-gate pass.
 
 ## Public preview state
 

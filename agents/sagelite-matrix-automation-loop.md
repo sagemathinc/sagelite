@@ -187,7 +187,7 @@ Status meanings:
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post9`) | smoke only; previous validation used qemu on x86_64 | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
-| Linux aarch64 | 3.14 | missing; three native `post33` builds failed before producing wheels after exposing stale cross-Python configuration, venv-interpreter state, and pure-Python build-tool markers; corrected exact-SHA rebuild active | none; no wheel or validation result claimed yet | none |
+| Linux aarch64 | 3.14 | yes (`post33`, local); exact pushed source `5ab41cd4b684` produced a repaired primary plus the missing CPython 3.14 `cysignals` and `pycosat` wheels | strict 167-wheel closure resolved; fresh wheel-only short gate active, with no install, smoke, short-gate, or full result claimed yet | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
