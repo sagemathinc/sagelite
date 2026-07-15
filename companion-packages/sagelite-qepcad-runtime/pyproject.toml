@@ -40,5 +40,6 @@ where = ["src"]
 sagelite_qepcad = [
   "data/root/bin/qepcad",
   "data/root/etc/default.qepcadrc",
+  "data/root/lib/*",
   "data/root/share/qepcad/qepcad.help",
 ]

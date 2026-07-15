@@ -264,6 +264,7 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_qepcad": [
             "data/root/bin/qepcad",
             "data/root/etc/default.qepcadrc",
+            "data/root/lib/*",
             "data/root/share/qepcad/qepcad.help",
         ],
     },
@@ -3750,6 +3751,32 @@ def test_lrslib_runtime_declares_console_scripts():
         "lrs": "sagelite_lrslib.runtime:lrs",
         "lrsnash": "sagelite_lrslib.runtime:lrsnash",
     }
+
+
+def test_native_command_companions_repair_macos_dylib_closures():
+    for package in (
+        "sagelite-lrslib-runtime",
+        "sagelite-msolve-runtime",
+        "sagelite-qepcad-runtime",
+    ):
+        setup_text = _companion_file(package, "setup.py").read_text()
+
+        assert '["otool", "-L", os.fspath(path)]' in setup_text
+        assert 'dependency.startswith(("/System/Library/", "/usr/lib/"))' in setup_text
+        assert '"install_name_tool",' in setup_text
+        assert 'f"@loader_path/{bundled.name}"' in setup_text
+        assert 'f"@loader_path/{relative_libdir}/{bundled.name}"' in setup_text
+        assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_text
+
+    lrslib_setup = _companion_file("sagelite-lrslib-runtime", "setup.py").read_text()
+    msolve_setup = _companion_file("sagelite-msolve-runtime", "setup.py").read_text()
+    qepcad = _pyproject("sagelite-qepcad-runtime")
+
+    assert "DYLD_LIBRARY_PATH" in lrslib_setup
+    assert "DYLD_LIBRARY_PATH" in msolve_setup
+    assert "data/root/lib/*" in qepcad["tool"]["setuptools"]["package-data"][
+        "sagelite_qepcad"
+    ]
 
 
 def test_lcalc_runtime_declares_console_script():
