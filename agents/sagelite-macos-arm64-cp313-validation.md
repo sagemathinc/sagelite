@@ -1,5 +1,67 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable FriCAS Companion
+
+Exact pushed source `a754d6ae457c7e23a89f884da0eb7194855926a5`
+made the FriCAS companion portable on macOS. The package builder now scans
+the complete FriCAS runtime tree for Mach-O files, bundles every non-system
+dylib in their recursive closure, rewrites load paths relative to the
+packaged files, and ad-hoc signs the repaired binaries. FriCAS' `FRICASsys`
+executable has a saved SBCL core appended after its Mach-O image; its repair
+temporarily detaches the core while Apple tooling processes the Mach-O prefix
+and then consumes existing alignment padding so the core retains its original
+absolute file offset. Focused repository validation passed 4 tests. The
+complete companion metadata file had 256 passes and the same 3 pre-existing
+failures involving generated Flatter egg-info and the Regina dependency
+expectation.
+
+The exact pushed revision reused the native FriCAS input built by exact source
+`24b5e7aec6db357933703de8a425f10ab4fb0e79` and produced:
+
+```text
+sagelite_fricas_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  41,691,889 bytes
+  a489f14bacd1d42a860f555163869e4ce37cafaaccf85fea210f220e6c76e56c
+```
+
+Its embedded name, version, and wheel tag match the filename. An exhaustive
+audit covered all 24 Mach-O files and 76 load dependencies and found no
+disallowed, unresolved, or escaping load path. A fresh CPython 3.13.14 venv
+installed the wheel using only its local wheelhouse and passed `pip check`.
+The shared companion smoke resolved the packaged command, and a neutral
+functional smoke started the bundled FriCAS 1.3.12 runtime and factored
+`x^2 - 1` as `(x - 1)(x + 1)` with exit code zero.
+
+The first exploratory build established that unmodified Apple tooling rejects
+the appended-core executable because `__LINKEDIT` does not cover the physical
+end of the file. The first exact-source wheel then passed its strict Mach-O
+audit, installation, `pip check`, and shared smoke, but the stronger
+arithmetic smoke found that growing the repaired Mach-O prefix had shifted the
+aligned SBCL core. Both failed runs are preserved; the final exact-source run
+kept the core offset and completed with exit code zero.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+This artifact was not published. The remaining `all-needed-extras` companion
+closure is now one distribution: `sagelite-imagemagick-runtime`. No strict
+Sagelite installation, `sagelite-selftest`, short run, full run, or
+publication result is claimed. Final cell validation must still build the
+ImageMagick companion and rebuild the primary from the selected coherent
+revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-fricas-20260715-231810-a754d6ae457/
+```
+
+The matching `m1` directory retains the exact detached source, native input,
+wheel, clean install, audit tree, and diagnostic runs. Important successful
+evidence includes `wheelhouse/SHA256SUMS`,
+`validation/wheel-inventory.txt`, `validation/strict-macho-audit.txt`, the
+install, `pip-check`, shared-smoke, and arithmetic-smoke outputs,
+`run-metadata.txt`, `command.log`, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable GNU Info Companion
 
 Exact pushed source `af6c607fe0a648aa5771abd503c2a564371cc27a`
