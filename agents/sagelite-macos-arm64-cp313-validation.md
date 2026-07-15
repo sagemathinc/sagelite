@@ -1,5 +1,63 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable GNU Info Companion
+
+Exact pushed source `af6c607fe0a648aa5771abd503c2a564371cc27a`
+made the GNU Info companion portable on macOS. The package builder now
+discovers the complete non-system dylib closure of the Info executable, copies
+that closure beside the executable, rewrites dependencies and install IDs to
+loader-relative paths, and ad-hoc signs all modified Mach-O files. The Linux
+`ldd` packaging path remains unchanged. Focused repository validation passed
+5 tests. The complete companion metadata file had 255 passes and the same 3
+pre-existing failures involving generated Flatter egg-info and the Regina
+dependency expectation.
+
+The exact pushed revision used the native arm64 Info executable built by exact
+source `24b5e7aec6db357933703de8a425f10ab4fb0e79`. It paired that executable
+with the platform-independent documentation payload from the hash-verified
+public aarch64 `10.9` companion and produced:
+
+```text
+sagelite_info_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  3,688,282 bytes
+  6cc8fc5fc9ad607d4e62b7bfd40e34936dd0f6fe49de26b5f76bfc8eee72a89c
+```
+
+Its embedded name, version, and wheel tag match the filename. An exhaustive
+audit covered its arm64 Mach-O executable and both load dependencies, finding
+only allowed system libraries and no disallowed, unresolved, or escaping load
+path. A fresh CPython 3.13.14 venv installed the wheel using only its local
+wheelhouse and passed `pip check`. The shared companion smoke resolved the
+packaged executable and documentation directory and successfully rendered the
+Singular `groebner` Info node from a neutral environment.
+
+The first durable launcher encountered the macOS `nohup` console-detach error
+before cloning began. The recovered zsh-disowned process ran the unchanged
+script to completion, and the final run exit code is zero. The diagnostic and
+recovery are both preserved in the command log and run metadata.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+This artifact was not published. The remaining `all-needed-extras` companion
+closure is now two distributions: `sagelite-fricas-runtime` and
+`sagelite-imagemagick-runtime`. No strict Sagelite installation,
+`sagelite-selftest`, short run, full run, or publication result is claimed.
+Final cell validation must still build those two companions and rebuild the
+primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-info-20260715-223419-af6c607fe0a/
+```
+
+The matching `m1` directory retains the exact detached source, reconstructed
+native input, wheel, clean install, and audit tree. Important evidence includes
+`wheelhouse/SHA256SUMS`, `validation/wheel-inventory.txt`,
+`validation/macho-inventory.txt`, `validation/strict-macho-audit.txt`, the
+install, `pip-check`, and shared-smoke outputs, `run-metadata.txt`,
+`command.log`, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable Kenzo Companion
 
 Exact pushed source `d0f1d2296ea6102fded60a0bfedc97f0fd2cde82`
