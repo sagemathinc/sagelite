@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -55,6 +56,9 @@ def _find_bindir() -> Path:
 
 
 def _ldd_libraries(paths: list[Path]) -> dict[str, Path]:
+    if sys.platform == "darwin":
+        return _darwin_libraries(paths)
+
     libraries: dict[str, Path] = {}
     for path in paths:
         output = subprocess.run(
@@ -78,6 +82,93 @@ def _ldd_libraries(paths: list[Path]) -> dict[str, Path]:
                 continue
             libraries[name] = Path(lib_path)
     return libraries
+
+
+def _darwin_linked_libraries(path: Path) -> list[Path]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    for line in output.splitlines()[1:]:
+        dependency = line.strip().split(" (", 1)[0]
+        if not dependency.startswith("/"):
+            continue
+        if dependency.startswith(("/System/Library/", "/usr/lib/")):
+            continue
+        libraries.append(Path(dependency))
+    return libraries
+
+
+def _darwin_libraries(paths: list[Path]) -> dict[str, Path]:
+    """Return the complete non-system dylib closure for *paths*."""
+    pending = [dependency for path in paths for dependency in _darwin_linked_libraries(path)]
+    libraries: dict[str, Path] = {}
+    while pending:
+        library = pending.pop()
+        existing = libraries.get(library.name)
+        if existing is not None:
+            if existing != library:
+                raise RuntimeError(
+                    f"distinct linked libraries have the same basename: {existing}, {library}"
+                )
+            continue
+        if not library.is_file():
+            raise RuntimeError(f"linked library does not exist: {library}")
+        libraries[library.name] = library
+        pending.extend(_darwin_linked_libraries(library))
+    return libraries
+
+
+def _install_name_tool(*args: str) -> None:
+    subprocess.run(["install_name_tool", *args], check=True)
+
+
+def _add_rpath(binary: Path, rpath: str) -> None:
+    result = subprocess.run(
+        ["install_name_tool", "-add_rpath", rpath, os.fspath(binary)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0 and "would duplicate path" not in result.stderr:
+        result.check_returncode()
+
+
+def _codesign_darwin(path: Path) -> None:
+    if sys.platform != "darwin" or shutil.which("codesign") is None:
+        return
+    subprocess.run(["codesign", "--force", "--sign", "-", os.fspath(path)], check=True)
+
+
+def _fix_macos_install_names(
+    executables: list[Path], libraries: dict[Path, Path], plugins: list[Path]
+) -> None:
+    if sys.platform != "darwin":
+        return
+
+    for library in libraries.values():
+        _install_name_tool("-id", f"@rpath/{library.name}", os.fspath(library))
+        _add_rpath(library, "@loader_path")
+    for executable in executables:
+        _add_rpath(executable, "@loader_path/../lib")
+    for plugin in plugins:
+        _add_rpath(plugin, "@loader_path/..")
+
+    machos = [*executables, *libraries.values(), *plugins]
+    for mach_o in machos:
+        linked = {os.fspath(path) for path in _darwin_linked_libraries(mach_o)}
+        for original, bundled in libraries.items():
+            if os.fspath(original) in linked:
+                _install_name_tool(
+                    "-change",
+                    os.fspath(original),
+                    f"@rpath/{bundled.name}",
+                    os.fspath(mach_o),
+                )
+        _codesign_darwin(mach_o)
 
 
 def _graphviz_plugin_dir(bindir: Path) -> Path:
@@ -135,9 +226,12 @@ class build_py(_build_py):
         lib_target.mkdir(parents=True, exist_ok=True)
 
         executables = []
+        copied_executables = []
         for program in PROGRAMS:
             source = (bindir / program).resolve()
-            shutil.copy2(source, bin_target / f"{program}-real")
+            copied_executable = bin_target / f"{program}-real"
+            shutil.copy2(source, copied_executable)
+            copied_executable.chmod(copied_executable.stat().st_mode | 0o200)
             wrapper = bin_target / program
             wrapper.write_text(
                 "#!/usr/bin/env python3\n"
@@ -153,11 +247,20 @@ class build_py(_build_py):
             )
             wrapper.chmod(0o755)
             executables.append(source)
+            copied_executables.append(copied_executable)
 
         plugin_libraries = _copy_plugin_dir(plugin_source, plugin_target)
+        copied_libraries = {}
         for library in _ldd_libraries(executables + plugin_libraries).values():
             if library.exists():
-                shutil.copy2(library, lib_target / library.name)
+                destination = lib_target / library.name
+                shutil.copy2(library, destination)
+                destination.chmod(destination.stat().st_mode | 0o200)
+                copied_libraries[library] = destination
+
+        _fix_macos_install_names(
+            copied_executables, copied_libraries, plugin_libraries
+        )
 
         super().run()
         pth = Path(self.build_lib) / "sagelite_graphviz_runtime_autoload.pth"

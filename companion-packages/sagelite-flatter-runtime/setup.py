@@ -39,6 +39,9 @@ def _find_executable() -> Path:
 
 
 def _runtime_libraries(executable: Path) -> list[Path]:
+    if sys.platform == "darwin":
+        return _darwin_runtime_libraries(executable)
+
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
         check=True,
@@ -78,6 +81,39 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     return libraries
 
 
+def _darwin_linked_libraries(path: Path) -> list[Path]:
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(path)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    libraries = []
+    for line in output.splitlines()[1:]:
+        dependency = line.strip().split(" (", 1)[0]
+        if not dependency.startswith("/"):
+            continue
+        if dependency.startswith(("/System/Library/", "/usr/lib/")):
+            continue
+        libraries.append(Path(dependency))
+    return libraries
+
+
+def _darwin_runtime_libraries(executable: Path) -> list[Path]:
+    """Return the complete non-system dylib closure for *executable*."""
+    pending = _darwin_linked_libraries(executable)
+    libraries: dict[Path, None] = {}
+    while pending:
+        library = pending.pop()
+        if library in libraries:
+            continue
+        if not library.is_file():
+            raise RuntimeError(f"linked library does not exist: {library}")
+        libraries[library] = None
+        pending.extend(_darwin_linked_libraries(library))
+    return list(libraries)
+
+
 def _install_name_tool(*args: str) -> None:
     subprocess.run(["install_name_tool", *args], check=True)
 
@@ -111,12 +147,15 @@ def _fix_macos_install_names(executable: Path, libraries: dict[Path, Path]) -> N
     machos = [executable, *libraries.values()]
     for mach_o in machos:
         for original, bundled in libraries.items():
-            _install_name_tool(
-                "-change",
-                os.fspath(original),
-                f"@rpath/{bundled.name}",
-                os.fspath(mach_o),
-            )
+            if os.fspath(original) in {
+                os.fspath(path) for path in _darwin_linked_libraries(mach_o)
+            }:
+                _install_name_tool(
+                    "-change",
+                    os.fspath(original),
+                    f"@rpath/{bundled.name}",
+                    os.fspath(mach_o),
+                )
         _codesign_darwin(mach_o)
 
 

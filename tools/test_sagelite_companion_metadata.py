@@ -3111,6 +3111,11 @@ def test_flatter_runtime_declares_console_script():
 def test_flatter_runtime_bundles_openblas_dependency():
     setup_py = _companion_file("sagelite-flatter-runtime", "setup.py").read_text()
 
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert "_darwin_runtime_libraries(executable)" in setup_py
+    assert '"@loader_path/../lib"' in setup_py
+
     assert '"libopenblas.so",' in setup_py
     assert '"libgfortran.so",' in setup_py
     assert '"libgomp.so",' in setup_py
@@ -3393,6 +3398,11 @@ def test_graphviz_runtime_preloads_libraries_for_pygraphviz():
     ).read_text()
 
     assert "sagelite_graphviz_runtime_autoload.pth" in setup_py
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert "_darwin_libraries(paths)" in setup_py
+    assert '"@loader_path/../lib"' in setup_py
+    assert '"@loader_path/.."' in setup_py
     assert "import sagelite_graphviz._autoload" in setup_py
     assert 'find_spec("pygraphviz")' in autoload_py
     assert "ctypes.CDLL" in autoload_py
