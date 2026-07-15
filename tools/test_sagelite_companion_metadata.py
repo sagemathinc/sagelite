@@ -3251,6 +3251,21 @@ def test_fricas_runtime_rewrites_prefix_for_relocation():
     assert "fricas-real" in setup_py
 
 
+def test_fricas_runtime_bundles_macos_dylib_closure():
+    setup_py = (
+        ROOT / "companion-packages" / "sagelite-fricas-runtime" / "setup.py"
+    ).read_text()
+
+    assert "_darwin_macho_files" in setup_py
+    assert "_darwin_runtime_libraries" in setup_py
+    assert "_repair_macos_install_names" in setup_py
+    assert "install_name_tool" in setup_py
+    assert "_sagelite_lib" in setup_py
+    assert "segname __LINKEDIT" in setup_py
+    assert "saved SBCL" in setup_py
+    assert "codesign" in setup_py
+
+
 def test_sympow_runtime_is_exposed_by_sagelite_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
