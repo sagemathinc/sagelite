@@ -576,20 +576,20 @@ def _patch_ecl_consumer(path: Path, rpath: str) -> None:
                 "an explicit system-ECL test build."
             )
         if ecl_soname:
+            ecl_reference = f"{darwin_rpath}/{ecl_soname}"
             for original in ecl_needed:
-                if original == f"@rpath/{ecl_soname}":
+                if original == ecl_reference:
                     continue
                 subprocess.run(
                     [
                         "install_name_tool",
                         "-change",
                         original,
-                        f"@rpath/{ecl_soname}",
+                        ecl_reference,
                         os.fspath(path),
                     ],
                     check=True,
                 )
-        _darwin_add_rpath(path, darwin_rpath)
         _codesign_darwin(path)
         return
 
