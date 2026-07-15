@@ -453,3 +453,64 @@ The directly fetched public `dev/manifest.json` remained generated at
 primary wheels from `10.9.post8` and `10.9.post9`. There is no public
 `post33` primary and no Linux aarch64 CPython 3.14 primary. No publication was
 attempted.
+
+## Post35 repair-staging failure and post36 retry
+
+The `post35` build service finished with exit code 1 at
+`2026-07-15T06:06:15Z`; its watcher recorded the same exit and did not start
+closure assembly or validation. The exact pushed source remained clean. The
+build completed all 4,903 primary installation entries against stable CPython
+3.14.3, built the raw primary, entered the repaired-wheel path, and produced
+the rebuilt `pplpy` and QEPcad companion wheels in the separate companion
+staging directory. The Maxima companion builder then failed with:
+
+```text
+repaired sagelite wheel not found in /host/sagelite-companion-wheelhouse
+```
+
+The primary was correctly located in cibuildwheel's distinct repair
+destination. The earlier staging change reassigned the general companion
+destination variable, but the Maxima builder still used that variable when it
+needed to inspect the repaired primary for the bundled ECL soname. Cibuildwheel
+discarded the disposable container output after the repair command failed, so
+the run retained no wheel and no `post35` wheel-built claim is made.
+
+The durable failure evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-052653-a32742fac4a3/command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-052653-a32742fac4a3/exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-052653-a32742fac4a3/validation-follow.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-052653-a32742fac4a3/validation-follow-exit-code
+```
+
+Exact pushed commit `c483e52c63c5b4fab6181c420307c3cc85cf926a`
+keeps the primary repair directory in a separate immutable variable and uses
+it for the Maxima lookup after companion staging begins. It advances the
+preview version to `10.9.post36`, because the failed `post35` repair produced
+versioned bytes inside its disposable container. All five focused
+repair-contract assertions and shell syntax checks passed.
+
+Cleanup retained the failed run's logs, metadata, scripts, disk snapshots, and
+exit artifacts and removed only its disposable source checkout and host venv.
+The guest then had 102,879,617,024 bytes free, above the exact 100 GB
+heavy-build threshold. The new exact-SHA source bundle has SHA256:
+
+```text
+53d9379bc1004b71aa3c59e4770c809d50fa45ed84d0a29d0780485dc782da93
+```
+
+That hash matched on the controller, outer Mac, and Linux guest. The new run
+root and durable services are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-061101-c483e52c63c5
+sagelite-post36-cp314-r11-build.service
+sagelite-post36-cp314-r11-validate.service
+```
+
+At `2026-07-15T06:12:27Z`, both services were active, the detached guest
+checkout reported the exact pushed SHA with a clean status, and CIBW had
+started its stable CPython 3.14 native aarch64 preparation. This is
+forward-progress evidence only; no `post36` wheel, install, smoke, short-gate,
+or full result is claimed yet.
