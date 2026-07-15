@@ -610,8 +610,6 @@ jobs:
       TARGETS_PRE: gmp mpfr mpc mpfi openblas gsl libgd pari pari_elldata pari_galdata pari_galpol pari_nftables pari_seadata flint m4ri m4rie brial ecm frobby fflas_ffpack linbox gap gap_packages gap3 gfan giac singular ecl maxima fricas jmol kenzo lcalc eclib libbraiding libhomfly nauty palp 4ti2 rubiks symmetrica cliquer planarity qepcad glpk bliss coxeter3 mcqd meataxe sirocco tdlib glucose kissat graphviz dvipng poppler flatter imagemagick sympow topcom csdp benzene buckygen msolve fplll latte_int lrslib lie pdf2svg plantri tachyon tides
       # Build the supported Linux Python ABI/platform set for PyPI.
       CIBW_BUILD: "${{ matrix.python }}-${{ matrix.cibw_platform }}"
-      # Python 3.14 is still a prerelease ABI in cibuildwheel 3.0.x.
-      CIBW_ENABLE: "cpython-prerelease"
       CIBW_ARCHS: ${{ matrix.arch }}
       # https://cibuildwheel.readthedocs.io/en/stable/options/#requires-python
       CIBW_PROJECT_REQUIRES_PYTHON: "${{ matrix.requires_python }}"
@@ -675,7 +673,7 @@ jobs:
         #
         # omit sagemath-{meataxe,sirocco} for now -- needs sagemath-modules
         run: |
-          "${{ steps.python.outputs.python-path }}" -m pip install cibuildwheel==3.0.1
+          "${{ steps.python.outputs.python-path }}" -m pip install cibuildwheel==3.4.1
           mkdir -p unpacked
           for sdist in dist/*.tar.gz; do
               (cd unpacked && tar xfz - ) < $sdist

@@ -2,6 +2,16 @@
 
 set -euxo pipefail
 
+python - <<'PY'
+import sys
+
+if sys.version_info.releaselevel != "final":
+    raise SystemExit(
+        "refusing to build a release wheel with a prerelease Python: "
+        f"{sys.version.split()[0]}"
+    )
+PY
+
 python -m pip install --upgrade \
   build \
   meson \
