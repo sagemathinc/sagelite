@@ -3359,3 +3359,32 @@ The directly fetched public `dev/manifest.json`, generated at
 `2026-07-09T17:17:42.743310+00:00`, remains at 177 wheels and fourteen
 Sagelite primaries, all from `post8` and `post9`. No `post33` wheel, install,
 smoke, short, or full result is claimed yet, and no publication was attempted.
+
+## Post33 fixed-interpreter compilation checkpoint
+
+The scheduled reconciliation at `2026-07-15T00:01:54Z` found exactly the two
+intended guest user-systemd services active. The build service owned the sole
+CIBW container, while the validation watcher remained correctly blocked on
+the absent build exit artifact. No completed wheel, build exit artifact,
+validation exit artifact, or validation summary existed, so no duplicate work
+was started.
+
+The clean detached source checkout remained at exact pushed SHA
+`f67e0eadcb7486dce2dda3340bbd1edecee992f6` and reported Sagelite
+`10.9.post33`. The actual CIBW container reported native Linux `aarch64`.
+The build had reached the 1,795-step wheel-construction phase and recorded
+1,101 Ninja outputs. Eight concurrent native compiler processes sustained
+approximately all eight guest CPUs, providing direct forward-progress
+evidence while the top-level command log was buffered. This is not a wheel or
+validation result.
+
+The already-started build had 95,991,828,480 bytes free in the Linux guest;
+its pre-build check had passed the 100 GiB heavy-build threshold. The outer
+macOS host had about 176 GiB free on `/Volumes/sage`, and controller
+`/scratch` had about 103 GiB free. Controller `develop` and verified
+`origin/develop` were synchronized at
+`416766130996cce7c940fdbcd1ef56907e42f903` before this checkpoint update.
+The directly fetched public `dev/manifest.json`, generated at
+`2026-07-09T17:17:42.743310+00:00`, remained unchanged at 177 wheels and
+fourteen Sagelite primaries, all from `post8` and `post9`; no `post33` primary
+is public. No publication was attempted, and this cell remains below `full`.
