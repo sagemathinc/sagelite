@@ -3746,6 +3746,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
     assert 'not path.startswith(("/System/Library/", "/usr/lib/"))' in setup_py
     assert 'ecl_reference = f"{darwin_rpath}/{ecl_soname}"' in setup_py
     assert 'basename.startswith(("libgmp", "libgc", "libffi"))' in setup_py
+    assert 'original.startswith(("/System/Library/", "/usr/lib/"))' in setup_py
 
     assert pyproject["project"]["version"] == "10.9.post15"
     assert pyproject["project"]["dependencies"] == [

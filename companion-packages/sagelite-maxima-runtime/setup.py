@@ -588,6 +588,8 @@ def _patch_ecl_consumer(path: Path, rpath: str) -> None:
                     check=True,
                 )
         for original in linked_libraries:
+            if original.startswith(("/System/Library/", "/usr/lib/")):
+                continue
             basename = Path(original).name
             if not basename.startswith(("libgmp", "libgc", "libffi")):
                 continue
