@@ -4,21 +4,22 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The second native Linux `aarch64` CPython 3.14 `post33` build failed during
-native prerequisite staging. No primary wheel, wheel-only install, smoke
-result, short-gate result, or full-suite result is claimed yet.
+The third native Linux `aarch64` CPython 3.14 `post33` build is active. No
+primary wheel, wheel-only install, smoke result, short-gate result, or
+full-suite result is claimed yet.
 
 The authoritative run root is:
 
 ```text
-/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-020454-3cb65496e5a
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-021312-1e07983f06ae
 ```
 
 It is running in the persistent Lima guest `sagelite-linux-arm64` on `m1`.
 The exact source input is pushed commit
-`3cb65496e5a1175116bb44c19c5e81cbd815db94`, with Sagelite version
-`10.9.post33`. The detached guest checkout reports that exact SHA and a clean
-status.
+`1e07983f06ae1a09c7c0a397288065200be2c9a1`, with Sagelite version
+`10.9.post33`. The durable startup script is cloning that commit and will
+verify the detached guest checkout's SHA and clean status before entering the
+build.
 
 ## Preflight and cleanup
 
@@ -137,6 +138,31 @@ and `python3_venv` marker, and recreates the venv interpreter layer with the
 selected ABI. This retains the expensive ABI-independent native prefix while
 allowing the existing module probes to invalidate Python build-tool markers
 against the correct interpreter. A new exact-SHA run is required.
+
+The second failed run remains preserved at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-020454-3cb65496e5a
+```
+
+After confirming that both failed build/watch pairs were inactive and had
+exit code 1, cleanup removed only this second run's disposable source checkout
+and host venv. Its logs, metadata, orchestration scripts, and exit artifacts
+remain. Guest free space increased from 106,742,505,472 bytes to
+108,313,604,096 bytes, above the exact 100 GiB heavy-build threshold.
+
+Pushed commit `1e07983f06ae1a09c7c0a397288065200be2c9a1` contains the venv reset and
+its focused regression assertion. The third build and gated watcher are
+running as:
+
+```text
+sagelite-post33-cp314-r3-build.service
+sagelite-post33-cp314-r3-validate.service
+```
+
+At `2026-07-15T02:13:14Z`, both services were active, no exit artifact
+existed, and the build was cloning the exact pushed source. This is
+forward-progress evidence only.
 
 ## Public preview state
 
