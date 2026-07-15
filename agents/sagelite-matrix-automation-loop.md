@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-15
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -368,10 +368,21 @@ The short run is a gate, not acceptance. Inspect `validation-summary.md`,
 `install-metadata.json`, selftest output, runtime summary, manifest, and reduced
 doctest analysis before starting the full sweep.
 
-The strict profile currently defines a repaired Linux proof. For macOS, use a
-fresh wheel-only install plus the compatible generic wheelhouse preflights and
-the installed doctest runner. A useful implementation task is to add a named
-macOS strict profile rather than maintaining a long ad hoc flag list.
+The repaired strict profile defines a Linux proof. For macOS, use the named
+strict profile so the same closure, version, interpreter, ABI, architecture,
+and host-compatible platform checks run against a primary `macosx` wheel:
+
+```bash
+python3 tools/validate-sagelite-wheelhouse.py \
+  --wheelhouse "${WHEELHOUSE}" \
+  --work-dir "${RUN_ROOT}" \
+  --python "${PYTHON}" \
+  --package "sagelite[all-needed-extras]==${VERSION}" \
+  --strict-macos-wheelhouse-preflight \
+  --optional sage \
+  --short 600 \
+  --nthreads "${NTHREADS}"
+```
 
 Public-index smoke is an additional gate after local wheelhouse validation:
 
@@ -403,10 +414,10 @@ python3 tools/validate-sagelite-wheelhouse.py \
   --nthreads "${NTHREADS}"
 ```
 
-Use the strict profile only on Linux until a macOS profile exists. On macOS,
-invoke `tools/run-installed-wheel-doctests.py` from the clean wheel-only venv
-with `--runtime-summary --selftest --optional sage --full` and record the
-wheelhouse explicitly.
+Use `--strict-repaired-wheelhouse-preflight` on Linux and
+`--strict-macos-wheelhouse-preflight` on macOS. Both profiles create a fresh
+wheel-only venv, run `pip check` and selftest, and invoke the installed doctest
+runner with the wheelhouse recorded explicitly.
 
 For macOS full runs, the accepted current workaround is:
 

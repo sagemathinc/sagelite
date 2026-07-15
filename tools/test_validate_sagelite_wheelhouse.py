@@ -1053,6 +1053,122 @@ def test_strict_repaired_wheelhouse_preflight_rejects_raw_wheelhouse(tmp_path):
     assert "## Preflight Error" in summary
 
 
+def test_strict_macos_wheelhouse_preflight_rejects_linux_primary(tmp_path):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    linux_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp313-cp313-manylinux_2_28_aarch64.whl"
+    )
+    linux_wheel.write_text("")
+    commands = []
+    validator._run = lambda command, env: commands.append(command)
+    validator._timestamp = lambda: "20260715-101500"
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/homebrew/bin/python3.13",
+            "--strict-macos-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 2
+    assert commands == []
+    metadata = json.loads(
+        (tmp_path / "validation-20260715-101500" / "install-metadata.json").read_text()
+    )
+    summary = (
+        tmp_path / "validation-20260715-101500" / "validation-summary.md"
+    ).read_text(encoding="utf-8")
+    enabled_preflights = metadata["validation_contract"]["enabled_preflights"]
+    assert metadata["status"] == "failed"
+    assert metadata["exit_code"] == 2
+    assert "macOS sagelite wheel is required" in metadata["preflight_error"]
+    assert linux_wheel.name in metadata["preflight_error"]
+    assert enabled_preflights[:4] == [
+        "strict-macos-wheelhouse-preflight",
+        "reject-invalid-wheel-filenames",
+        "reject-duplicate-primary-sagelite-wheels",
+        "require-macos-sagelite-wheel",
+    ]
+    assert "require-repaired-sagelite-wheel" not in enabled_preflights
+    assert "`strict-macos-wheelhouse-preflight`" in summary
+    assert "`require-macos-sagelite-wheel`" in summary
+    assert "## Preflight Error" in summary
+
+
+def test_strict_macos_wheelhouse_preflight_accepts_complete_macos_wheelhouse(
+    tmp_path, monkeypatch
+):
+    validator = _load_validator()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    macos_wheel = (
+        wheelhouse / "sagelite-10.9.post1-cp313-cp313-macosx_14_0_x86_64.whl"
+    )
+    macos_wheel.write_text("")
+    for package in validator._requested_sagelite_dependency_packages(
+        "sagelite[all-needed-extras]"
+    ):
+        version = _companion_version(package)
+        wheel_name = package.replace("-", "_") + f"-{version}-py3-none-any.whl"
+        (wheelhouse / wheel_name).write_text("")
+    commands = []
+
+    def fake_run(command, env):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0)
+
+    validator._run = fake_run
+    validator._timestamp = lambda: "20260715-101600"
+    monkeypatch.setenv("OBJC_DISABLE_INITIALIZE_FORK_SAFETY", "YES")
+    monkeypatch.setattr(
+        validator,
+        "_compatible_platform_tags",
+        lambda: ["macosx_14_0_x86_64"],
+    )
+
+    exit_code = validator.main(
+        [
+            "--wheelhouse",
+            str(wheelhouse),
+            "--work-dir",
+            str(tmp_path),
+            "--python",
+            "/opt/homebrew/bin/python3.13",
+            "--strict-macos-wheelhouse-preflight",
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(commands) == 5
+    metadata = json.loads(
+        (tmp_path / "validation-20260715-101600" / "install-metadata.json").read_text()
+    )
+    enabled_preflights = metadata["validation_contract"]["enabled_preflights"]
+    assert metadata["status"] == "passed"
+    assert metadata["exit_code"] == 0
+    assert metadata["environment"]["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] == "YES"
+    assert enabled_preflights[:4] == [
+        "strict-macos-wheelhouse-preflight",
+        "reject-invalid-wheel-filenames",
+        "reject-duplicate-primary-sagelite-wheels",
+        "require-macos-sagelite-wheel",
+    ]
+    assert "require-repaired-sagelite-wheel" not in enabled_preflights
+    assert metadata["validation_contract"][
+        "incompatible_primary_sagelite_wheels"
+    ] == []
+    assert metadata["validation_contract"][
+        "incompatible_companion_sagelite_wheels"
+    ] == []
+
+
 def test_strict_repaired_wheelhouse_preflight_rejects_narrow_package(tmp_path):
     validator = _load_validator()
     wheelhouse = tmp_path / "wheelhouse"

@@ -537,6 +537,29 @@ def _ensure_repaired_sagelite_wheel(inventory: dict[str, object]) -> None:
     )
 
 
+def _ensure_macos_sagelite_wheel(inventory: dict[str, object]) -> None:
+    wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
+    if not isinstance(wheels, list):
+        wheels = []
+    details = []
+    for wheel in wheels:
+        if not isinstance(wheel, dict):
+            continue
+        platform_tags = wheel.get("platform_tags", [])
+        if not isinstance(platform_tags, list):
+            platform_tags = []
+        name = wheel.get("name")
+        rendered_tags = ", ".join(str(tag) for tag in platform_tags) or "none"
+        details.append(f"{name} ({rendered_tags})")
+        if any(str(tag).startswith("macosx_") for tag in platform_tags):
+            return
+    detail = ", ".join(details) if details else "none"
+    raise RuntimeError(
+        "macOS sagelite wheel is required but no primary sagelite wheel has a "
+        f"macosx platform tag; primary sagelite wheels: {detail}"
+    )
+
+
 def _ensure_all_needed_extra_sagelite_wheels(inventory: dict[str, object]) -> None:
     missing = inventory["missing_all_needed_extra_sagelite_packages"]
     if not isinstance(missing, list):
@@ -1015,6 +1038,8 @@ def _primary_sagelite_wheel_compatibility(
     expected_python_tag: str | None,
     expected_abi_tag: str | None,
     compatible_platform_tags: list[str],
+    *,
+    require_repaired_linux: bool,
 ) -> list[dict[str, object]]:
     wheels = inventory["primary_sagelite_wheels"]  # type: ignore[index]
     if not isinstance(wheels, list):
@@ -1051,7 +1076,7 @@ def _primary_sagelite_wheel_compatibility(
             mismatches.append("abi")
         if not platform_ok:
             mismatches.append("platform")
-        if not repaired_linux:
+        if require_repaired_linux and not repaired_linux:
             mismatches.append("repaired")
         report.append(
             {
@@ -1068,7 +1093,12 @@ def _primary_sagelite_wheel_compatibility(
                 "matched_platform_tags": matched_platform_tags,
                 "repaired_linux": repaired_linux,
                 "raw_linux": raw_linux,
-                "compatible": python_ok and abi_ok and platform_ok and repaired_linux,
+                "compatible": (
+                    python_ok
+                    and abi_ok
+                    and platform_ok
+                    and (repaired_linux or not require_repaired_linux)
+                ),
                 "mismatches": mismatches,
             }
         )
@@ -1466,6 +1496,9 @@ def _validation_contract(
         expected_python_tag,
         expected_abi_tag,
         compatible_platform_tags,
+        require_repaired_linux=(
+            "require-repaired-sagelite-wheel" in enabled_preflights
+        ),
     )
     primary_requirement_satisfaction = (
         _primary_sagelite_wheel_requirement_satisfaction(inventory, package)
@@ -1591,6 +1624,9 @@ def write_install_metadata(
     environment = {
         "PATH": env.get("PATH", ""),
         "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
+        "OBJC_DISABLE_INITIALIZE_FORK_SAFETY": env.get(
+            "OBJC_DISABLE_INITIALIZE_FORK_SAFETY"
+        ),
     }
     for key in sorted(RUNTIME_ENV_KEYS_TO_REMOVE):
         environment[key] = env.get(key)
@@ -2472,12 +2508,21 @@ def _make_parser() -> argparse.ArgumentParser:
             "manylinux or musllinux platform tag"
         ),
     )
-    parser.add_argument(
+    strict_profiles = parser.add_mutually_exclusive_group()
+    strict_profiles.add_argument(
         "--strict-repaired-wheelhouse-preflight",
         action="store_true",
         help=(
-            "enable every repaired-wheelhouse proof preflight before creating "
-            "the fresh install"
+            "enable every repaired Linux wheelhouse proof preflight before "
+            "creating the fresh install"
+        ),
+    )
+    strict_profiles.add_argument(
+        "--strict-macos-wheelhouse-preflight",
+        action="store_true",
+        help=(
+            "enable every macOS wheelhouse proof preflight before creating the "
+            "fresh install"
         ),
     )
     parser.add_argument(
@@ -2645,27 +2690,45 @@ def main(argv: list[str] | None = None) -> int:
     command_phases = list(VALIDATION_PHASES)
     preflight_checks = []
     enabled_preflights = []
-    strict_preflight = args.strict_repaired_wheelhouse_preflight
-    if strict_preflight:
+    strict_repaired_preflight = args.strict_repaired_wheelhouse_preflight
+    strict_macos_preflight = args.strict_macos_wheelhouse_preflight
+    strict_wheelhouse_preflight = (
+        strict_repaired_preflight or strict_macos_preflight
+    )
+    if strict_repaired_preflight:
         enabled_preflights.append("strict-repaired-wheelhouse-preflight")
-    if args.reject_invalid_wheel_filenames or strict_preflight:
+    if strict_macos_preflight:
+        enabled_preflights.append("strict-macos-wheelhouse-preflight")
+    if args.reject_invalid_wheel_filenames or strict_wheelhouse_preflight:
         preflight_checks.append(_ensure_no_invalid_wheel_filenames)
         enabled_preflights.append("reject-invalid-wheel-filenames")
-    if args.reject_duplicate_primary_sagelite_wheels or strict_preflight:
+    if (
+        args.reject_duplicate_primary_sagelite_wheels
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(_ensure_single_primary_sagelite_wheel)
         enabled_preflights.append("reject-duplicate-primary-sagelite-wheels")
-    if args.require_repaired_sagelite_wheel or strict_preflight:
+    if args.require_repaired_sagelite_wheel or strict_repaired_preflight:
         preflight_checks.append(_ensure_repaired_sagelite_wheel)
         enabled_preflights.append("require-repaired-sagelite-wheel")
-    if args.require_package_all_needed_extras or strict_preflight:
+    if strict_macos_preflight:
+        preflight_checks.append(_ensure_macos_sagelite_wheel)
+        enabled_preflights.append("require-macos-sagelite-wheel")
+    if args.require_package_all_needed_extras or strict_wheelhouse_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_package_requests_all_needed_extras(args.package)
         )
         enabled_preflights.append("require-package-all-needed-extras")
-    if args.require_all_needed_extra_sagelite_wheels or strict_preflight:
+    if (
+        args.require_all_needed_extra_sagelite_wheels
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(_ensure_all_needed_extra_sagelite_wheels)
         enabled_preflights.append("require-all-needed-extra-sagelite-wheels")
-    if args.require_requested_sagelite_dependency_wheels or strict_preflight:
+    if (
+        args.require_requested_sagelite_dependency_wheels
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(
             lambda inventory: _ensure_requested_sagelite_dependency_wheels(
                 inventory,
@@ -2673,13 +2736,22 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-requested-sagelite-dependency-wheels")
-    if args.reject_duplicate_companion_sagelite_wheels or strict_preflight:
+    if (
+        args.reject_duplicate_companion_sagelite_wheels
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(_ensure_no_duplicate_companion_sagelite_wheels)
         enabled_preflights.append("reject-duplicate-companion-sagelite-wheels")
-    if args.require_sagelite_companion_wheel_requirements or strict_preflight:
+    if (
+        args.require_sagelite_companion_wheel_requirements
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(_ensure_companion_sagelite_wheel_requirements)
         enabled_preflights.append("require-sagelite-companion-wheel-requirements")
-    if args.require_primary_sagelite_wheel_requirement or strict_preflight:
+    if (
+        args.require_primary_sagelite_wheel_requirement
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_requirement(
                 inventory,
@@ -2687,7 +2759,10 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-primary-sagelite-wheel-requirement")
-    if args.require_compatible_companion_sagelite_wheels or strict_preflight:
+    if (
+        args.require_compatible_companion_sagelite_wheels
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(
             lambda inventory: _ensure_compatible_companion_sagelite_wheels(
                 inventory,
@@ -2697,7 +2772,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-compatible-companion-sagelite-wheels")
-    if args.require_compatible_third_party_wheels or strict_preflight:
+    if args.require_compatible_third_party_wheels or strict_wheelhouse_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_compatible_third_party_wheels(
                 inventory,
@@ -2707,21 +2782,27 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         enabled_preflights.append("require-compatible-third-party-wheels")
-    if args.require_primary_sagelite_wheel_python_tag or strict_preflight:
+    if (
+        args.require_primary_sagelite_wheel_python_tag
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_python_tag(
                 inventory, expected_python_tag
             )
         )
         enabled_preflights.append("require-primary-sagelite-wheel-python-tag")
-    if args.require_primary_sagelite_wheel_abi_tag or strict_preflight:
+    if args.require_primary_sagelite_wheel_abi_tag or strict_wheelhouse_preflight:
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_abi_tag(
                 inventory, expected_abi_tag
             )
         )
         enabled_preflights.append("require-primary-sagelite-wheel-abi-tag")
-    if args.require_primary_sagelite_wheel_platform_machine or strict_preflight:
+    if (
+        args.require_primary_sagelite_wheel_platform_machine
+        or strict_wheelhouse_preflight
+    ):
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_platform_machine(
                 inventory,
@@ -2731,7 +2812,7 @@ def main(argv: list[str] | None = None) -> int:
         enabled_preflights.append("require-primary-sagelite-wheel-platform-machine")
     if (
         args.require_primary_sagelite_wheel_compatible_platform_tag
-        or strict_preflight
+        or strict_wheelhouse_preflight
     ):
         preflight_checks.append(
             lambda inventory: _ensure_primary_sagelite_wheel_platform_tag_compatible(
