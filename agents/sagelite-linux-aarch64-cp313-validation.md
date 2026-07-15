@@ -3449,3 +3449,53 @@ The directly fetched public manifest remained unchanged at 177 wheels and
 fourteen `post8`/`post9` Sagelite primaries; no `post33` primary is public.
 No publication was attempted. This cell remains below `full` until the full
 validator exits zero and its completed reduction reports no failures.
+
+## Post33 full installed-suite pass
+
+The fresh full validation from the same exact pushed source
+`f67e0eadcb7486dce2dda3340bbd1edecee992f6` and identical strict wheel
+contract finished successfully. The build, short gate, full gate, and durable
+follow-on wrapper all recorded exit code zero. The authoritative full run
+started at `2026-07-15T00:31:32Z`, finished at `2026-07-15T00:58:17Z`, and
+used:
+
+```text
+--package sagelite[all-needed-extras]==10.9.post33
+--strict-repaired-wheelhouse-preflight
+--optional sage
+--full
+--nthreads 8
+```
+
+All strict preflights passed for the 178-wheel closure: one repaired primary,
+68 companion wheels, and 109 third-party wheels totaling 16,623,305,575
+bytes. Its wheelhouse digest remained
+`47d0e54e7ccb886319ac639e2102ab78759eff5c98dbe9b385ae43ebc23f6972`.
+The fresh wheel-only installation, `python -m pip check`, runtime collection,
+and every `sagelite-selftest` probe passed. The complete installed standard
+`--optional=sage` sweep saw 3,953 modules and reduced to zero failed modules.
+Packaged pytest passed 215 tests with 2 skips and 15 warnings.
+
+The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/full-post33/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/full-post33/doctest-installed-linux-aarch64-cp313-post33-full-20260715-003400.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/full-post33/doctest-installed-linux-aarch64-cp313-post33-full-20260715-003400.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/full-post33/doctest-installed-linux-aarch64-cp313-post33-full-20260715-003400.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation-full-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation-full-exit-code
+```
+
+After validation, the Linux guest had 78 GiB free. That remains above the
+30 GiB test-only threshold but is below the 100 GiB heavy-build threshold, so
+the next Linux aarch64 CPython 3.14 build must first perform deliberate
+automation-owned cleanup. The outer macOS host had about 164 GiB free on
+`/Volumes/sage`.
+
+The public `dev/manifest.json` remained generated at
+`2026-07-09T17:17:42.743310+00:00`, with 177 wheels and fourteen Sagelite
+primaries from `post8` and `post9`. No `post33` primary is public, and no
+publication was attempted. Linux aarch64 CPython 3.13 is now recorded as a
+local full installed-suite pass for `10.9.post33`; it is not yet
+public-index acceptance evidence.
