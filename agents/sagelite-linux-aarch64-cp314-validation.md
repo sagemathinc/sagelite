@@ -4,20 +4,20 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The fourth native Linux `aarch64` CPython 3.14 `post33` build contract is being
-prepared after the source-transfer-only relaunch exposed stale pure-Python
-build-tool markers. No primary wheel, wheel-only install, smoke result,
-short-gate result, or full-suite result is claimed yet.
+The fourth native Linux `aarch64` CPython 3.14 `post33` build contract is
+active after the preceding run exposed stale pure-Python build-tool markers.
+No primary wheel, wheel-only install, smoke result, short-gate result, or
+full-suite result is claimed yet.
 
 The authoritative run root is:
 
 ```text
-/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-021312-1e07983f06ae
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-033748-5ab41cd4b684
 ```
 
 It is running in the persistent Lima guest `sagelite-linux-arm64` on `m1`.
 The exact source input is pushed commit
-`1e07983f06ae1a09c7c0a397288065200be2c9a1`, with Sagelite version
+`5ab41cd4b68460e5b6af76461ec955768c401910`, with Sagelite version
 `10.9.post33`. The detached guest checkout reports that exact SHA and a clean
 status.
 
@@ -212,7 +212,29 @@ wheels.
 The follow-up source change adds `jinja2` and `markupsafe` to the existing
 interpreter-specific module probes. A cross-ABI prefix reuse will now remove
 their stale markers so the normal `sage_setup` dependency chain reinstalls
-both packages for the selected interpreter. A new exact-SHA run is required.
+both packages for the selected interpreter.
+
+Cleanup retained the failed run's command log, metadata, scripts, disk
+snapshots, and exit artifacts, and removed only its disposable source checkout
+and host venv. This restored 107,787,530,240 bytes free, above the 100 GiB
+heavy-build threshold.
+
+Pushed commit `5ab41cd4b68460e5b6af76461ec955768c401910` contains the two added probes
+and their focused regression assertions. A new shallow exact-SHA bundle with
+complete source-tree objects had SHA256
+`4b34a9719f15377617c919a2c3cdaf89a53a340758ebb86e82affb14ac594836` on
+the controller, outer Mac, and Linux guest. The fourth build and gated watcher
+are running as:
+
+```text
+sagelite-post33-cp314-r5-build.service
+sagelite-post33-cp314-r5-validate.service
+```
+
+At `2026-07-15T03:38:39Z`, both services were active, neither had an exit
+artifact, and the detached guest checkout reported the exact pushed SHA with
+a clean status. CIBW had started from the native Linux `aarch64` guest. This
+is forward-progress evidence only.
 
 ## Public preview state
 
