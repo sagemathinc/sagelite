@@ -9,6 +9,15 @@ fi
 
 raw_wheel="$1"
 dest_dir="$2"
+companion_dest_dir="${SAGELITE_COMPANION_WHEEL_DIR:-}"
+if [ -z "$companion_dest_dir" ]; then
+  echo "SAGELITE_COMPANION_WHEEL_DIR is not set" >&2
+  exit 2
+fi
+if [ "$companion_dest_dir" = "$dest_dir" ]; then
+  echo "companion wheel directory must differ from cibuildwheel's repair destination" >&2
+  exit 2
+fi
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
@@ -2584,6 +2593,12 @@ fi
 auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir" "$repaired_input"
 verify_repaired_sagelite_wheel
 prepare_repair_build_frontend
+
+# cibuildwheel 3.4 and newer require the repair destination to contain exactly
+# the repaired primary wheel.  Stage companion wheels in a separate host mount;
+# cibw-build-wheel-linux.sh collects them after cibuildwheel succeeds.
+dest_dir="$companion_dest_dir"
+mkdir -p "$dest_dir"
 build_pplpy_wheel
 build_cunningham_tables_companion
 build_d3js_runtime_companion

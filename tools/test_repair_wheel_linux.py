@@ -4,6 +4,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_linux_cibuildwheel_stages_companions_outside_repair_destination():
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+    wrapper = (ROOT / ".github/workflows/cibw-build-wheel-linux.sh").read_text()
+    workflow = (ROOT / ".github/workflows/release.yml").read_text()
+
+    assert 'companion_dest_dir="${SAGELITE_COMPANION_WHEEL_DIR:-}"' in repair
+    assert 'if [ "$companion_dest_dir" = "$dest_dir" ]' in repair
+    assert repair.index(
+        'auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir"'
+    ) < repair.index('dest_dir="$companion_dest_dir"')
+    assert 'companion_output_dir="$(pwd)/sagelite-companion-wheelhouse"' in wrapper
+    assert 'companion_wheels=("${companion_output_dir}"/*.whl)' in wrapper
+    assert 'mv "${companion_wheels[@]}" "${output_dir}/"' in wrapper
+    assert (
+        "SAGELITE_COMPANION_WHEEL_DIR=/host/sagelite-companion-wheelhouse "
+        "bash .github/workflows/repair-wheel-linux.sh {wheel} {dest_dir}"
+    ) in workflow
+
+
 def test_repair_wheel_linux_preserves_cython_source_sidecars():
     script = (ROOT / ".github" / "workflows" / "repair-wheel-linux.sh").read_text()
 
