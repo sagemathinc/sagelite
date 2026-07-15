@@ -821,6 +821,9 @@ class build_py(_build_py):
             if ecl_fas == fas_target:
                 continue
             _patch_ecl_fas(ecl_fas)
+        ecl_min = ecl_target / "ecl_min"
+        if ecl_min.is_file():
+            _patch_ecl_consumer(ecl_min, "$ORIGIN/../runtime")
 
         runtime_target = target / "lib" / "runtime"
         runtime_target.mkdir(parents=True, exist_ok=True)

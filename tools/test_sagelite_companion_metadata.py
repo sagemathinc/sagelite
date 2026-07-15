@@ -3808,6 +3808,7 @@ def test_maxima_runtime_patches_copied_ecl_images():
     assert "def _patch_maxima_executable" in setup_text
     assert "_copy_target_ecl_runtime(runtime_target)" in setup_text
     assert '_patch_maxima_executable(images_target / "binary-ecl" / "maxima")' in setup_text
+    assert '_patch_ecl_consumer(ecl_min, "$ORIGIN/../runtime")' in setup_text
     assert "system ECL runtime" in setup_text
     assert '"FE"' in setup_text
     assert "--remove-rpath" in setup_text
