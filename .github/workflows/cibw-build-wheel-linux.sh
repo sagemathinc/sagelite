@@ -6,6 +6,15 @@ python_bin="$1"
 output_dir="$2"
 source_dir="$3"
 companion_output_dir="$(pwd)/sagelite-companion-wheelhouse"
+companion_output_marker="__SAGELITE_HOST_COMPANION_WHEEL_DIR__"
+companion_container_dir="/host${companion_output_dir}"
+
+repair_command="${CIBW_REPAIR_WHEEL_COMMAND_LINUX:-}"
+if [[ "$repair_command" != *"$companion_output_marker"* ]]; then
+  echo "CIBW_REPAIR_WHEEL_COMMAND_LINUX must contain $companion_output_marker" >&2
+  exit 2
+fi
+export CIBW_REPAIR_WHEEL_COMMAND_LINUX="${repair_command//$companion_output_marker/$companion_container_dir}"
 
 dump_meson_logs() {
   local source_name found=0 root logfile
