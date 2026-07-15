@@ -1,5 +1,77 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Command Companion Batch
+
+Exact pushed source `2df580c98da3f01a41ad4232542c91673cbc33d2`
+made the LiE companion portable on macOS by copying its non-system Readline
+dylib, rewriting both the executable dependency and dylib install ID to
+loader-relative paths, and ad-hoc signing the modified Mach-O files. Focused
+repository validation passed five tests. The native inputs from the preceding
+exact-source command build at `5e6a45e7160` were then packaged into six native
+macOS arm64 wheels:
+
+```text
+sagelite_gap3_runtime-10.9.post1-py3-none-macosx_26_0_arm64.whl
+  20,585,435 bytes
+  ffc08bcb43eae2e1ee8bac604ffd8af95f0517b09e4812ff093382af8e203883
+sagelite_glucose_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  137,687 bytes
+  98b4f1d1fdb7ae344dca4688a0d3dbc361f7fde2f8ecf654febe14643dc79e67
+sagelite_kissat_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  123,174 bytes
+  e4a3737d3157279797647f3b6d14d6e4b43b908cd1bd7ba595f1287e50cfae5d
+sagelite_lie_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  889,476 bytes
+  701f8da3b95cab38a44f5ad6455d070ce90798b96cde7f314311882452cdb023
+sagelite_plantri_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  116,195 bytes
+  334cd5e2c06d14ef9a399d17e021116366437712157f7574b2d593a74848568c
+sagelite_rubiks_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  192,609 bytes
+  b09f6a4ebef1f402c11dbb45eef744c6eff07f5ba1a5da36c1d261b2e31daa40
+```
+
+Their embedded metadata and wheel tags match the filenames. An exhaustive
+audit covered 97 Mach-O files and found no absolute, unresolved, or escaping
+load path. The initial smoke exposed two validation defects rather than wheel
+defects: Glucose rejects `-help` and directs callers to `--help`, and the
+shared smoke script had no handlers for LiE or GAP3. Exact pushed sources
+`701ebbdc8471b8fa42e5eea779be921809ae901d` and
+`dd2cf612b014b9973cc68f522ad24efd8fff6827` corrected those protocols and
+added deterministic arithmetic probes for LiE and GAP3. Focused repository
+validation then passed seven tests.
+
+Exact validation source `dd2cf612b01` installed the unchanged, hash-verified
+wheel bytes into six separate fresh CPython 3.13.14 venvs with a neutral
+runtime `PATH`. All six isolated smokes passed, including both Glucose
+executables, Plantri, Kissat, two Rubiks commands, and arithmetic through LiE
+and GAP3. The validation exit code is zero. The public manifest remains
+unchanged at 177 wheels; no artifact from this batch was published.
+
+Together with the previously completed Maxima and Planarity wheels, this batch
+reduces the missing `all-needed-extras` closure from 16 distributions to 10:
+`sagelite-csdp-runtime`, `sagelite-database-polytopes-4d`,
+`sagelite-fricas-runtime`, `sagelite-giac-runtime`,
+`sagelite-imagemagick-runtime`, `sagelite-info-runtime`,
+`sagelite-kenzo-runtime`, `sagelite-lrslib-runtime`,
+`sagelite-msolve-runtime`, and `sagelite-qepcad-runtime`. No strict Sagelite
+installation, `pip check`, selftest, short run, full run, or publication result
+is claimed. Final cell validation must still build those companions and rebuild
+the primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-command-companions-20260715-160338-2df580c98da/
+/scratch/sagelite-automation/macos-arm64-cp313-command-smoke-20260715-161127-dd2cf612b01/
+```
+
+The matching `m1` directories retain the exact source checkouts and fresh
+smoke venvs. Important evidence includes both `wheelhouse/SHA256SUMS` files,
+the wheel metadata inventory, `validation/macho-inventory.txt`, the empty
+`validation/strict-macho-audit.txt`, all six `validation/smoke-*.txt` files,
+`run-metadata.txt`, `command.log`, and the final validation `exit-code` (`0`).
+
 ## 2026-07-15 Portable Planarity Companion
 
 Exact pushed source `7d63944caeb9c4c0fdcf4c2463db95d7ee97c1a3`
