@@ -3388,3 +3388,64 @@ The directly fetched public `dev/manifest.json`, generated at
 `2026-07-09T17:17:42.743310+00:00`, remained unchanged at 177 wheels and
 fourteen Sagelite primaries, all from `post8` and `post9`; no `post33` primary
 is public. No publication was attempted, and this cell remains below `full`.
+
+## Post33 fixed-interpreter build and short-gate pass
+
+The exact pushed `f67e0eadcb7486dce2dda3340bbd1edecee992f6`
+replacement completed successfully. The detached source checkout remained
+clean at that SHA, and the native Linux `aarch64` CIBW build wrote exit code
+zero. Its four repaired wheels are:
+
+```text
+sagelite-10.9.post33-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256=176a9b7ba0f8d6ee37018de71016f78ba4c9886163584aebbffa172c79544574
+size=236407169
+
+pplpy-0.9.0.post1-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+sha256=b3536ad46a71b6e55e413281568481b991e48a57c0e3d43423f452e58b77e694
+size=9376056
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256=f303c2724017f1192dd5dcb6e8cca65cee863ea1ec01f77b1706e717aa2e6508
+size=66578984
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256=8a0e81186f8ce9eb1686f26a512bfbf2202c39dc61a31ff3fb1076f4ebb151ab
+size=5242722
+```
+
+The gated watcher assembled a strict closure of one primary, 68 companions,
+and 109 third-party wheels. The 178 wheels total 16,623,305,575 bytes and
+have validator wheelhouse digest
+`47d0e54e7ccb886319ac639e2102ab78759eff5c98dbe9b385ae43ebc23f6972`.
+Every strict filename, tag, ABI, architecture, version, dependency, and
+repaired-primary preflight passed.
+
+The fresh wheel-only short gate installed
+`sagelite[all-needed-extras]==10.9.post33`, and both installation and
+`python -m pip check` passed. The runtime collection and every
+`sagelite-selftest` probe passed. The explicit `--optional sage --short 600`
+sweep passed all 3,953 modules with zero failed modules. The gate finished at
+`2026-07-15T00:30:58Z` with exit code zero. Its authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/short-post33/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/short-post33/doctest-installed-linux-aarch64-cp313-post33-short-20260715-001226.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation/short-post33/doctest-installed-linux-aarch64-cp313-post33-short-20260715-001226.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260714-233521-f67e0eadcb74/validation-short-exit-code
+```
+
+The same durable watcher removed only the completed short install and started
+a separate fresh full validation from the identical wheel contract at
+`2026-07-15T00:31:02Z`. The service
+`sagelite-post33-python-validate.service` and its sole validation container
+were active, and the container was using native CPU while installing the
+closure. No `validation-full-exit-code` existed. The Linux guest had
+103,375,101,952 bytes free, `/Volumes/sage` had about 164 GiB free, and
+controller `/scratch` had 109,861,867,520 bytes free.
+
+The directly fetched public manifest remained unchanged at 177 wheels and
+fourteen `post8`/`post9` Sagelite primaries; no `post33` primary is public.
+No publication was attempted. This cell remains below `full` until the full
+validator exits zero and its completed reduction reports no failures.
