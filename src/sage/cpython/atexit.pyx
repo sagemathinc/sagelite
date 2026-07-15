@@ -13,6 +13,7 @@ Utilities for interfacing with the standard library's atexit module.
 # ****************************************************************************
 
 import atexit
+import gc
 
 
 __all__ = ['restore_atexit']
@@ -146,9 +147,22 @@ cdef class restore_atexit:
 from cpython.ref cimport PyObject
 import sys
 
-# Implement a uniform interface for getting atexit callbacks
+# CPython does not expose the registered callbacks through a public API.  For
+# Python < 3.14, keep using the private array as before.  Python 3.14 stores a
+# list in the interpreter state, but the offset of that state is not stable
+# across patch releases.  In particular, extensions built with 3.14.3 headers
+# can crash when loaded by 3.14.6.  The 3.14+ implementation below discovers
+# the list through a temporary callback instead of compiling in that offset.
 cdef extern from *:
     """
+    // Always define this struct for Cython's use.
+    typedef struct {
+        PyObject *func;
+        PyObject *args;
+        PyObject *kwargs;
+    } atexit_callback_struct;
+
+    #if PY_VERSION_HEX < 0x030e0000
     #ifndef Py_BUILD_CORE
     #define Py_BUILD_CORE
     #endif
@@ -156,32 +170,6 @@ cdef extern from *:
     #include "internal/pycore_interp.h"
     #include "internal/pycore_pystate.h"
     
-    // Always define this struct for Cython's use
-    typedef struct {
-        PyObject *func;
-        PyObject *args;
-        PyObject *kwargs;
-    } atexit_callback_struct;
-    
-    #if PY_VERSION_HEX >= 0x030e0000
-    // Python 3.14+: atexit uses a PyList stored in state->callbacks
-    // Note: In Python 3.14 the atexit_state struct changed - callbacks is now a PyObject* (PyList)
-    
-    static PyObject* get_atexit_callbacks_list(PyObject *self) {
-        PyInterpreterState *interp = _PyInterpreterState_GET();
-        // Access the callbacks list directly from the interpreter state
-        // We return a new reference because Cython expects an owned reference
-        PyObject *callbacks = interp->atexit.callbacks;
-        Py_XINCREF(callbacks);
-        return callbacks;
-    }
-    
-    // Dummy function for Python 3.14+ (never called)
-    static atexit_callback_struct** get_atexit_callbacks_array(PyObject *self) {
-        PyErr_SetString(PyExc_RuntimeError, "Python >= 3.14 has no atexit arrays");
-        return NULL;
-    }
-    #else
     // Python < 3.14: atexit uses C array
     static atexit_callback_struct** get_atexit_callbacks_array(PyObject *self) {
         PyInterpreterState *interp = _PyInterpreterState_GET();
@@ -190,16 +178,14 @@ cdef extern from *:
         return (atexit_callback_struct**)state.callbacks;
     }
     
-    // Dummy function for Python < 3.14 (never called)
-    static PyObject* get_atexit_callbacks_list(PyObject *self) {
-        PyErr_SetString(PyExc_RuntimeError, "Python < 3.14 has no atexit lists");
+    #else
+    // Dummy function for Python 3.14+ (never called)
+    static atexit_callback_struct** get_atexit_callbacks_array(PyObject *self) {
+        PyErr_SetString(PyExc_RuntimeError, "Python >= 3.14 has no atexit arrays");
         return NULL;
     }
     #endif
     """
-    # Declare both functions - they exist in all Python versions (one is dummy)
-    object get_atexit_callbacks_list(object module)
-    
     ctypedef struct atexit_callback_struct:
         PyObject* func
         PyObject* args
@@ -215,12 +201,44 @@ def _get_exithandlers():
     cdef int idx
     cdef object kwargs
     
-    # Python 3.14+ uses a PyList directly
+    # Python 3.14+ uses a PyList directly.  Find that list from a uniquely
+    # identifiable temporary callback, then copy it before unregistering the
+    # callback.  This avoids depending on the private PyInterpreterState
+    # layout, which can change between CPython patch releases.
     if sys.version_info >= (3, 14):
-        callbacks_list = get_atexit_callbacks_list(atexit)
-        if callbacks_list is None:
-            return exithandlers
-        # callbacks is a list of tuples: [(func, args, kwargs), ...]
+        marker = object()
+
+        def sentinel(*args):
+            pass
+
+        atexit.register(sentinel, marker)
+        try:
+            temporary_callback = None
+            for referrer in gc.get_referrers(sentinel):
+                if (type(referrer) is tuple
+                        and len(referrer) == 3
+                        and referrer[0] is sentinel
+                        and referrer[1] == (marker,)):
+                    temporary_callback = referrer
+                    break
+            if temporary_callback is None:
+                raise RuntimeError("cannot find temporary atexit callback")
+
+            callbacks_list = None
+            callback_count = atexit._ncallbacks()
+            for referrer in gc.get_referrers(temporary_callback):
+                if (type(referrer) is list
+                        and len(referrer) == callback_count
+                        and referrer
+                        and referrer[0] is temporary_callback):
+                    callbacks_list = referrer[1:]
+                    break
+            if callbacks_list is None:
+                raise RuntimeError("cannot find the atexit callback list")
+        finally:
+            atexit.unregister(sentinel)
+
+        # callbacks is a list of tuples: [(func, args, kwargs), ...].
         # Normalize kwargs to ensure it's always a dict (not None)
         # Note: In Python 3.14+, atexit stores callbacks in LIFO order
         # (most recently registered first), but we return them in FIFO
