@@ -1,5 +1,54 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Base Companion Batch
+
+Exact pushed source `cc8d999d436a256a42ff70d51963fc4f04bb836b`
+completed a native macOS arm64 build of the three base companions that were
+missing or below the `post39` primary's dependency floors. The resulting
+`macosx_26_0_arm64` wheels are:
+
+```text
+sagelite_flatter_runtime-10.9.post1-py3-none-macosx_26_0_arm64.whl
+  13,936,429 bytes
+  20c09b5c7118a4aa8aa7a309ed6ddf70cfb98c206dced84938b9f15874aa8878
+sagelite_graphviz_runtime-10.9.post4-py3-none-macosx_26_0_arm64.whl
+  11,651,031 bytes
+  ed8300dc724f217f52b0129da7d79a983dc72f225ed41ce19408a37a7757f0a8
+sagelite_maxima_runtime-10.9.post15-py3-none-macosx_26_0_arm64.whl
+  23,470,010 bytes
+  4fc54eeff0d301f74aaac937fee1be2c8626f3d939c9f10b93d5fe7922e0b981
+```
+
+All three were installed into separate fresh CPython 3.13.14 venvs with no
+inherited Sage or Homebrew path, then passed their companion smoke. Flatter
+ran help and lattice-reduction probes, Graphviz ran its executable and plugin
+probes, and Maxima evaluated its arithmetic probe through the bundled ECL
+image. An exhaustive audit of every Mach-O file in all three wheels found no
+non-system absolute load path. The repair work covers recursive Darwin dylib
+discovery, Homebrew alias handling, plugin install IDs, loader-relative
+Maxima/ECL/GMP/GC references, and the `ecl_min` helper. Focused repository
+validation passed 24 tests.
+
+This removes all three base-companion compatibility gaps recorded for
+`post39`. It does not complete the cell: 17 distinct `all-needed-extras`
+companion distributions still lack compatible macOS wheels. Also, the retained
+portable primary was built from `c6c8d1b6665`, so final coherent-revision
+validation must rebuild the primary from the selected then-current commit
+before strict installation. No clean-install, `pip check`, selftest, short,
+full, or publication claim is made. The public manifest remains unchanged at
+177 wheels and fourteen primary wheels.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-base-companions-20260715-123539-84b84caad68/
+```
+
+The matching `m1` directory retains the build tree. Important evidence
+includes `wheelhouse/SHA256SUMS`, `validation/wheel-inventory.txt`, the three
+`validation/smoke-*.txt` files, the empty strict-audit result,
+`run-metadata.txt`, `command.log`, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable Primary Wheel and Companion-Closure Blocker
 
 Exact pushed source `c6c8d1b666516434e24793bee92ff57430575442`

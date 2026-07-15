@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post39`, local; `post9`, public) | smoke only; exact pushed source `c6c8d1b6665` produced a portable local `post39` primary whose strict repair audited 1,178 dependencies across 638 Mach-O files with no disallowed load paths. Installation is blocked before strict preflight because the public index lacks compatible releases for 3 base companions and 18 `all-needed-extras` companions, or 20 distinct distributions | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post39`, local; `post9`, public) | smoke only; exact pushed source `c6c8d1b6665` produced a portable local `post39` primary whose strict repair audited 1,178 dependencies across 638 Mach-O files with no disallowed load paths. Exact pushed source `cc8d999d436` produced the 3 previously missing base companion wheels; each passed an exhaustive Mach-O audit and fresh isolated runtime smoke. Strict installation remains blocked by 17 distinct missing `all-needed-extras` companion distributions, and final coherent-revision validation must rebuild the primary from the selected current commit | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,11 +218,12 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Build the 20 missing macOS-compatible base and `all-needed-extras`
-   companion distributions identified in
-   `agents/sagelite-macos-arm64-cp313-validation.md`, assemble them with the
-   repaired local `post39` primary, then run strict clean-install, short, and
-   full validation for macOS arm64 CPython 3.13.
+1. Build the 17 remaining macOS-compatible `all-needed-extras` companion
+   distributions identified in
+   `agents/sagelite-macos-arm64-cp313-validation.md`, rebuild the primary from
+   the selected coherent source revision, assemble the complete wheelhouse,
+   then run strict clean-install, short, and full validation for macOS arm64
+   CPython 3.13.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
