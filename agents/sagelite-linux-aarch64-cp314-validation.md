@@ -347,6 +347,46 @@ manylinux aarch64 image dated 2026-03-20 and a stable CPython 3.14 build; the
 new in-container release-level guard prevents a future stale prerelease image
 from silently producing another advertised CPython 3.14 wheel.
 
+## Stable-interpreter rebuild
+
+Cleanup removed only the failed short gate's disposable installed venv, which
+used 22,176,149,504 bytes. All validation summaries, logs, reductions,
+manifests, inventories, and exit artifacts remain. This restored
+106,108,026,880 bytes free. Pulling cibuildwheel 3.4.1's pinned
+`quay.io/pypa/manylinux_2_28_aarch64:2026.03.20-1` image left
+103,191,810,048 bytes free, still above the 100 GB heavy-build threshold.
+Inside that exact image, `uname -m` reports `aarch64` and
+`/opt/python/cp314-cp314/bin/python3` reports CPython 3.14.3 with release level
+`final`.
+
+The new authoritative run root is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-044758-49015d0a2b45
+```
+
+Its exact source is pushed commit
+`49015d0a2b4590aeb6fcf1675b8273e5f4380783`, version `10.9.post34`. The
+shallow source bundle has SHA256
+`6947748dd8b950e050d94cb0b1a90647ac99aca8584f7a8caff5258f7ce1be31`
+on the controller, outer Mac, and Linux guest. The detached guest checkout
+reports the exact SHA, version, and a clean status.
+
+The durable services are:
+
+```text
+sagelite-post34-cp314-r9-build.service
+sagelite-post34-cp314-r9-validate.service
+```
+
+At `2026-07-15T04:48:35Z`, both were active. The build had verified and
+checked out the exact bundle and was bootstrapping the source. The watcher is
+waiting for the build exit artifact; on success it retains the repaired
+CPython 3.14 `cysignals` and `pycosat` wheels, assembles a fresh strict closure,
+runs the explicit `--optional sage --short 600` gate, and only then starts a
+fresh full validation. This is forward-progress evidence only; no `post34`
+wheel, install, smoke, short-gate, or full result is claimed yet.
+
 ## Public preview state
 
 The directly fetched public `dev/manifest.json` remained generated at
