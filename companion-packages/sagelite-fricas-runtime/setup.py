@@ -249,7 +249,19 @@ def _change_macos_load_paths(path: Path, changes: list[tuple[str, str]]) -> bool
     linkedit_end = _darwin_linkedit_end(path)
     original = path.read_bytes()
     appended = original[linkedit_end:]
+    core_start = None
     if appended:
+        offset_size = 8
+        lispobj_size = 8
+        core_start = int.from_bytes(
+            original[-(offset_size + lispobj_size) : -lispobj_size],
+            byteorder=sys.byteorder,
+            signed=True,
+        )
+        if not linkedit_end <= core_start < len(original):
+            raise RuntimeError(
+                f"invalid embedded SBCL core offset in {path}: {core_start}"
+            )
         path.write_bytes(original[:linkedit_end])
     try:
         for old, new in changes:
@@ -274,6 +286,19 @@ def _change_macos_load_paths(path: Path, changes: list[tuple[str, str]]) -> bool
         path.write_bytes(original)
         raise
     if appended:
+        assert core_start is not None
+        growth = len(repaired) - linkedit_end
+        padding = core_start - linkedit_end
+        if growth > padding:
+            path.write_bytes(original)
+            raise RuntimeError(
+                f"repaired Mach-O growth exceeds SBCL core padding in {path}: "
+                f"{growth} > {padding}"
+            )
+        if growth >= 0:
+            appended = appended[growth:]
+        else:
+            appended = b"\0" * -growth + appended
         path.write_bytes(repaired + appended)
     return signed
 
