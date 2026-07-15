@@ -1,5 +1,40 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Giac System-BLAS Build Ordering
+
+Exact pushed source `24b5e7aec6db357933703de8a425f10ab4fb0e79`
+fixes the first failure in the remaining-native-companion batch. Giac's
+package metadata did not declare either the selected BLAS implementation or
+the conditional system pkg-config facade targets, even though Giac configure
+unconditionally requires `lapack.pc`. On this Homebrew system, explicit
+`make giac` therefore bypassed the facade that maps the accepted system
+OpenBLAS installation to BLAS, CBLAS, and LAPACK pkg-config names.
+
+The fix declares both `$(BLAS)` and `$(PCFILES)`. In a fresh exact-source run,
+the generated dependency graph retained both abstractions, created
+`prefix/lib/pkgconfig/lapack.pc` as a symlink to Homebrew's `openblas.pc`, and
+built and installed Giac 1.9.0.15p0 successfully. The preceding failed run at
+exact pushed source `15a6f69795d9169cc02e95b6b768a8ad16e87609`
+is preserved and shows the original `Package 'lapack' not found` configure
+failure. The public manifest was rechecked with a pip user agent and remains
+unchanged at 177 wheels and fourteen Sagelite primary wheels.
+
+This resolves the native Giac build blocker only. No Giac companion wheel,
+Mach-O repair, isolated smoke, strict Sagelite installation, short run, full
+run, or publication result is claimed yet. The exact-source native-input run
+continues durably under:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-remaining-native-20260715-170825-24b5e7aec6d/
+```
+
+Important completed evidence includes `run-metadata.txt`,
+`validation/source-status.txt`,
+`validation/giac-generated-dependencies.txt`, `validation/lapack-pc.txt`,
+`validation/lapack-pc-target.txt`, `validation/giac-built-at.txt`, and
+`command.log`. The ten-distribution macOS companion closure count is unchanged
+until repaired wheels pass their audits and isolated smokes.
+
 ## 2026-07-15 Portable Command Companion Batch
 
 Exact pushed source `2df580c98da3f01a41ad4232542c91673cbc33d2`
