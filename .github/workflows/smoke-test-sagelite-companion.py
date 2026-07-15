@@ -593,6 +593,28 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-glucose-runtime":
     assert "usage" in (result.stdout + result.stderr).lower()
     raise SystemExit(0)
 
+if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-gap3-runtime":
+    runtime = importlib.import_module("sagelite_gap3.runtime")
+    gap3 = runtime.gap3_command()
+    gap3_root = runtime.gap3_root()
+    print("gap3=", gap3)
+    print("gap3_root=", gap3_root)
+    assert os.path.isfile(gap3)
+    assert os.path.isfile(os.path.join(gap3_root, "lib", "init.g"))
+    import shutil
+    import subprocess
+    assert shutil.which("gap3")
+    result = subprocess.run(
+        ["gap3"],
+        input="2+3;\nquit;\n",
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "gap> 5" in result.stdout
+    raise SystemExit(0)
+
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-graphviz-runtime":
     runtime = importlib.import_module("sagelite_graphviz.runtime")
     dot = runtime.executable_path("dot")
@@ -705,6 +727,28 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-kissat-runtime":
         capture_output=True,
     )
     assert "usage" in (result.stdout + result.stderr).lower()
+    raise SystemExit(0)
+
+if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-lie-runtime":
+    runtime = importlib.import_module("sagelite_lie.runtime")
+    lie = runtime.executable_path()
+    info_dir = runtime.info_dir()
+    print("lie=", lie)
+    print("info_dir=", info_dir)
+    assert lie.exists()
+    assert (info_dir / "INFO.0").exists()
+    import shutil
+    import subprocess
+    assert shutil.which("lie")
+    result = subprocess.run(
+        ["lie"],
+        input="19+68\nquit\n",
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "87"
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-latte-runtime":

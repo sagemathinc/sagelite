@@ -3703,6 +3703,19 @@ def test_glucose_smoke_uses_supported_help_flag():
     assert '["glucose", "-help"]' not in smoke_text
 
 
+def test_command_companion_smoke_covers_lie_and_gap3_calculations():
+    smoke_text = (
+        ROOT / ".github" / "workflows" / "smoke-test-sagelite-companion.py"
+    ).read_text()
+
+    assert '== "sagelite-lie-runtime"' in smoke_text
+    assert 'input="19+68\\nquit\\n"' in smoke_text
+    assert 'result.stdout.strip() == "87"' in smoke_text
+    assert '== "sagelite-gap3-runtime"' in smoke_text
+    assert 'input="2+3;\\nquit;\\n"' in smoke_text
+    assert '"gap> 5" in result.stdout' in smoke_text
+
+
 def test_lrslib_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-lrslib-runtime")
 
