@@ -153,6 +153,7 @@ def _fix_macos_install_names(
     for executable in executables:
         _add_rpath(executable, "@loader_path/../lib")
     for plugin in plugins:
+        _install_name_tool("-id", f"@rpath/{plugin.name}", os.fspath(plugin))
         _add_rpath(plugin, "@loader_path/..")
 
     machos = [*executables, *libraries.values(), *plugins]

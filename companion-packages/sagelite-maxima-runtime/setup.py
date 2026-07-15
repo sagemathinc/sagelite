@@ -563,11 +563,8 @@ def _patch_ecl_consumer(path: Path, rpath: str) -> None:
     if sys.platform == "darwin":
         path.chmod(path.stat().st_mode | 0o200)
         darwin_rpath = rpath.replace("$ORIGIN", "@loader_path")
-        ecl_needed = [
-            library
-            for library in _darwin_linked_libraries(path)
-            if "libecl" in library
-        ]
+        linked_libraries = _darwin_linked_libraries(path)
+        ecl_needed = [library for library in linked_libraries if "libecl" in library]
         if ecl_needed and not ecl_soname and not allow_system_ecl:
             raise RuntimeError(
                 f"{path} depends on {', '.join(ecl_needed)} but "
@@ -590,6 +587,20 @@ def _patch_ecl_consumer(path: Path, rpath: str) -> None:
                     ],
                     check=True,
                 )
+        for original in linked_libraries:
+            basename = Path(original).name
+            if not basename.startswith(("libgmp", "libgc", "libffi")):
+                continue
+            subprocess.run(
+                [
+                    "install_name_tool",
+                    "-change",
+                    original,
+                    f"{darwin_rpath}/{basename}",
+                    os.fspath(path),
+                ],
+                check=True,
+            )
         _codesign_darwin(path)
         return
 

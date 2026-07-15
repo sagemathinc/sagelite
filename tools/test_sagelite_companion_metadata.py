@@ -3411,6 +3411,7 @@ def test_graphviz_runtime_preloads_libraries_for_pygraphviz():
     assert "existing_source.resolve() != library.resolve()" in setup_py
     assert '"@loader_path/../lib"' in setup_py
     assert '"@loader_path/.."' in setup_py
+    assert '_install_name_tool("-id", f"@rpath/{plugin.name}"' in setup_py
     assert "import sagelite_graphviz._autoload" in setup_py
     assert 'find_spec("pygraphviz")' in autoload_py
     assert "ctypes.CDLL" in autoload_py
@@ -3743,6 +3744,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
     assert "_darwin_linked_libraries(executable)" in setup_py
     assert 'not path.startswith(("/System/Library/", "/usr/lib/"))' in setup_py
     assert 'ecl_reference = f"{darwin_rpath}/{ecl_soname}"' in setup_py
+    assert 'basename.startswith(("libgmp", "libgc", "libffi"))' in setup_py
 
     assert pyproject["project"]["version"] == "10.9.post15"
     assert pyproject["project"]["dependencies"] == [
