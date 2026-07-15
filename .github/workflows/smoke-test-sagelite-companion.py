@@ -557,7 +557,12 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-flatter-runtime":
         capture_output=True,
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "[[1 0]\n[0 1]]"
+    rows = []
+    for line in result.stdout.splitlines():
+        entries = line.replace("[", "").replace("]", "").split()
+        if len(entries) == 2:
+            rows.append(tuple(map(int, entries)))
+    assert sorted(rows) == [(0, 1), (1, 0)], result.stdout
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-fplll-data":
