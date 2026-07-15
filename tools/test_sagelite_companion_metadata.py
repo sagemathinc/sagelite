@@ -806,7 +806,13 @@ def _maxima_runtime_setup_helpers() -> dict:
     source = setup_py.read_text()
     start = source.index("def _dynamic_symbols")
     end = source.index("\ndef _copy_maxima_info_indexes")
-    namespace = {"os": os, "Path": Path, "REPO_ROOT": ROOT, "subprocess": None}
+    namespace = {
+        "os": os,
+        "sys": sys,
+        "Path": Path,
+        "REPO_ROOT": ROOT,
+        "subprocess": None,
+    }
     exec(source[start:end], namespace)
     return namespace
 
@@ -3732,6 +3738,9 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
     setup_py = (
         ROOT / "companion-packages" / "sagelite-maxima-runtime" / "setup.py"
     ).read_text()
+
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert "_darwin_linked_libraries(executable)" in setup_py
 
     assert pyproject["project"]["version"] == "10.9.post15"
     assert pyproject["project"]["dependencies"] == [

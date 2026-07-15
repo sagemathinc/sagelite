@@ -266,6 +266,17 @@ def _ensure_runtime_libraries(libraries: list[Path], maxima_prefix: Path) -> lis
 
 
 def _runtime_libraries(executable: Path, maxima_prefix: Path) -> list[Path]:
+    if sys.platform == "darwin":
+        prefixes = REQUIRED_RUNTIME_LIBRARY_PREFIXES + OPTIONAL_RUNTIME_LIBRARY_PREFIXES
+        libraries = [
+            Path(path)
+            for path in _darwin_linked_libraries(executable)
+            if path.startswith("/") and Path(path).name.startswith(prefixes)
+        ]
+        libraries = _ensure_runtime_libraries(libraries, maxima_prefix)
+        by_name = {path.name: path for path in libraries}
+        return sorted(by_name.values())
+
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
         check=True,
