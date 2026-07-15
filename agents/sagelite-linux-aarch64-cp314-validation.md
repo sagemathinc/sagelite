@@ -4,29 +4,22 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The native Linux `aarch64` CPython 3.14 `post33` build contract produced a
-repaired primary wheel from exact pushed source `5ab41cd4b684`. Binary closure
-assembly then exposed the two missing CPython 3.14 dependency wheels,
-`cysignals` and `pycosat`; both were built and repaired natively. The resulting
-167-wheel strict closure resolved successfully. Its fresh wheel-only install,
-`pip check`, all 102 selftest probes, and packaged pytest passed, but the short
-doctest gate failed before executing examples because the primary wheel had
-been compiled against CPython 3.14.0b3 private interpreter headers and was run
-on CPython 3.14.6. No short-gate or full-suite pass is claimed.
+Native Linux `aarch64` CPython 3.14 is now `full` for Sagelite
+`10.9.post38`. Exact pushed source
+`a2bdbbb674e80db5fa5bde37fe5fdf3f31983390` produced a repaired primary and
+three rebuilt companion wheels. Its 167-wheel strict closure passed preflight,
+a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all
+102 selftest probes, the explicit `--optional=sage --short 600` gate, and a
+separate fresh explicit `--optional=sage --full` validation. Both doctest runs
+saw all 3,953 installed modules and reduced to zero failed modules. Packaged
+pytest passed 215 tests with 2 skips.
 
-Pushed fix `369ec99ad346f7d04458f6154c1d1304868995fd` upgrades the Linux
-wheel contract to cibuildwheel 3.4.1, removes the obsolete CPython prerelease
-opt-in, and rejects prerelease build interpreters inside the selected
-manylinux container. The stable-interpreter `post34` retry exposed
-cibuildwheel 3.4.1's stricter single-output repair contract, and `post35`
-exposed a primary lookup that still followed the companion destination.
-Exact pushed `post36` source `c483e52c63c5` produced the repaired primary and
-all three rebuilt companions, but its outer collector looked in the source
-checkout while cibuildwheel's `/host` bind mount had placed the companions at
-the guest filesystem root. Those exact artifacts have been recovered into a
-167-wheel strict closure, and the corrected recovery validation is active.
-No short-gate or full-suite pass is claimed yet. Exact pushed `post37` source
-`09cc51c9c452` corrects the staging-path contract for the next normal build.
+The accepted primary was compiled against final CPython 3.14.3 and validated
+under CPython 3.14.6. It includes the `post38` fix that avoids the unstable
+private `PyInterpreterState` atexit offset on Python 3.14 and later. Earlier
+`post33` and `post36` attempts established the dependency closure and exposed
+the prerelease and patch-level ABI failures documented below; neither supplies
+the final acceptance evidence.
 
 The initial `post33` authoritative run root was:
 
@@ -640,3 +633,102 @@ the explicit `--optional sage --short 600` validation, and start a fresh
 explicit `--optional sage --full` validation only if the short gate passes.
 This is forward-progress evidence only; no `post38` wheel, install, smoke,
 short-gate, or full result is claimed yet.
+
+## Post38 full installed-suite pass
+
+The durable `post38` build finished at `2026-07-15T08:16:05Z` with exit code
+zero. The exact detached source checkout remained clean at pushed commit
+`a2bdbbb674e80db5fa5bde37fe5fdf3f31983390`. The repaired primary is:
+
+```text
+sagelite-10.9.post38-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237286104 bytes
+sha256: 9b00da0505c50815b6b7f9923c3f75653fcf15bf260961d6cb41493b7b8de207
+```
+
+The same contract rebuilt these three companion wheels and collected them
+through the corrected `post37` staging path:
+
+```text
+pplpy-0.9.0.post1-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+sha256: 1dadcd832f3d39abb678bbec2469f52bb960c5e72fe417a790bc17b9da227cd9
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+sha256: dc8b5dba2668e26663803df4f0111d13a47e697dd516a73cc281f55ae84b408d
+
+sagelite_qepcad_runtime-10.9.post3-py3-none-manylinux_2_28_aarch64.whl
+sha256: b66ba9ec8858e6a7d17539bd86017118f7c0de5f2d92dcb8c969e82c26221c34
+```
+
+The watcher assembled and hash-inventoried a 167-wheel closure containing one
+primary, 68 companions, and 98 third-party wheels. It totals 16,620,407,090
+bytes and has wheelhouse digest
+`06e3c51cd43c2cbca0ce2250456f1b080abbbb11d6e9cacb98b15a2bfed4cd3f`.
+The strict profile found all 68 requested Sagelite dependencies and accepted
+every Python, ABI, architecture, platform, repair, and duplicate-wheel check.
+
+The explicit short gate used:
+
+```text
+--package sagelite[all-needed-extras]==10.9.post38
+--strict-repaired-wheelhouse-preflight
+--optional sage
+--short 600
+--nthreads 8
+```
+
+Its fresh CPython 3.14.6 wheel-only installation and `python -m pip check`
+passed. All 102 `sagelite-selftest` probes passed. The installed doctest sweep
+ran all 3,953 modules and reported `All tests passed!`; reduced analysis found
+zero failed modules. The gate finished at `2026-07-15T08:38:34Z` with exit
+code zero.
+
+The watcher then deleted only the short validation venv and started a separate
+fresh full validation with the identical wheel contract and these explicit
+options:
+
+```text
+--package sagelite[all-needed-extras]==10.9.post38
+--strict-repaired-wheelhouse-preflight
+--optional sage
+--full
+--nthreads 8
+```
+
+That independent wheel-only installation, `pip check`, runtime collection,
+and all 102 selftest probes passed. The complete installed standard sweep ran
+all 3,953 modules, reported `All tests passed!`, and reduced to zero failed
+modules. Packaged pytest passed 215 tests with 2 skips and 15 warnings. The
+full validator started at `2026-07-15T08:39:02Z`, finished at
+`2026-07-15T09:06:07Z`, and recorded exit code zero; its durable wrapper also
+exited zero.
+
+Both doctest processes spent several minutes in ECL/Maxima finalization after
+printing their clean summaries. A read-only performance sample of the short
+run showed active ECL and Boehm GC work rather than an atexit discovery loop;
+both processes completed naturally and the reducers exited zero.
+
+The authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation/short-post38/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation/short-post38/doctest-installed-linux-aarch64-cp314-post38-short-20260715-082011.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation/full-post38/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation/full-post38/doctest-installed-linux-aarch64-cp314-post38-full-20260715-084145.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation-full-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation-full-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e/validation-follow-exit-code
+```
+
+Cleanup removed only the completed full validation venv. All wheelhouses,
+source, logs, summaries, reductions, manifests, inventories, exit artifacts,
+and the small performance sample remain. The Linux guest then had
+102,352,547,840 bytes free, above the 100,000,000,000-byte heavy-build
+threshold used by these native runs.
+
+The public `dev/manifest.json` remained generated at
+`2026-07-09T17:17:42.743310+00:00`, with 177 wheels and fourteen Sagelite
+primaries from `post8` and `post9`. There is no public Linux aarch64 CPython
+3.14 primary, and no publication was attempted.
