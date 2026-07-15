@@ -199,7 +199,7 @@ RUNTIME_PACKAGE_DATA = {
         "sagelite_jmol_runtime": ["data/jmol/**/*"],
     },
     "sagelite-kenzo-runtime": {
-        "sagelite_kenzo": ["data/kenzo.fas"],
+        "sagelite_kenzo": ["data/kenzo.fas", "data/lib/*"],
     },
     "sagelite-kissat-runtime": {
         "sagelite_kissat": ["data/bin/*"],
@@ -4794,6 +4794,22 @@ def test_linux_repair_builds_requested_base_dependency_companion_wheels():
     assert "SAGELITE_FRICAS_PREFIX=$prefix" in repair
     assert "SAGELITE_JMOL_DIR=$jmol_dir" in repair
     assert "SAGELITE_KENZO_FAS=$kenzo_fas" in repair
+
+
+def test_kenzo_runtime_bundles_macos_dylib_closure():
+    pyproject = _pyproject("sagelite-kenzo-runtime")
+    setup_py = _companion_file("sagelite-kenzo-runtime", "setup.py").read_text()
+
+    assert "data/lib/*" in pyproject["tool"]["setuptools"]["package-data"][
+        "sagelite_kenzo"
+    ]
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert 'dependency.startswith(("@loader_path/", "@rpath/"))' in setup_py
+    assert "_darwin_runtime_libraries(source)" in setup_py
+    assert 'f"@rpath/{source.name}" in linked' in setup_py
+    assert 'f"@loader_path/{relative_libdir}/{bundled.name}"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_py
 
 
 def test_nauty_runtime_is_exposed_by_sagelite_extras():

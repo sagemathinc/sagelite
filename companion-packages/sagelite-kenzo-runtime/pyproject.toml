@@ -36,4 +36,5 @@ where = ["src"]
 [tool.setuptools.package-data]
 sagelite_kenzo = [
   "data/kenzo.fas",
+  "data/lib/*",
 ]
