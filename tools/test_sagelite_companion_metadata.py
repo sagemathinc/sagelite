@@ -3741,6 +3741,7 @@ def test_maxima_runtime_wheel_declares_copied_runtime_data():
 
     assert 'if sys.platform == "darwin"' in setup_py
     assert "_darwin_linked_libraries(executable)" in setup_py
+    assert 'not path.startswith(("/System/Library/", "/usr/lib/"))' in setup_py
 
     assert pyproject["project"]["version"] == "10.9.post15"
     assert pyproject["project"]["dependencies"] == [

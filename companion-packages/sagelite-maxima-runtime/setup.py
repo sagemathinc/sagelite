@@ -271,7 +271,9 @@ def _runtime_libraries(executable: Path, maxima_prefix: Path) -> list[Path]:
         libraries = [
             Path(path)
             for path in _darwin_linked_libraries(executable)
-            if path.startswith("/") and Path(path).name.startswith(prefixes)
+            if path.startswith("/")
+            and not path.startswith(("/System/Library/", "/usr/lib/"))
+            and Path(path).name.startswith(prefixes)
         ]
         libraries = _ensure_runtime_libraries(libraries, maxima_prefix)
         by_name = {path.name: path for path in libraries}
