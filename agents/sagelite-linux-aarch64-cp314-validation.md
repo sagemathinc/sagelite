@@ -4,19 +4,19 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The first native Linux `aarch64` CPython 3.14 `post33` build failed during
-native prerequisite staging. No primary wheel, wheel-only install, smoke
-result, short-gate result, or full-suite result is claimed yet.
+The corrected native Linux `aarch64` CPython 3.14 `post33` build is active.
+No primary wheel, wheel-only install, smoke result, short-gate result, or
+full-suite result is claimed yet.
 
 The authoritative run root is:
 
 ```text
-/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-013434-914817f8ad8
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-020454-3cb65496e5a
 ```
 
 It is running in the persistent Lima guest `sagelite-linux-arm64` on `m1`.
 The exact source input is pushed commit
-`914817f8ad8af5056af0d2f73fc3dbb1f36af596`, with Sagelite version
+`3cb65496e5a1175116bb44c19c5e81cbd815db94`, with Sagelite version
 `10.9.post33`. The detached guest checkout reports that exact SHA and a clean
 status.
 
@@ -42,9 +42,15 @@ validation summaries, reductions, logs, and exit artifacts remain. The guest
 had 108,484,116,480 bytes free after cleanup, above the exact 100 GiB
 pre-build threshold.
 
+After the first CPython 3.14 build failed, the guest had only
+106,742,906,880 bytes free. Cleanup removed only that failed run's disposable
+source checkout and host venv while retaining its command log, exit artifacts,
+metadata, and orchestration scripts. This restored 108,313,989,120 bytes,
+again above the exact 100 GiB heavy-build threshold.
+
 ## Durable build and validation services
 
-Exactly two user-systemd services were started:
+The first run used these two user-systemd services:
 
 ```text
 sagelite-post33-cp314-build.service
@@ -82,12 +88,31 @@ without starting validation. The preserved build log shows that the cached
 CPython 3.14 Sage site-packages directory, so that stale CPython 3.13 build
 could not find `gmpy2.pxd` and failed. The failed run produced no wheels.
 
+The failed run root is preserved at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-013434-914817f8ad8
+```
+
 This revealed that the existing cache guard rejected a `config.status` only
 when the Sage version changed. It did not reject a same-version configuration
 from another Python ABI. The follow-up source change also compares the cached
 `PYTHON_MINOR` with the selected `SAGE_PYTHON` before reusing the
-configuration. A new exact-SHA run is required; this failed run must not be
-resumed in place.
+configuration.
+
+Pushed commit `3cb65496e5a1175116bb44c19c5e81cbd815db94` contains that guard and
+its focused regression assertion. The replacement build and gated watcher are
+running as:
+
+```text
+sagelite-post33-cp314-r2-build.service
+sagelite-post33-cp314-r2-validate.service
+```
+
+At `2026-07-15T02:05:58Z`, both services were active, no build exit artifact
+existed, and the detached guest checkout reported the exact pushed SHA with a
+clean status. The build was bootstrapping the source before entering CIBW;
+this is forward-progress evidence only.
 
 ## Public preview state
 
