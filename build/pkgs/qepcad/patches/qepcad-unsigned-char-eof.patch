@@ -2,8 +2,9 @@ Description: Preserve and handle EOF in QEPCAD input streams.
  On platforms where plain char is unsigned, storing istream::get() in a char
  turns EOF into 255.  Preserve the integer sentinel and compare against it
  explicitly so the single-line stream parser terminates at end of input.
- Also terminate cleanly when standard input reaches EOF at the initial prompt;
- otherwise SACLIB's line discard routine waits forever for a newline.
+ Also terminate when standard input reaches EOF at the initial prompt;
+ otherwise SACLIB's line discard routine waits forever for a newline.  Exit
+ directly because the legacy teardown is not safe from this partial-input path.
 Origin: upstream, https://github.com/chriswestbrown/qepcad
 Forwarded: no
 Last-Update: 2026-07-14
@@ -56,13 +57,11 @@ Last-Update: 2026-07-14
  };
 --- a/source/main/INPUTRD.c
 +++ b/source/main/INPUTRD.c
-@@ -22,4 +22,11 @@
+@@ -22,4 +22,9 @@
           C = CREADB();
 +         if (C == EOF)
 +           {
 +           SWRITE("\n");
-+           ENDQEPCAD();
-+           ENDSACLIB(SAC_FREEMEM);
 +           exit(0);
 +           }
           if (C != '[')
