@@ -3129,6 +3129,16 @@ def test_flatter_runtime_bundles_openblas_dependency():
     assert '"libquadmath.so",' in setup_py
 
 
+def test_planarity_runtime_bundles_macos_dylib():
+    setup_py = _companion_file("sagelite-planarity-runtime", "setup.py").read_text()
+
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(executable)]' in setup_py
+    assert '"@loader_path/../lib/{bundled.name}"' in setup_py
+    assert '"@loader_path/{bundled.name}"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(path)]' in setup_py
+
+
 def test_giac_runtime_bundles_openblas_dependency():
     setup_py = _companion_file("sagelite-giac-runtime", "setup.py").read_text()
 

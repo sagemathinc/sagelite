@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from setuptools import setup
@@ -39,6 +40,21 @@ def _find_executable() -> Path:
 
 
 def _runtime_libraries(executable: Path) -> list[Path]:
+    if sys.platform == "darwin":
+        output = subprocess.run(
+            ["otool", "-L", os.fspath(executable)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        return [
+            Path(line.strip().split(" (", 1)[0])
+            for line in output.splitlines()[1:]
+            if Path(line.strip().split(" (", 1)[0]).name.startswith(
+                "libplanarity"
+            )
+        ]
+
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
         check=True,
@@ -57,6 +73,40 @@ def _runtime_libraries(executable: Path) -> list[Path]:
     return libraries
 
 
+def _repair_macos_install_names(
+    executable: Path, libraries: dict[Path, Path]
+) -> None:
+    if sys.platform != "darwin":
+        return
+
+    for source, bundled in libraries.items():
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-change",
+                os.fspath(source),
+                f"@loader_path/../lib/{bundled.name}",
+                os.fspath(executable),
+            ],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "install_name_tool",
+                "-id",
+                f"@loader_path/{bundled.name}",
+                os.fspath(bundled),
+            ],
+            check=True,
+        )
+    if shutil.which("codesign") is not None:
+        for path in [*libraries.values(), executable]:
+            subprocess.run(
+                ["codesign", "--force", "--sign", "-", os.fspath(path)],
+                check=True,
+            )
+
+
 class build_py(_build_py):
     def run(self):
         source = _find_executable()
@@ -67,19 +117,30 @@ class build_py(_build_py):
         target.mkdir(parents=True, exist_ok=True)
         lib_target.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy2(source, target / "planarity-real")
+        real = target / "planarity-real"
+        shutil.copy2(source, real)
+        real.chmod(real.stat().st_mode | 0o200)
         wrapper = target / "planarity"
         wrapper.write_text(
             "#!/bin/sh\n"
             'HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
             'LD_LIBRARY_PATH="$HERE/../lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
+            'DYLD_LIBRARY_PATH="$HERE/../lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"\n'
             "export LD_LIBRARY_PATH\n"
+            "export DYLD_LIBRARY_PATH\n"
             'exec "$HERE/planarity-real" "$@"\n'
         )
         wrapper.chmod(0o755)
 
-        for library in _runtime_libraries(source):
-            shutil.copy2(library, lib_target / library.name)
+        libraries = {
+            library: lib_target / library.name
+            for library in _runtime_libraries(source)
+        }
+        for library, destination in libraries.items():
+            shutil.copy2(library, destination)
+            destination.chmod(destination.stat().st_mode | 0o200)
+
+        _repair_macos_install_names(real, libraries)
 
         super().run()
 
