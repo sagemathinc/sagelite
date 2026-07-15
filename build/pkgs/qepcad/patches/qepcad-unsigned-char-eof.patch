@@ -59,7 +59,10 @@ Last-Update: 2026-07-14
  };
 --- a/source/io/CREAD.c
 +++ b/source/io/CREAD.c
-@@ -112,4 +112,6 @@
+@@ -109,9 +109,11 @@
+ Step3: /* End of file. */
+        if (C == EOF)
+        {
 -	 cerr << "\007\007\007";
 -	 int fd = open("/dev/tty",O_RDONLY);
 -	 PushInputContext(*(new readlineIstream(fd)));
@@ -69,6 +72,8 @@ Last-Update: 2026-07-14
 +           return EOF;
 +         PushInputContext(*(new readlineIstream(fd)));
           //C = (*currIn).get();
+          return CREAD();
+        }
 --- a/source/main/INPUTRD.c
 +++ b/source/main/INPUTRD.c
 @@ -22,4 +22,9 @@
