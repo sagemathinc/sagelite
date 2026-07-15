@@ -17,7 +17,7 @@ Last-Update: 2026-07-14
      if (opt == skipleadingws) 
        while(c != EOF && (isspace(c) || c == '\\' && isspace(in.peek()))) c = in.get();
      // States  : 0 = normal, 1 = in comment, 2 = just read a backslash
-@@ -39,8 +39,8 @@
+@@ -39,9 +39,9 @@
        if (state == 1) continue;
        if (state == 0 && c == '#') { state = 1; continue; }
        if (state == 0 && c == '\\') { state = 2; continue; }
@@ -27,9 +27,11 @@ Last-Update: 2026-07-14
 -    }while(c = in.get());
 +    }while((c = in.get()) != EOF);
      str(s);
+   }
+ };
 --- a/source/db/convenientstreams.h
 +++ b/source/db/convenientstreams.h
-@@ -28,7 +28,7 @@
+@@ -29,7 +29,7 @@
    slwcistream(istream& in, option opt = none)
    {
      string s = "";
@@ -38,7 +40,7 @@ Last-Update: 2026-07-14
      if (opt == skipleadingws) 
        while(c != EOF && (isspace(c) || (c == '\\' && isspace(in.peek())))) c = in.get();
      // States  : 0 = normal, 1 = in comment, 2 = just read a backslash
-@@ -41,8 +41,8 @@
+@@ -42,9 +42,9 @@
        if (state == 1) continue;
        if (state == 0 && c == '#') { state = 1; continue; }
        if (state == 0 && c == '\\') { state = 2; continue; }
@@ -48,3 +50,5 @@ Last-Update: 2026-07-14
 -    }while((c = in.get()));
 +    }while((c = in.get()) != EOF);
      str(s);
+   }
+ };
