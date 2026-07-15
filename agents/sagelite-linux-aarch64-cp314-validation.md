@@ -580,3 +580,63 @@ wrapper expands to `/host` plus its actual absolute staging directory. It
 advances the preview version to `10.9.post37`; the six focused repair-contract
 tests and both Linux shell syntax checks pass. The remote `develop` ref was
 verified at that exact SHA. No `post37` wheel or validation result is claimed.
+
+## Post36 stable-patch failure and post38 retry
+
+The corrected recovery service finished at `2026-07-15T07:24:10Z` with exit
+code 16. The strict profile accepted all 167 wheels in the
+16,620,400,068-byte closure. A fresh wheel-only installation of
+`sagelite[all-needed-extras]==10.9.post36`, `pip check`, and all 102 selftest
+probes passed. Packaged pytest also passed 215 tests with 2 skips. The explicit
+`--optional sage --short 600` gate then reported every one of its 3,953 modules
+as killed by a segmentation fault, so no short or full pass is claimed.
+
+The common failure remained `sage.cpython.atexit._get_exithandlers()`. A direct
+call in the installed validation environment exited 139. Although the primary
+now used final CPython 3.14.3 rather than the earlier beta, it still compiled
+the private `PyInterpreterState` layout into the extension. CPython 3.14.6
+changed an earlier interpreter-state member, shifting the later `atexit`
+member. Comparing the upstream 3.14.3 and 3.14.6 internal headers confirmed
+that patch-release layout change. Stable release level alone therefore cannot
+make this private offset safe across CPython 3.14 patch releases.
+
+Exact pushed commit `a2bdbbb674e80db5fa5bde37fe5fdf3f31983390`
+removes the private interpreter-state lookup on Python 3.14 and later. It
+registers a uniquely identifiable temporary callback, discovers the owning
+callback list through Python object references, copies the existing entries,
+and unregisters the temporary callback in a `finally` block. The existing
+private-array implementation remains confined to Python before 3.14. The
+preview version advances to `10.9.post38`.
+
+Focused native aarch64 proof compiled the generated extension against CPython
+3.14.3 in the pinned manylinux image and loaded it under CPython 3.14.6. The
+handler snapshot and `restore_atexit(clear=True)` round trip passed where the
+`post36` extension exited 139. Compiling and running the unchanged branch under
+CPython 3.13.14 also passed.
+
+The failed validation venv was the only large disposable artifact removed;
+all summaries, logs, reductions, manifests, inventories, wheelhouses, and exit
+artifacts remain. This restored 100,724,989,952 bytes free, just above the
+100,000,000,000-byte heavy-build threshold. The new exact-SHA bundle has
+SHA256:
+
+```text
+b33dfe92ae1b378976af772a839714c363803da59d7476ef139449c4e50dc7b1
+```
+
+That hash matched on the controller, outer Mac, and Linux guest. The new run
+root and durable services are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-074210-a2bdbbb674e
+sagelite-post38-cp314-r14-build.service
+sagelite-post38-cp314-r14-validate.service
+```
+
+At `2026-07-15T07:42:55Z`, both services were active, the detached guest
+checkout reported the exact pushed SHA with a clean status, and no build exit
+artifact existed. The gated watcher will assemble a fresh strict closure, run
+the explicit `--optional sage --short 600` validation, and start a fresh
+explicit `--optional sage --full` validation only if the short gate passes.
+This is forward-progress evidence only; no `post38` wheel, install, smoke,
+short-gate, or full result is claimed yet.
