@@ -3360,10 +3360,18 @@ def test_csdp_runtime_is_exposed_by_sagelite_extras():
 
 def test_csdp_runtime_declares_console_scripts():
     pyproject = _pyproject("sagelite-csdp-runtime")
+    setup_py = _companion_file("sagelite-csdp-runtime", "setup.py").read_text()
 
     assert pyproject["project"]["scripts"] == {
         "theta": "sagelite_csdp.runtime:theta",
     }
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert 'dependency.startswith(("@loader_path/", "@rpath/"))' in setup_py
+    assert "_darwin_runtime_libraries(executable)" in setup_py
+    assert 'f"@rpath/{source.name}" in linked' in setup_py
+    assert 'f"@loader_path/{relative_libdir}/{bundled.name}"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_py
 
 
 def test_glucose_runtime_is_exposed_by_sagelite_extras():
