@@ -1,5 +1,54 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable 4D Polytope Database Companion
+
+Exact pushed source `b70bf3d81af5422508b5fb255b3c6560eb44fadf`
+produced the platform-independent 4D reflexive-polytope database wheel:
+
+```text
+sagelite_database_polytopes_4d-10.9-py3-none-any.whl
+  9,100,370,523 bytes
+  e22d60ebd324d848871f0980a7e48226396b5ed5ebecab23f8e1b5482b6438f2
+```
+
+Its embedded name, version, and `py3-none-any` wheel tag match the filename.
+The inventory contains 17,981 members, including 17,975 non-directory files
+under `Hodge4d`. A fresh CPython 3.13.14 venv installed the wheel using only
+its local wheelhouse and passed `pip check`. A neutral-environment functional
+smoke imported `sagelite_database_polytopes_4d`, resolved all three packaged
+data paths, found a populated `Hodge4d` directory, and confirmed the
+`reflexive_polytopes` Sage data-path entry point.
+
+The recovered durable launcher had completed the wheel build and installation
+but initially stopped before recording an exit code: it passed
+`SAGELITE_COMPANION_IMPORT` instead of the smoke script's required
+`SAGELITE_COMPANION_IMPORT_NAME`, and its zsh exit trap assigned the read-only
+name `status`. The smoke was resumed against the unchanged installed wheel,
+and the run now has exit code `0`; the failed wrapper diagnostic remains in
+`command.log` and the recovery is recorded in `run-metadata.txt`.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+This artifact was not published. The remaining `all-needed-extras` companion
+closure is now four distributions: `sagelite-fricas-runtime`,
+`sagelite-imagemagick-runtime`, `sagelite-info-runtime`, and
+`sagelite-kenzo-runtime`. No strict Sagelite installation,
+`sagelite-selftest`, short run, full run, or publication result is claimed.
+Final cell validation must still build those four companions and rebuild the
+primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-polytopes4d-20260715-203227-b70bf3d81af/
+```
+
+The matching `m1` directory retains the exact source, native input, 8.5 GiB
+wheel, clean install, and complete build log. The controller copy retains the
+source archive and concise evidence, including `wheelhouse/SHA256SUMS`,
+`validation/wheel-inventory.txt`, the install, `pip-check`, and smoke outputs,
+`run-metadata.txt`, disk records, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable lrslib, msolve, and QEPCAD Companions
 
 Exact pushed source `300764eac33f8e21cbcf24fddb2edcf241272ea7`
