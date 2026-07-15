@@ -1,5 +1,72 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Primary Wheel and Companion-Closure Blocker
+
+Exact pushed source `c6c8d1b666516434e24793bee92ff57430575442`
+(`10.9.post39`) completed a fresh native build on `m1`. The controller-created
+source archive had SHA-256
+`49783ef08ceaa378c397a8d50001510fd52009f9818fe12e3b3df15edcd99656`.
+The controller and `m1` independently reproduced its materialized source tree
+`e51552e11c63ee82dad1caedb29550cc1cacc3aa`. An initial source guard compared
+that materialized archive tree with the unexported commit tree and stopped
+before building; the guard and preserved failure log were corrected to compare
+the independently reproduced archive tree before the same archive was used.
+
+The committed general macOS repair now succeeds. The resulting primary wheel
+is:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260715-114613-c6c8d1b6665/wheelhouse/sagelite-10.9.post39-cp313-cp313-macosx_26_0_arm64.whl
+```
+
+It is 98,560,684 bytes with SHA-256
+`92742b66f1155e8518d8b01103dcd76709fd0b819880f7166b30a66133cb5d8c`.
+Its metadata and wheel tag are `10.9.post39` and
+`cp313-cp313-macosx_26_0_arm64`. The wheel has 4,986 members, including 638
+Mach-O files and 51 general bundled dylibs. The final repair rewrote 23
+companion-owned PARI/GMP/MPFR/Singular dependencies in 16 Mach-O files and
+audited 1,178 load dependencies across all 638 Mach-O files. The audit found
+only system libraries, wheel-contained loader-relative libraries, and the
+exact allowed companion-relative library paths; it rejected absolute,
+unresolved `@rpath`, and escaping paths. Delocate's permissive scan still logs
+expected missing-companion diagnostics before that independent strict audit,
+because those companion libraries deliberately do not live in the primary
+wheel.
+
+The primary-wheel portability blocker is therefore fixed, but the cell cannot
+yet start its required strict clean installation. A CPython 3.13.14 native-tag
+probe of the public dev index found no compatible release satisfying 3 of 45
+base companion requirements:
+
+```text
+sagelite-flatter-runtime >=10.9.post1,<10.10
+sagelite-graphviz-runtime >=10.9.post4,<10.10
+sagelite-maxima-runtime >=10.9.post15,<10.10
+```
+
+The public index has older macOS wheels for each, respectively `10.9`,
+`10.9.post3`, and `10.9.post14`. A separate probe found 18 of the 33 Sagelite
+companions in `all-needed-extras` without a compatible public wheel. Most have
+only Linux wheels; `sagelite-database-polytopes-4d` has no public simple-index
+entry, and the Maxima gap overlaps the base set. There are 20 distinct missing
+base-or-extra companion distributions. The incomplete 3.7 GiB download probe
+was removed after its logs and compatibility inventories were preserved.
+
+No clean-install, `pip check`, selftest, short-doctest, full-doctest, or
+publication claim is made. The next macOS CPython 3.13 iteration should build
+the 20 missing compatible companion distributions from committed source,
+assemble the complete wheelhouse around this primary, and run the named strict
+short and full `--optional=sage` gates. Durable controller evidence is under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-20260715-114613-c6c8d1b6665/
+```
+
+The matching `m1` run retains the wheel and build evidence. Important files
+include `command.log`, `exit-code`, `wheelhouse/SHA256SUMS`,
+`validation/base-companion-compatibility-probe.txt`, and
+`validation/all-needed-companion-compatibility-probe.txt`.
+
 ## 2026-07-15 Native Build and Portability Blocker
 
 The next scheduled iteration built exact pushed source
