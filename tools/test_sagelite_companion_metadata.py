@@ -1653,6 +1653,17 @@ def test_info_runtime_declares_console_script():
     }
 
 
+def test_info_runtime_repairs_complete_macos_dylib_closure():
+    setup_py = _companion_file("sagelite-info-runtime", "setup.py").read_text()
+
+    assert 'if sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert "pending.extend(_darwin_linked_libraries(library))" in setup_py
+    assert 'relative_libdir = "../lib" if binary == executable else "."' in setup_py
+    assert 'f"@loader_path/{relative_libdir}/{bundled.name}"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_py
+
+
 def test_ecl_runtime_wheel_is_exposed_by_sagelite_runtime_extras():
     with (ROOT / "pyproject.toml").open("rb") as handle:
         pyproject = tomllib.load(handle)
