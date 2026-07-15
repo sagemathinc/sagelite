@@ -4,9 +4,10 @@ Last updated: 2026-07-15
 
 ## Current status
 
-The third native Linux `aarch64` CPython 3.14 `post33` build contract is active
-after a source-transfer-only relaunch. No primary wheel, wheel-only install,
-smoke result, short-gate result, or full-suite result is claimed yet.
+The fourth native Linux `aarch64` CPython 3.14 `post33` build contract is being
+prepared after the source-transfer-only relaunch exposed stale pure-Python
+build-tool markers. No primary wheel, wheel-only install, smoke result,
+short-gate result, or full-suite result is claimed yet.
 
 The authoritative run root is:
 
@@ -198,6 +199,20 @@ At `2026-07-15T03:07:53Z`, both services were active, no exit artifact
 existed, the checkout reported the exact pushed SHA with a clean status, and
 CIBW had started the native `manylinux_2_28_aarch64` container for
 `cp314-manylinux_aarch64`. This is forward-progress evidence only.
+
+At `2026-07-15T03:14:50Z`, the build exited 1 and its watcher again stopped
+without starting validation. The corrected prefix interpreter ran CPython
+3.14, and the earlier mixed-ABI `pplpy`/`gmpy2.pxd` failure did not recur.
+The retained prefix still had `jinja2` and `markupsafe` install markers from
+CPython 3.13, however, while its new CPython 3.14 site-packages did not contain
+those modules. The Sage library metadata build therefore stopped immediately
+when its interpreter generator imported `jinja2`. The failed run produced no
+wheels.
+
+The follow-up source change adds `jinja2` and `markupsafe` to the existing
+interpreter-specific module probes. A cross-ABI prefix reuse will now remove
+their stale markers so the normal `sage_setup` dependency chain reinstalls
+both packages for the selected interpreter. A new exact-SHA run is required.
 
 ## Public preview state
 

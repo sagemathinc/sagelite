@@ -266,6 +266,8 @@ cysignals:cysignals
 cython:Cython
 gmpy2:gmpy2
 jupyter_core:jupyter_core
+jinja2:jinja2
+markupsafe:markupsafe
 memory_allocator:memory_allocator
 numpy:numpy
 pkgconfig:pkgconfig

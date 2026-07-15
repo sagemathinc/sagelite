@@ -4567,6 +4567,8 @@ def test_linux_before_all_resets_cross_python_cached_venv_interpreter():
     assert "-name 'python3.*'" in before_all
     assert 'rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*' in before_all
     assert '"${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"' in before_all
+    assert "jinja2:jinja2" in before_all
+    assert "markupsafe:markupsafe" in before_all
 
 
 def test_linux_repair_builds_all_needed_extra_companion_wheels():
