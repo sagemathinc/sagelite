@@ -16,9 +16,12 @@ on CPython 3.14.6. No short-gate or full-suite pass is claimed.
 
 Pushed fix `369ec99ad346f7d04458f6154c1d1304868995fd` upgrades the Linux
 wheel contract to cibuildwheel 3.4.1, removes the obsolete CPython prerelease
-opt-in, rejects prerelease build interpreters inside the selected manylinux
-container, and advances the primary version to `10.9.post34`. A new exact-SHA
-primary rebuild is required.
+opt-in, and rejects prerelease build interpreters inside the selected
+manylinux container. The stable-interpreter `post34` retry reached a repaired
+primary but exposed cibuildwheel 3.4.1's stricter single-output repair
+contract. Exact pushed `post35` source `a32742fac4a` separates the primary and
+companion repair destinations; its native rebuild and gated watcher are
+active. No `post34` or `post35` wheel or validation result is claimed yet.
 
 The authoritative run root is:
 
@@ -386,6 +389,62 @@ CPython 3.14 `cysignals` and `pycosat` wheels, assembles a fresh strict closure,
 runs the explicit `--optional sage --short 600` gate, and only then starts a
 fresh full validation. This is forward-progress evidence only; no `post34`
 wheel, install, smoke, short-gate, or full result is claimed yet.
+
+At `2026-07-15T05:20:57Z`, the `post34` build exited 1 after 32 minutes. It
+successfully completed all 4,903 primary installation entries against stable
+CPython 3.14.3, injected 3,375 native headers, and had auditwheel assign the
+expected `manylinux_2_27_aarch64.manylinux_2_28_aarch64` tags. The repair
+helper also produced `pplpy`, Maxima runtime, and QEPcad runtime wheels in
+cibuildwheel's repair destination. cibuildwheel 3.4.1 then rejected that
+destination because its current contract requires exactly one repaired wheel.
+The container was removed and the run wheelhouse remained empty, so no
+`post34` wheel-built claim is made. The watcher saw build exit 1 and stopped
+without assembling a closure or starting validation.
+
+The durable failure evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-044758-49015d0a2b45/command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-044758-49015d0a2b45/exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-044758-49015d0a2b45/validation-follow.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-044758-49015d0a2b45/validation-follow-exit-code
+```
+
+Cleanup retained those logs, metadata, orchestration scripts, exit artifacts,
+and disk snapshots, and removed only the disposable source checkout and host
+venv. Guest free space increased to 103,187,791,872 bytes, above the
+100,000,000,000-byte heavy-build threshold used by these native runs.
+
+Exact pushed commit `a32742fac4a36d214cfb40a8c175fb0687a1d8c4`
+separates companion outputs into a host-mounted staging directory, leaves
+only the repaired primary in cibuildwheel's destination, and collects the
+companions into the requested wheelhouse after cibuildwheel succeeds. It also
+advances the version to `10.9.post35` rather than reusing the observed
+`post34` filename. Focused repair-contract tests passed 5 tests, and eight
+companion-repair metadata assertions passed. The broader companion metadata
+file had 11 pre-existing failures outside this failure class.
+
+The new exact-SHA source bundle has SHA256:
+
+```text
+ce256c99045a2db81818be824d2f88d4e9cd8fe62c910705d8d805ed21faf9c0
+```
+
+That hash matched on the controller, outer Mac, and Linux guest. The new run
+root and durable services are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260715-052653-a32742fac4a3
+sagelite-post35-cp314-r10-build.service
+sagelite-post35-cp314-r10-validate.service
+```
+
+At `2026-07-15T05:27:15Z`, both services were active. The build had begun
+preparing the exact bundle, while the watcher was waiting for its exit
+artifact. On success it will reuse the accepted companion closure plus the
+CPython 3.14 `cysignals` and `pycosat` wheels, run the explicit
+`--optional sage --short 600` strict gate, and start a fresh full validation
+only if that gate passes. This is forward-progress evidence only.
 
 ## Public preview state
 
