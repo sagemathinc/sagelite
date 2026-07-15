@@ -1,5 +1,63 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Kenzo Companion
+
+Exact pushed source `d0f1d2296ea6102fded60a0bfedc97f0fd2cde82`
+made the Kenzo companion portable on macOS. The package builder now discovers
+the complete non-system dylib closure of `kenzo.fas`, copies the ECL, GMP, and
+garbage-collector libraries beside the image, rewrites every dependency and
+install ID to a loader-relative path, and ad-hoc signs all modified Mach-O
+files. The Linux packaging path remains unchanged. Focused repository
+validation passed 2 tests. The complete companion metadata file had 254 passes
+and the same 3 pre-existing failures involving generated Flatter egg-info and
+the Regina dependency expectation.
+
+The exact pushed revision reused the Kenzo native input built by exact source
+`24b5e7aec6db357933703de8a425f10ab4fb0e79` and produced:
+
+```text
+sagelite_kenzo_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  1,939,066 bytes
+  e8e08c74b79756e4e41d7ce2489df7327909c8b182ab7cae71454ec8e59155af
+```
+
+Its embedded name, version, and wheel tag match the filename. An exhaustive
+audit covered all 4 Mach-O files and 14 load dependencies and found no
+absolute, unresolved, or escaping load path. A fresh CPython 3.13.14 venv
+installed the wheel using only its local wheelhouse and passed `pip check`.
+The shared companion smoke resolved the installed Kenzo image, and a second
+neutral-environment functional smoke successfully loaded both the bundled ECL
+library and `kenzo.fas` with `dlopen`.
+
+The initial durable wrapper completed the build and audit but gave pip a wheel
+basename relative to the wrong directory. The recovered fresh install used the
+unchanged hash-verified absolute wheel path. Its first smoke invocation also
+omitted the shared script's required import selector; rerunning that smoke
+against the unchanged install completed successfully. Both wrapper diagnostics
+are preserved, and the final run exit code is zero.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+This artifact was not published. The remaining `all-needed-extras` companion
+closure is now three distributions: `sagelite-fricas-runtime`,
+`sagelite-imagemagick-runtime`, and `sagelite-info-runtime`. No strict Sagelite
+installation, `sagelite-selftest`, short run, full run, or publication result
+is claimed. Final cell validation must still build those three companions and
+rebuild the primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-kenzo-20260715-220513-d0f1d2296ea/
+```
+
+The matching `m1` directory retains the exact detached source, native input,
+wheel, clean install, and audit tree. Important evidence includes
+`wheelhouse/SHA256SUMS`, `validation/wheel-inventory.txt`,
+`validation/macho-inventory.txt`, `validation/strict-macho-audit.txt`, the
+install, `pip-check`, shared-smoke, and `dlopen` outputs, `run-metadata.txt`,
+`command.log`, and `exit-code` (`0`).
+
 ## 2026-07-15 Portable 4D Polytope Database Companion
 
 Exact pushed source `b70bf3d81af5422508b5fb255b3c6560eb44fadf`
