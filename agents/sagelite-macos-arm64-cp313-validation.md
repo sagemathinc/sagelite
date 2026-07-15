@@ -1,5 +1,52 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-15 Portable Planarity Companion
+
+Exact pushed source `7d63944caeb9c4c0fdcf4c2463db95d7ee97c1a3`
+fixed the first failure recovered from the macOS command-companion batch. The
+planarity wheel builder had unconditionally invoked Linux `ldd`; on Darwin it
+now discovers `libplanarity` with `otool`, copies the dylib, rewrites the
+executable dependency and dylib install ID to loader-relative paths, and
+ad-hoc signs both modified Mach-O files. The Linux packaging path remains
+unchanged. Focused repository validation passed 7 tests; the complete
+companion metadata file had 248 passes and 3 pre-existing failures involving
+ignored generated egg-info and the separately inconsistent Regina dependency
+expectation.
+
+The exact pushed revision then built this native companion wheel on `m1`:
+
+```text
+sagelite_planarity_runtime-10.9-py3-none-macosx_26_0_arm64.whl
+  95,228 bytes
+  5911d9dc3d634ecef7033b71af50988f8cda815472cfd1431ec41756ec236632
+```
+
+Its native input was reused from the immediately preceding exact-source
+command-companion run at `5e6a45e7160`; that source differs from the wheel's
+source only by this packaging repair and its test. The resulting wheel has two
+Mach-O files. An exhaustive load-path and install-ID audit found no absolute,
+unresolved, or escaping dependency, and a separate fresh CPython 3.13.14 venv
+installed the wheel and passed the planarity executable smoke with an empty
+environment apart from the required neutral `PATH` and smoke selectors.
+
+This adds one of the 17 previously missing `all-needed-extras` companion
+distributions, leaving 16. It does not establish a strict Sagelite install,
+`pip check`, selftest, short run, full run, or publication result. Final cell
+validation must still assemble all remaining companions and rebuild the
+primary from the selected coherent revision.
+
+Durable controller artifacts are under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-planarity-20260715-153510-7d63944caeb/
+```
+
+The matching `m1` directory retains the exact source checkout, build venv, and
+unpacked audit tree. Important evidence includes `wheelhouse/SHA256SUMS`,
+`validation/wheel-inventory.txt`, `validation/macho-inventory.txt`, the empty
+`validation/strict-macho-audit.txt`, `validation/smoke.txt`, `command.log`,
+and `exit-code` (`0`).
+
 ## 2026-07-15 Portable Base Companion Batch
 
 Exact pushed source `cc8d999d436a256a42ff70d51963fc4f04bb836b`
