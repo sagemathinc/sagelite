@@ -10,10 +10,16 @@ def test_linux_cibuildwheel_stages_companions_outside_repair_destination():
     workflow = (ROOT / ".github/workflows/release.yml").read_text()
 
     assert 'companion_dest_dir="${SAGELITE_COMPANION_WHEEL_DIR:-}"' in repair
+    assert 'primary_dest_dir="$dest_dir"' in repair
     assert 'if [ "$companion_dest_dir" = "$dest_dir" ]' in repair
     assert repair.index(
         'auditwheel repair --plat "$AUDITWHEEL_PLAT" -w "$dest_dir"'
     ) < repair.index('dest_dir="$companion_dest_dir"')
+    maxima_builder = repair.split("build_maxima_runtime_companion() {", 1)[1].split(
+        "build_meataxe_runtime_companion() {", 1
+    )[0]
+    assert 'find "$primary_dest_dir"' in maxima_builder
+    assert 'repaired sagelite wheel not found in $primary_dest_dir' in maxima_builder
     assert 'companion_output_dir="$(pwd)/sagelite-companion-wheelhouse"' in wrapper
     assert 'companion_wheels=("${companion_output_dir}"/*.whl)' in wrapper
     assert 'mv "${companion_wheels[@]}" "${output_dir}/"' in wrapper

@@ -9,6 +9,7 @@ fi
 
 raw_wheel="$1"
 dest_dir="$2"
+primary_dest_dir="$dest_dir"
 companion_dest_dir="${SAGELITE_COMPANION_WHEEL_DIR:-}"
 if [ -z "$companion_dest_dir" ]; then
   echo "SAGELITE_COMPANION_WHEEL_DIR is not set" >&2
@@ -1962,9 +1963,9 @@ build_maxima_runtime_companion() {
   fi
 
   local repaired_sagelite_wheel ecl_soname sagelite_ecl_library
-  repaired_sagelite_wheel="$(find "$dest_dir" -maxdepth 1 -type f -name 'sagelite-*.whl' -print -quit)"
+  repaired_sagelite_wheel="$(find "$primary_dest_dir" -maxdepth 1 -type f -name 'sagelite-*.whl' -print -quit)"
   if [ -z "$repaired_sagelite_wheel" ]; then
-    echo "repaired sagelite wheel not found in $dest_dir" >&2
+    echo "repaired sagelite wheel not found in $primary_dest_dir" >&2
     exit 1
   fi
   ecl_soname="$(
