@@ -4396,7 +4396,7 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
     )[0]
 
     assert pyproject["project"]["version"] == "10.9.post3"
-    assert package_version == "1.74.p9"
+    assert package_version == "1.74.p10"
     assert saclib_version == "2.2.8.p1"
     assert patch.count("+    int c = in.get();") == 2
     assert patch.count("+      s += static_cast<char>(c);") == 2
