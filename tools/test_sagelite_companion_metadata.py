@@ -3292,6 +3292,9 @@ def test_sympow_runtime_builds_datafiles_aware_wrapper():
     assert "SYMPOW_GP" in setup_py
     assert "SYMPOW_PKGLIBDIR" in setup_py
     assert "_patch_new_data_script" in setup_py
+    assert 'sys.platform == "darwin"' in setup_py
+    assert '["otool", "-L"' in setup_py
+    assert "non-system macOS dependencies" in setup_py
     assert "$GP -s 268435456 -f -q" in setup_py
     assert "PARI stack is preallocated" in setup_py
     assert "logfile is" in setup_py

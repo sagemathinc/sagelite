@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+import sys
 
 from setuptools import setup
 from setuptools.command.build_py import build_py as _build_py
@@ -153,6 +154,26 @@ def _patch_new_data_script(script: Path) -> None:
 
 
 def _runtime_libraries(executable: Path) -> list[Path]:
+    if sys.platform == "darwin":
+        output = subprocess.run(
+            ["otool", "-L", os.fspath(executable)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        unsupported = []
+        for line in output.splitlines()[1:]:
+            path = line.strip().split(maxsplit=1)[0]
+            if path and not path.startswith(("/usr/lib/", "/System/Library/")):
+                unsupported.append(path)
+        if unsupported:
+            details = "\n  ".join(unsupported)
+            raise RuntimeError(
+                "SYMPOW has non-system macOS dependencies that require "
+                f"Mach-O repair:\n  {details}"
+            )
+        return []
+
     output = subprocess.run(
         ["ldd", os.fspath(executable)],
         check=True,
