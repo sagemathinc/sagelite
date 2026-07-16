@@ -1,5 +1,72 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Sympow Post2 PARI 2.17 Mesh Generation
+
+Exact pushed source `f673bb8e030a4bf4e492b6ef8cf0adc7bc523b3d`
+fixes the deterministic Sympow `P02L` failure exposed after MeatAxe passed.
+The packaged PARI/GP 2.17.1 changed two behaviors that the upstream Sympow
+2.023.6 generation pipeline did not tolerate. Calling `allocatemem(2^28)`
+while GP was reading `standard1.gp` resized the stack and aborted the rest of
+that file read, so functions such as `J` were never defined. After that was
+fixed, GP's `\l` command was found to write logfile transition banners into
+the generated mesh files. Sympow parsed those banners as numeric mesh data,
+corrupted its heap, and aborted when it consumed the result.
+
+The companion now starts GP with a 256 MiB stack, removes the redundant
+in-file stack resize from its packaged helper copy, and strips exactly the two
+PARI logfile-banner forms before Sympow trims and consumes a generated mesh.
+The build rejects upstream helper layouts it does not recognize. Its native
+macOS path also audits the Sympow executable with `otool` and rejects any
+non-system dependency that would need unimplemented Mach-O repair. Companion
+CI now generates data and checks a real symmetric-square L-value instead of
+only invoking `sympow -help`. The primary dependency floor and artifact
+verification require the new version so the defective `post1` wheel cannot
+be selected. The earlier selftest constant `4.195745112728` was also corrected
+to `1.057599244590`: the repaired Sympow result was independently checked
+against the symmetric-square Euler product for 11a rather than relaxed to
+accept arbitrary output.
+
+The exact committed source archive has SHA-256
+`27843b6137dbb9f2a7281e0c6d52a8a1b737e626c4e5c3a295ffea048badca0d`.
+It reused the retained, system-library-only arm64 Sympow executable and the
+repository-pinned upstream helper input, whose SHA-256 is
+`aa80476dbb55631b1c1d0558ea1f2b77b93b64956459da804b2bc6325a531866`,
+and produced:
+
+```text
+sagelite_sympow_runtime-10.9.post2-py3-none-macosx_14_0_arm64.whl
+  1,920,527 bytes
+  99edd0e8643d28fe2d2883bcc075455a571881aafa66833b0b96aaa9ff0fbb31
+```
+
+A fresh Homebrew CPython 3.13.14 venv installed that wheel and the retained
+PARI companion using only local wheels and `--no-deps`; `pip check` passed.
+From a neutral directory with inherited Sage, Python, and dylib paths absent,
+the first invocation generated `P02H` and `P02L`, added both valid
+`param_data` records, emitted no GP error or logfile-banner residue, and
+returned `1.057599244590958E+00` on both functional-equation sides for the
+same 11a symmetric-square operation used by selftest. The resulting main
+meshes are 2,291,723 and 2,166,958 bytes rather than the earlier corrupt
+few-hundred-byte files. A second invocation from the generated cache also
+exited zero with the same value. The installed arm64 executable loads only
+`/usr/lib/libSystem.B.dylib`.
+
+This is focused companion evidence, not a strict short-gate or full-suite
+pass. The retained `post43` primary was not rebuilt, and complete selftest was
+not rerun because QEPCAD is already established as the next independent
+crash/restart-hang class. The public `dev/manifest.json` remains unchanged at
+177 wheels generated on 2026-07-09, including fourteen primary wheels;
+nothing was published. Exact artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-sympow-20260716-041742-f673bb8e030/
+/scratch/sagelite-automation/macos-arm64-cp313-sympow-20260716-041742-f673bb8e030/
+```
+
+The builder has about 98 GiB free after retaining the exact-source run, below
+the 100 GiB threshold for a coherent primary rebuild but above the focused
+test threshold.
+
 ## 2026-07-16 MeatAxe Post1 Binary Tables
 
 Exact pushed source `5e95484667db6d37d7c214935e559c692c1230d2`
