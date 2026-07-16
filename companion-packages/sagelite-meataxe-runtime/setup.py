@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -15,24 +16,12 @@ except ImportError:  # pragma: no cover - wheel is a build requirement
     _bdist_wheel = None
 
 
-FIELD_SIZES = [
-    2, 3, 4, 5, 7, 8, 9, 11, 13, 16, 17, 19, 23, 25, 27, 29, 31, 32, 37,
-    41, 43, 47, 49, 53, 59, 61, 64, 67, 71, 73, 79, 81, 83, 89, 97, 101,
-    103, 107, 109, 113, 121, 125, 127, 128, 131, 137, 139, 149, 151, 157,
-    163, 167, 169, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
-    233, 239, 241, 243, 251,
-]
-
-
-def _table_name(field_size: int) -> str:
-    return f"p{field_size:03d}.zzz"
+sys.path.insert(0, os.fspath(Path(__file__).parent / "src"))
+from sagelite_meataxe.tables import FIELD_SIZES, table_errors, table_name  # noqa: E402
 
 
 def _has_required_tables(directory: Path) -> bool:
-    return all(
-        (directory / _table_name(field_size)).is_file()
-        for field_size in FIELD_SIZES
-    )
+    return not table_errors(directory)
 
 
 def _candidate_table_dirs() -> list[Path]:
@@ -115,15 +104,11 @@ class build_py(_build_py):
             _generate_tables(target, zcv)
 
         if not _has_required_tables(target):
-            missing = [
-                _table_name(field_size)
-                for field_size in FIELD_SIZES
-                if not (target / _table_name(field_size)).is_file()
-            ]
+            errors = table_errors(target)
             raise RuntimeError(
-                "MeatAxe table directory is incomplete; missing "
-                + ", ".join(missing[:10])
-                + (" ..." if len(missing) > 10 else "")
+                "MeatAxe table directory is invalid: "
+                + "; ".join(errors[:5])
+                + (" ..." if len(errors) > 5 else "")
             )
 
         super().run()

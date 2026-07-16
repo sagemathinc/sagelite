@@ -1228,6 +1228,16 @@ def _check_meataxe_runtime():
     except ImportError:
         return "not installed"
 
+    from sagelite_meataxe.runtime import meataxe_dir
+
+    companion_dir = Path(meataxe_dir())
+    from sage.env import MTXLIB
+
+    if not _same_existing_path(companion_dir, MTXLIB):
+        raise RuntimeError(
+            f"Sage is using non-companion MeatAxe tables: {MTXLIB!r}"
+        )
+
     from sage.all import GF, matrix
 
     field = GF(9, "a")

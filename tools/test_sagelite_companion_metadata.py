@@ -647,7 +647,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-latte-runtime >=10.9,<10.10",
     "sagelite-lcalc-runtime >=10.9,<10.10",
     "sagelite-maxima-runtime >=10.9.post15,<10.10",
-    "sagelite-meataxe-runtime >=10.9,<10.10",
+    "sagelite-meataxe-runtime >=10.9.post1,<10.10",
     "sagelite-mwrank-runtime >=10.9,<10.10",
     "sagelite-nauty-runtime >=10.9,<10.10",
     "sagelite-palp-runtime >=10.9,<10.10",
@@ -904,7 +904,7 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "sagelite-gap-runtime >=10.9.post4,<10.10" in dependencies
     assert "sagelite-ecl-runtime >=10.9,<10.10" not in dependencies
     assert "sagelite-maxima-runtime >=10.9.post15,<10.10" in dependencies
-    assert "sagelite-meataxe-runtime >=10.9,<10.10" in dependencies
+    assert "sagelite-meataxe-runtime >=10.9.post1,<10.10" in dependencies
     assert "sagelite-nauty-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in dependencies
     assert "sagelite-tachyon-runtime >=10.9,<10.10" in dependencies

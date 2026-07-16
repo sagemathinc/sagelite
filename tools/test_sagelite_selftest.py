@@ -127,6 +127,26 @@ def test_selftest_accepts_cypari_without_private_pari_runtime(
     )
 
 
+def test_selftest_rejects_invalid_meataxe_tables_before_loading_sage(monkeypatch):
+    selftest = _load_selftest()
+    package = types.ModuleType("sagelite_meataxe")
+    package.__path__ = []
+    runtime = types.ModuleType("sagelite_meataxe.runtime")
+
+    def invalid_tables():
+        raise RuntimeError(
+            "bundled MeatAxe table directory is invalid: "
+            "p009.zzz has size 26, expected 139364"
+        )
+
+    runtime.meataxe_dir = invalid_tables
+    monkeypatch.setitem(sys.modules, "sagelite_meataxe", package)
+    monkeypatch.setitem(sys.modules, "sagelite_meataxe.runtime", runtime)
+
+    with pytest.raises(RuntimeError, match="p009.zzz has size 26"):
+        selftest._check_meataxe_runtime()
+
+
 def test_selftest_continues_after_pari_runtime_packaging_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []

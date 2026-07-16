@@ -869,11 +869,10 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-lcalc-runtime":
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-meataxe-runtime":
     runtime = importlib.import_module("sagelite_meataxe.runtime")
+    tables = importlib.import_module("sagelite_meataxe.tables")
     meataxe_dir = runtime.meataxe_dir()
     print("meataxe_dir=", meataxe_dir)
-    assert os.path.exists(os.path.join(meataxe_dir, "p009.zzz"))
-    assert os.path.exists(os.path.join(meataxe_dir, "p025.zzz"))
-    assert os.path.exists(os.path.join(meataxe_dir, "p049.zzz"))
+    assert tables.table_errors(meataxe_dir) == []
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-kenzo-runtime":
