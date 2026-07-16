@@ -107,10 +107,47 @@ def _copy_standard_gp_scripts(datafiles: Path, target: Path) -> None:
             f"  {details}"
         )
 
+    standard1 = target / "standard1.gp"
+    text = standard1.read_text()
+    allocatemem = "allocatemem(2^28); \\\\ need 2^28 for 64-bit machines; else 2^27\n"
+    if allocatemem not in text:
+        raise RuntimeError(
+            f"could not find the expected PARI stack setup in {standard1}"
+        )
+    standard1.write_text(
+        text.replace(
+            allocatemem,
+            "\\\\ PARI stack is preallocated by the packaged new_data script\n",
+            1,
+        )
+    )
+
 
 def _patch_new_data_script(script: Path) -> None:
     text = script.read_text()
-    text = text.replace("GP=$2\n", "GP=${SYMPOW_GP:-$2}\n")
+    replacements = {
+        "GP=$2\n": "GP=${SYMPOW_GP:-$2}\n",
+        "$GP -f -q > /dev/null": "$GP -s 268435456 -f -q > /dev/null",
+        'echo ""\n$SYMPOW -shell2 "$3" | $SH\n': (
+            'echo ""\n'
+            'for datafiles in "$SYMPOW_CACHEDIR/datafiles" '
+            '"$SYMPOW_CACHEDIR/sympow/datafiles"; do\n'
+            '  [ -d "$datafiles" ] || continue\n'
+            '  for mesh in "$datafiles"/P*.txt; do\n'
+            '    [ -f "$mesh" ] || continue\n'
+            '    cleaned="${mesh}.sagelite-clean"\n'
+            "    sed -e '/^[[:space:]]*\\[logfile is /d' "
+            "-e '/^[[:space:]]*logfile = /d' \"$mesh\" > \"$cleaned\"\n"
+            '    mv "$cleaned" "$mesh"\n'
+            '  done\n'
+            'done\n'
+            '$SYMPOW -shell2 "$3" | $SH\n'
+        ),
+    }
+    for old, new in replacements.items():
+        if old not in text:
+            raise RuntimeError(f"could not find expected line in {script}: {old!r}")
+        text = text.replace(old, new, 1)
     script.write_text(text)
     script.chmod(0o755)
 

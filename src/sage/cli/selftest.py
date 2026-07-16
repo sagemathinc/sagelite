@@ -1021,7 +1021,7 @@ def _check_sympow_runtime():
     from sage.lfunctions.sympow import sympow
 
     value = sympow.L(EllipticCurve("11a"), 2, 16)
-    if not str(value).startswith("4.195745112728"):
+    if not str(value).startswith("1.057599244590"):
         raise RuntimeError(
             f"sympow companion returned unexpected L-value: {value}"
         )

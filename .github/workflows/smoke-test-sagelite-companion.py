@@ -1140,13 +1140,19 @@ if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-sympow-runtime":
     import shutil
     import subprocess
     assert shutil.which("sympow")
-    result = subprocess.run(
-        ["sympow", "-help"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    assert "sympow" in (result.stdout + result.stderr).lower()
+    import tempfile
+    with tempfile.TemporaryDirectory() as cache:
+        env = os.environ.copy()
+        env["SYMPOW_CACHEDIR"] = cache
+        env["SYMPOW_PKGCACHEDIR"] = cache
+        result = subprocess.run(
+            ["sympow", "-sp", "2p16", "-curve", "[0,-1,1,-10,-20]"],
+            text=True,
+            capture_output=True,
+            check=True,
+            env=env,
+        )
+    assert "1.057599244590" in result.stdout, result
     raise SystemExit(0)
 
 if os.environ["SAGELITE_COMPANION_NAME"] == "sagelite-tachyon-runtime":

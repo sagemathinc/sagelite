@@ -916,7 +916,7 @@ def test_selftest_sympow_runtime_exercises_l_value():
     source = Path(selftest.__file__).read_text()
 
     assert "sympow.L" in source
-    assert "4.195745112728" in source
+    assert "1.057599244590" in source
     assert 'EllipticCurve("11a")' in source
 
 

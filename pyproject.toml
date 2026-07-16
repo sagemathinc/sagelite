@@ -147,7 +147,7 @@ dependencies = [
   'sagelite-poppler-runtime >=10.9,<10.10',
   'sagelite-singular-runtime >=10.9.post2,<10.10',
   'sagelite-sirocco-runtime >=10.9,<10.10',
-  'sagelite-sympow-runtime >=10.9.post1,<10.10',
+  'sagelite-sympow-runtime >=10.9.post2,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
   'sagelite-topcom-runtime >=10.9,<10.10',
   'scipy >=1.11',
@@ -200,7 +200,7 @@ all-needed-extras = [
   'sagelite-plantri-runtime >=10.9,<10.10',
   'sagelite-qepcad-runtime >=10.9.post3,<10.10',
   'sagelite-rubiks-runtime >=10.9,<10.10',
-  'sagelite-sympow-runtime >=10.9.post1,<10.10',
+  'sagelite-sympow-runtime >=10.9.post2,<10.10',
   'sagelite-tachyon-runtime >=10.9,<10.10',
 ]
 optional-wheel-ready = [
@@ -863,7 +863,7 @@ stein-watkins-mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
 stein_watkins_mini = ['sagelite-database-stein-watkins-mini >=10.9,<10.10']
 symengine = ['symengine >= 0.6.1']
 symengine_py = ['symengine >= 0.6.1']
-sympow = ['sagelite-sympow-runtime >=10.9.post1,<10.10']
+sympow = ['sagelite-sympow-runtime >=10.9.post2,<10.10']
 symbolic-data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 symbolic_data = ['sagelite-database-symbolic-data >=10.9,<10.10']
 sage_numerical_backends_coin = ['sage_numerical_backends_coin']

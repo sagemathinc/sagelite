@@ -656,7 +656,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-poppler-runtime >=10.9,<10.10",
     "sagelite-singular-runtime >=10.9.post2,<10.10",
     "sagelite-sirocco-runtime >=10.9,<10.10",
-    "sagelite-sympow-runtime >=10.9.post1,<10.10",
+    "sagelite-sympow-runtime >=10.9.post2,<10.10",
     "sagelite-tachyon-runtime >=10.9,<10.10",
     "sagelite-topcom-runtime >=10.9,<10.10",
 }
@@ -906,7 +906,7 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "sagelite-maxima-runtime >=10.9.post15,<10.10" in dependencies
     assert "sagelite-meataxe-runtime >=10.9.post1,<10.10" in dependencies
     assert "sagelite-nauty-runtime >=10.9,<10.10" in dependencies
-    assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in dependencies
+    assert "sagelite-sympow-runtime >=10.9.post2,<10.10" in dependencies
     assert "sagelite-tachyon-runtime >=10.9,<10.10" in dependencies
 
 
@@ -3271,7 +3271,7 @@ def test_sympow_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-sympow-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-sympow-runtime >=10.9.post2,<10.10"
 
     assert extras["sympow"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -3292,6 +3292,10 @@ def test_sympow_runtime_builds_datafiles_aware_wrapper():
     assert "SYMPOW_GP" in setup_py
     assert "SYMPOW_PKGLIBDIR" in setup_py
     assert "_patch_new_data_script" in setup_py
+    assert "$GP -s 268435456 -f -q" in setup_py
+    assert "PARI stack is preallocated" in setup_py
+    assert "logfile is" in setup_py
+    assert "sagelite-clean" in setup_py
     assert "cd \"$HERE/..\" || exit 127" in setup_py
 
 
@@ -4381,7 +4385,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post2,<10.10" in validation_requirements
     assert "sagelite-qepcad-runtime >=10.9.post3,<10.10" in validation_requirements
-    assert "sagelite-sympow-runtime >=10.9.post1,<10.10" in validation_requirements
+    assert "sagelite-sympow-runtime >=10.9.post2,<10.10" in validation_requirements
 
 
 def test_singular_runtime_wheel_declares_copied_runtime_data():
