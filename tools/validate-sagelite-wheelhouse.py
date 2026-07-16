@@ -1628,6 +1628,7 @@ def write_install_metadata(
 ) -> Path:
     path = output_dir / "install-metadata.json"
     environment = {
+        "HOME": env.get("HOME"),
         "PATH": env.get("PATH", ""),
         "PYTHONNOUSERSITE": env.get("PYTHONNOUSERSITE"),
         "OBJC_DISABLE_INITIALIZE_FORK_SAFETY": env.get(
@@ -2670,6 +2671,9 @@ def main(argv: list[str] | None = None) -> int:
 
     install_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
+    validation_home = install_dir.parent / f"home-{stamp}"
+    validation_home.mkdir(parents=True, exist_ok=True)
+    env["HOME"] = os.fspath(validation_home.resolve())
     validation_started_at_utc = _utc_timestamp()
     validation_started = time.perf_counter()
 

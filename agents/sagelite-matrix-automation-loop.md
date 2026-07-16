@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-16
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post45`, local; `post9`, public); `post47` build running | strict short remains failed on the coherent `post45` primary. Exact pushed `post46`/`post47` changes package the missing GSL and Singular/Factory headers, remove retained source/build include roots from non-editable installs, and rewrite resolvable inline-extension `@loader_path` dependencies to `@rpath`. A non-authoritative transformed-`post45` diagnostic passed a fresh wheel-only install, `pip check`, metadata/header probes, and focused serial plus fresh-temporary-directory parallel runs of all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples. A coherent exact-source `post47` primary build is running durably on `m1`, but no `post47` wheel or fresh strict closure has yet been accepted; the complete 3,954-module short gate and full gate remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post47`, local; `post9`, public) | not accepted. Exact pushed `post47` produced a repaired 102,091,588-byte primary and strict 179-wheel closure. Fresh wheel-only installation, `pip check`, all 102 selftest probes, and the complete installed short sweep of 3,953 modules mechanically passed with zero failures. Runtime evidence invalidated the gate: generated configuration selected build-host GAP roots and host ECL, Kenzo, ECM, and nauty resources, while validation reused the account's real `HOME`. `post48` prefers installed companion resources and gives validation a neutral run-local home; its focused environment and validator tests pass, but an exact-source rebuild and both fresh gates remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,18 +218,16 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Complete the running coherent macOS arm64 CPython 3.13 `post47` primary
-   build from exact pushed source `b184d1d177e`, assemble its strict 179-wheel
-   closure, and run the fresh strict short gate. Focused non-authoritative
-   diagnostics already pass all 49 `sage.calculus.ode` and 48
-   `sage.misc.cython` examples after
-   packaging the missing headers, removing run-local metadata paths, and
-   repairing installed inline-extension `@loader_path` dependencies. The
-   retained coherent `post45` closure already passes preflight, wheel-only
-   installation, `pip check`, complete selftest, and packaged pytest, but it
-   does not validate the `post47` changes. Cleanup restored 119 GiB free on
-   the macOS build volume, above the heavy-build threshold. Start the full
-   gate only after the installed 3,954-module short sweep passes.
+1. Build the macOS arm64 CPython 3.13 `post48` primary from its exact pushed
+   source, assemble the strict 179-wheel closure, and run the fresh strict
+   short gate. The coherent `post47` wheel, install, `pip check`, all 102
+   selftest probes, and 3,953-module short sweep mechanically passed, but the
+   runtime manifest proved that generated configuration selected build-host
+   GAP, ECL, Kenzo, ECM, and nauty resources and validation reused the real
+   account home. `post48` prefers installed companions and supplies a neutral
+   run-local validation home; focused tests pass, but only a coherent rebuild
+   can validate the fix. Start the authoritative full gate only after that
+   fresh strict short sweep passes without host-state leakage.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.

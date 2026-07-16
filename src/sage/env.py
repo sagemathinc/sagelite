@@ -40,6 +40,17 @@ from sage.config import get_include_dirs
 SAGE_ENV = dict()
 
 
+def _installed_without_source_tree() -> bool:
+    """
+    Return whether Sage is running from an installation without a source tree.
+
+    Runtime bootstrap functions are called only after ``SAGE_ROOT`` has been
+    initialized.  Keeping this check in one helper makes the distinction
+    between a source build and an installed binary wheel explicit in tests.
+    """
+    return globals().get("SAGE_ROOT") is None
+
+
 def join(*args) -> str | None:
     """
     Join paths like ``os.path.join`` except that the result is ``None``
@@ -243,6 +254,24 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
     that does not exist after installation.  A companion package can provide a
     relocatable ECL image without making Kenzo a hard dependency.
     """
+    fas = _optional_runtime_value("sagelite_kenzo.runtime", "kenzo_fas")
+    active_ecldir = os.environ.get("ECLDIR")
+    companion_ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
+    companion_matches_ecl = not (
+        active_ecldir
+        and companion_ecldir
+        and not _same_existing_file(active_ecldir, companion_ecldir)
+    )
+    if (
+        _installed_without_source_tree()
+        and not os.environ.get("KENZO_FAS")
+        and fas
+        and os.path.isfile(fas)
+        and companion_matches_ecl
+    ):
+        os.environ["KENZO_FAS"] = os.fspath(fas)
+        return
+
     configured_fas = getattr(sage.config, "KENZO_FAS", None)
     needs_fas = (
         not os.environ.get("KENZO_FAS")
@@ -251,16 +280,9 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
     if not needs_fas:
         return
 
-    active_ecldir = os.environ.get("ECLDIR")
-    companion_ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
-    if (
-        active_ecldir
-        and companion_ecldir
-        and not _same_existing_file(active_ecldir, companion_ecldir)
-    ):
+    if not companion_matches_ecl:
         return
 
-    fas = _optional_runtime_value("sagelite_kenzo.runtime", "kenzo_fas")
     if fas and os.path.isfile(fas):
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
 
@@ -321,6 +343,27 @@ def _bootstrap_sagelite_ecl_runtime() -> None:
     libraries, support files, and ``ecl-config`` without making ECL a hard
     dependency of sagelib.
     """
+    companion_command = _optional_runtime_value(
+        "sagelite_ecl.runtime", "ecl_config_command"
+    )
+    companion_ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
+    companion_command_usable = bool(
+        companion_command
+        and os.path.isfile(companion_command)
+        and os.access(companion_command, os.X_OK)
+    )
+    companion_ecldir_usable = bool(
+        companion_ecldir and os.path.isdir(companion_ecldir)
+    )
+    if _installed_without_source_tree() and (
+        companion_command_usable or companion_ecldir_usable
+    ):
+        if not os.environ.get("ECL_CONFIG") and companion_command_usable:
+            os.environ["ECL_CONFIG"] = os.fspath(companion_command)
+        if not os.environ.get("ECLDIR") and companion_ecldir_usable:
+            os.environ["ECLDIR"] = os.fspath(companion_ecldir)
+        return
+
     configured_command = getattr(sage.config, "ECL_CONFIG", None)
     configured_command_usable = bool(
         configured_command
@@ -340,11 +383,8 @@ def _bootstrap_sagelite_ecl_runtime() -> None:
     if not (needs_command or needs_ecldir):
         return
 
-    command = ecldir = None
-    if needs_command:
-        command = _optional_runtime_value("sagelite_ecl.runtime", "ecl_config_command")
-    if needs_ecldir:
-        ecldir = _optional_runtime_value("sagelite_ecl.runtime", "ecl_dir")
+    command = companion_command if needs_command else None
+    ecldir = companion_ecldir if needs_ecldir else None
 
     if (
         needs_command
@@ -694,6 +734,7 @@ def _gap_root_paths() -> str:
     ) and (
         not config_core_roots
         or config_is_host_system
+        or _installed_without_source_tree()
     )
     if use_companion_roots:
         for root in _registered_gap_root_paths():
@@ -839,6 +880,20 @@ def _bootstrap_sagelite_ecm_runtime() -> None:
     after installation.  The companion package supplies a relocatable
     executable and should be used when no environment override is already set.
     """
+    command = _optional_runtime_value("sagelite_ecm.runtime", "ecm_command")
+    command_usable = bool(
+        command
+        and os.path.isfile(command)
+        and os.access(command, os.X_OK)
+    )
+    if (
+        _installed_without_source_tree()
+        and not os.environ.get("SAGE_ECMBIN")
+        and command_usable
+    ):
+        os.environ["SAGE_ECMBIN"] = os.fspath(command)
+        return
+
     configured = getattr(sage.config, "SAGE_ECMBIN", None)
     needs_command = (
         not os.environ.get("SAGE_ECMBIN")
@@ -851,8 +906,7 @@ def _bootstrap_sagelite_ecm_runtime() -> None:
     if not needs_command:
         return
 
-    command = _optional_runtime_value("sagelite_ecm.runtime", "ecm_command")
-    if command and os.path.isfile(command) and os.access(command, os.X_OK):
+    if command_usable:
         os.environ.setdefault("SAGE_ECMBIN", os.fspath(command))
 
 
@@ -1113,6 +1167,17 @@ def _bootstrap_sagelite_nauty_runtime() -> None:
             for program in ("geng", "genposetg")
         )
 
+    companion_prefix = _optional_runtime_value(
+        "sagelite_nauty.runtime", "bin_prefix"
+    )
+    if (
+        _installed_without_source_tree()
+        and not os.environ.get("SAGE_NAUTY_BINS_PREFIX")
+        and prefix_is_usable(companion_prefix)
+    ):
+        os.environ["SAGE_NAUTY_BINS_PREFIX"] = os.fspath(companion_prefix)
+        return
+
     configured = getattr(sage.config, "SAGE_NAUTY_BINS_PREFIX", None)
     needs_prefix = (
         not os.environ.get("SAGE_NAUTY_BINS_PREFIX")
@@ -1126,9 +1191,10 @@ def _bootstrap_sagelite_nauty_runtime() -> None:
             os.environ.setdefault("SAGE_NAUTY_BINS_PREFIX", prefix)
             return
 
-    prefix = _optional_runtime_value("sagelite_nauty.runtime", "bin_prefix")
-    if prefix_is_usable(prefix):
-        os.environ.setdefault("SAGE_NAUTY_BINS_PREFIX", os.fspath(prefix))
+    if prefix_is_usable(companion_prefix):
+        os.environ.setdefault(
+            "SAGE_NAUTY_BINS_PREFIX", os.fspath(companion_prefix)
+        )
 
 
 def _bootstrap_sagelite_rubiks_runtime() -> None:

@@ -1,6 +1,59 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
-## 2026-07-16 Post47 Focused Diagnostic and Coherent Rebuild Start
+## 2026-07-16 Post47 Strict Diagnostic and Post48 Runtime Isolation
+
+Exact pushed source `b184d1d177e81e0162b89a48a746c1a218102f0b`
+completed the coherent `10.9.post47` primary build. Its repaired primary is:
+
+```text
+sagelite-10.9.post47-cp313-cp313-macosx_26_0_arm64.whl
+  102,091,588 bytes
+  668a4474d54a2ed1d8e922cc7517b35044402f529a7fbd3f3ed118167d88f89d
+```
+
+Repair packaged 2,079 native headers, added 23 companion dependencies in 16
+Mach-O files, and audited 1,176 dependencies across 637 Mach-O files. The
+strict closure contained 179 wheels: one primary, 68 companions, and 110
+third-party wheels. Its staged byte count was 13,895,768,925 and its inventory
+digest was
+`6b68c7628ecab936444ae2025ccd2528f503aa261236a4220d9119b219c748e8`.
+The public manifest remained unchanged at 177 wheels generated on 2026-07-09.
+
+Strict macOS preflight and a fresh wheel-only
+`sagelite[all-needed-extras]==10.9.post47` installation passed, as did `pip
+check` and all 102 selftest probes. The complete installed short sweep passed
+all 3,953 modules in 511.3 seconds with zero failed examples or modules. The
+validator exited zero after 1,774.935 seconds.
+
+Those results are nevertheless **non-authoritative**. The installed runtime
+manifest proved that the wheel's generated configuration retained the build
+host's GAP roots under `/Volumes/sage/sagelite-build/prefix`. It also selected
+host Homebrew ECL, ECM, and nauty executables plus a host Python installation's
+Kenzo image. The validator preserved the account's real `HOME`, allowing Sage
+and GAP to consult the existing `/Volumes/sage/.sage` workspace. This violates
+the runbook even though every short test passed. The subsequently started full
+sweep is diagnostic only and cannot promote this cell to `full`. It exposed a
+Tachyon subprocess segmentation fault while rendering the documented scene and
+timed out `sage.interfaces.fricas` after 949.9 seconds total sweep time. These
+are additional diagnostic failure classes, not post47 acceptance evidence.
+
+The `10.9.post48` remediation makes an installed wheel without a source tree
+prefer usable GAP, ECL, Kenzo, ECM, and nauty companion paths over generated
+build-host configuration while preserving explicit environment overrides and
+source-build behavior. Wheelhouse validation now creates and records a
+run-local neutral `HOME`. The complete focused environment suite passes all
+118 tests on the target Mac, and the validator suite passes all 44 tests on
+the controller. A coherent exact-source `post48` primary rebuild and fresh
+strict gates remain required; no publication result is claimed.
+
+The `post47` build, wheelhouse, and diagnostic validation artifacts are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-093844-b184d1d177e/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-093844-b184d1d177e/
+```
+
+## 2026-07-16 Post46 Focused Diagnostic and Post47 Rebuild Start
 
 Exact pushed source `768728dd52ca4439f3792d5413f0bc8faa2fade8`
 first advanced the primary to `10.9.post46`, taught the macOS wheel repair to
@@ -57,7 +110,8 @@ tree checks accepted SHA-256
 `593b92bbc1cc3a00ae203d76f082df7b059961b805f340b058f4fdc133eb0d17`
 and tree `c2bb4803a9b742ea0c5d7abd902e94751f172b56`. It reuses the coherent
 `post45` native prefix and supplies both ordered header roots to the exact
-`post47` repair helper. This running build is not acceptance evidence; its
+`post47` repair helper. At the time of this earlier checkpoint the running
+build was not acceptance evidence; its
 durable remote run and controller launch record are:
 
 ```text

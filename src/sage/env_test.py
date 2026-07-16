@@ -925,6 +925,7 @@ def test_gap_root_paths_prefers_valid_configured_core_over_companion(
     monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
     monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: False)
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
@@ -932,6 +933,27 @@ def test_gap_root_paths_prefers_valid_configured_core_over_companion(
     )
 
     assert env._gap_root_paths().split(";") == [str(configured)]
+
+
+def test_gap_root_paths_installed_wheel_prefers_companion_over_build_config(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "build-configured")
+    companion = _gap_root(tmp_path, "companion")
+
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion)
+        if (module_name, attr_name) == ("sagelite_gap_runtime.runtime", "gap_root_paths")
+        else None,
+    )
+
+    assert env._gap_root_paths().split(";") == [str(companion)]
 
 
 def test_gap_root_paths_does_not_append_registered_package_roots_to_configured_core(
@@ -965,6 +987,7 @@ def test_gap_root_paths_prefers_companion_over_host_system_config(
     monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
     monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: False)
     monkeypatch.setattr(
         env,
         "_is_host_system_gap_root",
@@ -1216,6 +1239,7 @@ def test_gap_runtime_does_not_mix_companion_command_with_configured_core(
     monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
     monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: False)
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
@@ -1228,6 +1252,34 @@ def test_gap_runtime_does_not_mix_companion_command_with_configured_core(
     env._bootstrap_sagelite_gap_runtime()
 
     assert "SAGE_GAP_COMMAND" not in env.os.environ
+
+
+def test_gap_runtime_installed_wheel_uses_companion_command_with_build_config(
+    monkeypatch, tmp_path
+):
+    configured = _gap_root(tmp_path, "build-configured")
+    companion = _gap_root(tmp_path, "companion")
+    command = _gap_runtime_command(tmp_path, "companion")
+
+    monkeypatch.delenv("SAGE_GAP_COMMAND", raising=False)
+    monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
+    monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
+    monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_gap_runtime.runtime", "gap_command"): str(command),
+            ("sagelite_gap_runtime.runtime", "gap_root_paths"): str(companion),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_gap_runtime()
+
+    assert env.os.environ["SAGE_GAP_COMMAND"] == (
+        f"{command} -A -l {companion}"
+    )
 
 
 def test_gap_runtime_keeps_existing_pexpect_command(monkeypatch, tmp_path):
@@ -1633,6 +1685,29 @@ def test_kenzo_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path
         str(tmp_path / "stale-lib" / "ecl" / "kenzo.fas"),
         raising=False,
     )
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: fas
+        if (module_name, attr_name) == ("sagelite_kenzo.runtime", "kenzo_fas")
+        else None,
+    )
+
+    env._bootstrap_sagelite_kenzo_runtime()
+
+    assert env.os.environ["KENZO_FAS"] == str(fas)
+
+
+def test_kenzo_runtime_installed_wheel_prefers_companion_over_build_config(
+    monkeypatch, tmp_path
+):
+    fas = _kenzo_runtime(tmp_path, "companion")
+    configured_fas = _kenzo_runtime(tmp_path, "build-configured")
+
+    monkeypatch.delenv("KENZO_FAS", raising=False)
+    monkeypatch.delenv("ECLDIR", raising=False)
+    monkeypatch.setattr(env.sage.config, "KENZO_FAS", str(configured_fas), raising=False)
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
     monkeypatch.setattr(
         env,
         "_optional_runtime_value",
@@ -2116,6 +2191,28 @@ def test_ecm_runtime_uses_companion_when_config_is_stale(monkeypatch, tmp_path):
     assert env.os.environ["SAGE_ECMBIN"] == str(command)
 
 
+def test_ecm_runtime_installed_wheel_prefers_companion_over_build_config(
+    monkeypatch, tmp_path
+):
+    command = _ecm_runtime(tmp_path, "companion")
+    configured = _ecm_runtime(tmp_path, "build-configured")
+
+    monkeypatch.delenv("SAGE_ECMBIN", raising=False)
+    monkeypatch.setattr(env.sage.config, "SAGE_ECMBIN", str(configured), raising=False)
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: command
+        if (module_name, attr_name) == ("sagelite_ecm.runtime", "ecm_command")
+        else None,
+    )
+
+    env._bootstrap_sagelite_ecm_runtime()
+
+    assert env.os.environ["SAGE_ECMBIN"] == str(command)
+
+
 def test_ecm_runtime_keeps_existing_environment(monkeypatch, tmp_path):
     command = _ecm_runtime(tmp_path, "companion")
     existing_command = _ecm_runtime(tmp_path, "existing")
@@ -2174,6 +2271,33 @@ def test_ecl_runtime_uses_configured_ecldir(monkeypatch, tmp_path):
     env._bootstrap_sagelite_ecl_runtime()
 
     assert "ECL_CONFIG" not in env.os.environ
+    assert env.os.environ["ECLDIR"] == str(ecldir)
+
+
+def test_ecl_runtime_installed_wheel_prefers_companion_over_build_config(
+    monkeypatch, tmp_path
+):
+    command, ecldir = _ecl_runtime(tmp_path, "companion")
+    configured_command, _ = _ecl_runtime(tmp_path, "build-configured")
+
+    monkeypatch.delenv("ECL_CONFIG", raising=False)
+    monkeypatch.delenv("ECLDIR", raising=False)
+    monkeypatch.setattr(
+        env.sage.config, "ECL_CONFIG", str(configured_command), raising=False
+    )
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: {
+            ("sagelite_ecl.runtime", "ecl_config_command"): str(command),
+            ("sagelite_ecl.runtime", "ecl_dir"): str(ecldir),
+        }.get((module_name, attr_name)),
+    )
+
+    env._bootstrap_sagelite_ecl_runtime()
+
+    assert env.os.environ["ECL_CONFIG"] == str(command)
     assert env.os.environ["ECLDIR"] == str(ecldir)
 
 
@@ -2490,6 +2614,38 @@ def test_nauty_runtime_prefers_usable_system_prefix(monkeypatch, tmp_path):
     env._bootstrap_sagelite_nauty_runtime()
 
     assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == "/usr/bin/nauty-"
+
+
+def test_nauty_runtime_installed_wheel_prefers_companion_over_build_config(
+    monkeypatch, tmp_path
+):
+    companion = _runtime_bin_prefix(tmp_path, "companion", "geng")
+    (companion / "genposetg").write_text("#!/bin/sh\n")
+    (companion / "genposetg").chmod(0o755)
+    configured = _runtime_bin_prefix(tmp_path, "build-configured", "geng")
+    (configured / "genposetg").write_text("#!/bin/sh\n")
+    (configured / "genposetg").chmod(0o755)
+
+    monkeypatch.delenv("SAGE_NAUTY_BINS_PREFIX", raising=False)
+    monkeypatch.setattr(
+        env.sage.config,
+        "SAGE_NAUTY_BINS_PREFIX",
+        str(configured) + env.os.sep,
+        raising=False,
+    )
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+    monkeypatch.setattr(
+        env,
+        "_optional_runtime_value",
+        lambda module_name, attr_name: str(companion) + env.os.sep
+        if (module_name, attr_name) == ("sagelite_nauty.runtime", "bin_prefix")
+        else None,
+    )
+    monkeypatch.setattr(env, "_command_starts", lambda path: True)
+
+    env._bootstrap_sagelite_nauty_runtime()
+
+    assert env.os.environ["SAGE_NAUTY_BINS_PREFIX"] == str(companion) + env.os.sep
 
 
 def test_nauty_runtime_ignores_broken_companion(monkeypatch, tmp_path):

@@ -56,6 +56,7 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     def fake_run(command, env):
         commands.append(command)
         assert env["PYTHONNOUSERSITE"] == "1"
+        assert env["HOME"] == os.fspath((tmp_path / "home-20260621-010203").resolve())
         assert "PYTHONPATH" not in env
         assert "LD_LIBRARY_PATH" not in env
         for key in stale_environment:
@@ -99,6 +100,9 @@ def test_builds_fresh_install_and_full_validation_commands(tmp_path, monkeypatch
     assert metadata["package"] == "sagelite[all-needed-extras]"
     assert metadata["doctest_optional"] == "sage,optional,external"
     assert metadata["base_python"] == "/opt/python/cp312/bin/python"
+    assert metadata["environment"]["HOME"] == os.fspath(
+        (tmp_path / "home-20260621-010203").resolve()
+    )
     assert metadata["install_dir"] == os.fspath(install_dir)
     assert metadata["venv_python"] == os.fspath(venv_python)
     assert metadata["wheelhouses"] == [os.fspath(wheelhouse.resolve())]
