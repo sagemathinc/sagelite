@@ -1,5 +1,64 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 MeatAxe Post1 Binary Tables
+
+Exact pushed source `5e95484667db6d37d7c214935e559c692c1230d2`
+(`10.9.post44`) fixes the deterministic MeatAxe failure from the `post43`
+strict gate. The retained `sagelite-meataxe-runtime==10.9` wheel was only
+17,637 bytes because all 69 purported multiplication tables were 26--28 byte
+text fixtures of the form `synthetic table for GF(...)`. They came from the
+generic companion CI job, whose file-presence-only build and smoke checks let
+the fixture wheel enter the macOS closure. SharedMeatAxe then diagnosed a
+corrupt table in `kernel-0.c` and segfaulted when native code consumed it.
+
+The companion now validates the SharedMeatAxe 1.0.2 binary contract at build
+time and runtime: each table is 139,364 bytes, declares the expected field and
+characteristic, and uses format version 6. Companion CI builds the
+repository-pinned SharedMeatAxe source and generates real tables with `zcv`.
+The selftest validates and confirms the active companion directory before it
+constructs a native matrix. The corrected artifact uses a new versioned
+filename, and the primary requirement now excludes the fixture version:
+
+```text
+sagelite_meataxe_runtime-10.9.post1-py3-none-macosx_14_0_arm64.whl
+  1,251,006 bytes
+  fff1a3ee7f903896c8bb9d579a537626543188f0d8663f17158e57c4f814d317
+```
+
+The exact committed source was transferred with `git archive` and built from
+the retained `post43` native prefix. All 69 wheel payloads are byte-identical
+to that prefix's generated tables. A fresh CPython 3.13 venv installed the
+companion wheel alone using `--no-index --no-deps`, passed `pip check`, and
+passed its complete runtime table validator. Installing that exact artifact
+into the already-failed `post43` diagnostic venv was not acceptance evidence,
+but it proved native integration: one MeatAxe matrix over every supported
+field from GF(2) through GF(251) succeeded.
+
+A complete selftest invocation also reached and passed the MeatAxe probe, and
+lrslib passed on this invocation. It then exposed the next independent
+failures. Sympow could not find `P02L` in `param_data` and returned an
+unexpected result. QEPCAD subsequently crashed, restarted, and hung with a
+Singular child; after a process snapshot, only that invocation's process tree
+was terminated, so the recorded exit 143 is not a selftest-pass claim. The
+strict short gate was not rerun, the full gate was not started, and nothing
+was published.
+
+The public `dev/manifest.json` remains unchanged at 177 wheels generated on
+2026-07-09, including fourteen primary wheels. Durable exact-source artifacts
+are under the following matching builder and controller paths:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-meataxe-20260716-034452-5e95484667d/
+/scratch/sagelite-automation/macos-arm64-cp313-meataxe-20260716-034452-5e95484667d/
+```
+
+The directory contains the source archive extraction, build log, wheel and
+SHA-256 inventory, payload audit, fresh install and `pip check`, runtime smoke,
+and the all-field diagnostic result. The earlier non-authoritative diagnostic
+run retains the complete selftest log and process snapshot. `m1` still has
+80 GiB free, below the 100 GiB threshold for a coherent `post44` primary
+rebuild but above the threshold for focused companion and test-only work.
+
 ## 2026-07-16 Post43 Unified ECL Runtime and Strict Short Gate
 
 Exact pushed source `d75dd63d01100c3051596137cdaa60a210078dbd`

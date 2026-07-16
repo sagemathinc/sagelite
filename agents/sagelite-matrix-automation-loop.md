@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post43`, local; `post9`, public) | strict install only; exact pushed source `d75dd63d011` produced a coherent local `post43` primary whose repair makes the Maxima companion own the one installed ECL runtime. Its strict 179-wheel closure passed tag preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime leak checks, all required native imports, Maxima library mode, `sage.all`, and symbolic integration. Packaged pytest passed 212 tests with 5 skips. The short gate failed with exit code 21: selftest hit an intermittent `lrsnash` SIGTRAP and then crashed on corrupt MeatAxe tables; the installed sweep recorded an ECL SIGINT semantic failure, a Singular interrupt failure, and 34 processes killed by segmentation fault while QEPCAD workers escaped cleanup. Diagnose the MeatAxe table/runtime mismatch first, while retaining the lrslib flake and the two focused signal/interrupt failures as independent follow-up evidence. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post43`, local; `post9`, public) | strict install only; exact pushed source `d75dd63d011` produced a coherent local `post43` primary and strict 179-wheel closure that passed installation, `pip check`, leak checks, native imports, Maxima library mode, `sage.all`, and symbolic integration. Packaged pytest passed 212 tests with 5 skips. The short gate failed with exit code 21. Exact pushed follow-up `5e95484667d` identified its deterministic MeatAxe crash as a 17 KiB companion made from CI text fixtures and produced the validated 1.2 MiB `sagelite-meataxe-runtime==10.9.post1`; all 69 fields pass against the retained primary and selftest now passes MeatAxe. The next selftest blockers are a deterministic Sympow `P02L` data failure and a QEPCAD crash/restart hang. Retain the intermittent lrslib SIGTRAP, ECL SIGINT semantic failure, Singular interrupt failure, and earlier sweep segmentation faults as independent evidence. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,12 +218,14 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Fix the macOS MeatAxe table/runtime mismatch identified by the coherent
-   `post43` strict gate in `agents/sagelite-macos-arm64-cp313-validation.md`,
-   then rerun selftest and the strict short gate for macOS arm64 CPython 3.13.
-   Preserve and retest the intermittent lrslib SIGTRAP, ECL SIGINT semantic
-   failure, Singular interrupt failure, and QEPCAD teardown leak separately;
-   start the full gate only after strict short passes.
+1. Fix the macOS Sympow `P02L` data/runtime failure exposed after the repaired
+   MeatAxe companion passed selftest on CPython 3.13. Then diagnose the
+   QEPCAD crash/restart hang as its own failure class, rerun selftest, build a
+   coherent `post44` primary when `m1` again satisfies the 100 GiB heavy-build
+   threshold, and run the strict short gate. Preserve and retest the
+   intermittent lrslib SIGTRAP, ECL SIGINT semantic failure, Singular
+   interrupt failure, and earlier sweep segmentation faults separately; start
+   the full gate only after strict short passes.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
