@@ -1,5 +1,71 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post42 Strict Short Gate
+
+Exact pushed source `7827eb8b2f489bf4db4a71e1adfd4de341203276`
+produced the coherent `post42` primary after rebuilding the repository-pinned
+FFLAS-FFPACK 2.5.0 source with the same Homebrew Clang 22 toolchain used for
+Sagelite. The repaired wheel is:
+
+```text
+sagelite-10.9.post42-cp313-cp313-macosx_26_0_arm64.whl
+  98,566,869 bytes
+  77e16b5bd077becd5ee557ce3e0bbc74e02816e5af4c79ae793384bb8b16b1af
+```
+
+Repair audited 1,180 load dependencies across 638 Mach-O files and rewrote 23
+companion paths in 16 files. The rebuilt bundled `libffpack.1.dylib` exports
+the exact C++ symbol required by `sage.libs.linbox.linbox_flint_interface`.
+A focused neutral-environment probe imported that module and computed the
+determinant of `[[1, 2], [3, 4]]` as `-2`, proving that this iteration fixed
+the primary FFPACK ABI failure exposed by `post41`.
+
+The complete local wheelhouse contained 179 valid wheels: one primary, 68
+Sagelite companions, and 110 third-party wheels. Its staged size was
+13,891,010,785 bytes and its inventory digest was
+`66e7064c0d6096354178cb2875fefa13cf90a43488340b2ff7ccb8853fe8b196`.
+Exact pushed validator source
+`883d55cadd48578c26c3056c1bca262c5eff6221` normalized the macOS `arm64`
+platform suffix to the host's `aarch64` alias; all 44 validator tests passed.
+The authoritative strict gate then accepted every filename and tag, installed
+`sagelite[all-needed-extras]==10.9.post42` into a fresh CPython 3.13.14 venv
+using only that wheelhouse, and passed `pip check`. Runtime collection found no
+dependency, executable, Python-path, source-path, or GAP host leak. All 17
+required native imports, `sage.all`, integer factorization, and the repaired
+LinBox path passed.
+
+The strict short gate nevertheless failed with exit code 250 after 1,465
+seconds. Its first remaining coherent failure class is Maxima/ECL runtime
+selection on macOS. `sagelite-selftest` reported that `maxima.fas` requires
+`FEstack_advance` but found no loaded ECL library, then the symbolic integration
+probe aborted. The diagnostic itself is incomplete on macOS because
+`_loaded_libecl_paths()` only examines Linux `/proc/self/maps`: direct symbol
+audits prove that the ECL libraries bundled by `sagelite-ecl-runtime`,
+`sagelite-maxima-runtime`, and `cypari2` all export `FEstack_advance`. A focused
+neutral symbolic-integration run still aborted with status 134, and its dyld
+trace showed both the `cypari2` and Maxima companion ECL paths being selected.
+The next iteration must make ECL selection coherent and make the selftest
+inspect loaded dylibs correctly on macOS before rebuilding the primary.
+
+The aborted installed sweep reached 3,955 modules. Reduced analysis classified
+609 as failed: 606 timeouts caused by the abort, two optional-native findings,
+and one independently actionable core failure where a runtime Cython example
+could not find `gsl/gsl_cblas.h`. These are not a short-pass claim and should
+be re-evaluated only after the earlier Maxima/ECL class is fixed. The full gate
+was not started, and nothing was published.
+
+The directly fetched public `dev/manifest.json` remains unchanged at 177
+wheels generated on 2026-07-09, including fourteen Sagelite primary wheels.
+Durable controller evidence is under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-010555-7827eb8b2f4/
+```
+
+The matching `m1` directory retains the exact source/build inputs, complete
+wheelhouse, and validation evidence. The 19 GiB disposable failed-install venv
+was removed after its artifacts were copied; free space returned to 101 GiB.
+
 ## 2026-07-15 Portable ImageMagick Companion
 
 Exact pushed source `b4fb12e6c624c184367d0a1f5e668f3925b7f253`
