@@ -1132,7 +1132,7 @@ def test_lrslib_runtime_is_exposed_by_lrs_extra():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-lrslib-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-lrslib-runtime >=10.9.post2,<10.10"
 
     assert extras["lrs"] == [requirement]
     assert extras["lrslib"] == [requirement]
@@ -3659,7 +3659,7 @@ def test_lrslib_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-lrslib-runtime >=10.9.post1,<10.10"
+    requirement = "sagelite-lrslib-runtime >=10.9.post2,<10.10"
 
     assert extras["lrslib"] == [requirement]
     assert extras["lrs"] == [requirement]
@@ -3790,6 +3790,21 @@ def test_lrslib_runtime_declares_console_scripts():
         "lrs": "sagelite_lrslib.runtime:lrs",
         "lrsnash": "sagelite_lrslib.runtime:lrsnash",
     }
+
+
+def test_lrslib_lrsnash_accepts_long_input_paths():
+    patch = (
+        ROOT
+        / "build"
+        / "pkgs"
+        / "lrslib"
+        / "patches"
+        / "lrsnash-long-input-path.patch"
+    ).read_text()
+
+    assert "+        const char *name;" in patch
+    assert "+\t((gInfo *)g->aux)->name = filename;" in patch
+    assert "-\tstrcpy(((gInfo *)g->aux)->name, filename);" in patch
 
 
 def test_native_command_companions_repair_macos_dylib_closures():

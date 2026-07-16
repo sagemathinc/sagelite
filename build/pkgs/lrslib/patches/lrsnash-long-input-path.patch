@@ -1,0 +1,12 @@
+diff --git a/lrsnash.c b/lrsnash.c
+--- a/lrsnash.c
++++ b/lrsnash.c
+@@ -125 +125 @@ int readGame(game * g, const char *filename)
+-	strcpy(((gInfo *)g->aux)->name, filename);
++	((gInfo *)g->aux)->name = filename;
+diff --git a/lrsnashlib.h b/lrsnashlib.h
+--- a/lrsnashlib.h
++++ b/lrsnashlib.h
+@@ -38 +38 @@ typedef struct {
+-        char name[100];
++        const char *name;
