@@ -2384,6 +2384,23 @@ def test_require_primary_sagelite_wheel_platform_machine_rejects_mismatch(
     assert "platform tag does not match validation host machine x86_64" in summary
 
 
+def test_primary_sagelite_wheel_platform_machine_accepts_macos_arm64_alias():
+    validator = _load_validator()
+    inventory = {
+        "primary_sagelite_wheels": [
+            {
+                "name": "sagelite-10.9.post40-cp313-cp313-macosx_26_0_arm64.whl",
+                "platform_tags": ["macosx_26_0_arm64"],
+            }
+        ]
+    }
+
+    validator._ensure_primary_sagelite_wheel_platform_machine(
+        inventory,
+        "aarch64",
+    )
+
+
 def test_require_primary_sagelite_wheel_compatible_platform_tag_rejects_mismatch(
     tmp_path, monkeypatch
 ):

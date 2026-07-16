@@ -1234,7 +1234,13 @@ def _normalized_platform_machine(machine: str | None) -> str | None:
         "amd64": "x86_64",
         "arm64": "aarch64",
     }
-    return aliases.get(normalized, normalized)
+    if normalized in aliases:
+        return aliases[normalized]
+    for alias, canonical in aliases.items():
+        suffix = f"_{alias}"
+        if normalized.endswith(suffix):
+            return f"{normalized[:-len(alias)]}{canonical}"
+    return normalized
 
 
 def _compatible_platform_tags() -> list[str]:
