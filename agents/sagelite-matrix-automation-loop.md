@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post45`, local; `post9`, public) | strict short failed at installed inline compilation; exact pushed source `bc6cdcdd554` produced a coherent `post45` primary and strict 179-wheel closure containing `sagelite-lrslib-runtime==10.9.post2`. Preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, and complete selftest all passed. The installed short sweep tested 3,953 modules and failed only `sage.calculus.ode` and `sage.misc.cython`: packaged compilation cannot find `gsl/gsl_cblas.h` or `factory/factory.h`, and its compile metadata retains run-local source/build include paths. Packaged pytest passed 212 tests with 5 skips. The full gate did not start. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post45`, local; `post9`, public); `post47` source only | strict short remains failed on the coherent `post45` primary. Exact pushed `post46`/`post47` changes package the missing GSL and Singular/Factory headers, remove retained source/build include roots from non-editable installs, and rewrite resolvable inline-extension `@loader_path` dependencies to `@rpath`. A non-authoritative transformed-`post45` diagnostic passed a fresh wheel-only install, `pip check`, metadata/header probes, and focused serial plus fresh-temporary-directory parallel runs of all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples. A coherent `post47` primary and fresh strict 179-wheel closure have not yet been built or accepted; the complete 3,954-module short gate and full gate remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,15 +218,17 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Repair the installed inline-compilation contract exposed by the coherent
-   macOS arm64 CPython 3.13 `post45` gate: remove run-local source/build include
-   paths from installed metadata and provide the GSL and Singular/Factory
-   headers at installed paths.  Rerun focused checks for `sage.calculus.ode`
-   and `sage.misc.cython`, rebuild the affected primary or companions, and
-   rerun the fresh strict short gate.  Exact pushed source `bc6cdcdd554` and
-   its 179-wheel closure already pass preflight, wheel-only installation,
-   `pip check`, complete selftest, and packaged pytest.  Start the full gate
-   only after the installed 3,953-module short sweep passes.
+1. Rebuild a coherent macOS arm64 CPython 3.13 `post47` primary from exact
+   pushed source `b184d1d177e`, assemble its strict 179-wheel closure, and run
+   the fresh strict short gate. Focused non-authoritative diagnostics already
+   pass all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples after
+   packaging the missing headers, removing run-local metadata paths, and
+   repairing installed inline-extension `@loader_path` dependencies. The
+   retained coherent `post45` closure already passes preflight, wheel-only
+   installation, `pip check`, complete selftest, and packaged pytest, but it
+   does not validate the `post47` changes. Cleanup restored 119 GiB free on
+   the macOS build volume, above the heavy-build threshold. Start the full
+   gate only after the installed 3,954-module short sweep passes.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.

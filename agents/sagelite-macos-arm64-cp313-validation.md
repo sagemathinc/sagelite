@@ -1,5 +1,56 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post47 Focused Installed-Compilation Diagnostic
+
+Exact pushed source `768728dd52ca4439f3792d5413f0bc8faa2fade8`
+first advanced the primary to `10.9.post46`, taught the macOS wheel repair to
+package headers from ordered native include roots, required
+`gsl/gsl_cblas.h` and `factory/factory.h`, and stopped non-editable installs
+from retaining source/build roots in their compilation metadata. Exact pushed
+follow-up `b184d1d177e81e0162b89a48a746c1a218102f0b` advances the primary to
+`10.9.post47` and repairs installed macOS inline extensions whose linked
+dependencies use `@loader_path`: when the named library exists in a packaged
+Sagelite runtime directory, the generated extension is changed to the shorter
+portable `@rpath` form and ad-hoc signed. Its existing rpaths then resolve the
+packaged runtime library.
+
+A deliberately **non-authoritative** diagnostic transformed the retained
+coherent `post45` wheel with the exact `post46` repair helper, injecting 2,079
+headers from its native build prefix and the shared native prefix. A fresh
+CPython 3.13 venv installed `sagelite[all-needed-extras]==10.9.post45` solely
+from the resulting 179-wheel local closure and passed `pip check`. The
+installed metadata probe reported a non-editable install, no editable root,
+no retained run-local source/build include path, and both required headers at
+installed paths.
+
+That first diagnostic moved both modules past their missing-header failures.
+`sage.misc.cython` passed all 48 examples, while `sage.calculus.ode` exposed
+the next coherent failure: its generated extension tried to load
+`@loader_path/libgsl.28.dylib` from the temporary extension directory. After
+installing the exact `post47` loader change into the already modified
+diagnostic venv, a serial focused run passed all 49 ODE and 48 Cython examples,
+and an independent two-thread run with a fresh temporary directory passed the
+same 97 examples with zero failures. The focused loader unit test passed all
+4 tests; repository validation for both changes passed 25 selected tests.
+
+This is content-equivalent diagnostic evidence only. The primary wheel was
+transformed rather than rebuilt from `post47`, and its venv was later modified
+in place. It is not wheel-build acceptance, strict-short acceptance, full-gate
+acceptance, or publication evidence. The next step is a coherent exact-source
+`post47` primary rebuild, fresh strict 179-wheel installation, and complete
+3,954-module short gate before the full gate can start. Cleanup of only
+automation-owned disposable installs restored 119 GiB free on
+`/Volumes/sage`, above the 100 GiB heavy-build threshold.
+
+The exact `post46` source archive has SHA-256
+`f7dc1b9113ac06d65da03ad96e601be6661eb296b9244c6f213a39be0b2fe4bf`.
+Remote diagnostic artifacts and the controller-side evidence copy are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-compile-diagnostic-20260716-090829-768728dd52c/
+/scratch/sagelite-automation/macos-arm64-cp313-compile-diagnostic-20260716-090829-768728dd52c/
+```
+
 ## 2026-07-16 Post45 Strict Gate and Compile-Time Header Closure
 
 Exact pushed source `bc6cdcdd554d114c9b44163717f43dcb95c9856a`
