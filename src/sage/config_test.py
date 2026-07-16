@@ -1,4 +1,10 @@
+import sage.config
 from sage.config import get_include_dirs
+
+
+def test_noneditable_install_has_no_editable_root(monkeypatch):
+    monkeypatch.setattr(sage.config, "is_editable_install", lambda: False)
+    assert sage.config.get_editable_root() is None
 
 
 def test_cython_metaclass_header_found():

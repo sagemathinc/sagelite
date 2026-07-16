@@ -92,6 +92,9 @@ def get_editable_root() -> tuple[Path, Path] | None:
         sage: get_editable_root() # random
         (WindowsPath('<path_to_sage>/sage'), WindowsPath('<path_to_sage>/sage/build/cp312'))
     """
+    if not is_editable_install():
+        return None
+
     if r"@EDITABLE_SRC@" == "" or r"@EDITABLE_BUILD@" == "":
         return None
 

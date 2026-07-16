@@ -34,6 +34,38 @@ def test_companion_owner(dependency, owner):
     assert repair.companion_owner(dependency) == owner
 
 
+def test_inject_native_headers_requires_compile_time_closure(tmp_path):
+    root = tmp_path / "wheel"
+    first = tmp_path / "first" / "include"
+    second = tmp_path / "second" / "include"
+    (first / "gsl").mkdir(parents=True)
+    (second / "factory").mkdir(parents=True)
+    (first / "gsl" / "gsl_cblas.h").write_text("gsl\n")
+    (second / "factory" / "factory.h").write_text("factory\n")
+    (first / "shared.h").write_text("shared\n")
+    (second / "shared.h").write_text("shared\n")
+
+    assert repair.inject_native_headers(root, (first, second)) == 3
+    assert (root / "sage" / "include" / "gsl" / "gsl_cblas.h").is_file()
+    assert (root / "sage" / "include" / "factory" / "factory.h").is_file()
+
+
+def test_inject_native_headers_prefers_the_first_root(tmp_path):
+    root = tmp_path / "wheel"
+    first = tmp_path / "first" / "include"
+    second = tmp_path / "second" / "include"
+    for include in (first, second):
+        (include / "gsl").mkdir(parents=True)
+        (include / "factory").mkdir(parents=True)
+        (include / "gsl" / "gsl_cblas.h").write_text("gsl\n")
+        (include / "factory" / "factory.h").write_text("factory\n")
+    (first / "conflict.h").write_text("first\n")
+    (second / "conflict.h").write_text("second\n")
+
+    assert repair.inject_native_headers(root, (first, second)) == 3
+    assert (root / "sage" / "include" / "conflict.h").read_text() == "first\n"
+
+
 def test_companion_dependency_is_relative_to_binary(tmp_path):
     binary = tmp_path / "sage" / "rings" / "integer.so"
     binary.parent.mkdir(parents=True)

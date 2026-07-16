@@ -36,11 +36,41 @@ COMPANION_RUNTIME_DIRS = {
     "maxima": Path("sagelite_maxima/data/lib/runtime"),
     "singular": Path("sagelite_singular_runtime/data/lib"),
 }
+REQUIRED_NATIVE_HEADERS = (
+    Path("factory/factory.h"),
+    Path("gsl/gsl_cblas.h"),
+)
 
 
 def unpack_wheel(wheel_path: Path, dest: Path) -> None:
     with zipfile.ZipFile(wheel_path) as wheel:
         wheel.extractall(dest)
+
+
+def inject_native_headers(root: Path, include_dirs: tuple[Path, ...]) -> int:
+    """Copy the native compile-time header closure into the primary wheel."""
+    target = root / "sage" / "include"
+    copied = 0
+    for include_dir in include_dirs:
+        for source in sorted(include_dir.rglob("*")):
+            if not source.is_file():
+                continue
+            destination = target / source.relative_to(include_dir)
+            if destination.is_file():
+                continue
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+            copied += 1
+
+    missing = [
+        header
+        for header in REQUIRED_NATIVE_HEADERS
+        if not (target / header).is_file()
+    ]
+    if missing:
+        detail = ", ".join(os.fspath(header) for header in missing)
+        raise RuntimeError(f"required native headers were not injected: {detail}")
+    return copied
 
 
 def is_macho(path: Path) -> bool:
@@ -249,7 +279,8 @@ def repair_wheel(
     *,
     delocate_wheel: str = "delocate-wheel",
     search_paths: tuple[Path, ...] = (),
-) -> tuple[int, int, int, int]:
+    include_dirs: tuple[Path, ...] = (),
+) -> tuple[int, int, int, int, int]:
     with tempfile.TemporaryDirectory() as tempdir:
         temp = Path(tempdir)
         delocated_dir = temp / "delocated"
@@ -272,12 +303,19 @@ def repair_wheel(
 
         root = temp / "wheel"
         unpack_wheel(delocated_wheel, root)
+        header_count = inject_native_headers(root, include_dirs)
         changed_files, changed_dependencies = rewrite_companion_dependencies(root)
         binary_count, dependency_count = audit_portable_dependencies(root)
         if changed_dependencies == 0:
             raise RuntimeError("no companion runtime dependencies were found")
         pack_wheel(root, out)
-        return changed_files, changed_dependencies, binary_count, dependency_count
+        return (
+            changed_files,
+            changed_dependencies,
+            binary_count,
+            dependency_count,
+            header_count,
+        )
 
 
 def main() -> int:
@@ -295,6 +333,16 @@ def main() -> int:
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--delocate-wheel", default="delocate-wheel")
     parser.add_argument(
+        "--include-dir",
+        action="append",
+        default=[],
+        type=Path,
+        help=(
+            "native include root copied into sage/include; may be repeated, "
+            "with earlier roots taking precedence"
+        ),
+    )
+    parser.add_argument(
         "--search-path",
         action="append",
         default=[],
@@ -310,14 +358,27 @@ def main() -> int:
     missing_search_paths = [path for path in args.search_path if not path.is_dir()]
     if missing_search_paths:
         raise SystemExit(f"search path is not a directory: {missing_search_paths[0]}")
+    if not args.include_dir:
+        raise SystemExit("at least one --include-dir is required")
+    missing_include_dirs = [path for path in args.include_dir if not path.is_dir()]
+    if missing_include_dirs:
+        raise SystemExit(f"include path is not a directory: {missing_include_dirs[0]}")
 
     result = repair_wheel(
         args.wheel,
         args.out,
         delocate_wheel=args.delocate_wheel,
         search_paths=tuple(args.search_path),
+        include_dirs=tuple(args.include_dir),
     )
-    changed_files, changed_dependencies, binary_count, dependency_count = result
+    (
+        changed_files,
+        changed_dependencies,
+        binary_count,
+        dependency_count,
+        header_count,
+    ) = result
+    print(f"injected {header_count} native headers")
     print(
         f"repaired {changed_dependencies} companion dependencies in "
         f"{changed_files} Mach-O files"
