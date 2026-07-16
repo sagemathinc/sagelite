@@ -1,5 +1,32 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-16 Post51 Isolation Rejection And Post52 Repair
+
+The strict `post51` short gate completed its fresh wheel-only installation and
+`pip check`, but its runtime manifest made the run invalid before the short
+doctest sweep could become evidence. With an initially empty environment, the
+installed `sage.config` supplied this still-existing build prefix:
+
+```text
+SAGE_LOCAL=/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260716-183608-bd3d4c40efe4/build/venv
+```
+
+The derived `SAGE_SHARE`, `SAGE_DOC`, and package-install paths reused the same
+tree, the doctest runner reported that build venv as `SAGE_LOCAL`, and selftest
+loaded Kenzo from its `lib/ecl/kenzo.fas` instead of the installed companion.
+The automation stopped the invalid doctest sweep with `KeyboardInterrupt` and
+preserved its runtime manifest, summary, selftest log, and partial doctest log
+under the authoritative run path. No install, selftest, short, or full result
+is claimed from this gate.
+
+The `post52` source repair initializes `SAGE_ROOT` before the prefix hierarchy
+and selects `sys.prefix` for `SAGE_LOCAL` when Sage is installed without a
+source tree. An explicit `SAGE_LOCAL` environment override and the configured
+prefix of an ordinary source build remain unchanged. Focused tests cover all
+three cases. A new exact-source primary rebuild and independent strict gates
+are required; the rejected `post51` wheel must not be repaired in place or
+retagged as acceptance evidence.
+
 ## 2026-07-16 Post51 Wheel, Closure, And Strict Short Start
 
 The durable native build from exact pushed `10.9.post51` source

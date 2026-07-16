@@ -51,6 +51,24 @@ def _installed_without_source_tree() -> bool:
     return globals().get("SAGE_ROOT") is None
 
 
+def _sage_local_value() -> Optional[str]:
+    """
+    Return the runtime prefix for this Sage process.
+
+    Generated ``sage.config`` files record the prefix used to build Sage.  A
+    binary wheel must not reuse that path after it is installed elsewhere,
+    especially when the build prefix still exists on the validation host.
+    Preserve an explicit environment override and source-build configuration,
+    but use the active Python prefix for an installed wheel.
+    """
+    configured = os.environ.get("SAGE_LOCAL")
+    if configured is not None:
+        return configured
+    if _installed_without_source_tree():
+        return sys.prefix
+    return getattr(sage.config, "SAGE_LOCAL", None)
+
+
 def join(*args) -> str | None:
     """
     Join paths like ``os.path.join`` except that the result is ``None``
@@ -1484,15 +1502,16 @@ SAGE_VERSION_BANNER = var("SAGE_VERSION_BANNER", version.banner)
 SAGE_LIB = var("SAGE_LIB", os.path.dirname(os.path.dirname(__file__)))
 SAGE_EXTCODE = var("SAGE_EXTCODE", join(SAGE_LIB, "sage", "ext_data"))
 
+# source tree of the Sage distribution
+SAGE_ROOT = var("SAGE_ROOT") or None
+
 # prefix hierarchy where non-Python packages are installed
-SAGE_LOCAL = var("SAGE_LOCAL")
+SAGE_LOCAL = var("SAGE_LOCAL", _sage_local_value(), force=True)
 SAGE_SHARE = var("SAGE_SHARE", join(SAGE_LOCAL, "share"))
 SAGE_DOC = var("SAGE_DOC", join(SAGE_SHARE, "doc", "sage"))
 SAGE_LOCAL_SPKG_INST = var("SAGE_LOCAL_SPKG_INST", join(SAGE_LOCAL, "var", "lib", "sage", "installed"))
 SAGE_SPKG_INST = var("SAGE_SPKG_INST", join(SAGE_LOCAL, "var", "lib", "sage", "installed"))  # deprecated
 
-# source tree of the Sage distribution
-SAGE_ROOT = var("SAGE_ROOT") or None
 SAGE_SRC = var("SAGE_SRC", join(SAGE_ROOT, "src"), SAGE_LIB)
 SAGE_DOC_SRC = var("SAGE_DOC_SRC", join(SAGE_ROOT, "src", "doc"), SAGE_DOC)
 SAGE_PKGS = var("SAGE_PKGS", join(SAGE_ROOT, "build", "pkgs"))

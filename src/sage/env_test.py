@@ -18,6 +18,33 @@ if not hasattr(sage, "config") and _CONFIG_PATH.exists():
 from sage import env
 
 
+def test_sage_local_value_uses_active_prefix_for_installed_wheel(monkeypatch):
+    monkeypatch.delenv("SAGE_LOCAL", raising=False)
+    monkeypatch.setattr(env, "SAGE_ROOT", None)
+    monkeypatch.setattr(env.sage.config, "SAGE_LOCAL", "/build/prefix")
+    monkeypatch.setattr(env.sys, "prefix", "/installed/prefix")
+
+    assert env._sage_local_value() == "/installed/prefix"
+
+
+def test_sage_local_value_preserves_source_build_configuration(monkeypatch):
+    monkeypatch.delenv("SAGE_LOCAL", raising=False)
+    monkeypatch.setattr(env, "SAGE_ROOT", "/source")
+    monkeypatch.setattr(env.sage.config, "SAGE_LOCAL", "/source/local")
+    monkeypatch.setattr(env.sys, "prefix", "/python/prefix")
+
+    assert env._sage_local_value() == "/source/local"
+
+
+def test_sage_local_value_preserves_explicit_override(monkeypatch):
+    monkeypatch.setenv("SAGE_LOCAL", "/explicit/prefix")
+    monkeypatch.setattr(env, "SAGE_ROOT", None)
+    monkeypatch.setattr(env.sage.config, "SAGE_LOCAL", "/build/prefix")
+    monkeypatch.setattr(env.sys, "prefix", "/installed/prefix")
+
+    assert env._sage_local_value() == "/explicit/prefix"
+
+
 def test_cython_aliases_skips_default_pkgconfig_modules_in_installed_runtime(monkeypatch):
     import pkgconfig
 
