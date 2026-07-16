@@ -55,9 +55,11 @@ are under the following matching builder and controller paths:
 The directory contains the source archive extraction, build log, wheel and
 SHA-256 inventory, payload audit, fresh install and `pip check`, runtime smoke,
 and the all-field diagnostic result. The earlier non-authoritative diagnostic
-run retains the complete selftest log and process snapshot. `m1` still has
-80 GiB free, below the 100 GiB threshold for a coherent `post44` primary
-rebuild but above the threshold for focused companion and test-only work.
+run retains the complete selftest log and process snapshot. Its failed,
+diagnostically modified 19 GiB venv was removed after preserving that evidence.
+`m1` now has 99 GiB free, still just below the 100 GiB threshold for a coherent
+`post44` primary rebuild but above the threshold for focused companion and
+test-only work.
 
 ## 2026-07-16 Post43 Unified ECL Runtime and Strict Short Gate
 
