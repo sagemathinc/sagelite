@@ -112,9 +112,13 @@ explicitly shown to satisfy the threshold. Treat future SSH reachability or
 mount failures as a preflight problem, not as evidence that the host assignment
 has changed.
 
-On 2026-07-16, a new preflight attempt to `host` timed out during SSH
+On 2026-07-16, repeated preflight attempts to `host` timed out during SSH
 connection. The next x86_64 iteration remains blocked until the assigned host
-is reachable and its required bulk filesystem can be checked again.
+is reachable and its required bulk filesystem can be checked again. Independent
+work continued on `m1`: cleanup of only completed automation-owned installs and
+superseded CPython 3.13 build artifacts restored 103 GiB free, and an exact
+`bd3d4c40efe` macOS arm64 CPython 3.14 build started durably. Details are in
+`agents/sagelite-macos-arm64-cp314-validation.md`.
 
 ## Scratch Layout
 
@@ -646,6 +650,8 @@ not folded into the standard-suite pass rate.
 - Historical runtime parity work: `agents/sagelite-pip-runtime-parity-plan.md`
 - macOS arm64 CPython 3.13 evidence:
   `agents/sagelite-macos-arm64-cp313-validation.md`
+- macOS arm64 CPython 3.14 evidence:
+  `agents/sagelite-macos-arm64-cp314-validation.md`
 - Optional matrix evidence:
   `agents/sagelite-optional-wheel-ready-matrix-validation.md`
 - Optional package inventory: `agents/sagelite-optional-package-inventory.md`
