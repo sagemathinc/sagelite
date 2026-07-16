@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post49`, local; `post9`, public) | not accepted. Exact pushed `post49` produced a repaired 102,092,081-byte primary and strict 179-wheel closure. Its fresh neutral-path short gate passed preflight, wheel-only installation, `pip check`, all 102 selftest probes, runtime isolation, packaged pytest, and all 3,953 installed standard modules. The fresh full gate passed the same setup but failed two of 3,955 modules: packaged Tachyon segfaulted on a long image path and FriCAS timed out. The `post50` working change repairs Tachyon's bounded image paths and the companion's macOS dylib closure; focused source and fresh wheel-only diagnostics pass. An exact pushed `post50` rebuild and both gates remain required before the separate FriCAS failure is addressed. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post50`, local; `post9`, public) | not accepted. Exact pushed `post50` produced a repaired 102,092,609-byte primary and strict 179-wheel closure. Its fresh neutral-path short gate passed preflight, wheel-only installation, `pip check`, all selftest probes, runtime isolation, packaged pytest, and all 3,953 installed standard modules. The fresh full gate repeated setup successfully and reduced the cell to one timeout among 3,954 modules: conversion of a large FriCAS `IntegerMod` element. The `post51` working change exports that domain through `InputForm`; the formerly timed-out 2,182-digit conversion completes in 0.139 seconds, and focused installed doctests pass 257 FriCAS interface and 153 translator tests. An exact pushed `post51` rebuild and both fresh gates remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,16 +218,16 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Build the macOS arm64 CPython 3.13 `post50` primary and Tachyon companion
-   from their exact pushed source, assemble the strict 179-wheel closure, and
-   run the fresh strict short gate with a neutral base `PATH` and the explicitly
-   recorded `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` workaround. Exact
-   `post49` passed that short contract without leakage, but its full sweep
-   exposed a packaged Tachyon long-image-path segfault and a separate FriCAS
-   timeout. The `post50` working change repairs both Tachyon's bounded image
-   paths and its macOS dylib closure, with focused source and fresh wheel-only
-   diagnostic passes. After the coherent short gate passes, run the full gate
-   and continue with FriCAS as the next failure class if it still times out.
+1. Build the macOS arm64 CPython 3.13 `post51` primary from its exact pushed
+   source, assemble the strict 179-wheel closure with the accepted `post50`
+   Tachyon companion, and run the fresh strict short gate with a neutral base
+   `PATH` and the explicitly recorded
+   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` workaround. Exact `post50` passed
+   that short contract without leakage and its full sweep proved the Tachyon
+   repair, then timed out only in the large-modulus FriCAS conversion. The
+   `post51` working change makes that conversion constant-time through FriCAS
+   `InputForm`; focused fresh-install interface and translator doctests pass.
+   After the coherent short gate passes, rerun the full gate.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.

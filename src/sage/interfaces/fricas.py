@@ -1558,8 +1558,8 @@ class FriCASElement(ExpectElement, sage.interfaces.abc.FriCASElement):
         P = self._check_valid()
         dom_str = P.get_string(f"sageprint(dom({self._name}))")
         dom = SEXParser(dom_str).parse()
-        fun = SEXPorter(dom).export_call()
-        obj_str = P.get_string(f"sageprint({fun}({self._name}))")
+        export = SEXPorter(dom).export_object(self._name)
+        obj_str = P.get_string(f"sageprint({export})")
         obj = SEXParser(obj_str).parse()
         return SEXEvaluator(obj, LazyParent(dom)).eval()
 

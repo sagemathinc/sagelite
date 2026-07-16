@@ -40,7 +40,7 @@ FRICAS_DOMAIN_DISPATCH = {
     "OrderedCompletion": ("_inputform", "_eval_sr"),
     "PiDomain": ("_inputform", "_eval_sr"),
     "PrimeField": ("_finite", "_eval_gf"),
-    "IntegerMod": ("_finite", "_eval_call"),
+    "IntegerMod": ("_inputform", "_eval_integermod"),
     "FiniteField": ("_finite", "_eval_gf"),
     "Fraction": ("_unary", "_eval_fraction"),
     "List": ("_unary", "_eval_list"),
@@ -297,6 +297,36 @@ class SEXPorter:
 
         return getattr(self, FRICAS_DOMAIN_DISPATCH[head][0])()
 
+    def export_object(self, name):
+        r"""
+        Return a FriCAS expression exporting the named object.
+
+        Domains using ``InputForm`` can export an object directly.  This
+        avoids reconstructing a parameterized export package from the
+        domain's expanded text, which is prohibitively slow for an
+        ``IntegerMod`` domain with a very large modulus.
+
+        EXAMPLES::
+
+            sage: from sage.interfaces.fricas_translator import SEXPorter
+            sage: SEXPorter(('IntegerMod', 11)).export_object('a')
+            'convert(convert(a)@InputForm)@SExpression'
+            sage: SEXPorter(('PrimeField', 11)).export_object('a')
+            '(sexport$FiniteExport(PrimeField(11)))(a)'
+            sage: SEXPorter(('UnivariatePuiseuxSeries',)).export_object('a')
+            Traceback (most recent call last):
+            ...
+            NotImplementedError: UnivariatePuiseuxSeries cannot be translated from FriCAS to SageMath yet
+        """
+        if not isinstance(self._domain, tuple):
+            return f"{self.export_call()}({name})"
+
+        head = self._domain[0]
+        if (head in FRICAS_DOMAIN_DISPATCH
+                and FRICAS_DOMAIN_DISPATCH[head][0] == '_inputform'):
+            return f"convert(convert({name})@InputForm)@SExpression"
+        return f"{self.export_call()}({name})"
+
 
 class SEXEvaluator:
     def __init__(self, ast, dom):
@@ -342,6 +372,41 @@ class SEXEvaluator:
             -5
         """
         return self._dom.parent()(self._ast)
+
+    def _eval_integermod(self):
+        r"""
+        Return an integer-modulo element exported through ``InputForm``.
+
+        FriCAS represents this input form as an application of the domain's
+        ``index`` function.  Exporting it through ``FiniteExport`` instead
+        calls ``lookup``, which can enumerate an impractically large residue
+        class before returning its representative.
+
+        EXAMPLES::
+
+            sage: from sage.interfaces.fricas_translator import LazyParent, SEXEvaluator
+            sage: dom = ('IntegerMod', 11)
+            sage: ast = (('$elt', dom, 'index'), 8)
+            sage: a = SEXEvaluator(ast, LazyParent(dom))._eval_integermod()
+            sage: a
+            8
+            sage: a.parent()
+            Ring of integers modulo 11
+        """
+        try:
+            operator, value = self._ast
+            elt, domain, operation = operator
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"unexpected FriCAS IntegerMod InputForm: {self._ast!r}"
+            ) from None
+
+        if (elt != '$elt' or operation != 'index'
+                or tuple(domain) != tuple(self._dom._domain)):
+            raise ValueError(
+                f"unexpected FriCAS IntegerMod InputForm: {self._ast!r}"
+            )
+        return self._dom.parent()(value)
 
     def _eval_record(self):
         r"""

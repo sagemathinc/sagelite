@@ -1,5 +1,74 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post50 Strict Gates and Post51 FriCAS Repair
+
+Exact pushed source `823c08965a4065ef5a5d8ba34f607cfb55565091` produced the
+coherent `10.9.post50` repaired primary:
+
+```text
+sagelite-10.9.post50-cp313-cp313-macosx_26_0_arm64.whl
+  102,092,609 bytes
+  e14aa04fab74917bdfeae70595a1746164885cb2bea452272e6d93497e6698c8
+```
+
+The exact source archive had SHA-256
+`32bf192c6e77319933add7f38443842a07d14ebed713be5242b17c4777311ae5`
+and materialized source tree
+`aa740cdd628b0949b4ab6eb7c02a8a8c0a0d254a`. The strict closure contained
+179 wheels: one primary, 68 companions, and 110 third-party wheels totaling
+13,895,770,073 bytes. The repaired `sagelite-tachyon-runtime==10.9.post1`
+wheel was 161,037 bytes with SHA-256
+`b3513b7fcbac29497129d30cf4d99ff7cd58a5aaba4f6fcd59ef32fc28d73145`.
+Its executable and bundled libpng dependency both passed code-signature and
+loader-relative Mach-O audits.
+
+The durable top-level build wrapper retained exit code 1 from its first
+Tachyon companion attempt, whose isolated build environment could not import
+`setuptools.build_meta`. The primary had already been repaired successfully.
+The recorded companion retry and closure assembly each exited zero and wrote
+their own completion artifacts before validation began; no success is claimed
+for the original wrapper invocation.
+
+With a neutral `/usr/bin:/bin` base path and the explicitly supplied
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`, strict macOS preflight, a fresh
+wheel-only `sagelite[all-needed-extras]==10.9.post50` installation, `pip
+check`, and selftest passed. The installed `--optional=sage --short 600 -p 8`
+sweep passed all 3,953 modules, and packaged pytest passed 219 tests with 5
+skips. This proves the coherent Tachyon repair under the strict installed
+contract.
+
+The fresh full gate repeated preflight, installation, `pip check`, selftest,
+and packaged pytest successfully. It exited 4 after the complete installed
+sweep saw 3,954 modules and one failure: `sage.interfaces.fricas` reached its
+600-second limit while converting
+`((42^17)^1783)::IntegerMod(5^(5^5))` to Sage. The repaired packaged Tachyon
+module passed; its earlier segmentation fault did not recur.
+
+The FriCAS exporter treated `IntegerMod` as a generic finite domain. Its
+`FiniteExport` path invokes FriCAS `lookup`, which can enumerate an enormous
+residue class before returning a representative. The `10.9.post51` working
+change instead exports `IntegerMod` through FriCAS `InputForm` and validates
+the resulting domain-qualified `index` expression before constructing the
+Sage residue. In the fresh `post50` installed environment with only those two
+Python modules replaced, the formerly timed-out conversion returned the
+expected 2,182-digit residue in 0.139 seconds. A first module run caught and
+repaired an unsupported-domain `KeyError` regression; the final focused runs
+passed all 257 `sage.interfaces.fricas` doctests in 6.18 seconds and all 153
+`sage.interfaces.fricas_translator` doctests in 2.56 seconds.
+
+This is focused diagnostic evidence from the working `post51` change, not
+final cell acceptance. An exact pushed `post51` primary rebuild, strict fresh
+short gate, and full gate remain required. No publication result is claimed;
+the public index still exposes only the fourteen `post8` and `post9` primary
+wheels.
+
+Artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-143909-823c08965a4/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-143909-823c08965a4/
+```
+
 ## 2026-07-16 Post49 Strict Gates and Post50 Tachyon Repair
 
 Exact source `3e69dd7dc99dfefcc9fde1028611ea91aaa74b3e` produced the
