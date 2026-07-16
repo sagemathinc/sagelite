@@ -1,5 +1,29 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post51 Exact Rebuild Start
+
+The exact pushed `10.9.post51` source
+`30bc6ffce556562cae5da227c6302f6ccc778e69` is building durably on `m1` as
+PID 60969. Its verified source archive has SHA-256
+`c6cb1843d69f718ed88c4b78b87f7f00ec487db6238e4bb55c95093c5e8b6345`,
+and the materialized source tree matches the committed tree
+`364dfe1eb8616823da0ef70220174c722528cd02`. The target is native Darwin
+arm64 with Homebrew CPython 3.13.14. Cleanup of only archived disposable
+validation environments and superseded build trees restored 103 GiB free
+before launch, above the 100 GiB heavy-build threshold.
+
+This run reuses the exact `post50` native prefix and will rebuild the affected
+primary wheel before assembling its per-cell closure from the validated
+`post50` companions. No `post51` wheel, install, smoke, or full-suite result is
+claimed until the durable build and subsequent strict gates finish.
+
+The active run and controller input artifacts are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-163431-30bc6ffce55/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-163431-30bc6ffce55/
+```
+
 ## 2026-07-16 Post50 Strict Gates and Post51 FriCAS Repair
 
 Exact pushed source `823c08965a4065ef5a5d8ba34f607cfb55565091` produced the
