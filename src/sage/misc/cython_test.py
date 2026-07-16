@@ -1,7 +1,59 @@
 import shlex
 import sys
+from types import SimpleNamespace
 
 from sage.misc import cython
+
+
+def test_repair_installed_macos_extension_uses_packaged_dylib(
+    tmp_path, monkeypatch
+):
+    target = tmp_path / "target"
+    runtime = tmp_path / "site-packages" / "sagelite_runtime" / "data" / "lib"
+    target.mkdir()
+    runtime.mkdir(parents=True)
+    extension = target / "example.so"
+    extension.write_bytes(b"extension")
+    library = runtime / "libgsl.28.dylib"
+    library.write_bytes(b"library")
+    commands = []
+
+    def fake_run(command, **kwargs):
+        commands.append(command)
+        if command[0] == "otool":
+            return SimpleNamespace(
+                stdout=(
+                    f"{extension}:\n"
+                    "\t@loader_path/libgsl.28.dylib "
+                    "(compatibility version 29.0.0, current version 29.0.0)\n"
+                    "\t/usr/lib/libSystem.B.dylib "
+                    "(compatibility version 1.0.0, current version 1.0.0)\n"
+                )
+            )
+        return SimpleNamespace(stdout="")
+
+    monkeypatch.setattr(cython, "SAGE_ROOT", None)
+    monkeypatch.setattr(cython.sys, "platform", "darwin")
+    monkeypatch.setattr(
+        cython,
+        "subprocess",
+        SimpleNamespace(
+            DEVNULL=-1,
+            run=fake_run,
+        ),
+    )
+    monkeypatch.setattr(cython.shutil, "which", lambda command: None)
+
+    assert cython._repair_installed_sagelite_macos_extension(
+        target, "example", [runtime], extension_suffixes=[".so"]
+    ) == 1
+    assert commands[1] == [
+        "install_name_tool",
+        "-change",
+        "@loader_path/libgsl.28.dylib",
+        "@rpath/libgsl.28.dylib",
+        str(extension),
+    ]
 
 
 def test_cython_compiler_environment_uses_ziglang_fallback(monkeypatch):

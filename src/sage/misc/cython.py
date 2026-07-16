@@ -25,6 +25,7 @@ import importlib.util
 import os
 import re
 import shutil
+import subprocess
 import sys
 import webbrowser
 from pathlib import Path
@@ -235,6 +236,18 @@ def _installed_sagelite_runtime_library_dirs(root):
 
 
 @cached_function
+def _installed_sagelite_runtime_dirs():
+    """Return installed-wheel directories that contain native libraries."""
+    if SAGE_ROOT is not None:
+        return []
+
+    dirs = []
+    for root in _installed_sage_package_roots():
+        dirs.extend(_installed_sagelite_runtime_library_dirs(root))
+    return _deduplicate_existing_dirs(dirs)
+
+
+@cached_function
 def _installed_sagelite_library_dirs():
     """
     Return private linker directories for auditwheel-bundled Sage libraries.
@@ -352,6 +365,69 @@ def _finalize_cythonized_extension(ext, aliases, libraries, library_dirs, includ
     ext.library_dirs = _extend_unique(ext.library_dirs, library_dirs)
     ext.runtime_library_dirs = _extend_unique(ext.runtime_library_dirs, library_dirs)
     ext.libraries = _extend_unique(ext.libraries, libraries)
+
+
+def _repair_installed_sagelite_macos_extension(
+    target_dir, name, runtime_library_dirs, extension_suffixes=None
+):
+    """Make a runtime-compiled macOS extension load wheel-bundled dylibs."""
+    if SAGE_ROOT is not None or sys.platform != "darwin":
+        return 0
+
+    if extension_suffixes is None:
+        from importlib.machinery import EXTENSION_SUFFIXES
+
+        extension_suffixes = EXTENSION_SUFFIXES
+
+    extension = next(
+        (
+            Path(target_dir) / f"{name}{suffix}"
+            for suffix in extension_suffixes
+            if (Path(target_dir) / f"{name}{suffix}").is_file()
+        ),
+        None,
+    )
+    if extension is None:
+        return 0
+
+    output = subprocess.run(
+        ["otool", "-L", os.fspath(extension)],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    changes = []
+    for line in output.splitlines()[1:]:
+        dependency = line.strip().split(maxsplit=1)[0]
+        if not dependency.startswith("@loader_path/"):
+            continue
+        basename = Path(dependency).name
+        packaged = next(
+            (
+                Path(directory) / basename
+                for directory in runtime_library_dirs
+                if (Path(directory) / basename).is_file()
+            ),
+            None,
+        )
+        if packaged is not None:
+            changes.extend(["-change", dependency, f"@rpath/{basename}"])
+
+    if not changes:
+        return 0
+    subprocess.run(
+        ["install_name_tool", *changes, os.fspath(extension)],
+        check=True,
+    )
+    codesign = shutil.which("codesign")
+    if codesign is not None:
+        subprocess.run(
+            [codesign, "--force", "--sign", "-", os.fspath(extension)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    return len(changes) // 3
 
 
 @cached_function
@@ -678,6 +754,7 @@ def cython(filename, verbose=0, compile_message=False,
     # Add current working directory to includes. This is needed because
     # we cythonize from a different directory. See Issue #24764.
     standard_libs, standard_libdirs, standard_includes, aliases = _standard_libs_libdirs_incdirs_aliases()
+    installed_runtime_libdirs = _installed_sagelite_runtime_dirs()
     includes = [os.getcwd()] + standard_includes
 
     # Now do the actual build, directly calling Cython and distutils
@@ -796,6 +873,11 @@ def cython(filename, verbose=0, compile_message=False,
                     _cython_compiler_environment(),
                 ):
                     dist.run_command("build")
+                    _repair_installed_sagelite_macos_extension(
+                        target_dir,
+                        name,
+                        installed_runtime_libdirs,
+                    )
             finally:
                 errfile.seek(0)
                 distutils_messages = _filter_zig_libcxx_diagnostics(errfile.read())
