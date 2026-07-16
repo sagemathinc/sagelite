@@ -23,6 +23,7 @@ MACHO_MAGICS = {
 }
 SYSTEM_PREFIXES = ("/System/Library/", "/usr/lib/")
 PARI_RUNTIME_PREFIXES = ("libpari", "libgmp", "libmpfr", "libmpfi")
+ECL_RUNTIME_PREFIXES = ("libecl",)
 SINGULAR_RUNTIME_PREFIXES = (
     "libSingular",
     "libpolys",
@@ -32,6 +33,7 @@ SINGULAR_RUNTIME_PREFIXES = (
 )
 COMPANION_RUNTIME_DIRS = {
     "pari": Path("sagelite_pari/data/lib"),
+    "maxima": Path("sagelite_maxima/data/lib/runtime"),
     "singular": Path("sagelite_singular_runtime/data/lib"),
 }
 
@@ -79,6 +81,8 @@ def companion_owner(dependency: str) -> str | None:
     name = Path(dependency).name
     if name.startswith(PARI_RUNTIME_PREFIXES):
         return "pari"
+    if name.startswith(ECL_RUNTIME_PREFIXES):
+        return "maxima"
     if name.startswith(SINGULAR_RUNTIME_PREFIXES):
         return "singular"
     return None
@@ -175,10 +179,12 @@ def audit_portable_dependencies(root: Path) -> tuple[int, int]:
 
 
 def delocate_command(wheel: Path, wheel_dir: Path, delocate_wheel: str) -> list[str]:
-    # The companion libraries are intentionally absent from the primary wheel,
-    # so delocate cannot resolve their already-relative paths. Its permissive
-    # scan is followed by audit_portable_dependencies, which is deliberately
-    # stricter and rejects every unresolved dependency outside those companions.
+    # These runtime libraries are intentionally owned by companion wheels, so
+    # delocate must not copy or rename them inside the primary.  In particular,
+    # keeping ECL's original dylib name makes sage.libs.ecl and maxima.fas load
+    # the exact same Maxima-companion file instead of initializing two copies of
+    # ECL in one process.  The permissive scan is followed by the strict audit,
+    # which rejects every unresolved dependency outside the named companions.
     command = [
         delocate_wheel,
         "--ignore-missing-dependencies",
@@ -190,7 +196,11 @@ def delocate_command(wheel: Path, wheel_dir: Path, delocate_wheel: str) -> list[
         "--lib-sdir",
         "sagelite.libs",
     ]
-    for prefix in (*PARI_RUNTIME_PREFIXES, *SINGULAR_RUNTIME_PREFIXES):
+    for prefix in (
+        *PARI_RUNTIME_PREFIXES,
+        *ECL_RUNTIME_PREFIXES,
+        *SINGULAR_RUNTIME_PREFIXES,
+    ):
         command.extend(["--exclude", prefix])
     command.append(os.fspath(wheel))
     return command
@@ -277,7 +287,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Bundle the general macOS Sagelite dylib closure while preserving "
-            "PARI and Singular libraries as companion-wheel-owned runtimes."
+            "PARI, Maxima/ECL, and Singular libraries as companion-wheel-owned "
+            "runtimes."
         )
     )
     parser.add_argument("--wheel", required=True, type=Path)

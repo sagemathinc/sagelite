@@ -341,6 +341,38 @@ def test_selftest_accepts_maxima_fas_with_matching_loaded_ecl(
     )
 
 
+def test_selftest_lists_loaded_libecl_on_macos(monkeypatch, tmp_path):
+    selftest = _load_selftest()
+    libecl = tmp_path / "libecl.24.5.dylib"
+    libecl.write_text("ecl runtime\n", encoding="utf-8")
+    other = tmp_path / "libother.dylib"
+    other.write_text("other runtime\n", encoding="utf-8")
+    images = [
+        str(other).encode(),
+        str(libecl).encode(),
+        str(libecl).encode(),
+        None,
+    ]
+
+    class DyldFunction:
+        def __init__(self, function):
+            self.function = function
+            self.argtypes = None
+            self.restype = None
+
+        def __call__(self, *args):
+            return self.function(*args)
+
+    class Process:
+        _dyld_image_count = DyldFunction(lambda: len(images))
+        _dyld_get_image_name = DyldFunction(lambda index: images[index])
+
+    monkeypatch.setattr(selftest.sys, "platform", "darwin")
+    monkeypatch.setattr(selftest.ctypes, "CDLL", lambda path: Process())
+
+    assert selftest._loaded_libecl_paths() == [libecl]
+
+
 def test_selftest_continues_after_maxima_runtime_packaging_failure(monkeypatch):
     selftest = _load_selftest()
     calls = []

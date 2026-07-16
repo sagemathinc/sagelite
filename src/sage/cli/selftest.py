@@ -1055,6 +1055,28 @@ def _loaded_libecl_paths() -> list[Path]:
     """
     Return ECL shared libraries currently mapped in this process.
     """
+    if sys.platform == "darwin":
+        process = ctypes.CDLL(None)
+        image_count = process._dyld_image_count
+        image_count.argtypes = []
+        image_count.restype = ctypes.c_uint32
+        image_name = process._dyld_get_image_name
+        image_name.argtypes = [ctypes.c_uint32]
+        image_name.restype = ctypes.c_char_p
+
+        paths = []
+        seen = set()
+        for index in range(image_count()):
+            encoded = image_name(index)
+            if not encoded:
+                continue
+            path = Path(os.fsdecode(encoded))
+            if "libecl" not in path.name or path in seen or not path.is_file():
+                continue
+            seen.add(path)
+            paths.append(path)
+        return paths
+
     maps = Path("/proc/self/maps")
     if not maps.is_file():
         return []

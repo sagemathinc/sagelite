@@ -24,6 +24,7 @@ SPEC.loader.exec_module(repair)
     [
         ("/opt/homebrew/lib/libgmp.10.dylib", "pari"),
         ("@loader_path/libmpfi.0.dylib", "pari"),
+        ("/opt/homebrew/lib/libecl.24.5.dylib", "maxima"),
         ("/prefix/lib/libSingular-4.4.1.dylib", "singular"),
         ("/prefix/lib/libfactory-4.4.1.dylib", "singular"),
         ("/prefix/lib/libflint.22.dylib", None),
@@ -40,6 +41,13 @@ def test_companion_dependency_is_relative_to_binary(tmp_path):
         binary, tmp_path, "/build/lib/libgmp.10.dylib"
     ) == "@loader_path/../../sagelite_pari/data/lib/libgmp.10.dylib"
 
+    assert repair.companion_dependency(
+        binary, tmp_path, "/build/lib/libecl.24.5.dylib"
+    ) == (
+        "@loader_path/../../sagelite_maxima/data/lib/runtime/"
+        "libecl.24.5.dylib"
+    )
+
 
 def test_delocate_command_excludes_companion_families(tmp_path):
     command = repair.delocate_command(
@@ -55,6 +63,7 @@ def test_delocate_command_excludes_companion_families(tmp_path):
     }
     assert excluded == {
         *repair.PARI_RUNTIME_PREFIXES,
+        *repair.ECL_RUNTIME_PREFIXES,
         *repair.SINGULAR_RUNTIME_PREFIXES,
     }
 
@@ -71,6 +80,7 @@ def test_rewrite_and_audit_companion_dependencies(tmp_path, monkeypatch):
         module: [
             "/opt/homebrew/lib/libflint.22.dylib",
             "/opt/homebrew/lib/libgmp.10.dylib",
+            "/opt/homebrew/lib/libecl.24.5.dylib",
             "/usr/lib/libSystem.B.dylib",
         ],
         bundled: [
@@ -101,7 +111,7 @@ def test_rewrite_and_audit_companion_dependencies(tmp_path, monkeypatch):
     changed_files, changed_dependencies = repair.rewrite_companion_dependencies(
         tmp_path
     )
-    assert (changed_files, changed_dependencies) == (2, 2)
+    assert (changed_files, changed_dependencies) == (2, 3)
     assert dependencies[module][1] == (
         "@loader_path/../sagelite_pari/data/lib/libgmp.10.dylib"
     )
@@ -109,8 +119,12 @@ def test_rewrite_and_audit_companion_dependencies(tmp_path, monkeypatch):
         "@loader_path/../sagelite_pari/data/lib/libgmp.10.dylib"
     )
 
+    assert dependencies[module][2] == (
+        "@loader_path/../sagelite_maxima/data/lib/runtime/libecl.24.5.dylib"
+    )
+
     dependencies[module][0] = "@loader_path/../sagelite.libs/libflint.22.dylib"
-    assert repair.audit_portable_dependencies(tmp_path) == (2, 6)
+    assert repair.audit_portable_dependencies(tmp_path) == (2, 7)
 
 
 def test_audit_rejects_absolute_and_unresolved_dependencies(tmp_path, monkeypatch):
