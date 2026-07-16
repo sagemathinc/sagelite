@@ -1,5 +1,48 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-16 Post54 Strict Short Pass And Full Start
+
+Exact pushed `post54` source `cf0c58f71315735cea2084e026bea6a2e283b27e`,
+committed tree `479a86cba51685d4a0b7e7f11740c20900b57d3a`, produced
+this repaired CPython 3.14 primary:
+
+```text
+sagelite-10.9.post54-cp314-cp314-macosx_26_0_arm64.whl
+  102,365,990 bytes
+  e893f5be4456e61b15cb7f4fa744da805eae47f4441bb511b1a6326a2a2d786d
+```
+
+The exact source archive SHA-256 is
+`15007bd65bb35f08e9a1a1208fe3dc3256d4664bfabf5b2c9dab0587e893fb8c`.
+Build and repair exited zero after injecting 2,079 headers, rewriting 23
+companion-library references, and auditing 1,176 dependencies across 637
+Mach-O files. The deterministic strict closure has 168 wheels: one primary,
+68 companions, and 99 third-party wheels totaling 13,890,635,644 bytes. Its
+inventory digest is
+`a7b168c35f613d5506ec8e97ad235fd3f2fc9e19de022a95de00e2307472054c`.
+
+The independent neutral-environment strict short gate passed in a fresh
+wheel-only installation. Strict preflight found all 168 wheels compatible,
+installation and `pip check` passed, the runtime manifest and every selftest
+probe completed, and an explicit isolation assertion found no build path in
+the Sage prefix hierarchy. `KENZO_FAS` was correctly `None` while Maxima and
+generic ECL configuration resolved to their fresh companion packages. All
+3,953 installed `--optional=sage` modules passed with zero failures in 491.5
+seconds. Packaged pytest also passed 226 tests with 5 skips.
+
+With 78 GiB free, the required independent full gate started under tmux
+session `sagelite_cp314_post54_full`. It uses another fresh wheel-only install,
+strict macOS preflight, explicit `--optional=sage --full`, eight threads, and
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. The authoritative run path is:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260716-202742-cf0c58f71315/
+```
+
+This is build, closure, strict short-pass, and full-gate-start evidence. Final
+acceptance still requires the independent full gate to exit successfully; no
+publication was attempted.
+
 ## 2026-07-16 Post53 Kenzo Isolation Rejection And Post54 Repair
 
 Exact pushed `post53` source `36d6058514b8a5eb1bae773626cfe5ed0dcdb584`
