@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post47`, local; `post9`, public) | not accepted. Exact pushed `post47` produced a repaired 102,091,588-byte primary and strict 179-wheel closure. Fresh wheel-only installation, `pip check`, all 102 selftest probes, and the complete installed short sweep of 3,953 modules mechanically passed with zero failures. Runtime evidence invalidated the gate: generated configuration selected build-host GAP roots and host ECL, Kenzo, ECM, and nauty resources, while validation reused the account's real `HOME`. `post48` prefers installed companion resources and gives validation a neutral run-local home; its focused environment and validator tests pass, but an exact-source rebuild and both fresh gates remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post48`, local; `post9`, public) | not accepted. Exact pushed `post48` produced a repaired 102,091,852-byte primary and strict 179-wheel closure. A fresh neutral-path wheel-only gate passed preflight, installation, `pip check`, all 102 selftest probes, and runtime isolation: the manifest had no build-prefix, real-home, retained-run, or Homebrew CSDP/Singular leak. The 3,955-module short sweep still had five failed modules: the documented Objective-C fork-safety abort because the workaround was omitted, a deterministic cross-group hash collision, and parallel-only ECL/Singular interrupt failures. A serial rerun with the workaround passed every focused module except the hash test. Packaged pytest found one missing source-build context stub. `post49` uses tuple hashing and fixes that test setup; exact rebuild and both gates remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,16 +218,16 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Build the macOS arm64 CPython 3.13 `post48` primary from its exact pushed
+1. Build the macOS arm64 CPython 3.13 `post49` primary from its exact pushed
    source, assemble the strict 179-wheel closure, and run the fresh strict
-   short gate. The coherent `post47` wheel, install, `pip check`, all 102
-   selftest probes, and 3,953-module short sweep mechanically passed, but the
-   runtime manifest proved that generated configuration selected build-host
-   GAP, ECL, Kenzo, ECM, and nauty resources and validation reused the real
-   account home. `post48` prefers installed companions and supplies a neutral
-   run-local validation home; focused tests pass, but only a coherent rebuild
-   can validate the fix. Start the authoritative full gate only after that
-   fresh strict short sweep passes without host-state leakage.
+   short gate with a neutral base `PATH` and the explicitly recorded
+   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` workaround. Exact `post48` proved
+   the runtime-isolation fix in a fresh gate, but its short sweep exposed a
+   deterministic reflection-group hash collision and parallel-only ECL and
+   Singular interrupt failures. The focused serial rerun passed the interrupt
+   modules, while `post49` replaces the collision-prone bitwise-OR hash mixer
+   and fixes the packaged GAP environment test setup. Start the authoritative
+   full gate only after the coherent short sweep passes without leakage.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.

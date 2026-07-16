@@ -1,5 +1,65 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post48 Isolated Gate and Post49 Hash Repair
+
+Exact pushed source `907306aa61ed437c85278e7ea2ba93fe13b217ff`
+completed the coherent `10.9.post48` primary rebuild. The repaired primary is:
+
+```text
+sagelite-10.9.post48-cp313-cp313-macosx_26_0_arm64.whl
+  102,091,852 bytes
+  bfbaa7488804578075e629b4b7c70a93af980a6ac4fd990f71224d1d6a598397
+```
+
+The exact controller archive had SHA-256
+`a28f627a44f32840c613fd8c5db6662875e4706171cc9875a4e42113be8fd574`
+and reproduced materialized source tree
+`2457817897178ec61df7376040dfd5eb0662b4bf`. Repair packaged 2,079
+native headers, added 23 companion dependencies in 16 Mach-O files, and
+audited 1,176 dependencies across 637 Mach-O files. Replacing only the
+`post47` primary in its hash-recorded companion closure produced a strict
+179-wheel set: one primary, 68 companions, and 110 third-party wheels totaling
+13,895,769,189 bytes. The validator's staged-wheelhouse digest was
+`04328927c50a49b33ad7a1c4f5e4c3f98c67d829454ecc0b09056ca481f5760e`.
+
+The first launch was intentionally discarded after its runtime manifest showed
+that the seed `PATH` still exposed Homebrew CSDP and Singular. The isolated
+diagnostic rerun used only the fresh venv followed by `/usr/bin:/bin`. Strict
+preflight, a fresh wheel-only `sagelite[all-needed-extras]==10.9.post48`
+installation, `pip check`, and all 102 selftest probes passed. Its run-local
+neutral `HOME` was recorded. The runtime manifest contained no reference to
+the build prefix, the account's real Sage home, the retained `post47` run,
+Homebrew CSDP, or Homebrew Singular; GAP roots and the remediated standard
+runtimes resolved inside the fresh install.
+
+The isolated short gate nevertheless exited 17 after 1,789.415 seconds. The
+installed `--optional=sage --short 600 -p 8` sweep saw 3,955 modules and failed
+five: `sage.combinat.designs.ext_rep` hit the documented Objective-C
+fork-safety abort because this diagnostic omitted the accepted workaround;
+the reflection-group hash doctest found one deterministic B/C cross-group
+collision; and the ECL SIGINT plus two Singular interrupt checks failed only
+in the parallel sweep. A serial rerun with
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` passed the Objective-C, ECL, and both
+Singular modules, reproducing only the hash collision. Packaged pytest reported
+218 passes, 5 skips, and one failure: a new source-build GAP test had not
+stubbed the installed-wheel context helper.
+
+The `10.9.post49` remediation replaces the reflection element's bitwise-OR
+combination of parent and permutation hashes with Python tuple hashing, which
+preserves both inputs without the systematic bit saturation that caused the
+collision. It also supplies the missing source-build context stub in the GAP
+test. The validator suite passes all 44 tests on the controller. Exact-source
+rebuild and both fresh gates remain required; no full-suite or publication
+result is claimed. The public manifest remains unchanged at 177 wheels
+generated on 2026-07-09, including fourteen `post8`/`post9` primaries.
+
+The exact remote run and controller evidence copy are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-111552-907306aa61e/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-111552-907306aa61e/
+```
+
 ## 2026-07-16 Post47 Strict Diagnostic and Post48 Runtime Isolation
 
 Exact pushed source `b184d1d177e81e0162b89a48a746c1a218102f0b`

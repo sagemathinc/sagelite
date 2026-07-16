@@ -85,7 +85,7 @@ cdef class ComplexReflectionGroupElement(PermutationGroupElement):
             sage: hash(elt) == hash(y)
             True
         """
-        return hash(self._parent) | super().__hash__()
+        return hash((self._parent, super().__hash__()))
 
     def reduced_word(self):
         r"""

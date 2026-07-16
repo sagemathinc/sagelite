@@ -965,6 +965,7 @@ def test_gap_root_paths_does_not_append_registered_package_roots_to_configured_c
     monkeypatch.delenv("GAP_ROOT_PATHS", raising=False)
     monkeypatch.setattr(env.sage.config, "GAP_ROOT_PATHS", str(configured), raising=False)
     monkeypatch.setattr(env, "SAGE_EXTCODE", str(tmp_path / "ext_data"))
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: False)
     monkeypatch.setattr(
         env.importlib_metadata,
         "entry_points",
