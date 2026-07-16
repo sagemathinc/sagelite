@@ -135,10 +135,11 @@ support directory. An explicit probe confirmed that weakening the guard would
 abort ECL. The `post54` repair preserves the guard while preventing installed
 wheels from consulting build-time Kenzo configuration. Exact `post54` source
 produced a repaired primary and strict 168-wheel closure. Its independent
-fresh short gate passed strict preflight, wheel-only installation, `pip check`,
-runtime isolation, selftest, all 3,953 installed standard modules with zero
-failures, and packaged pytest with 226 passes and 5 skips. The independent
-full gate is active on `m1`. Details are in
+fresh short and full gates passed strict preflight, wheel-only installation,
+`pip check`, runtime isolation, selftest, all 3,953 installed standard modules
+with zero failures, and packaged pytest with 226 passes and 5 skips. The full
+unrestricted doctest took 791.8 seconds and the validator exited zero after
+2,186.243 seconds. Details are in
 `agents/sagelite-macos-arm64-cp314-validation.md`.
 
 ## Scratch Layout
@@ -223,12 +224,13 @@ Status meanings:
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | strict short (`post54`) passed from exact pushed source `cf0c58f7131`: fresh wheel-only install, `pip check`, runtime isolation, selftest, all 3,953 installed modules with zero failures, and packaged pytest passed; independent full gate active | smoke (`post8`) |
+| macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired 102,365,990-byte primary and strict 168-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, selftest, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
-The two existing full baselines establish that the standard installed runtime
-can pass on Linux x86_64 and macOS arm64. They are not a synchronized
-`post9` 3-by-3 release-candidate run. Final matrix completion requires a fresh
-full pass for all nine cells from one selected release-candidate revision.
+The recorded full passes establish that the standard installed runtime can
+pass on Linux x86_64, Linux aarch64, and macOS arm64. They are not a
+synchronized 3-by-3 release-candidate run. Final matrix completion requires a
+fresh full pass for all nine cells from one selected release-candidate
+revision.
 
 The optional-wheel-ready extra currently names 19 packages:
 
@@ -251,13 +253,12 @@ Unless newer evidence changes the matrix, use this order:
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-3. Run and fix the full standard suite on macOS arm64 CPython 3.14.
-4. Run and fix the full standard suite on native Linux aarch64 CPython 3.12.
-5. Select one release-candidate commit and rerun the full standard suite on
+3. Run and fix the full standard suite on native Linux aarch64 CPython 3.12.
+4. Select one release-candidate commit and rerun the full standard suite on
    all nine cells, including the two earlier CPython 3.12 baselines.
-6. Validate the current optional-wheel-ready extra across all nine cells,
+5. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-7. Resume systematic optional-package expansion in install-smoke batches.
+6. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected

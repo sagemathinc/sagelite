@@ -1,6 +1,6 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
-## 2026-07-16 Post54 Strict Short Pass And Full Start
+## 2026-07-16 Post54 Strict Short And Full Pass
 
 Exact pushed `post54` source `cf0c58f71315735cea2084e026bea6a2e283b27e`,
 committed tree `479a86cba51685d4a0b7e7f11740c20900b57d3a`, produced
@@ -30,17 +30,28 @@ generic ECL configuration resolved to their fresh companion packages. All
 3,953 installed `--optional=sage` modules passed with zero failures in 491.5
 seconds. Packaged pytest also passed 226 tests with 5 skips.
 
-With 78 GiB free, the required independent full gate started under tmux
-session `sagelite_cp314_post54_full`. It uses another fresh wheel-only install,
-strict macOS preflight, explicit `--optional=sage --full`, eight threads, and
-`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. The authoritative run path is:
+The required independent full gate then passed from another fresh wheel-only
+installation under tmux session `sagelite_cp314_post54_full`. Strict macOS
+preflight, installation, `pip check`, the runtime manifest, and every selftest
+probe passed. Its explicit neutral-environment assertion found `SAGE_ROOT`
+unset, the entire Sage prefix hierarchy inside the fresh installation, no
+build paths, and `KENZO_FAS` unset. The unrestricted installed
+`--optional=sage` sweep passed all 3,953 modules with zero failures in 791.8
+seconds (4,511.6 CPU seconds and 4,463.9 cumulative wall seconds). Packaged
+pytest passed 226 tests with 5 skips and 15 warnings in 269.55 seconds. The
+validator recorded `Status: passed`, exit code 0, and 2,186.243 seconds total
+elapsed time.
+
+Both strict gates used eight threads and
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. Their authoritative run path is:
 
 ```text
 /Volumes/sage/sagelite-automation/macos-arm64-cp314-20260716-202742-cf0c58f71315/
 ```
 
-This is build, closure, strict short-pass, and full-gate-start evidence. Final
-acceptance still requires the independent full gate to exit successfully; no
+This exact `post54` build and its deterministic closure are accepted for the
+local macOS arm64 CPython 3.14 matrix cell. Both fresh validation installs and
+their evidence remain preserved; 59 GiB remained free after the full gate. No
 publication was attempted.
 
 ## 2026-07-16 Post53 Kenzo Isolation Rejection And Post54 Repair
