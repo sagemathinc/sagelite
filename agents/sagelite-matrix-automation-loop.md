@@ -115,9 +115,10 @@ has changed.
 On 2026-07-16, repeated preflight attempts to `host` timed out during SSH
 connection. The next x86_64 iteration remains blocked until the assigned host
 is reachable and its required bulk filesystem can be checked again. Independent
-work continued on `m1`: cleanup of only completed automation-owned installs and
-superseded CPython 3.13 build artifacts restored 103 GiB free, and an exact
-`bd3d4c40efe` macOS arm64 CPython 3.14 build started durably. Details are in
+work continued on `m1`: exact pushed source `bd3d4c40efe` produced the repaired
+macOS arm64 CPython 3.14 `post51` primary, and its CPython 3.14-compatible
+168-wheel closure passed deterministic pip resolution and tag checks. The
+strict fresh short gate is active. Details are in
 `agents/sagelite-macos-arm64-cp314-validation.md`.
 
 ## Scratch Layout
@@ -202,7 +203,7 @@ Status meanings:
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
+| macOS arm64 | 3.14 | yes (`post51`, local; `post9`, public) | strict `post51` short gate active; smoke only (`post9`) remains the latest completed evidence | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
 can pass on Linux x86_64 and macOS arm64. They are not a synchronized
