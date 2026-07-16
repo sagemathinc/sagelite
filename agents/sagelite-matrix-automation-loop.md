@@ -126,7 +126,14 @@ environment configuration. Exact pushed source `b2350b4d3d4` produced the
 repaired `post52` primary and its strict 168-wheel closure, but its fresh gate
 showed that `var(force=True)` still consulted generated build configuration.
 The gate was rejected. The `post53` fix makes forced fallback selection bypass
-both the process environment and generated configuration. Details are in
+both the process environment and generated configuration. Exact `post53`
+source then produced a repaired primary and strict 168-wheel closure. Its
+fresh install and `pip check` passed, and the prefix hierarchy relocated
+correctly, but `KENZO_FAS` still fell back to the build path after the
+compatibility guard rejected the companion under Maxima's distinct ECL
+support directory. An explicit probe confirmed that weakening the guard would
+abort ECL. The `post54` repair preserves the guard while preventing installed
+wheels from consulting build-time Kenzo configuration. Details are in
 `agents/sagelite-macos-arm64-cp314-validation.md`.
 
 ## Scratch Layout
@@ -211,7 +218,7 @@ Status meanings:
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post52`, rejected local; `post9`, public) | `post51` and `post52` strict gates rejected for build-prefix runtime reuse; `post53` force repair pending rebuild; smoke only (`post9`) remains the latest completed evidence | smoke (`post8`) |
+| macOS arm64 | 3.14 | yes (`post53`, rejected local; `post9`, public) | `post51` through `post53` strict gates rejected for build-prefix runtime reuse; `post54` Kenzo isolation repair pending rebuild; smoke only (`post9`) remains the latest completed evidence | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
 can pass on Linux x86_64 and macOS arm64. They are not a synchronized

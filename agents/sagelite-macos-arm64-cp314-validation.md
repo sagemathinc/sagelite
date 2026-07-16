@@ -1,5 +1,48 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-16 Post53 Kenzo Isolation Rejection And Post54 Repair
+
+Exact pushed `post53` source `36d6058514b8a5eb1bae773626cfe5ed0dcdb584`
+produced a repaired CPython 3.14 primary and deterministic strict closure. The
+primary was:
+
+```text
+sagelite-10.9.post53-cp314-cp314-macosx_26_0_arm64.whl
+  102,365,076 bytes
+  97c102ea0f52254745f18e61072a92115cd67d344d707bdbf171d1648df9633a
+```
+
+The build and repair exited zero after injecting 2,079 headers, rewriting 23
+companion-library references, and auditing 1,176 dependencies across 637
+Mach-O files. The 168-wheel closure contains one primary, 68 companions, and
+99 third-party wheels totaling 13,890,634,730 bytes; its inventory digest is
+`e43168929153c42f5e2b470ad32a6230c9c540fd6199ff020a0572f31a5e1031`.
+
+The strict fresh wheel-only install and `pip check` passed. Its neutral-path
+diagnostic also proved that `SAGE_LOCAL`, `SAGE_SHARE`, `SAGE_DOC`,
+`SAGE_SRC`, and `SAGE_LIB` now resolve within the fresh installation rather
+than the build venv. The gate was nevertheless rejected during runtime
+manifest collection because `KENZO_FAS` still fell back to the generated
+build-time path when the Kenzo companion was incompatible with the active ECL
+support directory. The automation stopped the gate and preserved its partial
+validation evidence under:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260716-200221-36d6058514b/
+```
+
+The compatibility guard itself is necessary. Maxima activates its packaged
+ECL support directory, which is a distinct filesystem entry from the generic
+ECL companion directory. Explicitly forcing the Kenzo companion FAS with that
+active directory reproduced an ECL abort with status 134. `post54` therefore
+does not weaken the guard: for an installed wheel it preserves an explicit
+`KENZO_FAS`, uses a compatible companion selected by bootstrap, or reports
+Kenzo as unavailable instead of consulting generated build configuration.
+Source-build configuration remains unchanged. Three focused tests cover the
+installed, source-build, and explicit-environment cases; the complete focused
+environment test file passes 125 tests. The primary and both strict gates must
+be rebuilt from the exact committed `post54` source.
+
 ## 2026-07-16 Post52 Isolation Rejection And Post53 Force Repair
 
 The `post52` strict gate passed wheelhouse preflight, fresh wheel-only

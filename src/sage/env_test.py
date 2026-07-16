@@ -1807,6 +1807,38 @@ def test_kenzo_runtime_does_not_mix_companion_fas_with_system_ecl(
     assert "KENZO_FAS" not in env.os.environ
 
 
+def test_kenzo_fas_value_ignores_build_config_for_installed_wheel(
+    monkeypatch, tmp_path
+):
+    configured_fas = _kenzo_runtime(tmp_path, "build-configured")
+
+    monkeypatch.delenv("KENZO_FAS", raising=False)
+    monkeypatch.setattr(env.sage.config, "KENZO_FAS", str(configured_fas), raising=False)
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+
+    assert env._kenzo_fas_value() is None
+
+
+def test_kenzo_fas_value_preserves_source_build_config(monkeypatch, tmp_path):
+    configured_fas = _kenzo_runtime(tmp_path, "source-configured")
+
+    monkeypatch.delenv("KENZO_FAS", raising=False)
+    monkeypatch.setattr(env.sage.config, "KENZO_FAS", str(configured_fas), raising=False)
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: False)
+
+    assert env._kenzo_fas_value() == str(configured_fas)
+
+
+def test_kenzo_fas_value_preserves_explicit_environment(monkeypatch, tmp_path):
+    explicit_fas = _kenzo_runtime(tmp_path, "explicit")
+
+    monkeypatch.setenv("KENZO_FAS", str(explicit_fas))
+    monkeypatch.setattr(env.sage.config, "KENZO_FAS", "/build/config", raising=False)
+    monkeypatch.setattr(env, "_installed_without_source_tree", lambda: True)
+
+    assert env._kenzo_fas_value() == str(explicit_fas)
+
+
 def test_pari_data_runtime_uses_companion_when_environment_is_missing(monkeypatch, tmp_path):
     data_dir = _pari_data_runtime(tmp_path, "companion")
 

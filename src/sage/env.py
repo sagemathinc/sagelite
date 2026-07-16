@@ -305,6 +305,24 @@ def _bootstrap_sagelite_kenzo_runtime() -> None:
         os.environ.setdefault("KENZO_FAS", os.fspath(fas))
 
 
+def _kenzo_fas_value() -> Optional[str]:
+    """
+    Return the Kenzo image selected for this Sage process.
+
+    A binary wheel must not fall back to the build-time ``sage.config`` path
+    when the companion Kenzo image is incompatible with the active ECL
+    support directory.  The bootstrap above leaves ``KENZO_FAS`` unset in
+    that case.  Preserve explicit environment and source-build configuration,
+    but report Kenzo as unavailable for an installed wheel.
+    """
+    configured = os.environ.get("KENZO_FAS")
+    if configured is not None:
+        return configured
+    if _installed_without_source_tree():
+        return None
+    return getattr(sage.config, "KENZO_FAS", None)
+
+
 def _ecldir_contains_maxima(ecldir: str | os.PathLike | None) -> bool:
     """
     Return whether ``ecldir`` can satisfy ECL's plain ``(require 'maxima)``.
@@ -1602,7 +1620,7 @@ MAXIMA_FAS = var("MAXIMA_FAS")
 MAXIMA_PREFIX = var("MAXIMA_PREFIX")
 _bootstrap_sagelite_ecl_runtime()
 _bootstrap_sagelite_kenzo_runtime()
-KENZO_FAS = var("KENZO_FAS")
+KENZO_FAS = var("KENZO_FAS", _kenzo_fas_value(), force=True)
 _bootstrap_sagelite_nauty_runtime()
 SAGE_NAUTY_BINS_PREFIX = var("SAGE_NAUTY_BINS_PREFIX", "")
 _bootstrap_sagelite_ecm_runtime()
