@@ -4,3 +4,5 @@
 *.{cmd,[cC][mM][dD]} text eol=crlf
 *.{bat,[bB][aA][tT]} text eol=crlf
 *.diff_bin binary
+# Preserve whitespace copied from the upstream Tachyon source in this patch.
+build/pkgs/tachyon/patches/long-image-paths.patch -whitespace

@@ -1,5 +1,72 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post49 Strict Gates and Post50 Tachyon Repair
+
+Exact source `3e69dd7dc99dfefcc9fde1028611ea91aaa74b3e` produced the
+coherent `10.9.post49` repaired primary:
+
+```text
+sagelite-10.9.post49-cp313-cp313-macosx_26_0_arm64.whl
+  102,092,081 bytes
+  427dac9cde2eec50af6b25015ce7e8fd064585e7b304c85f486bff5e07503237
+```
+
+The exact controller and builder source archives both had SHA-256
+`446c3c882ba71c598cb5214c04d2e8899ba3915deed11882a272171935939acf`
+and materialized source tree
+`5896b1f18d3b9a58180e9b3b2af0afe54d078571`. The strict closure contained
+179 wheels: one primary, 68 companions, and 110 third-party wheels totaling
+13,895,769,418 bytes. Its inventory digest was
+`86686fe5f57251b8c806e7e8413c47d295c48cb08b5f6ab066375a6a252996c0`.
+
+With a neutral `/usr/bin:/bin` base path and the explicitly supplied
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`, strict macOS preflight, a fresh
+wheel-only `sagelite[all-needed-extras]==10.9.post49` installation, `pip
+check`, and all 102 selftest probes passed. The runtime audit found zero
+dependency, GAP-root, host-executable, Python-path, or source-path leaks. The
+installed `--optional=sage --short 600 -p 8` sweep passed all 3,953 modules,
+and packaged pytest passed 219 tests with 5 skips. The gate exited zero after
+1,710.76 seconds.
+
+The fresh full gate repeated preflight, installation, `pip check`, selftest,
+and packaged pytest successfully, then exited 5 after 2,142.646 seconds. Its
+complete installed sweep saw 3,955 modules and two failures:
+
+- `sage.plot.plot3d.tachyon` failed one of 401 examples when the packaged
+  Tachyon process received `SIGSEGV` rendering a planar PPM image map;
+- `sage.interfaces.fricas` timed out and remains a separate unresolved failure
+  class.
+
+The exact Tachyon scene reproduced exit 139 outside the doctest framework.
+UndefinedBehaviorSanitizer showed that `LoadMIPMap()` returned null for the
+long temporary image path and `MIPMap()` dereferenced it. Upstream Tachyon
+stored image paths in 96-byte buffers, rejected paths longer than 80 bytes,
+and used unbounded `%s` parsing. The `10.9.post50` source patch expands those
+bounded buffers to 4,096 bytes, bounds all parser reads, and frees rejected
+allocations. An exact release-flags arm64 build changed the captured render
+from exit 139 to exit 0. A focused installed rerun then passed all 401 Tachyon
+examples in 8.22 seconds.
+
+The existing `sagelite-tachyon-runtime==10.9` wheel also linked directly to
+Homebrew libpng. The `10.9.post1` companion remediation now discovers the
+complete macOS dylib closure, packages libpng, rewrites loader-relative install
+names, and ad-hoc signs the result. A fresh wheel-only install of the 157 KiB
+diagnostic companion passed `pip check`; both Mach-O signatures verified, its
+only non-system dependency resolved through `@loader_path`, and the captured
+long-path scene rendered successfully from a neutral environment. This is
+focused diagnostic evidence from the working change, not final cell
+acceptance. A coherent exact-source `post50` primary and companion rebuild,
+fresh strict short gate, and full gate remain required before addressing the
+separate FriCAS timeout. No publication result is claimed; the public manifest
+remains the 177-wheel 2026-07-09 set.
+
+Artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-122958-3e69dd7dc99/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-122958-3e69dd7dc99/
+```
+
 ## 2026-07-16 Post48 Isolated Gate and Post49 Hash Repair
 
 Exact pushed source `907306aa61ed437c85278e7ea2ba93fe13b217ff`

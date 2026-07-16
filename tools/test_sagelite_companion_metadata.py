@@ -657,7 +657,7 @@ BASE_SAGELITE_STANDARD_RUNTIME_DEPENDENCIES = {
     "sagelite-singular-runtime >=10.9.post2,<10.10",
     "sagelite-sirocco-runtime >=10.9,<10.10",
     "sagelite-sympow-runtime >=10.9.post2,<10.10",
-    "sagelite-tachyon-runtime >=10.9,<10.10",
+    "sagelite-tachyon-runtime >=10.9.post1,<10.10",
     "sagelite-topcom-runtime >=10.9,<10.10",
 }
 
@@ -907,7 +907,7 @@ def test_sagelite_default_dependencies_include_public_index_doctest_companions()
     assert "sagelite-meataxe-runtime >=10.9.post1,<10.10" in dependencies
     assert "sagelite-nauty-runtime >=10.9,<10.10" in dependencies
     assert "sagelite-sympow-runtime >=10.9.post2,<10.10" in dependencies
-    assert "sagelite-tachyon-runtime >=10.9,<10.10" in dependencies
+    assert "sagelite-tachyon-runtime >=10.9.post1,<10.10" in dependencies
 
 
 def test_runtime_companion_wheels_declare_copied_package_data():
@@ -4925,7 +4925,7 @@ def test_tachyon_runtime_is_exposed_by_sagelite_extras():
         pyproject = tomllib.load(handle)
 
     extras = pyproject["project"]["optional-dependencies"]
-    requirement = "sagelite-tachyon-runtime >=10.9,<10.10"
+    requirement = "sagelite-tachyon-runtime >=10.9.post1,<10.10"
 
     assert extras["tachyon"] == [requirement]
     assert requirement not in extras["runtime"]
@@ -4935,6 +4935,7 @@ def test_tachyon_runtime_is_exposed_by_sagelite_extras():
 def test_tachyon_runtime_declares_console_script():
     pyproject = _pyproject("sagelite-tachyon-runtime")
 
+    assert pyproject["project"]["version"] == "10.9.post1"
     assert pyproject["project"]["scripts"] == {
         "tachyon": "sagelite_tachyon.runtime:tachyon",
     }
@@ -4947,9 +4948,23 @@ def test_tachyon_runtime_builds_relocatable_wrapper():
 
     assert "tachyon-real" in setup_py
     assert "LD_LIBRARY_PATH" in setup_py
+    assert "DYLD_LIBRARY_PATH" in setup_py
     assert "exec -a tachyon" in setup_py
     assert "lib_target" in setup_py
     assert "_runtime_libraries(source)" in setup_py
+    assert '["otool", "-L", os.fspath(path)]' in setup_py
+    assert '"install_name_tool"' in setup_py
+    assert '["codesign", "--force", "--sign", "-", os.fspath(binary)]' in setup_py
+
+
+def test_tachyon_source_patch_supports_long_image_paths():
+    patch = (
+        ROOT / "build" / "pkgs" / "tachyon" / "patches" / "long-image-paths.patch"
+    ).read_text()
+
+    assert "TACHYON_PATH_MAX" in patch
+    assert 'fscanf(ph->ifp, "%4095s", tex.imap)' in patch
+    assert "len >= sizeof(newimage->name)" in patch
 
 
 def test_plantri_runtime_is_exposed_by_sagelite_extras():

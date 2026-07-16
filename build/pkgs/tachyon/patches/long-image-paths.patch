@@ -1,0 +1,106 @@
+diff --git a/src/tachyon.h b/src/tachyon.h
+--- a/src/tachyon.h
++++ b/src/tachyon.h
+@@ -35,6 +35,7 @@
+ #define TACHYON_MAJOR_VERSION       0         /**< major version number */
+ #define TACHYON_MINOR_VERSION       99        /**< minor version number */
+ #define TACHYON_PATCH_VERSION       5         /**< patch version number */
++#define TACHYON_PATH_MAX         4096         /**< maximum image path length */
+ 
+ /*
+  * Build Tachyon and its interfaces using either double- or single-precision
+@@ -76,7 +77,7 @@
+   apivector uaxs;  /**< planar map u axis */
+   apivector vaxs;  /**< planar map v axis */
+   apivector waxs;  /**< volume map W axis */
+-  char imap[96];   /**< name of image map */ 
++  char imap[TACHYON_PATH_MAX]; /**< name of image map */
+ } apitexture;
+ 
+ /********************************************/
+@@ -1009,7 +1010,7 @@
+   int yres;              /**< image Y axis size              */
+   int zres;              /**< image Z axis size              */
+   int bpp;               /**< image bits per pixel           */
+-  char name[96];         /**< image filename (with path)     */
++  char name[TACHYON_PATH_MAX]; /**< image filename (with path) */
+   unsigned char * data;  /**< pointer to raw byte image data */
+ } rawimage;
+ 
+diff --git a/src/imap.c b/src/imap.c
+--- a/src/imap.c
++++ b/src/imap.c
+@@ -47,7 +47,8 @@ void LoadRawImage(rawimage * image) {
+ 
+ rawimage * AllocateImageRGB24(const char * filename, int xs, int ys, int zs, unsigned char * rgb) {
+   rawimage * newimage = NULL;
+-  int i, len, intable;
++  int i, intable;
++  size_t len;
+ 
+   intable=0;
+   if (global_numimages!=0) {
+@@ -68,8 +69,10 @@ rawimage * AllocateImageRGB24(const char * filename, int xs, int ys, int zs, uns
+     newimage->bpp=3;
+     newimage->data=rgb;
+     len=strlen(filename);
+-    if (len > 80) 
++    if (len >= sizeof(newimage->name)) {
++      free(newimage);
+       return NULL;
++    }
+     strcpy(newimage->name, filename);
+ 
+     global_imagelist[global_numimages]=newimage;  /* add new one to the table       */ 
+@@ -81,7 +84,8 @@ rawimage * AllocateImageRGB24(const char * filename, int xs, int ys, int zs, uns
+ 
+ rawimage * AllocateImageFile(const char * filename) { 
+   rawimage * newimage = NULL;
+-  int i, len, intable;
++  int i, intable;
++  size_t len;
+ 
+   intable=0;
+   if (global_numimages!=0) {
+@@ -102,8 +106,10 @@ rawimage * AllocateImageFile(const char * filename) {
+     newimage->bpp=0;
+     newimage->data=NULL;
+     len=strlen(filename);
+-    if (len > 80) 
++    if (len >= sizeof(newimage->name)) {
++      free(newimage);
+       return NULL;
++    }
+     strcpy(newimage->name, filename);
+ 
+     global_imagelist[global_numimages]=newimage; /* add new tex to table and */ 
+diff --git a/demosrc/parse.c b/demosrc/parse.c
+--- a/demosrc/parse.c
++++ b/demosrc/parse.c
+@@ -909,7 +909,7 @@ void * GetTexBody(parsehandle * ph, SceneHandle scene, int modeflag) {
+ 
+       case RT_TEXTURE_CYLINDRICAL_IMAGE:
+       case RT_TEXTURE_SPHERICAL_IMAGE:
+-        fscanf(ph->ifp, "%s", tex.imap);
++        fscanf(ph->ifp, "%4095s", tex.imap);
+         rc |= GetString(ph, "CENTER");
+         rc |= GetVector(ph, &tex.ctr);
+         rc |= GetString(ph, "ROTATE");
+@@ -919,7 +919,7 @@ void * GetTexBody(parsehandle * ph, SceneHandle scene, int modeflag) {
+         break;
+      
+       case RT_TEXTURE_PLANAR_IMAGE:
+-        fscanf(ph->ifp, "%s", tex.imap);
++        fscanf(ph->ifp, "%4095s", tex.imap);
+         rc |= GetString(ph, "CENTER");
+         rc |= GetVector(ph, &tex.ctr);
+         rc |= GetString(ph, "ROTATE");
+@@ -933,7 +933,7 @@ void * GetTexBody(parsehandle * ph, SceneHandle scene, int modeflag) {
+         break;
+ 
+       case RT_TEXTURE_VOLUME_IMAGE:
+-        fscanf(ph->ifp, "%s", tex.imap);
++        fscanf(ph->ifp, "%4095s", tex.imap);
+         rc |= GetString(ph, "CENTER");
+         rc |= GetVector(ph, &tex.ctr);
+         rc |= GetString(ph, "ROTATE");
