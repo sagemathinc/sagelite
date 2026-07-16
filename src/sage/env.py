@@ -1476,8 +1476,8 @@ def var(key: str, *fallbacks: Optional[str], force: bool = False) -> Optional[st
         value = None
     else:
         value = os.environ.get(key)
-    if value is None:
-        value = getattr(sage.config, key, None)
+        if value is None:
+            value = getattr(sage.config, key, None)
 
     # Try all fallbacks in order as long as we don't have a non-empty value
     for f in fallbacks:

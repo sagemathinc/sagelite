@@ -45,6 +45,16 @@ def test_sage_local_value_preserves_explicit_override(monkeypatch):
     assert env._sage_local_value() == "/explicit/prefix"
 
 
+def test_var_force_ignores_environment_and_generated_config(monkeypatch):
+    key = "SAGE_FORCED_TEST_VALUE"
+    monkeypatch.setenv(key, "/environment")
+    monkeypatch.setattr(env.sage.config, key, "/build/config", raising=False)
+    monkeypatch.setattr(env, key, None, raising=False)
+    monkeypatch.setitem(env.SAGE_ENV, key, None)
+
+    assert env.var(key, "/fallback", force=True) == "/fallback"
+
+
 def test_cython_aliases_skips_default_pkgconfig_modules_in_installed_runtime(monkeypatch):
     import pkgconfig
 

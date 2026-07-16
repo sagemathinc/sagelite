@@ -1,5 +1,24 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-16 Post52 Isolation Rejection And Post53 Force Repair
+
+The `post52` strict gate passed wheelhouse preflight, fresh wheel-only
+installation, and `pip check`, but a neutral-path diagnostic during runtime
+manifest collection proved that `SAGE_LOCAL` still resolved to the new build
+venv. The automation stopped the invalid gate and preserved its installation,
+summary, and partial runtime artifacts. No selftest, short, or full result is
+claimed.
+
+The new selector was present and returned the correct fresh-install
+`sys.prefix` when called after import. The remaining defect was in `var()`:
+its documented `force=True` mode skipped the process environment but still
+consulted generated `sage.config` before considering the forced fallback.
+`post53` makes the implementation match its documentation by bypassing both
+the environment and generated build configuration in forced mode. A focused
+regression test supplies conflicting values from both sources and requires the
+fallback. The CPython 3.14 primary and strict gates must be rebuilt again from
+the exact committed `post53` source.
+
 ## 2026-07-16 Post51 Isolation Rejection And Post52 Repair
 
 The strict `post51` short gate completed its fresh wheel-only installation and
