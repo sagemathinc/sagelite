@@ -1,5 +1,57 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 QEPCAD Post4 SACLIB arm64 GC Roots
+
+Exact pushed source `d98b603d5c2619ae723d623aa55fd1c881fe970f`
+fixes the deterministic QEPCAD crash and subsequent restart hang exposed after
+the repaired Sympow probe passed.  SACLIB uses a conservative collector that
+scans the C stack, but its legacy dummy-call mechanism did not force live
+values out of the arm64 callee-saved registers `x19` through `x28`.  QEPCAD
+therefore reclaimed live algebraic objects and segfaulted during the projection
+phase of a three-variable quantifier-elimination problem.  The earlier Linux
+arm64 workaround did not affect macOS because SACLIB's 32-bit `Word`
+configuration selects `sysdep/macosX86/GC.c`, even in an arm64 process.
+
+The revised SACLIB `2.2.8.p2` patch saves all ten callee-saved integer
+registers in the collector's scanned stack interval for the Linux and both
+macOS platform source variants, guarded by the arm64 compiler macros.  QEPCAD
+is bumped to `1.74.p11`, the companion and primary dependency floor advance to
+`sagelite-qepcad-runtime==10.9.post4`, and release artifact checks require that
+version.  Focused repository validation passed.
+
+An exploratory content-equivalent build first proved the diagnosis.  A fresh
+build from an archive of the exact pushed commit then selected the patched
+`macosX86` source, and `_GC` disassembly proved that the resulting arm64
+executable stores `x19` through `x28` before calling `GCSI`.  With the retained
+Singular companion present, the exact transcript that previously segfaulted
+returned the expected quantifier-free formula on all ten native attempts.  The
+exact build produced:
+
+```text
+sagelite_qepcad_runtime-10.9.post4-py3-none-macosx_14_0_arm64.whl
+  527,703 bytes
+  78ad3375e03d455c9539f784083ad8bb369e920e4960f90ea4acea21a18d0cdc
+```
+
+A fresh Homebrew CPython 3.13 venv installed that wheel and the retained
+`sagelite-singular-runtime==10.9.post2` using only local wheels and `--no-deps`.
+`pip check` passed, and the installed companion repeated the formerly crashing
+transcript ten times with exit code zero and the exact expected result.  The
+packaged executable and `libreadline.8.dylib` use repaired loader-relative
+paths; its companion tag is `macosx_14_0_arm64`.
+
+This is focused companion evidence, not a strict short-gate or full-suite
+pass.  The stale `post43` diagnostic venv was already removed, and `m1` has
+about 96 GiB free, below the runbook's 100 GiB threshold for the required
+coherent `post44` primary rebuild.  No selftest, doctest gate, or publication
+result is claimed.  The public manifest remains unchanged at 177 wheels
+generated on 2026-07-09.  Exact artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-qepcad-20260716-052216-d98b603d5c2/
+/scratch/sagelite-automation/macos-arm64-cp313-qepcad-20260716-052216-d98b603d5c2/
+```
+
 ## 2026-07-16 Sympow Post2 PARI 2.17 Mesh Generation
 
 Exact pushed source `f673bb8e030a4bf4e492b6ef8cf0adc7bc523b3d`

@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post43`, local; `post9`, public) | strict install only; exact pushed source `d75dd63d011` produced a coherent local `post43` primary and strict 179-wheel closure that passed installation, `pip check`, leak checks, native imports, Maxima library mode, `sage.all`, and symbolic integration. Packaged pytest passed 212 tests with 5 skips. The short gate failed with exit code 21. Exact pushed follow-up `5e95484667d` identified its deterministic MeatAxe crash as a 17 KiB companion made from CI text fixtures and produced the validated 1.2 MiB `sagelite-meataxe-runtime==10.9.post1`; all 69 fields pass against the retained primary. Exact pushed source `f673bb8e030` then repaired PARI 2.17 stack resizing and logfile contamination in Sympow mesh generation and produced a clean-install-validated `sagelite-sympow-runtime==10.9.post2`; fresh and cached `P02` generation return the mathematically checked 11a L-value. The next selftest blocker is the independent QEPCAD crash/restart hang. Retain the intermittent lrslib SIGTRAP, ECL SIGINT semantic failure, Singular interrupt failure, and earlier sweep segmentation faults as independent evidence. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post43`, local; `post9`, public) | strict install only; exact pushed source `d75dd63d011` produced a coherent local `post43` primary and strict 179-wheel closure that passed installation, `pip check`, leak checks, native imports, Maxima library mode, `sage.all`, and symbolic integration. Packaged pytest passed 212 tests with 5 skips. The short gate failed with exit code 21. Exact pushed follow-up `5e95484667d` repaired the invalid MeatAxe fixture tables, and exact pushed source `f673bb8e030` repaired PARI 2.17 Sympow mesh generation; both companions pass focused clean-install validation. Exact pushed source `d98b603d5c2` then repaired SACLIB's missing arm64 callee-saved GC roots and produced the clean-install-validated `sagelite-qepcad-runtime==10.9.post4`; the formerly crashing QEPCAD/Singular transcript passes 10/10 times both natively and from the installed wheel. A coherent `post44` primary rebuild and selftest await restoration of the 100 GiB builder threshold. Retain the intermittent lrslib SIGTRAP, ECL SIGINT semantic failure, Singular interrupt failure, and earlier sweep segmentation faults as independent evidence. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,14 +218,14 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Diagnose the macOS QEPCAD crash/restart hang as its own failure class now
-   that exact pushed source `f673bb8e030` repaired the preceding Sympow
-   `P02L` failure on CPython 3.13. Then rerun selftest, build a coherent
-   `post44` primary when `m1` again satisfies the 100 GiB heavy-build
-   threshold, and run the strict short gate. Preserve and retest the
-   intermittent lrslib SIGTRAP, ECL SIGINT semantic failure, Singular
-   interrupt failure, and earlier sweep segmentation faults separately; start
-   the full gate only after strict short passes.
+1. Restore at least 100 GiB free on `m1`, then build a coherent `post44`
+   primary containing exact pushed QEPCAD/SACLIB repair `d98b603d5c2`, rerun
+   selftest, and run the strict short gate. The focused `post4` QEPCAD
+   companion already passes the formerly crashing transcript 10/10 times both
+   natively and after a clean install. Preserve and retest the intermittent
+   lrslib SIGTRAP, ECL SIGINT semantic failure, Singular interrupt failure,
+   and earlier sweep segmentation faults separately; start the full gate only
+   after strict short passes.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
