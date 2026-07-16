@@ -152,8 +152,10 @@ CPython 3.12 `pycosat` and `cysignals` supplements repaired the only closure
 gap, the fresh short gate passed strict preflight, wheel-only installation,
 `pip check`, runtime manifest, selftest, all 3,953 installed standard modules
 with zero failures, and packaged pytest with 229 passes and 2 skips. A separate
-fresh full gate is active under `sagelite-post54-cp312-validate-r2.service`.
-Details are in `agents/sagelite-linux-aarch64-cp312-validation.md`.
+fresh full gate then passed the same contract, all selftests, all 3,953 modules
+with zero failures in 883.4 seconds, and packaged pytest with 229 passes and 2
+skips. Its validator exited zero after 1,630.778 seconds. Details are in
+`agents/sagelite-linux-aarch64-cp312-validation.md`.
 
 ## Scratch Layout
 
@@ -232,7 +234,7 @@ Status meanings:
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
-| Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | short (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed fresh install, `pip check`, selftest, 3,953 modules with zero failures, and packaged pytest; independent full gate active | smoke (`post8`), with system `git` for GitPython |
+| Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |

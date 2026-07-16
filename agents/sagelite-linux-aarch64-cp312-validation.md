@@ -1,6 +1,6 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
-## 2026-07-16 Post54 Wheel, Strict Short Pass, And Full Start
+## 2026-07-16 Post54 Wheel And Strict Short/Full Passes
 
 The native build from exact pushed source
 `9492b6cbf83875c024ef2c6760977707ef8065f2` completed with exit code zero.
@@ -39,17 +39,27 @@ with 2 skips and 15 warnings. The validator recorded `Status: passed`, exit
 code 0, and 1,246.475 seconds total elapsed time.
 
 After removing the short gate's fresh install, the same durable validation
-service started a separate fresh strict full gate from the identical wheel
-contract. It is active as:
+service ran a separate fresh strict full gate from the identical wheel
+contract. Strict preflight, wheel-only installation, `pip check`, runtime
+manifest collection, and every selftest probe passed again. The unrestricted
+installed `--optional=sage` sweep saw all 3,953 modules and reduced to zero
+failures; its doctest runner reported `All tests passed` in 883.4 seconds.
+Packaged pytest then passed 229 tests with 2 skips and 15 warnings in 306.60
+seconds. The full validator recorded `Status: passed`, exit code 0, and
+1,630.778 seconds total elapsed time.
+
+The durable service completed successfully as:
 
 ```text
 sagelite-post54-cp312-validate-r2.service
 ```
 
-This is repaired-wheel, compatible-closure, fresh-install, short-gate, and
-full-gate-start evidence. The cell remains below `full` until the unrestricted
-installed sweep and packaged pytest finish successfully. No publication was
-attempted.
+This is repaired-wheel, compatible-closure, independent fresh-install short
+and full evidence. Both validation and follow-up exit-code files contain zero.
+The cell is accepted as `full`. The completed full gate's disposable 21 GiB
+install tree was removed after preserving the wheelhouses and validation
+evidence, restoring 103,526,285,312 bytes free in the guest. No publication
+was attempted.
 
 ## 2026-07-16 Post54 Native Build Start
 
