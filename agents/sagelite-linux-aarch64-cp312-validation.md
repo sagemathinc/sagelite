@@ -1,5 +1,56 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-16 Post54 Wheel, Strict Short Pass, And Full Start
+
+The native build from exact pushed source
+`9492b6cbf83875c024ef2c6760977707ef8065f2` completed with exit code zero.
+It produced 82 repaired wheels: one primary and 81 companion runtime/data
+wheels, including ABI-specific `pplpy`. The native `pycosat` and `cysignals`
+supplements described below brought the build wheelhouse to 84. The primary is:
+
+```text
+sagelite-10.9.post54-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,678,292 bytes
+sha256: ae629dc301f91273aec9eeb85ebe9625ff768f1d9fa7c411be35e9cfc9eaa2be
+```
+
+The first binary-only closure attempt correctly rejected the retained CPython
+3.13 `pycosat` wheel and stopped before installation because no public CPython
+3.12 aarch64 wheel exists. Native manylinux builds then supplied repaired
+CPython 3.12 wheels for `pycosat 0.6.6` and `cysignals 1.12.6`. The matching
+`cysignals` avoids the exported-C-function mismatch already established on
+CPython 3.13. The failed resolution log and exit code remain preserved as
+`validation-follow-r1.log` and `validation-follow-r1-exit-code`.
+
+The resulting deterministic strict closure has 191 wheels totaling
+16,739,248,783 bytes: one primary, 81 Sagelite companions, and 109 third-party
+wheels. Its staged wheelhouse digest is
+`cf8bef4b02173028cd2b1c7e9db8203c4d5b81df8c395d46eb464f480cbee675`,
+and its inventory-file digest is
+`4c94228fe9f9da854b1d9c5d19d2fd7b163cad97dd8e2382451d0cdef5b701af`.
+
+The strict short gate then passed in a fresh CPython 3.12 wheel-only install.
+All 191 wheel filenames and tags passed strict repaired-wheelhouse preflight;
+all 68 requested Sagelite dependency projects were present. Installation,
+`pip check`, runtime manifest collection, and every selftest probe passed. The
+explicit installed `--optional=sage --short 600` sweep saw all 3,953 modules
+and reduced to zero failures in 519.2 seconds. Packaged pytest passed 229 tests
+with 2 skips and 15 warnings. The validator recorded `Status: passed`, exit
+code 0, and 1,246.475 seconds total elapsed time.
+
+After removing the short gate's fresh install, the same durable validation
+service started a separate fresh strict full gate from the identical wheel
+contract. It is active as:
+
+```text
+sagelite-post54-cp312-validate-r2.service
+```
+
+This is repaired-wheel, compatible-closure, fresh-install, short-gate, and
+full-gate-start evidence. The cell remains below `full` until the unrestricted
+installed sweep and packaged pytest finish successfully. No publication was
+attempted.
+
 ## 2026-07-16 Post54 Native Build Start
 
 The scheduled matrix iteration first retried the higher-priority Linux
