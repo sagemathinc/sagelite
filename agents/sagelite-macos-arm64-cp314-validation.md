@@ -23,9 +23,37 @@ The `post52` source repair initializes `SAGE_ROOT` before the prefix hierarchy
 and selects `sys.prefix` for `SAGE_LOCAL` when Sage is installed without a
 source tree. An explicit `SAGE_LOCAL` environment override and the configured
 prefix of an ordinary source build remain unchanged. Focused tests cover all
-three cases. A new exact-source primary rebuild and independent strict gates
-are required; the rejected `post51` wheel must not be repaired in place or
-retagged as acceptance evidence.
+three cases. Exact pushed source
+`b2350b4d3d412af1f88d09de15d5a4097c7b73f7`, materialized as tree
+`9261e66905c4b595f1b18458dbe6cf571bc9348f`, produced this repaired primary:
+
+```text
+sagelite-10.9.post52-cp314-cp314-macosx_26_0_arm64.whl
+  102,366,234 bytes
+  ee8c095e498d0d7e59f1acc2650b94fce34f0d54415f225d773784492102ca9a
+```
+
+The build and macOS repair exited zero after injecting 2,079 native headers,
+rewriting 23 companion-library references, and auditing 1,176 dependencies
+across 637 Mach-O files. The wheel contains the new installed-prefix runtime
+logic. Its deterministic CPython 3.14 closure has 168 compatible wheels: one
+primary, 68 companions, and 99 third-party wheels totaling 13,890,635,888
+bytes. The inventory digest is
+`9736fc5b8999c5c66f511d620bbc69e1cce2f2b2bc69c218299560337aa7eaff`.
+
+With 98 GiB free, the independent neutral-environment strict short gate
+started durably under tmux session `sagelite_cp314_post52_short`. It uses
+explicit `--optional=sage --short 600`, eight threads, and
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. The authoritative run path is:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260716-194003-b2350b4d3d4/
+```
+
+This is build, closure, and short-gate-start evidence only. A successful fresh
+install, selftest, short sweep, and independent full gate are still required;
+the rejected `post51` wheel must not be repaired in place or retagged as
+acceptance evidence.
 
 ## 2026-07-16 Post51 Wheel, Closure, And Strict Short Start
 
