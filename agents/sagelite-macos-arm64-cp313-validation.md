@@ -1,5 +1,79 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post43 Unified ECL Runtime and Strict Short Gate
+
+Exact pushed source `d75dd63d01100c3051596137cdaa60a210078dbd`
+(`10.9.post43`) makes the Maxima companion own the one installed ECL runtime.
+The primary-wheel repair excludes ECL from general delocation and rewrites
+every primary consumer to the companion's exact loader-relative
+`libecl.24.5.dylib`; the redundant `sagelite.libs/libecl` copy is absent.
+The macOS selftest now enumerates loaded images through dyld instead of the
+Linux-only `/proc/self/maps` path. Focused controller validation passed 46
+tests, and an exploratory repair of the retained `post42` input audited 1,176
+dependencies across 637 Mach-O files with the intended single ECL path.
+
+An exact controller archive with SHA-256
+`21b501e91a9b62f6908271c7b160eebb8624a8dca594dd5112fa6b65fd3976c9`
+reproduced source tree `69bc5914ecf36be524e8edae4c2fa97442786776` on
+`m1`. The first native build reached 1,791 of 1,795 steps before a transient
+Maxima external-project failure; a preserved retry from the same source and
+native prefix passed Maxima and completed. The repaired primary is:
+
+```text
+sagelite-10.9.post43-cp313-cp313-macosx_26_0_arm64.whl
+  97,422,309 bytes
+  3088fa8d8b8ee7056731f5a99a845df5ddba41c45c677c6fe3590cff4dd6bc2d
+```
+
+Repair rewrote 23 companion dependencies in 16 Mach-O files and audited 1,176
+dependencies across all 637 Mach-O files. The complete strict closure contains
+179 wheels: one primary, 68 Sagelite companions, and 110 third-party wheels.
+Its exact staged byte count is 13,889,866,225 and its inventory digest is
+`8da88028c2ebd64c0797fb91c73cbcbc33d6b4c85b3239a306adbb2ff8e62724`.
+Strict macOS preflight accepted every wheel, and a fresh CPython 3.13.14 venv
+installed `sagelite[all-needed-extras]==10.9.post43` solely from that closure.
+`pip check` passed, all runtime-leak counters were zero, all required native
+imports passed, and `sage.all` imported. Crucially, Maxima library mode returned
+`2` and symbolic integration returned `-cos(x)`, proving the duplicate-ECL
+abort from `post42` fixed.
+
+The strict short gate is not a pass. It exited 21 after 1,943 seconds. Selftest
+returned `-11`: `lrsnash` first exited through SIGTRAP on its trivial feature
+input, then the MeatAxe probe reported a corrupt table in `kernel-0.c` line 336
+and segfaulted. The lrslib result is intermittent rather than an established
+wheel defect: the same installed executable and input passed 100 consecutive
+isolated probes and passed when probed after each preceding selftest stage,
+while two complete selftest invocations reproduced SIGTRAP. The MeatAxe failure
+is deterministic and is the next coherent runtime class to diagnose.
+
+The installed `--optional=sage --short 600 -p 8` sweep saw 3,955 modules and
+reported 36 failed. Two were direct failed examples: the ECL pre-`sig_on`
+SIGINT test raised `RuntimeError: Aborted` instead of `KeyboardInterrupt`, and
+the Singular interrupt probe returned false. The other 34 processes were
+killed by segmentation fault; reduced analysis labels these as timeouts, but
+the raw log explicitly records the signals. Five QEPCAD processes and their
+Singular children were observed after escaping their doctest workers; four
+remained active for more than ten minutes. After an exact process snapshot,
+only those run-owned QEPCAD processes were terminated so the reducer could
+finish. Packaged pytest then passed 212 tests with 5 skips. These signal,
+interrupt, and teardown findings remain independent follow-up classes; the
+full gate was not started.
+
+The public preview manifest remains unchanged at 177 wheels generated on
+2026-07-09, including fourteen primary wheels. Nothing was published. Durable
+controller evidence is under:
+
+```text
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-021120-d75dd63d011/
+```
+
+The matching `m1` directory retains the exact source, persistent native build,
+wheelhouse, failed clean-install validation, and focused diagnostics. Important
+files include `short-exit-code`, `short-command.log`, the validation summary,
+runtime summary, selftest log, reduced analysis, the selftest retry and lrslib
+state-transition logs, and the QEPCAD leaked-process snapshot. Free space was
+80 GiB after retaining this latest unresolved run.
+
 ## 2026-07-16 Post42 Strict Short Gate
 
 Exact pushed source `7827eb8b2f489bf4db4a71e1adfd4de341203276`

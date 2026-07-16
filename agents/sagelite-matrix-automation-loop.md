@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post42`, local; `post9`, public) | strict install only; exact pushed source `7827eb8b2f4` produced a coherent local `post42` primary using a current-Clang rebuild of repository-pinned FFLAS-FFPACK. Repair audited 1,180 dependencies across 638 Mach-O files, and a focused LinBox determinant probe proved the earlier FFPACK ABI class fixed. Its strict 179-wheel closure passed tag preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime leak checks, all 17 required native imports, and `sage.all`. The short gate failed with exit code 250: macOS selftest cannot enumerate loaded ECL dylibs through its Linux-only `/proc/self/maps` path, and a focused symbolic integration still aborted after dyld selected both `cypari2` and Maxima companion ECL paths. The aborted 3,955-module sweep also exposed a missing packaged GSL header. Fix coherent Maxima/ECL selection first, rebuild the primary, and rerun strict short before full. Detailed companion and run evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post43`, local; `post9`, public) | strict install only; exact pushed source `d75dd63d011` produced a coherent local `post43` primary whose repair makes the Maxima companion own the one installed ECL runtime. Its strict 179-wheel closure passed tag preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime leak checks, all required native imports, Maxima library mode, `sage.all`, and symbolic integration. Packaged pytest passed 212 tests with 5 skips. The short gate failed with exit code 21: selftest hit an intermittent `lrsnash` SIGTRAP and then crashed on corrupt MeatAxe tables; the installed sweep recorded an ECL SIGINT semantic failure, a Singular interrupt failure, and 34 processes killed by segmentation fault while QEPCAD workers escaped cleanup. Diagnose the MeatAxe table/runtime mismatch first, while retaining the lrslib flake and the two focused signal/interrupt failures as independent follow-up evidence. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,11 +218,12 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Fix the macOS Maxima/ECL selection and loaded-dylib selftest class identified
-   in `agents/sagelite-macos-arm64-cp313-validation.md`, rebuild the primary
-   from the selected coherent source revision, assemble the complete
-   wheelhouse, then rerun strict short and full validation for macOS arm64
-   CPython 3.13.
+1. Fix the macOS MeatAxe table/runtime mismatch identified by the coherent
+   `post43` strict gate in `agents/sagelite-macos-arm64-cp313-validation.md`,
+   then rerun selftest and the strict short gate for macOS arm64 CPython 3.13.
+   Preserve and retest the intermittent lrslib SIGTRAP, ECL SIGINT semantic
+   failure, Singular interrupt failure, and QEPCAD teardown leak separately;
+   start the full gate only after strict short passes.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
