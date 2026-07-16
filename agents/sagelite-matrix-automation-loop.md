@@ -193,7 +193,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post45`, local; `post9`, public); `post47` source only | strict short remains failed on the coherent `post45` primary. Exact pushed `post46`/`post47` changes package the missing GSL and Singular/Factory headers, remove retained source/build include roots from non-editable installs, and rewrite resolvable inline-extension `@loader_path` dependencies to `@rpath`. A non-authoritative transformed-`post45` diagnostic passed a fresh wheel-only install, `pip check`, metadata/header probes, and focused serial plus fresh-temporary-directory parallel runs of all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples. A coherent `post47` primary and fresh strict 179-wheel closure have not yet been built or accepted; the complete 3,954-module short gate and full gate remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post45`, local; `post9`, public); `post47` build running | strict short remains failed on the coherent `post45` primary. Exact pushed `post46`/`post47` changes package the missing GSL and Singular/Factory headers, remove retained source/build include roots from non-editable installs, and rewrite resolvable inline-extension `@loader_path` dependencies to `@rpath`. A non-authoritative transformed-`post45` diagnostic passed a fresh wheel-only install, `pip check`, metadata/header probes, and focused serial plus fresh-temporary-directory parallel runs of all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples. A coherent exact-source `post47` primary build is running durably on `m1`, but no `post47` wheel or fresh strict closure has yet been accepted; the complete 3,954-module short gate and full gate remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,10 +218,11 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Rebuild a coherent macOS arm64 CPython 3.13 `post47` primary from exact
-   pushed source `b184d1d177e`, assemble its strict 179-wheel closure, and run
-   the fresh strict short gate. Focused non-authoritative diagnostics already
-   pass all 49 `sage.calculus.ode` and 48 `sage.misc.cython` examples after
+1. Complete the running coherent macOS arm64 CPython 3.13 `post47` primary
+   build from exact pushed source `b184d1d177e`, assemble its strict 179-wheel
+   closure, and run the fresh strict short gate. Focused non-authoritative
+   diagnostics already pass all 49 `sage.calculus.ode` and 48
+   `sage.misc.cython` examples after
    packaging the missing headers, removing run-local metadata paths, and
    repairing installed inline-extension `@loader_path` dependencies. The
    retained coherent `post45` closure already passes preflight, wheel-only

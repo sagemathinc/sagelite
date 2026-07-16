@@ -1,6 +1,6 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
-## 2026-07-16 Post47 Focused Installed-Compilation Diagnostic
+## 2026-07-16 Post47 Focused Diagnostic and Coherent Rebuild Start
 
 Exact pushed source `768728dd52ca4439f3792d5413f0bc8faa2fade8`
 first advanced the primary to `10.9.post46`, taught the macOS wheel repair to
@@ -49,6 +49,20 @@ Remote diagnostic artifacts and the controller-side evidence copy are at:
 ```text
 /Volumes/sage/sagelite-automation/macos-arm64-cp313-compile-diagnostic-20260716-090829-768728dd52c/
 /scratch/sagelite-automation/macos-arm64-cp313-compile-diagnostic-20260716-090829-768728dd52c/
+```
+
+With the storage threshold restored, a coherent build started durably as PID
+`93830` from the exact `post47` code commit. The build's own archive and source
+tree checks accepted SHA-256
+`593b92bbc1cc3a00ae203d76f082df7b059961b805f340b058f4fdc133eb0d17`
+and tree `c2bb4803a9b742ea0c5d7abd902e94751f172b56`. It reuses the coherent
+`post45` native prefix and supplies both ordered header roots to the exact
+`post47` repair helper. This running build is not acceptance evidence; its
+durable remote run and controller launch record are:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-093844-b184d1d177e/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-093844-b184d1d177e/
 ```
 
 ## 2026-07-16 Post45 Strict Gate and Compile-Time Header Closure
