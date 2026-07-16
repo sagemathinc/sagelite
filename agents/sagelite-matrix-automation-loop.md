@@ -112,6 +112,10 @@ explicitly shown to satisfy the threshold. Treat future SSH reachability or
 mount failures as a preflight problem, not as evidence that the host assignment
 has changed.
 
+On 2026-07-16, a new preflight attempt to `host` timed out during SSH
+connection. The next x86_64 iteration remains blocked until the assigned host
+is reachable and its required bulk filesystem can be checked again.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -193,7 +197,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post50`, local; `post9`, public) | not accepted. Exact pushed `post50` produced a repaired 102,092,609-byte primary and strict 179-wheel closure. Its fresh neutral-path short gate passed preflight, wheel-only installation, `pip check`, all selftest probes, runtime isolation, packaged pytest, and all 3,953 installed standard modules. The fresh full gate repeated setup successfully and reduced the cell to one timeout among 3,954 modules: conversion of a large FriCAS `IntegerMod` element. The `post51` working change exports that domain through `InputForm`; the formerly timed-out 2,182-digit conversion completes in 0.139 seconds, and focused installed doctests pass 257 FriCAS interface and 153 translator tests. An exact pushed `post51` rebuild and both fresh gates remain required. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post9`) | smoke only | smoke (`post8`) |
 
 The two existing full baselines establish that the standard installed runtime
@@ -218,27 +222,17 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Build the macOS arm64 CPython 3.13 `post51` primary from its exact pushed
-   source, assemble the strict 179-wheel closure with the accepted `post50`
-   Tachyon companion, and run the fresh strict short gate with a neutral base
-   `PATH` and the explicitly recorded
-   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` workaround. Exact `post50` passed
-   that short contract without leakage and its full sweep proved the Tachyon
-   repair, then timed out only in the large-modulus FriCAS conversion. The
-   `post51` working change makes that conversion constant-time through FriCAS
-   `InputForm`; focused fresh-install interface and translator doctests pass.
-   After the coherent short gate passes, rerun the full gate.
-2. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
+1. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
-3. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-4. Run and fix the full standard suite on macOS arm64 CPython 3.14.
-5. Run and fix the full standard suite on native Linux aarch64 CPython 3.12.
-6. Select one release-candidate commit and rerun the full standard suite on
+2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
+3. Run and fix the full standard suite on macOS arm64 CPython 3.14.
+4. Run and fix the full standard suite on native Linux aarch64 CPython 3.12.
+5. Select one release-candidate commit and rerun the full standard suite on
    all nine cells, including the two earlier CPython 3.12 baselines.
-7. Validate the current optional-wheel-ready extra across all nine cells,
+6. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-8. Resume systematic optional-package expansion in install-smoke batches.
+7. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected

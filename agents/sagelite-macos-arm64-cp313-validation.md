@@ -1,23 +1,60 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
-## 2026-07-16 Post51 Exact Rebuild Start
+## 2026-07-16 Post51 Exact Rebuild And Full Acceptance
 
 The exact pushed `10.9.post51` source
-`30bc6ffce556562cae5da227c6302f6ccc778e69` is building durably on `m1` as
-PID 60969. Its verified source archive has SHA-256
+`30bc6ffce556562cae5da227c6302f6ccc778e69` completed the durable native
+Darwin arm64 rebuild on `m1` with Homebrew CPython 3.13.14. Its verified
+source archive has SHA-256
 `c6cb1843d69f718ed88c4b78b87f7f00ec487db6238e4bb55c95093c5e8b6345`,
-and the materialized source tree matches the committed tree
-`364dfe1eb8616823da0ef70220174c722528cd02`. The target is native Darwin
-arm64 with Homebrew CPython 3.13.14. Cleanup of only archived disposable
-validation environments and superseded build trees restored 103 GiB free
-before launch, above the 100 GiB heavy-build threshold.
+and the materialized source tree matches committed tree
+`364dfe1eb8616823da0ef70220174c722528cd02`. The build and strict closure
+commands both exited zero.
 
-This run reuses the exact `post50` native prefix and will rebuild the affected
-primary wheel before assembling its per-cell closure from the validated
-`post50` companions. No `post51` wheel, install, smoke, or full-suite result is
-claimed until the durable build and subsequent strict gates finish.
+The repaired primary is:
 
-The active run and controller input artifacts are at:
+```text
+sagelite-10.9.post51-cp313-cp313-macosx_26_0_arm64.whl
+  102,092,637 bytes
+  8f5b68b60451ec286908bdd38919f58bb54ab2fe64a1ee5a97e65466242b17df
+```
+
+The strict closure contains 179 valid wheels: one primary, 68 companions,
+and 110 third-party wheels totaling 13,895,770,101 bytes. Its inventory
+digest is
+`9b6ccc750c6bba1f0b5d66e980ac40ee8613572524bc57940ace9efc86fecd9e`.
+It reuses the accepted `sagelite-tachyon-runtime==10.9.post1` companion,
+which is 161,037 bytes with SHA-256
+`b3513b7fcbac29497129d30cf4d99ff7cd58a5aaba4f6fcd59ef32fc28d73145`.
+
+The strict short gate used a fresh wheel-only
+`sagelite[all-needed-extras]==10.9.post51` installation, a neutral
+`/usr/bin:/bin` base path, and the explicitly recorded
+`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` workaround. Strict macOS
+preflight, installation, `pip check`, selftest, and the installed
+`--optional=sage --short 600 -p 8` sweep all passed. The sweep covered all
+3,953 modules in 481.5 seconds with zero failures; packaged pytest passed 219
+tests with 5 skips. The gate exited zero after 1,723.715 seconds.
+
+The independent fresh full gate repeated preflight, wheel-only installation,
+`pip check`, and selftest, then passed all 3,953 installed
+`--optional=sage` modules in 766.4 seconds. The reducer reported zero failed
+modules, packaged pytest again passed 219 tests with 5 skips, and the gate
+exited zero after 2,048.107 seconds. The large-modulus FriCAS conversion that
+timed out under `post50` no longer fails or times out.
+
+Both gates used run-local `HOME` and Python user-site directories. Their
+runtime manifests each discovered 248 executables with zero host-path
+resolutions, and all eight GAP roots resolved below the corresponding fresh
+install. Neither manifest refers to the native build prefix,
+`/Volumes/sage/.sage`, the retained `post50` run, or the previous source SHA.
+This satisfies the strict installed standard-suite contract for the macOS
+arm64 CPython 3.13 cell.
+
+The public preview was not changed by this validation. Its manifest remains
+the 177-wheel set generated on 2026-07-09 with fourteen public `post8` and
+`post9` primary wheels. The remote run and complete controller evidence copy
+are at:
 
 ```text
 /Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-163431-30bc6ffce55/
