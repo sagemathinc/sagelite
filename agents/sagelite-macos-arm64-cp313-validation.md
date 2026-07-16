@@ -1,5 +1,137 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-16 Post45 Strict Gate and Compile-Time Header Closure
+
+Exact pushed source `bc6cdcdd554d114c9b44163717f43dcb95c9856a`
+(`10.9.post45`) completed a coherent native primary build from a committed
+source archive with SHA-256
+`3d7ebe781f0e9d62622783f9f557e46eb8fdfaaebb1b048d031478ce76568be6`.
+The repaired primary is:
+
+```text
+sagelite-10.9.post45-cp313-cp313-macosx_26_0_arm64.whl
+  97,422,193 bytes
+  84e9257f96a475a5037ab17e3f584a49fb9cd2e6c2b463867a8cc31242129d5a
+```
+
+Mach-O repair added 23 companion dependencies in 16 files and audited 1,176
+dependencies across 637 Mach-O files.  The strict closure contained 179
+wheels: one primary, 68 Sagelite companions, and 110 third-party wheels.  Its
+staged byte count was 13,891,099,530 and its inventory digest was
+`5be3b37b79310de7bfcbdcd59094b1d16c48def60cdc279f0127354df9e2539c`.
+It contained only the repaired lrslib companion:
+
+```text
+sagelite_lrslib_runtime-10.9.post2-py3-none-macosx_14_0_arm64.whl
+  361,517 bytes
+  3b403621accbc015c7ac1b93a41073442019bde39a612481234a2f2393fb5349
+```
+
+Strict macOS preflight accepted all 68 requested companions and the complete
+closure's tags, ABI, and platform.  A fresh Homebrew CPython 3.13 venv
+installed `sagelite[all-needed-extras]==10.9.post45` solely from that closure,
+installed `sagelite-lrslib-runtime==10.9.post2`, and passed `pip check`.
+Complete `sagelite-selftest` passed every standard probe, including lrslib,
+MeatAxe, Sympow, QEPCAD, and all data runtimes.  Packaged pytest separately
+passed 212 tests with 5 skips.
+
+The strict short gate exited `1` because the installed standard sweep found
+two failed modules among 3,953 in 503.4 seconds:
+
+- `sage.calculus.ode`: inline compilation cannot find
+  `gsl/gsl_cblas.h`;
+- `sage.misc.cython`: inline compilation cannot find
+  `factory/factory.h`; two later failures in the same module are cascades.
+
+The compile command also retains run-local source and build include paths
+under
+`/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-080141-bc6cdcdd554/build/`.
+Those directories survived only because the build and gate shared a retained
+run directory; an installed wheel cannot rely on them.  The next coherent
+failure class is therefore the packaged compile-time header contract: provide
+the GSL and Singular/Factory headers at installed paths and remove source/build
+paths from installed inline-compilation metadata.  The full gate did not
+start.  XProtect scanning of the newly installed native payload contributed
+to the gate's 1,719.68-second elapsed time but does not explain either compile
+failure.
+
+No publication result is claimed.  The public manifest remains unchanged at
+177 wheels generated on 2026-07-09.  Exact remote artifacts and the durable
+controller-side evidence subset are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-080141-bc6cdcdd554/
+/scratch/sagelite-automation/macos-arm64-cp313-20260716-080141-bc6cdcdd554/validation/
+```
+
+## 2026-07-16 Post44 Installed Sweep and lrslib Post2 Long Paths
+
+Exact pushed source `6a3a071191bcfbad29c7e6105d551b684743566a`
+(`10.9.post44`) completed a coherent native primary rebuild after one recorded
+Maxima retry.  Its repaired primary is:
+
+```text
+sagelite-10.9.post44-cp313-cp313-macosx_26_0_arm64.whl
+  97,421,204 bytes
+  40a7999f76b5dee4cb79491fb6bc0b2a8bbd7173db5ec1063a1bbc23ed5efbf7
+```
+
+The strict closure contained 179 wheels: one primary, 68 Sagelite companions,
+and 110 third-party wheels.  Its staged byte count was 13,891,098,617 and its
+inventory digest was
+`af7810e031ea8da6e9937966faec1268c3b7db9e11521f6abc6cd8e0a3cd8396`.
+Strict macOS preflight accepted the closure, a fresh CPython 3.13.14 venv
+installed `sagelite[all-needed-extras]==10.9.post44` solely from it, and
+`pip check` passed.  The installed standard `--optional=sage --short 600 -p 8`
+sweep then doctested 3,952 files and reported `All tests passed!` with no
+failed examples or modules in 509.6 seconds.  Thus the earlier ECL SIGINT,
+Singular interrupt, QEPCAD teardown, and segmentation-fault findings did not
+reproduce in this sweep.
+
+The strict short gate nevertheless exited `1` because selftest's lrslib probe
+returned `-5`.  The installed `lrsnash` copied its run-local temporary input
+path into an upstream fixed 100-byte stack buffer.  macOS stack protection
+trapped the overflow; short isolated paths had hidden the defect in the
+earlier 100-attempt diagnostic.
+
+Exact pushed follow-up `bc6cdcdd554d114c9b44163717f43dcb95c9856a`
+(`10.9.post45`) replaces that copy with a borrowed pointer to the stable
+`argv` string, advances the companion to `10.9.post2`, and advances the
+primary dependency floor so the defective executable cannot resolve.  The
+patch applies cleanly to the pinned lrslib source, and focused repository
+metadata and release checks passed 5 tests.  An exact committed source archive
+with SHA-256
+`0cecb901c667595b64c62eb21a1eb7ca655fc158865f61f832ca82420c68dc55`
+rebuilt native lrslib and produced:
+
+```text
+sagelite_lrslib_runtime-10.9.post2-py3-none-macosx_14_0_arm64.whl
+  361,517 bytes
+  3b403621accbc015c7ac1b93a41073442019bde39a612481234a2f2393fb5349
+```
+
+The native executable passed the trivial game 100 times through a 222-byte
+input path.  A fresh CPython 3.13 venv then installed only the new wheel from
+local storage, passed `pip check`, and ran its packaged `lrsnash` 100 times
+through a 199-byte path.  Its arm64 executable uses only loader-relative
+packaged lrslib/GMP paths and the macOS system library.  As a diagnostic, the
+new companion was installed into the retained failed `post44` venv; `pip
+check` and the complete `sagelite-selftest` then passed, including lrslib,
+MeatAxe, Sympow, and QEPCAD.
+
+That diagnostic venv is not acceptance evidence because it was modified and
+combines a `post44` primary with the focused `post45` companion.  A coherent
+`post45` primary rebuild and fresh strict short gate are still required before
+the full gate starts.  No full-suite or publication result is claimed.  The
+public manifest remains unchanged at 177 wheels generated on 2026-07-09.
+Exact artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-060514-6a3a071191b/
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-lrslib-20260716-073750-bc6cdcdd554/
+/scratch/sagelite-automation/macos-arm64-cp313-lrslib-20260716-073750-bc6cdcdd554/
+```
+
 ## 2026-07-16 QEPCAD Post4 SACLIB arm64 GC Roots
 
 Exact pushed source `d98b603d5c2619ae723d623aa55fd1c881fe970f`
