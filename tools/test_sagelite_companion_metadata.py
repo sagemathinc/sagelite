@@ -4387,7 +4387,7 @@ def test_all_needed_extras_match_installed_validation_plan():
     assert "sagelite-jmol-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-kenzo-runtime >=10.9,<10.10" in validation_requirements
     assert "sagelite-msolve-runtime >=10.9.post2,<10.10" in validation_requirements
-    assert "sagelite-qepcad-runtime >=10.9.post3,<10.10" in validation_requirements
+    assert "sagelite-qepcad-runtime >=10.9.post4,<10.10" in validation_requirements
     assert "sagelite-sympow-runtime >=10.9.post2,<10.10" in validation_requirements
 
 
@@ -4434,9 +4434,9 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
         "build_tachyon_runtime_companion()", 1
     )[0]
 
-    assert pyproject["project"]["version"] == "10.9.post3"
-    assert package_version == "1.74.p10"
-    assert saclib_version == "2.2.8.p1"
+    assert pyproject["project"]["version"] == "10.9.post4"
+    assert package_version == "1.74.p11"
+    assert saclib_version == "2.2.8.p2"
     assert patch.count("+    int c = in.get();") == 2
     assert patch.count("+      s += static_cast<char>(c);") == 2
     assert patch.count("+    }while((c = in.get()) != EOF);") == 2
@@ -4450,7 +4450,13 @@ def test_qepcad_runtime_requires_eof_safe_aarch64_build():
     assert "+           ENDSACLIB(SAC_FREEMEM);" not in patch
     assert '"stp x19, x20, [%0, #0]\\n\\t"' in saclib_patch
     assert '"stp x27, x28, [%0, #64]\\n\\t"' in saclib_patch
-    assert "+     GCSI(sizeof(Word), (char *)__builtin_frame_address(0));" in saclib_patch
+    assert "--- a/sysdep/linuxX86_64/GC.c" in saclib_patch
+    assert "--- a/sysdep/macosX86/GC.c" in saclib_patch
+    assert "--- a/sysdep/macosX86_64/GC.c" in saclib_patch
+    assert "+#if defined(__aarch64__) || defined(__arm64__)" in saclib_patch
+    assert "+     unsigned long registers[11];" in saclib_patch
+    assert '+          : "r" (&registers[1])' in saclib_patch
+    assert "+     GCSI(sizeof(Word), (char *)&registers[0]);" in saclib_patch
     assert "cp312-cp312" not in qepcad_repair
 
 
