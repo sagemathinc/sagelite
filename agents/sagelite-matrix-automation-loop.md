@@ -466,6 +466,23 @@ on `/mnt/cocalc-scratch`. The public R2 manifest remains the 177-wheel set
 generated on 2026-07-09; no artifact was published. Details are in
 `agents/sagelite-linux-x86_64-cp313-validation.md`.
 
+The next scheduled iteration selected the final unsynchronized Linux
+`x86_64` cell, CPython 3.12. `host` was reachable, idle, and native `x86_64`.
+Precise cleanup removed only regenerated closure copies from rejected runs and
+superseded source-transfer inputs, restoring sufficient headroom while
+retaining pushed revisions, primary outputs, and concise validation evidence.
+Exact pushed `post60` source `22a2cb56739` is now building under
+`sagelite-post60-x86-cp312-build.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260717-220219-22a2cb56739`.
+Its guarded watcher is active as
+`sagelite-post60-x86-cp312-watch.service`. The exact checkout, version,
+architecture, idle-Docker, persistent-prefix, and 100 GiB capacity guards all
+passed. This CPython 3.12 leg will emit a synchronized platform companion set
+before the watcher assembles the strict closure and runs independent fresh
+short and full gates. No `post60` wheel or validation result is claimed yet.
+The public R2 manifest remains the 177-wheel set generated on 2026-07-09.
+Details are in `agents/sagelite-linux-x86_64-cp312-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -540,7 +557,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
+| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` build active | full baseline; 3,953 modules and 0 failures on the earlier accepted build. Exact pushed source `22a2cb56739` is building with its guarded short/full watcher; no synchronized `post60` result is claimed yet | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
@@ -1002,6 +1019,8 @@ not folded into the standard-suite pass rate.
 - Optional package inventory: `agents/sagelite-optional-package-inventory.md`
 - Copy-paste preview evidence:
   `agents/sagelite-copy-paste-preview-validation.md`
+- Linux x86_64 CPython 3.12 evidence:
+  `agents/sagelite-linux-x86_64-cp312-validation.md`
 - Linux build matrix and CIBW contract: `.github/workflows/release.yml`
 - Wheelhouse validator: `tools/validate-sagelite-wheelhouse.py`
 - Installed doctest runner: `tools/run-installed-wheel-doctests.py`
