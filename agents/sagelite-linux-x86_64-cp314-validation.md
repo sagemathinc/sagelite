@@ -211,9 +211,26 @@ exit code are under:
 
 Its destination is
 `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/cp314-abi-input/`.
-A resumed iteration must reconcile the tmux session, destination size and
-SHA256, and transfer exit code before rerunning binary-only closure resolution.
-After that resolution, independent fresh strict short and full gates are still
-required. No install, smoke, short, full, or publication result is claimed.
-The directly inspected public manifest remains the 177-wheel set generated on
-2026-07-09.
+
+The resumed iteration found both of that transfer's SFTP endpoints and its
+controller process alive. At `2026-07-17T12:39:14Z`, the destination had grown
+to 2,969,457,664 bytes; the latest capacity check found 115,927,535,616 bytes
+free on `host`. A direct
+64 MiB transfer probe from `m1` was no faster, so the intact durable transfer
+was retained. The exact probe files were removed afterward.
+
+The guarded validation launcher is staged as `validate-post57.sh` in the run
+root with SHA256
+`f544391e8c47041797dbedd52f697de1b299cb174e9cbd8ba33b2adf4d12dd9d`.
+Controller tmux session `sagelite-post57-x86-cp314-watch` waits for a successful
+transfer exit artifact, then launches exactly one host system service named
+`sagelite-post57-x86-cp314-validate.service`. Before changing the failed
+staging closure, the launcher requires Linux `x86_64`, both successful build
+exit artifacts, exact source `6361dc1935c`, the 82-wheel companion inventory,
+and the expected portable-wheel SHA256. It then resolves the binary-only
+closure and runs independent fresh strict short and full gates. The watcher
+metadata is at
+`/scratch/sagelite-automation/post57-x86-cp314-validation-watch-20260717`.
+
+No install, smoke, short, full, or publication result is claimed. The directly
+inspected public manifest remains the 177-wheel set generated on 2026-07-09.

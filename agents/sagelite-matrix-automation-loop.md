@@ -314,9 +314,14 @@ inventory passed. Marker-aware comparison found only the policy-gated portable
 9,100,370,523-byte `py3-none-any` wheel is transferring durably from `m1`
 under controller tmux session `sagelite-polytopes4d-transfer`, with artifacts
 at `/scratch/sagelite-automation/polytopes4d-transfer-20260717`. A resumed
-iteration must verify its expected SHA256
+iteration found the transfer healthy; at `2026-07-17T12:39:14Z` the destination
+had grown to 2,969,457,664 bytes, while the latest capacity check found
+115,927,535,616 bytes free on `host`.
+Controller tmux session `sagelite-post57-x86-cp314-watch` is queued to launch
+exactly one durable host validation service after the transfer succeeds. Its
+remote launcher will first verify the expected SHA256
 `e22d60ebd324d848871f0980a7e48226396b5ed5ebecab23f8e1b5482b6438f2`,
-finish deterministic closure resolution, and run independent fresh strict
+then finish deterministic closure resolution and run independent fresh strict
 short and full gates. No install or validation result is claimed yet, and the
 public manifest remains the 177-wheel set generated on 2026-07-09.
 
