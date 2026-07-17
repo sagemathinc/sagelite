@@ -96,3 +96,55 @@ The public `dev/manifest.json` remains the 177-wheel set generated at
 full result is claimed yet, and no publication was attempted. A resumed
 iteration must reconcile the replacement service, its PID, log growth,
 `exit-code`, and wheel inventory before launching any other x86_64 build.
+
+## Post56 Prefix-Mount Failures And Post57 Correction
+
+The first replacement above subsequently exited before compilation.
+CPython 3.14's venv implementation rejected the writable retained prefix
+because `/host/sage-manylinux_2_28_x86_64` still appeared as a symlink.
+An exact child Docker bind did not hide that symlink. A reversible focused
+probe temporarily replaced only the host's generic prefix symlink with a bind
+mount of its unchanged bulk-backed target. Inside the CPython 3.14 manylinux
+image the path then reported `exists=True`, `isdir=True`, and
+`islink=False`, and a write probe passed. The original host symlink was
+restored immediately.
+
+A fresh exact-`post56` retry at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-100334-288c3f21968`
+used that reversible mount with an exit trap. It cleared venv creation and
+restored the original symlink correctly on exit, but exposed a separate cache
+initialization defect. The retained prefix had no `bin/python3`, so the
+before-all hook skipped both venv initialization and Python-module cache
+validation. The stale `python_build-1.4.2` marker survived, after which
+cysignals and NumPy both failed with `No module named build`. This run also
+exited one before wheel creation.
+
+Exact pushed source `6361dc1935cda24f0c080a6f0f55a5ff29fc23b2`
+fixes that missing-interpreter branch by initializing the selected-ABI Sage
+venv before cached module markers are validated. It bumps the immutable wheel
+version to `10.9.post57`. Shell syntax and all four focused Linux before-all
+contract tests pass. The complete companion-metadata test file passed 260
+tests and had three unrelated existing failures involving stale generated
+Flatter metadata and Regina dependency expectations.
+
+The fresh authoritative replacement is running at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c
+sagelite-post57-x86-cp314-build.service
+main PID 102398
+```
+
+Before launch, only the generic retained prefix's Python venv symlinks and
+`python3_venv` marker were removed to reproduce the exact defect; the stale
+`python_build-1.4.2` marker was deliberately retained. The live log proves
+that `post57` selected the new `Initializing missing Sage venv interpreter`
+branch, removed the stale `python_build`, cysignals, and NumPy markers, and
+then installed `python_build 1.4.2` successfully. The native x86_64
+manylinux build remains active with no exit artifact and 122,928,590,848
+bytes free at the latest checkpoint.
+
+No `post57` wheel, install, smoke, short, or full result is claimed yet, and
+no artifact was published. The public manifest remains the 177-wheel set
+generated on 2026-07-09. A resumed iteration must reconcile this exact
+`post57` service before launching another x86_64 build.

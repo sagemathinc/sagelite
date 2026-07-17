@@ -287,6 +287,20 @@ container. No wheel or validation result is claimed yet. The public R2
 manifest remains the 177-wheel set generated on 2026-07-09. Details are in
 `agents/sagelite-linux-x86_64-cp314-validation.md`.
 
+That first replacement then stopped because CPython 3.14 refused to create a
+venv through the retained prefix symlink. A reversible host bind-mount probe
+proved a real-directory path, and a fresh exact-`post56` retry cleared venv
+creation but exposed a stale cache marker: when the prefix interpreter was
+missing, the before-all hook skipped both venv initialization and
+`python_build` marker validation. Exact pushed `post57` source
+`6361dc1935c` initializes the missing selected-ABI venv before validating
+cached modules. Its focused checks pass. The fresh authoritative build at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c`
+is running under `sagelite-post57-x86-cp314-build.service`. With the exact
+missing-interpreter state reproduced, its log proves that the new branch ran,
+stale Python markers were removed, and `python_build 1.4.2` installed
+successfully. No wheel or validation result is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
