@@ -48,6 +48,10 @@ if [ -n "${cached_sage_python}" ] && [ "${cached_sage_python}" != "${SAGE_PYTHON
     -delete
   rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*
   "${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"
+elif [ ! -x "${sage_prefix}/bin/python3" ]; then
+  echo "Initializing missing Sage venv interpreter with ${SAGE_PYTHON}"
+  rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*
+  "${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"
 fi
 
 cat > build/bin/cython <<EOF

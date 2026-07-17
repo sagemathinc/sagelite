@@ -4767,6 +4767,22 @@ def test_linux_before_all_resets_cross_python_cached_venv_interpreter():
     assert "markupsafe:markupsafe" in before_all
 
 
+def test_linux_before_all_initializes_missing_cached_venv_interpreter():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+
+    assert 'elif [ ! -x "${sage_prefix}/bin/python3" ]; then' in before_all
+    assert 'echo "Initializing missing Sage venv interpreter with ${SAGE_PYTHON}"' in before_all
+    missing_interpreter_branch = before_all.split(
+        'elif [ ! -x "${sage_prefix}/bin/python3" ]; then', 1
+    )[1].split("\nfi\n", 1)[0]
+    assert 'rm -f "${sage_prefix}"/var/lib/sage/installed/python3_venv-*' in (
+        missing_interpreter_branch
+    )
+    assert '"${SAGE_PYTHON}" build/bin/sage-venv "${sage_prefix}"' in (
+        missing_interpreter_branch
+    )
+
+
 def test_linux_before_all_invalidates_cached_meson_without_launcher():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
 
