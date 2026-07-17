@@ -1,5 +1,70 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-17 Post56 Full Acceptance
+
+The scheduled continuation first retried the higher-priority Linux x86_64
+cell, but all three bounded SSH attempts to `host` timed out. The directly
+fetched public R2 manifest remained the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, including fourteen Sagelite primary
+wheels, so no public state changed.
+
+Exact pushed `10.9.post56` source
+`288c3f219682ed6ba6e7a77cb069b94ba0073c13` has tree
+`5fbf7601cd1e7d6e81fa8d6e8e0f6190bd87909d`. Its 144,004,948-byte source
+archive has SHA256
+`50522fcd49a659c85935694767e6c442825a1fa659d6d6844f5a38c4d1b8c781`.
+The native Darwin arm64 CPython 3.12.13 build initially stopped in the Maxima
+subproject because the process inherited a 256-file soft descriptor limit;
+the linker reported `errno=24` while opening SDK stubs. A controlled resume
+raised only that limit to 4,096, reused the same verified source and persistent
+Meson tree, and completed with no source change. The initial and resume exit
+codes are retained as 1 and 0 respectively.
+
+The completed repair produced:
+
+```text
+sagelite-10.9.post56-cp312-cp312-macosx_26_0_arm64.whl
+  102,263,590 bytes
+  6b700467acc9083a7f9176e8ff684f50ab53e48810f6a1f84f2dcacea7561b7b
+```
+
+Repair injected 2,079 native headers, rewrote 23 companion dependencies in
+16 Mach-O files, and audited 1,176 dependencies across 637 Mach-O files. The
+strict compatible closure contains 180 wheels: one primary, 68 companions,
+and 111 third-party wheels totaling 13,896,963,792 bytes. Its inventory digest
+is `91018519e0f5281b9d5727d83723a6b226516f0652b4a8d2126d9f38682d0181`.
+
+The independent fresh short gate passed strict preflight, binary-only
+installation, `pip check`, runtime isolation, all 102 selftests, all 3,953
+installed `--optional=sage` modules with zero failures in 484.0 seconds, and
+packaged pytest with 226 passes and 5 skips in 270.24 seconds. The validator
+exited zero after 1,771.01 seconds.
+
+The separate fresh full gate passed the same installation, isolation, and
+selftest contract. Its unrestricted sweep passed all 3,953 installed modules
+with zero failures or timeouts in 742.4 seconds, including the deterministic
+elliptic-kernel coverage that timed out in post55. Packaged pytest then passed
+with 226 passes and 5 skips in 269.88 seconds. The full validator exited zero
+after 1,991.206 seconds.
+
+Both runtime summaries report zero dependency, host-executable, Python-path,
+source-path, or GAP-host-path leaks. `SAGE_ROOT` was null, `PYTHONPATH` and
+`LD_LIBRARY_PATH` were absent, `PYTHONNOUSERSITE=1`, and `PATH` contained only
+the fresh install followed by `/usr/bin:/bin`. Every resolved Sage prefix was
+inside its corresponding fresh install.
+
+The exact post56 primary and closure are accepted locally for macOS arm64
+CPython 3.12. The public preview remains the unchanged post9 set; nothing was
+published. Durable wheel, checksum, inventory, build-resume, short-gate, and
+full-gate evidence is retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260717-080007-288c3f21968/
+```
+
+The disposable build/source trees and both completed validation environments
+were removed after evidence capture, restoring 104 GiB free on `/Volumes/sage`.
+
 ## 2026-07-17 Post55 Full Rejection And Post56 Deterministic Doctest
 
 Exact pushed `10.9.post55` source

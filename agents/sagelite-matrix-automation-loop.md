@@ -253,6 +253,23 @@ the exact failing seed and original timeout in 7.5 seconds. A coherent post56
 rebuild and both independent fresh gates are required; post55 is not accepted.
 Details are in `agents/sagelite-macos-arm64-cp312-validation.md`.
 
+Exact pushed `post56` source `288c3f21968` then completed its native macOS
+arm64 CPython 3.12 build after all three bounded SSH attempts to the
+higher-priority `host` target timed out. The public R2 manifest remained the
+177-wheel set generated on 2026-07-09. A controlled same-tree resume raised
+the soft file-descriptor limit for Maxima. The repaired 102,263,590-byte
+primary has SHA256
+`6b700467acc9083a7f9176e8ff684f50ab53e48810f6a1f84f2dcacea7561b7b`.
+Its strict 180-wheel closure totals 13,896,963,792 bytes. Independent fresh
+short and full gates both passed strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation,
+all 102 selftests, all 3,953 installed `--optional=sage` modules with zero
+failures, and packaged pytest with 226 passes and 5 skips. The unrestricted
+suite completed in 742.4 seconds and the full validator exited zero after
+1,991.206 seconds. Post56 is accepted locally for this cell. The public R2
+preview remains unchanged and no artifact was published. Details are in
+`agents/sagelite-macos-arm64-cp312-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -333,7 +350,7 @@ Status meanings:
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
-| macOS arm64 | 3.12 | yes (`post55`, local; `post9`, public); `post56` rebuild required | full baseline plus packaged pytest on an earlier accepted build; exact pushed `post55` source `94480894829d` produced a repaired primary and strict 180-wheel closure. Its independent short gate passed all 3,953 modules and packaged pytest, but the full gate rejected one seed-sensitive performance-only timeout with zero failed examples. Exact pushed `post56` source `288c3f21968` makes that elliptic kernel coverage deterministic and passes all 497 focused module doctests under the failing seed in 7.5 seconds; rebuild plus independent short and full gates are required | smoke (`post8`) |
+| macOS arm64 | 3.12 | yes (`post56`, local; `post9`, public) | full (`post56`); exact pushed source `288c3f21968` produced a repaired 102,263,590-byte primary and strict 180-wheel closure. Independent fresh neutral-path short and full gates passed preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftests, runtime isolation, packaged pytest with 226 passes and 5 skips, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 742.4 seconds | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired 102,365,990-byte primary and strict 168-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, selftest, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
@@ -364,12 +381,11 @@ Unless newer evidence changes the matrix, use this order:
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-3. Rebuild and run both strict gates for macOS arm64 CPython 3.12 from exact
-   pushed `post56` source `288c3f21968`, which supersedes the rejected post55
-   full gate. Then complete the synchronized full standard-suite rerun from
-   that release-candidate source on all nine cells, including the earlier
-   CPython 3.12 baselines. Earlier post54/post55 passes remain useful baseline
-   evidence but do not establish a synchronized post56 matrix.
+3. Complete the synchronized full standard-suite rerun from exact pushed
+   `post56` release-candidate source `288c3f21968` on the remaining cells.
+   macOS arm64 CPython 3.12 now has accepted independent short and full gates;
+   the earlier post54/post55 passes remain useful baseline evidence but do not
+   establish the rest of a synchronized post56 matrix.
 4. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 5. Resume systematic optional-package expansion in install-smoke batches.
