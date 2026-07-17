@@ -5,21 +5,22 @@ Last updated: 2026-07-17
 ## Current status
 
 Native Linux `aarch64` CPython 3.14 is now `full` for Sagelite
-`10.9.post38`. Exact pushed source
-`a2bdbbb674e80db5fa5bde37fe5fdf3f31983390` produced a repaired primary and
-three rebuilt companion wheels. Its 167-wheel strict closure passed preflight,
-a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all
-102 selftest probes, the explicit `--optional=sage --short 600` gate, and a
-separate fresh explicit `--optional=sage --full` validation. Both doctest runs
-saw all 3,953 installed modules and reduced to zero failed modules. Packaged
-pytest passed 215 tests with 2 skips.
+`10.9.post54`. Exact pushed release-candidate source
+`4071f482bcc3865116d57391b00227ae0a9f28d4` produced a repaired primary and
+three rebuilt companion wheels. Its 180-wheel strict closure passed a fresh
+wheel-only `sagelite[all-needed-extras]` short gate. The first full run had a
+transient finite-field constructor failure; an exact-seed focused replay and a
+separately named fresh full rerun did not reproduce it. The accepted full
+rerun passed strict preflight, wheel-only installation, `pip check`, runtime
+isolation, every selftest, all 3,953 installed modules with zero failures, and
+packaged pytest with 229 passes and 2 skips.
 
-The accepted primary was compiled against final CPython 3.14.3 and validated
-under CPython 3.14.6. It includes the `post38` fix that avoids the unstable
-private `PyInterpreterState` atexit offset on Python 3.14 and later. Earlier
-`post33` and `post36` attempts established the dependency closure and exposed
-the prerelease and patch-level ABI failures documented below; neither supplies
-the final acceptance evidence.
+The earlier accepted `post38` primary was compiled against final CPython
+3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
+unstable private `PyInterpreterState` atexit offset on Python 3.14 and later.
+Earlier `post33` and `post36` attempts established the dependency closure and
+exposed the prerelease and patch-level ABI failures documented below; neither
+supplies the current release-candidate acceptance evidence.
 
 The initial `post33` authoritative run root was:
 
@@ -755,25 +756,113 @@ Exact pushed source `4071f482bcc3865116d57391b00227ae0a9f28d4`
 that hash matched on the controller, outer Mac, and Linux guest. The detached
 guest checkout reports the exact source SHA and a clean status.
 
-The durable build and gated watcher are running at:
+The durable build and gated validation ran at:
 
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc
 sagelite-post54-rc-cp314-build.service
-sagelite-post54-rc-cp314-validate.service
+sagelite-post54-rc-cp314-validate-r2.service
+sagelite-post54-rc-cp314-full-r1.service
 ```
 
 The build uses the repository's native Linux CIBW contract with
 `CIBW_BUILD=cp314-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, and CPython 3.14
-paths throughout. If the build exits zero, the watcher will combine the exact
-new primary and rebuilt companions with the accepted CPython 3.14 `post38`
-companion seed, resolve a fresh binary-only closure, and run independent
-strict `--optional sage` short and full gates. It will not start validation
-after a nonzero build exit.
+paths throughout. The selected EPEL mirror timed out twice while fetching
+filelists metadata, then recovered on its automatic retry. The build finished
+at `2026-07-17T03:22:04Z` with exit code zero. Its repaired outputs are:
 
-At the latest checkpoint both services were active and no build exit artifact
-or wheel existed. The native manylinux container was still installing its
-bootstrap prerequisite set. Its selected EPEL mirror timed out twice while
-fetching filelists metadata, then resumed measurable transfer on its automatic
-retry. This is transient network progress only: no wheel, install, smoke, or
-full-pass result is claimed yet.
+```text
+sagelite-10.9.post54-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237288901 bytes
+sha256: 4ae5dbfc89bc1728dc103d5605d9e9468a64a2a0c9d43d7fea7be457ff595764
+
+pplpy-0.9.0.post1-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl
+size:   9380835 bytes
+sha256: be0772459236f146c55d16cd53ac208c4577f68ed0751914f87aa0d0bd62c104
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_aarch64.whl
+size:   66578982 bytes
+sha256: 552975fbdcfd4fbaf514008709e5bab24b78b46c8bf71bbe1aa71064f24aea32
+
+sagelite_qepcad_runtime-10.9.post4-py3-none-manylinux_2_28_aarch64.whl
+size:   5243824 bytes
+sha256: a901c1e3c65248a947b0e2ccba497a381bfc3f8b968cf68861ca8990b2e7d11d
+```
+
+The initial watcher used the obsolete `post38` companion set and stopped
+before installation because `sagelite-meataxe-runtime 10.9` did not satisfy
+the current `>=10.9.post1` requirement. A first orchestration retry passed the
+wheelhouse directory rather than its parent to the validator and therefore
+exposed only four wheels. Both non-source failures are preserved. The corrected
+retry combined accepted ABI-independent `post54` companions, the accepted
+CPython 3.14 `cysignals` and `pycosat` wheels, and the four new build outputs.
+Fresh binary-only resolution produced a 180-wheel closure: one primary, 81
+companions, and 98 third-party wheels. It totals 16,735,945,069 bytes and has
+wheelhouse digest
+`9d05b995f82e1e6799998fa599064ecc022c908e6387d62b12110a555204f703`.
+All 68 requested Sagelite dependencies and every strict tag, architecture,
+platform, repair, and duplicate-wheel check passed.
+
+The explicit short gate used:
+
+```text
+--package sagelite[all-needed-extras]==10.9.post54
+--strict-repaired-wheelhouse-preflight
+--optional sage
+--short 600
+--nthreads 8
+```
+
+Its fresh CPython 3.14.6 wheel-only installation, `pip check`, runtime
+isolation, and every selftest passed. The installed doctest sweep ran all
+3,953 modules, reported `All tests passed!`, and reduced to zero failed
+modules. Packaged pytest passed 229 tests with 2 skips and 15 warnings. The
+short gate finished at `2026-07-17T03:46:55Z` with exit code zero.
+
+The first independent full run used the same contract with `--full`. It ran
+all 3,953 modules but failed eight examples in
+`sage.rings.polynomial.multi_polynomial_libsingular.pyx`: four repeated
+`GF((2^29-3)^2)` constructors unexpectedly raised that the order was not a
+prime power, causing four immediately following examples to use the prior
+ring. The failed summary, log, analysis, and exit code 1 are retained under
+`validation/full-post54-r0-failed` and `validation-full-r0-*`.
+
+A native CPython 3.14 focused replay used the identical failing random seed.
+One hundred calls reported the correct `(536870909, 2)` perfect-power
+decomposition with no constructor failures, and the complete polynomial
+module reported `All tests passed!`. Its log is retained at
+`validation/focused-post54/gf-prime-power-replay.log`. No source or wheel was
+changed before the acceptance rerun.
+
+The separately named fresh full rerun used a new `full-post54-r1` install
+directory and the unchanged 180-wheel closure. Strict preflight, wheel-only
+installation, `pip check`, runtime isolation, and every selftest passed. Its
+unrestricted installed sweep reported `All tests passed!` after 916.6 seconds;
+analysis saw all 3,953 modules and zero failures. Packaged pytest passed 229
+tests with 2 skips and 15 warnings. The validator ran from
+`2026-07-17T04:16:29Z` through `2026-07-17T04:44:09Z`, took 1,661.187 seconds,
+and recorded exit code zero.
+
+The authoritative current artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation/short-post54/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation/full-post54-r0-failed/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation/focused-post54/gf-prime-power-replay.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation/full-post54-r1/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation/full-post54-r1/doctest-installed-linux-aarch64-cp314-post54-full-20260717-041908.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation-full-r1-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc/validation-full-r1-exit-code
+```
+
+Cleanup removed only the accepted rerun's completed 21 GiB validation venv.
+Both wheelhouses, the clean source checkout, failed-run evidence, focused
+replay, accepted summaries, reductions, manifests, logs, and exit artifacts
+remain. The guest then had 103,443,734,528 bytes free, above the explicit
+100,000,000,000-byte heavy-build threshold.
+
+The public `dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primaries from
+`post8` and `post9`. No publication was attempted.

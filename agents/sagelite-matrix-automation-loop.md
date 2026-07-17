@@ -207,11 +207,17 @@ pushed release-candidate source `4071f482bcc` and its verified
 145,752,626-byte bundle were checked out cleanly for the Linux aarch64 CPython
 3.14 rerun at
 `/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc`.
-The durable native CIBW build and gated short/full watcher are active. At the
-checkpoint, the manylinux container was still installing bootstrap
-prerequisites after its selected EPEL mirror resumed a slow filelists transfer
-on an automatic retry. No build exit artifact or wheel existed, so no new
-validation result is claimed. Details are in
+The native build produced a repaired 237,288,901-byte `post54` primary with
+SHA256 `4ae5dbfc89bc1728dc103d5605d9e9468a64a2a0c9d43d7fea7be457ff595764`.
+Its strict 180-wheel closure passed the fresh short gate. The first full run
+then transiently misclassified the known prime square `(2^29-3)^2` in four
+repeated constructor examples, causing four follow-on failures in one
+polynomial module. An exact-seed focused replay, including 100 constructor
+repetitions, passed. A separately named fresh full rerun from the unchanged
+closure passed wheel-only installation, `pip check`, runtime isolation, every
+selftest, all 3,953 installed standard modules with zero failures, and
+packaged pytest with 229 passes and 2 skips. Its validator exited zero after
+1,661.187 seconds. Details are in
 `agents/sagelite-linux-aarch64-cp314-validation.md`.
 
 ## Scratch Layout
@@ -293,7 +299,7 @@ Status meanings:
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
-| Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
+| Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired 102,365,990-byte primary and strict 168-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, selftest, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
@@ -327,9 +333,9 @@ Unless newer evidence changes the matrix, use this order:
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
 3. Complete the full standard-suite rerun from release-candidate commit
    `4071f482bcc` on all nine cells, including the earlier CPython 3.12
-   baselines. Linux aarch64 CPython 3.13 now passes; the native Linux aarch64
-   CPython 3.14 release-candidate rerun is the next independent cell while
-   `host` remains unreachable.
+   baselines. Linux aarch64 CPython 3.13 and 3.14 now pass; macOS arm64
+   CPython 3.12 is the next independent cell while `host` remains
+   unreachable.
 4. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 5. Resume systematic optional-package expansion in install-smoke batches.
