@@ -278,3 +278,20 @@ to the preserved 4,464,649-byte stderr reduced the output to exactly zero.
 Python compilation and `git diff --check` pass.  A fresh exact-source `post58`
 primary rebuild and both independent strict gates are required; no `post57`
 install, smoke, short, or full pass is claimed.
+
+The repair commit `8bbd27d5134eb708e43222beafdf7a1126fec929` was pushed to
+`origin/develop` and verified there.  Removing only the rejected gate's
+inactive 21 GB install venv retained all nine validation artifacts and restored
+108,724,629,504 bytes free on the assigned bulk filesystem.  The fresh exact
+`post58` CPython 3.14 build is running under
+`sagelite-post58-x86-cp314-build.service` at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-140439-8bbd27d5134
+```
+
+The detached checkout is clean at the exact repair SHA, reports
+`10.9.post58`, and passed Linux, `x86_64`, free-space, idle-Docker, and prefix
+guards before launch.  The live native manylinux build entered the cached
+CPython 3.14 environment setup with 107,703,951,360 bytes free at the latest
+checkpoint.  No `post58` wheel or validation result is claimed yet.

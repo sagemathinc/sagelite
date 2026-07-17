@@ -342,6 +342,16 @@ stderr to zero. An exact committed `post58` rebuild and both fresh gates are
 required. Details are in
 `agents/sagelite-linux-x86_64-cp314-validation.md`.
 
+The focused repair commit `8bbd27d5134` was pushed and verified. Precise
+cleanup removed only the rejected gate's inactive 21 GB install venv while
+retaining its wheelhouse and validation evidence, restoring 108,724,629,504
+bytes free. Exact clean `post58` source is now building natively for Linux
+x86_64 CPython 3.14 under `sagelite-post58-x86-cp314-build.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-140439-8bbd27d5134`.
+The live build passed source, architecture, capacity, idle-Docker, and prefix
+guards and entered cached CPython 3.14 environment setup. No `post58` wheel or
+validation result is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -418,7 +428,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post57`, local; `post9`, public) | smoke only; exact pushed `post57` source `6361dc1935c` produced a repaired primary and strict 181-wheel closure. Fresh installation, `pip check`, isolation, selftest, and packaged pytest passed, but the short gate found one `sage.misc.cython` failure caused by an interleaved Zig libc++ warning flood, so the full gate was skipped. The focused `post58` fix passes against the exact preserved stderr; rebuild and both fresh gates are required | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post57`, local; `post9`, public) | smoke only; exact pushed `post57` source `6361dc1935c` produced a repaired primary and strict 181-wheel closure. Fresh installation, `pip check`, isolation, selftest, and packaged pytest passed, but the short gate found one `sage.misc.cython` failure caused by an interleaved Zig libc++ warning flood, so the full gate was skipped. Exact pushed `post58` repair source `8bbd27d5134` is rebuilding after the focused fix passed against the preserved stderr | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
