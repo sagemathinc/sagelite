@@ -1,5 +1,68 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-17 Post60 Synchronized Build Start
+
+Three bounded attempts to reconcile the higher-priority Linux `x86_64`
+CPython 3.12 job through the required `host` alias timed out during SSH
+connection. That possibly surviving job was left untouched. The public
+`dev/manifest.json` remained the 177-wheel set generated on 2026-07-09, so no
+local `post60` artifact was assumed public.
+
+Independent preflight on `m1` found the outer Darwin host native `arm64`, the
+persistent Lima guest running Linux `aarch64`, and no active Sagelite build,
+validator, or Docker container. The outer `/Volumes/sage` filesystem had
+108,004,188,160 bytes free. The guest initially had 103,446,056,960 bytes
+free, below the binary 100 GiB heavy-build threshold. Precise cleanup removed
+only superseded regenerated closure links, eight inactive disposable source
+checkouts, and six obsolete exact-source bundle inputs. Accepted wheelhouses,
+validation evidence, logs, and the latest useful failure evidence remain.
+This restored 108,706,050,048 bytes free in the guest before source staging.
+
+Exact pushed release-candidate source is:
+
+```text
+source SHA: 22a2cb56739940d7a9eb313e997fd0a004a9ea36
+version:    10.9.post60
+bundle:     sagelite-shallow-22a2cb56739.bundle
+size:       145,770,108 bytes
+sha256:     84f2902d2051d598b04430d9ef95b4e9fe672f4d02a0701a653d2764b82285dc
+```
+
+The hash matched on the controller, outer Mac, and Linux guest. The new native
+run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260717-223804-22a2cb56739
+```
+
+Its clean checkout was independently confirmed at the exact source SHA and
+`10.9.post60`. The pre-launch guest capacity was 108,560,244,736 bytes. The
+build uses the repository Linux CIBW helpers with
+`CIBW_BUILD=cp312-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, and the accepted
+CPython 3.12 closure as the guarded source of ABI-specific supplements and
+portable wheels. This leg emits a synchronized platform companion set before
+the watcher resolves a fresh strict closure and runs independent short and
+full gates.
+
+The durable services are active as:
+
+```text
+sagelite-post60-arm-cp312-build.service  main PID 432512
+sagelite-post60-arm-cp312-watch.service  main PID 432520
+```
+
+Script hashes are:
+
+```text
+d9f70b4345cc933a5f86a8d95b2ce0f5f5c98a24ea61d93d27baac2fead48e86  start-build.sh
+57805b8cd47d58ca7b20de0403c97bab5660df33646fc730d26d4f5c9b3f80b9  validate-after-build.sh
+1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15  watch-and-validate.sh
+```
+
+The build completed exact-bundle checkout and entered native prerequisite
+setup while the watcher remained active. No `post60` wheel, install, short
+gate, full gate, or publication result is claimed yet.
+
 ## 2026-07-16 Post54 Wheel And Strict Short/Full Passes
 
 The native build from exact pushed source
