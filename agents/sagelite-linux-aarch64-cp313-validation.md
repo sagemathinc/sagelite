@@ -1,5 +1,61 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-17 Post54 Release-Candidate Rebuild Start
+
+The scheduled matrix iteration retried the two higher-priority Linux
+`x86_64` cells first. All three connection attempts through the required
+`host` SSH alias timed out, so no x86_64 build or validation was started. The
+directly fetched public `dev/manifest.json` remained the 177-wheel set
+generated on 2026-07-09, with fourteen Sagelite primaries split between
+`10.9.post8` and `10.9.post9`.
+
+Independent release-candidate work then continued on the native Linux arm64
+backend. The outer Mac reported Darwin `arm64`; the Lima guest reported Linux
+`aarch64`, Docker reported `linux/aarch64`, and no Sagelite service, container,
+build, or validator was active. The guest initially had 103,526,281,216 bytes
+free, below the 100 GiB heavy-build threshold. Targeted cleanup removed only
+disposable source checkouts, host venvs, and install homes from completed
+automation runs. All accepted CPython 3.12, 3.13, and 3.14 wheelhouses and
+full-validation evidence were retained. The guest then had 108,155,944,960
+bytes free.
+
+The selected release-candidate source is the clean, pushed commit:
+
+```text
+source SHA: e15c05ab4bed5fc2447767330866dbb9c8b3fa3c
+version:    10.9.post54
+bundle:     sagelite-shallow-e15c05ab4be.bundle
+size:       145,749,785 bytes
+sha256:     c30d53dc6364e9be0857fe4549f1f8dccd161c2552da58f9d01aa6707d465ad6
+```
+
+The bundle hash matched on the controller, outer Mac, and Linux guest. After
+source staging, the guest passed the heavy-build preflight with
+108,010,192,896 bytes free. The clean detached checkout reports the exact
+selected SHA. The native CIBW build uses
+`CIBW_BUILD=cp313-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, the CPython 3.13
+manylinux interpreter, and the repository Linux build and repair helpers. Its
+durable run root is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260717-000806-e15c05ab4be
+```
+
+The build and gated validation watcher are active as:
+
+```text
+sagelite-post54-rc-cp313-build.service
+sagelite-post54-rc-cp313-validate.service
+```
+
+The watcher will assemble a strict CPython 3.13 wheel closure after a
+successful build, then run independent fresh wheel-only short and full gates
+with `sagelite[all-needed-extras]==10.9.post54` and explicit
+`--optional sage`. At this checkpoint the build had completed exact-source
+checkout and reached repository bootstrap. No `post54` CPython 3.13 wheel,
+install, smoke, short, or full result is claimed, and no publication was
+attempted.
+
 This report records the native Linux aarch64 CPython 3.13 iteration started
 from committed source `0701265d12d8bbb55a3df941744eac6810bb2a93`
 (`sagelite 10.9.post10`). The build and validation environment was the
