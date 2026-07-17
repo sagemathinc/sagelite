@@ -1,5 +1,71 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-17 Post54 Release-Candidate Full Pass
+
+The cached-Meson repair rebuild from exact pushed source
+`4071f482bcc3865116d57391b00227ae0a9f28d4` completed with build exit code
+zero at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260717-003947-4071f482bcc
+```
+
+The native builder reported Linux `aarch64`, and Docker reported
+`linux/aarch64`. The higher-priority `host` alias still timed out during this
+iteration, and the public `dev/manifest.json` remained the 177-wheel set
+generated on 2026-07-09. No x86_64 work or publication was attempted.
+
+The repaired primary wheel is:
+
+```text
+sagelite-10.9.post54-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,421,410 bytes
+sha256: 5c7e1322622acf6c5a0a221a1c551bcff08531aba3bca43c261b54282e101811
+```
+
+The build also produced matching repaired CPython 3.13 `pplpy`, Maxima, and
+QEPCAD wheels. The first binary-only closure attempt correctly stopped before
+installation because its retained `post33` seed had
+`sagelite-meataxe-runtime 10.9`, below the primary's `>=10.9.post1` floor.
+That evidence is preserved as `validation-follow-r1.log` and
+`validation-follow-r1-exit-code`.
+
+The clean retry used the already strict-validated ABI-independent companions
+from the accepted Linux aarch64 CPython 3.12 `post54` wheelhouse, the accepted
+CPython 3.13 `cysignals 1.12.6` and `pycosat 0.6.6` wheels, and the exact new
+primary, `pplpy`, Maxima, and QEPCAD wheels. Binary-only resolution produced a
+strict 191-wheel closure totaling 16,738,856,668 bytes: one primary, 81
+Sagelite companions, and 109 third-party wheels. All 191 filenames and tags
+passed strict repaired-wheelhouse preflight, all 68 requested Sagelite
+dependency projects were present, and the staged wheelhouse digest is:
+
+```text
+2001409c8e5e2baef6e4c89a9500d2aa6f973364ba70b67430b8cf958d0eff39
+```
+
+The strict short gate then passed in a fresh wheel-only CPython 3.13 install.
+Installation, `pip check`, runtime isolation, and every selftest passed. The
+explicit installed `--optional=sage --short 600` sweep saw all 3,953 modules
+and reduced to zero failures in 527.3 seconds. Packaged pytest passed 229 tests
+with 2 skips and 15 warnings. The validator recorded `Status: passed`, exit
+code zero, and 1,275.782 seconds total elapsed time.
+
+A separate fresh strict full gate from the identical closure also passed its
+wheel-only install, `pip check`, runtime isolation, and every selftest. The
+unrestricted installed `--optional=sage` sweep saw all 3,953 modules and
+reduced to zero failures; its runner reported `All tests passed` in 819.8
+seconds. Packaged pytest passed 229 tests with 2 skips and 15 warnings in
+294.21 seconds. The full validator recorded `Status: passed`, exit code zero,
+and 1,550.013 seconds total elapsed time. The durable build, short, full, and
+follow-up exit-code files all contain zero.
+
+After preserving the 191-wheel closure, both validation trees, manifests,
+reduced analyses, command logs, and the first closure failure, cleanup removed
+only the completed 21,837,839,064-byte full-install venv. The guest then had
+105,595,871,232 bytes free. This is repaired-wheel, compatible-closure,
+independent fresh-install short and full evidence. No public artifact was
+published.
+
 ## 2026-07-17 Cached-Meson Repair Rebuild Start
 
 Commit `4071f482bcc3865116d57391b00227ae0a9f28d4` adds the executable-aware
