@@ -1,5 +1,51 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-17 Post54 Rejection And Post55 Order-Independent Doctest
+
+The exact pushed `10.9.post54` source `4071f482bcc3865116d57391b00227ae0a9f28d4`
+completed its native Darwin arm64 CPython 3.12 build. Repair injected 2,079
+native headers, rewrote 23 companion dependencies in 16 Mach-O files, and
+audited 1,176 dependencies across 637 Mach-O files. The repaired primary is:
+
+```text
+sagelite-10.9.post54-cp312-cp312-macosx_26_0_arm64.whl
+  102,252,654 bytes
+  f45f17aba5ca6f6564097bb0e4d1cf6d6df003bcabde9743e7a8da6e79be6503
+```
+
+The deterministic CPython 3.12 closure contains 180 compatible wheels: one
+primary, 68 companions, and 111 third-party wheels totaling 13,896,962,399
+bytes. Its inventory digest is
+`f248102ba0ca21746674be08f1963b7eb086d873201de30e56abadac3feddb51`.
+Closure assembly preserved two rejected orchestration attempts: the first used
+a bare interpreter without `packaging`, and the second proved that the
+CPython 3.13 seed lacked the CPython 3.12-only `pycryptosat` dependency. The
+accepted closure uses the compatible PyPI `pycryptosat==5.14.7` macOS arm64
+wheel and passed complete local pip resolution and interpreter-tag checks.
+
+The strict neutral-path short gate passed wheel-only installation, `pip
+check`, runtime-manifest isolation, every selftest, and packaged pytest with
+226 passes and 5 skips. Its installed `--optional=sage` sweep covered 3,954
+modules and rejected one module because `pycryptosat` returned the correct
+Boolean solution with a different dictionary insertion order:
+
+```text
+Expected: [{z: 0, y: 1, x: 0}]
+Got:      [{y: 1, z: 0, x: 0}]
+```
+
+The mappings compare equal and both reduce the system to zero. The `post55`
+working change makes this single doctest compare dictionary equality instead
+of dictionary representation. A focused replay of the complete
+`multi_polynomial_sequence.py` doctest file in the rejected fresh install
+passed, including the `brial` and `pycryptosat` features. A coherent exact
+`post55` primary rebuild and independent strict short and full gates are still
+required. The authoritative rejected run and focused evidence are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260717-050335-4071f482bcc/
+```
+
 ## 2026-07-17 Post54 Exact Rebuild Start
 
 The scheduled iteration first retried the higher-priority Linux x86_64

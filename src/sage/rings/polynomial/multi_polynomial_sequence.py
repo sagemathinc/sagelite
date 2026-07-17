@@ -1822,8 +1822,8 @@ class PolynomialSequence_gf2(PolynomialSequence_generic):
         And we may use SAT-solvers if they are available::
 
             sage: sol = S.solve(algorithm='sat')        # optional - pycryptosat        # needs brial
-            sage: sol                                   # optional - pycryptosat        # needs brial
-            [{z: 0, y: 1, x: 0}]
+            sage: sol == [{z: 0, y: 1, x: 0}]           # optional - pycryptosat        # needs brial
+            True
             sage: S.subs(sol[0])                                                        # needs brial
             [0, 0, 0]
 

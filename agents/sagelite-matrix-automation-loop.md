@@ -222,18 +222,20 @@ packaged pytest with 229 passes and 2 skips. Its validator exited zero after
 
 The following scheduled iteration again found `host` unreachable on all three
 bounded SSH attempts. The public R2 manifest remained the 177-wheel set
-generated on 2026-07-09. Native `m1` was idle, reported Darwin arm64, and had
-105 GiB free on `/Volumes/sage`; its Lima guest was also healthy and native
-Linux aarch64 but was not selected for this cell. Exact pushed release-candidate
-source `4071f482bcc` (`10.9.post54`) was materialized as tree
-`513286131f987e2cb30e3fd12956c800cfca2328` in a verified 151,219,896-byte
-archive with SHA256
-`7e457b3827627b290e2b58a426f618227de12269dc19aae3689d8a7072691ba2`.
-Its native macOS arm64 CPython 3.12 rebuild is running durably under tmux
-session `sagelite_cp312_post54_build` at
-`/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260717-050335-4071f482bcc`.
-This is build-start evidence only; no new wheel, install, short, or full pass is
-claimed. Details are in `agents/sagelite-macos-arm64-cp312-validation.md`.
+generated on 2026-07-09. Exact pushed release-candidate source `4071f482bcc`
+(`10.9.post54`) completed its native macOS arm64 CPython 3.12 build and
+produced a repaired 102,252,654-byte primary with SHA256
+`f45f17aba5ca6f6564097bb0e4d1cf6d6df003bcabde9743e7a8da6e79be6503`.
+Its deterministic strict closure contains 180 compatible wheels totaling
+13,896,962,399 bytes. The fresh neutral-path short gate passed wheel-only
+installation, `pip check`, runtime isolation, every selftest, and packaged
+pytest with 226 passes and 5 skips, but its 3,954-module standard sweep found
+one failure: `pycryptosat==5.14.7` returned the correct Boolean solution with
+a different dictionary insertion order. The gate was rejected. The `post55`
+working change compares the expected mapping by dictionary equality; the
+complete focused module replay passed with `brial` and `pycryptosat` enabled.
+An exact `post55` rebuild and both fresh strict gates are required. Details are
+in `agents/sagelite-macos-arm64-cp312-validation.md`.
 
 ## Scratch Layout
 
@@ -315,7 +317,7 @@ Status meanings:
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
-| macOS arm64 | 3.12 | yes (`post9`, public); exact `post54` rebuild in progress | full baseline plus packaged pytest on an earlier accepted build; exact pushed release-candidate source `4071f482bcc` is rebuilding natively for a synchronized rerun | smoke (`post8`) |
+| macOS arm64 | 3.12 | yes (`post54`, local; `post9`, public); `post55` rebuild required | full baseline plus packaged pytest on an earlier accepted build; exact `post54` short gate passed install, isolation, selftest, and packaged pytest but was rejected for one order-sensitive `pycryptosat` doctest. The focused `post55` equality-based repair passes and requires an exact rebuild plus independent strict short and full gates | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired 102,365,990-byte primary and strict 168-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, selftest, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
