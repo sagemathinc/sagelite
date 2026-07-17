@@ -350,8 +350,9 @@ building natively for Linux `x86_64` CPython 3.14 under
 The run passed source SHA, clean checkout, version, architecture, idle-Docker,
 persistent-prefix, and free-space guards.  Its recorded pre-build capacity was
 107,379,126,272 bytes, just above the 100 GiB heavy-build threshold.  The live
-manylinux container entered the 1,795-target native build and remained active
-with no exit artifact at the latest checkpoint.
+manylinux container completed raw primary compilation and entered wheel repair
+while the service remained active with no exit artifact at the latest
+checkpoint.
 
 A separate durable watcher,
 `sagelite-post59-x86-cp314-watch.service`, will accept only a successful exact

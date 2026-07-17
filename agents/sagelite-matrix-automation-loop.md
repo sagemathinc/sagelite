@@ -342,16 +342,6 @@ stderr to zero. An exact committed `post58` rebuild and both fresh gates are
 required. Details are in
 `agents/sagelite-linux-x86_64-cp314-validation.md`.
 
-Exact pushed `post59` source `48f88027b39` is now building natively for Linux
-x86_64 CPython 3.14 under `sagelite-post59-x86-cp314-build.service` at
-`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39`.
-The run passed exact-source, clean-checkout, version, architecture, idle-Docker,
-persistent-prefix, and capacity guards and entered the 1,795-target manylinux
-build. A separate durable watcher will assemble the strict closure and run
-independent fresh short and full gates only after a successful build. No
-`post59` wheel or validation result is claimed yet. The public R2 manifest
-remains the 177-wheel set generated on 2026-07-09.
-
 The focused repair commit `8bbd27d5134` was pushed and verified. Precise
 cleanup removed only the rejected gate's inactive 21 GB install venv while
 retaining its wheelhouse and validation evidence, restoring 108,724,629,504
@@ -380,6 +370,17 @@ positive and negative cases pass, and the exact preserved 4,458,206-byte
 stream reduces to zero. An exact committed rebuild and both fresh gates are
 required. Details are in
 `agents/sagelite-linux-x86_64-cp314-validation.md`.
+
+Exact pushed `post59` source `48f88027b39` is now building natively for Linux
+x86_64 CPython 3.14 under `sagelite-post59-x86-cp314-build.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39`.
+The run passed exact-source, clean-checkout, version, architecture, idle-Docker,
+persistent-prefix, and capacity guards. It completed raw primary compilation
+and entered wheel repair while both the build and watcher services remained
+active. The watcher will assemble the strict closure and run independent fresh
+short and full gates only after a successful build. No `post59` wheel or
+validation result is claimed yet. The public R2 manifest remains the 177-wheel
+set generated on 2026-07-09.
 
 ## Scratch Layout
 
