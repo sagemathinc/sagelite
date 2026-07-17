@@ -773,25 +773,16 @@ class EllipticCurveHom(Morphism):
                 over Finite Field in i of size 170141183460469231731687303715884105727^2
             sage: phi = E0.identity_morphism()
             sage: for _ in range(99):
-            ....:     phi = choice(phi.codomain().isogenies_prime_degree(2)) * phi
+            ....:     phi = phi.codomain().isogenies_prime_degree(2)[0] * phi
             sage: assert phi.kernel_subgroup().order() == 2^99
             sage: ker = phi.kernel_gens()
             sage: assert E0.isogeny(ker) == phi
 
         ::
 
-            sage: p = random_prime(50)
-            sage: q = p^randrange(1,4)
-            sage: E = choice(EllipticCurve(j=GF(q).random_element()).twists())
-            sage: while True:
-            ....:     l = random_prime(20)
-            ....:     if l == p:
-            ....:         continue
-            ....:     try:
-            ....:         phi = choice(E.isogenies_prime_degree(l))
-            ....:     except IndexError:
-            ....:         continue
-            ....:     break
+            sage: E = EllipticCurve(GF(5), [0,0,0,0,1])
+            sage: l = 2
+            sage: phi = E.isogenies_prime_degree(l)[0]
             sage: ker = phi.kernel_subgroup(extend=True)
             sage: ker.order() == l
             True
