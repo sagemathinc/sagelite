@@ -70,3 +70,70 @@ No `post60` CPython 3.13 wheel, install, short gate, full gate, or publication
 result is claimed yet. A resumed iteration must reconcile both services, the
 container, `command.log`, log growth, build `exit-code`, wheel inventory, and
 validation artifacts before launching any other x86_64 job.
+
+## 2026-07-17 Post60 Build Completion And Validation Resume
+
+The resumed scheduled iteration reconciled the existing run rather than
+launching a duplicate. The correct system-level transient units, recorded
+PIDs, process tree, manylinux container, and growing build log all agreed that
+the build and watcher were healthy. The public `dev/manifest.json` remained
+the 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with
+fourteen Sagelite primary wheels and no `post60` publication.
+
+The exact `post60` build completed with exit code zero. Its repaired primary
+is:
+
+```text
+sagelite-10.9.post60-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244669165
+sha256: f65a0903fa98471a38e5f6e145901258d6ef4503369d7febd46a078533f90885
+```
+
+The same run also emitted these new companion wheels:
+
+```text
+pplpy-0.9.0.post1-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+size:   9569626
+sha256: 1a09b70357c375f2faa4699bda9774533be0ec46062c7437cf8c3b26963abf37
+
+sagelite_maxima_runtime-10.9.post15-py3-none-manylinux_2_28_x86_64.whl
+size:   67999222
+sha256: 1bb666e7f113407da73ce9be7efbca8b66365f4f8cacc34415a27fdd45754f1a
+
+sagelite_qepcad_runtime-10.9.post4-py3-none-manylinux_2_28_x86_64.whl
+size:   5287584
+sha256: 15f184dc8f24fcc763f63202fa7e5c8668e2b4b6eae82133c642156258d4dabd
+```
+
+The guarded watcher correctly waited for build success and assembled the new
+primary and `pplpy` wheel with the accepted portable 4D polytope database. Its
+first binary-only closure resolution then stopped before installation because
+PyPI supplied no CPython 3.13 wheel for `pycosat>=0.6.3`. The exact failure is
+preserved at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/orchestration/closure-resolution-post60-initial-missing-pycosat.log
+```
+
+The public preview manifest already contained a compatible accepted wheel:
+
+```text
+pycosat-0.6.6-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
+size:   206987
+sha256: bbde2e7c9c887e8e6f63015ac53145d96493dda4976f8ec69626b965641c5773
+```
+
+The wheel was fetched from the public preview, checked against that manifest
+hash, and added as a fourth ABI-specific input. No Sage rebuild was needed.
+One fresh durable retry then resolved a strict closure of 192 wheels totaling
+14,292,168,533 bytes and started the independent short gate under:
+
+```text
+sagelite-post60-x86-cp313-validation-r1.service
+```
+
+At this checkpoint the service is active and the fresh wheel-only environment
+is installing from the strict closure. No install, `pip check`, selftest,
+short-gate, full-gate, or publication result is claimed yet. The next resumed
+iteration must reconcile this validation unit and its short/full artifacts
+before launching another x86_64 job.
