@@ -1,6 +1,6 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
-## 2026-07-17 Post54 Release-Candidate Rebuild Start
+## 2026-07-17 Post54 Release-Candidate Rebuild Failure
 
 The scheduled matrix iteration retried the two higher-priority Linux
 `x86_64` cells first. All three connection attempts through the required
@@ -41,20 +41,32 @@ durable run root is:
 /home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260717-000806-e15c05ab4be
 ```
 
-The build and gated validation watcher are active as:
+The build and gated validation watcher ran as:
 
 ```text
 sagelite-post54-rc-cp313-build.service
 sagelite-post54-rc-cp313-validate.service
 ```
 
-The watcher will assemble a strict CPython 3.13 wheel closure after a
-successful build, then run independent fresh wheel-only short and full gates
-with `sagelite[all-needed-extras]==10.9.post54` and explicit
-`--optional sage`. At this checkpoint the build had completed exact-source
-checkout and reached repository bootstrap. No `post54` CPython 3.13 wheel,
-install, smoke, short, or full result is claimed, and no publication was
-attempted.
+The build exited before wheel creation while rebuilding `pplpy 0.9.0` for
+CPython 3.13. Its PEP 517 backend imported `meson-python`, but could not find
+the `meson` executable in either the isolated build or fallback Sage prefix.
+The watcher recorded the failed build and correctly skipped validation.
+
+The retained native prefix proved that this was a cache-validation defect:
+it contained `meson-1.10.2` and `meson_python-0.19.0` install markers and
+importable CPython 3.13 modules, but no `bin/meson` launcher. The Linux
+before-all helper checked only the `mesonbuild` import, so it incorrectly
+preserved the incomplete Meson marker. The repair also requires the prefix
+launcher before reusing that marker, allowing the normal Sage dependency
+graph to reinstall Meson before `pplpy`.
+
+Durable failure evidence includes `command.log`, `exit-code`,
+`validation-follow.log`, and `validation-follow-exit-code` in the run root.
+Both durable services are stopped with failed status, the exact source remains
+clean at `e15c05ab4be`, and the guest has 104,980,080 KiB free. No `post54`
+CPython 3.13 wheel, install, smoke, short, or full result is claimed, and no
+publication was attempted.
 
 This report records the native Linux aarch64 CPython 3.13 iteration started
 from committed source `0701265d12d8bbb55a3df941744eac6810bb2a93`

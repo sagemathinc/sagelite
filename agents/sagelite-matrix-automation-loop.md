@@ -168,10 +168,13 @@ selected as the release-candidate source, verified as pushed, transferred in
 a 145,749,785-byte exact-SHA bundle whose SHA256 is
 `c30d53dc6364e9be0857fe4549f1f8dccd161c2552da58f9d01aa6707d465ad6`,
 and checked out cleanly in the native guest. Its Linux aarch64 CPython 3.13
-build and gated short/full watcher are active at
+build and gated short/full watcher ran at
 `/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260717-000806-e15c05ab4be`.
-This is release-candidate build-start evidence only; no new wheel or pass is
-claimed yet. Details are in
+The build failed before wheel creation because a retained Meson install marker
+and importable module had no matching prefix launcher, and `pplpy` therefore
+could not find the `meson` executable. The cache validator now requires that
+launcher before reusing the marker. The watcher correctly skipped validation;
+no new wheel or pass is claimed. Details are in
 `agents/sagelite-linux-aarch64-cp313-validation.md`.
 
 ## Scratch Layout
@@ -252,7 +255,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post9`) | smoke only | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips. The selected `post54` release-candidate rebuild from exact source `e15c05ab4be` is active; no new result is claimed yet | none |
+| Linux aarch64 | 3.13 | yes (`post33`, local) | full (`post33`); exact pushed source `f67e0eadcb7` and its strict 178-wheel closure passed preflight, fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, every selftest probe, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips. The `post54` release-candidate rebuild from exact source `e15c05ab4be` failed before wheel creation on an incomplete cached Meson launcher; no new result is claimed | none |
 | Linux aarch64 | 3.14 | yes (`post38`, local) | full (`post38`); exact pushed source `a2bdbbb674e` and its strict 167-wheel closure passed preflight, a fresh wheel-only `sagelite[all-needed-extras]` installation, `pip check`, all 102 selftest probes, and the complete installed `--optional=sage` sweep with 3,953 modules and zero failures. Packaged pytest also passed 215 tests with 2 skips | none |
 | macOS arm64 | 3.12 | yes (`post9`) | full baseline plus packaged pytest on an earlier accepted build | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
@@ -285,10 +288,11 @@ Unless newer evidence changes the matrix, use this order:
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-3. Complete the full standard-suite rerun from selected release-candidate
-   commit `e15c05ab4be` on all nine cells, including the earlier CPython 3.12
-   baselines. The native Linux aarch64 CPython 3.13 build is the active first
-   rerun while `host` remains unreachable.
+3. Complete the full standard-suite rerun from the release-candidate successor
+   to `e15c05ab4be` containing the cached-Meson repair on all nine cells,
+   including the earlier CPython 3.12 baselines. The native Linux aarch64
+   CPython 3.13 rebuild is the next independent cell while `host` remains
+   unreachable.
 4. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 5. Resume systematic optional-package expansion in install-smoke batches.

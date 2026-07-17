@@ -4767,6 +4767,14 @@ def test_linux_before_all_resets_cross_python_cached_venv_interpreter():
     assert "markupsafe:markupsafe" in before_all
 
 
+def test_linux_before_all_invalidates_cached_meson_without_launcher():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+
+    assert "while IFS=: read -r spkg module executable" in before_all
+    assert '[ ! -x "${sage_prefix}/bin/${executable}" ]' in before_all
+    assert "meson:mesonbuild:meson" in before_all
+
+
 def test_linux_repair_builds_all_needed_extra_companion_wheels():
     repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
 

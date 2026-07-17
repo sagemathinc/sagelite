@@ -247,14 +247,15 @@ PY
 }
 
 if [ -x "${sage_prefix}/bin/python3" ]; then
-  while IFS=: read -r spkg module; do
-    if ! python_module_available "${module}" >/dev/null 2>&1; then
+  while IFS=: read -r spkg module executable; do
+    if ! python_module_available "${module}" >/dev/null 2>&1 || \
+       { [ -n "${executable}" ] && [ ! -x "${sage_prefix}/bin/${executable}" ]; }; then
       echo "Removing stale ${spkg} install markers from ${sage_prefix}"
       rm -f "${sage_prefix}"/var/lib/sage/installed/"${spkg}"-*
     fi
   done <<'EOF'
 flit_core:flit_core
-meson:mesonbuild
+meson:mesonbuild:meson
 meson_python:mesonpy
 ninja_build:ninja
 pyproject_metadata:pyproject_metadata
