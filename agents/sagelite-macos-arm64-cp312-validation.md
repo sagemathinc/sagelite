@@ -1,5 +1,61 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-17 Post55 Full Rejection And Post56 Deterministic Doctest
+
+Exact pushed `10.9.post55` source
+`94480894829dfe517401120c63e8af9e1d5fe84c` has tree
+`ad3a88eeb78b82a542d7fd05607867e899bf95ba`. Its 144,055,983-byte source
+archive has SHA256
+`cd9edb35606882bf7d92952ce5363f7c7750590c33560fa30072b0694ac83de8`.
+The native Darwin arm64 CPython 3.12 build and repair passed and produced:
+
+```text
+sagelite-10.9.post55-cp312-cp312-macosx_26_0_arm64.whl
+  102,265,036 bytes
+  932d038a86563b873e338b56b328a92018d645fbee0f77aed02d22a50390aec5
+```
+
+Repair injected 2,079 native headers, rewrote 23 companion dependencies in
+16 Mach-O files, and audited 1,176 dependencies across 637 Mach-O files. The
+strict compatible closure contains 180 wheels: one primary, 68 companions,
+and 111 third-party wheels totaling 13,896,965,238 bytes. Its inventory
+digest is
+`d4fe25eb64249dddcf0fc36620553e423c00440c98eef7b51881694cf6206855`.
+
+The independent fresh short gate passed strict preflight, binary-only
+installation, `pip check`, runtime isolation, every selftest, all 3,953
+installed standard modules with zero failures in 481.3 seconds, and packaged
+pytest with 226 passes and 5 skips. The validator exited zero after 1,730.967
+seconds. `SAGE_ROOT` was null, every resolved Sage prefix was inside the fresh
+install, and the runtime manifest contained no build venv, rejected post54
+run, or old source SHA.
+
+The separate fresh full gate passed the same preflight, install, `pip check`,
+runtime-manifest isolation, and selftest contract. Its unrestricted sweep
+completed all other work but rejected
+`sage.schemes.elliptic_curves.hom` after the module exceeded the 600-second
+worker limit under seed
+`183514028347342237074558759984525756750`. The reducer classified exactly one
+`performance-only` timeout, zero failed examples, and 3,954 modules seen. The
+validator exited 4 after 2,546.274 seconds; packaged pytest was not reached.
+
+An isolated exact-seed replay reproduced the original random 99-step
+2-isogeny path for 1,155.1 seconds without reaching an assertion. Selecting a
+stable branch allowed the module to pass, but also showed that its following
+random curve/isogeny search spent about 150 seconds each in extension-field
+kernel construction and generation. Exact pushed `10.9.post56` source
+`288c3f219682ed6ba6e7a77cb069b94ba0073c13` makes both coverage cases
+deterministic while retaining the large 2-isogeny chain and an
+extension-field kernel example. The complete module then passed all 497
+doctests under the exact failing seed and original 600-second limit in 7.5
+seconds. An exact post56 rebuild and independent strict short and full gates
+are still required. All build, closure, rejection, and focused replay evidence
+is retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260717-055907-94480894829d/
+```
+
 ## 2026-07-17 Post54 Rejection And Post55 Order-Independent Doctest
 
 The exact pushed `10.9.post54` source `4071f482bcc3865116d57391b00227ae0a9f28d4`
