@@ -1,6 +1,6 @@
 # Sagelite Linux aarch64 CPython 3.14 Validation
 
-Last updated: 2026-07-15
+Last updated: 2026-07-17
 
 ## Current status
 
@@ -732,3 +732,48 @@ The public `dev/manifest.json` remained generated at
 `2026-07-09T17:17:42.743310+00:00`, with 177 wheels and fourteen Sagelite
 primaries from `post8` and `post9`. There is no public Linux aarch64 CPython
 3.14 primary, and no publication was attempted.
+
+## 2026-07-17 Post54 Release-Candidate Rerun
+
+The scheduled iteration first retried the higher-priority Linux `x86_64`
+CPython 3.14 builder. The `host` SSH alias timed out during connection, so no
+x86_64 work was started. The controller read the R2 object directly and
+confirmed that the public `dev/manifest.json` is still the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primaries split between `10.9.post8` and `10.9.post9`.
+
+The independent native Linux arm64 backend was idle and reported Linux
+`aarch64`. The outer Mac had 107 GiB available on `/Volumes/sage`, and the
+guest had 105,595,858,944 bytes available before the build, above the explicit
+100,000,000,000-byte heavy-build threshold. No other Sagelite build,
+validator, or user service was active.
+
+Exact pushed source `4071f482bcc3865116d57391b00227ae0a9f28d4`
+(`10.9.post54`) was selected for the release-candidate rerun. Its
+145,752,626-byte shallow exact-HEAD bundle has SHA256
+`6dcb540bb8aa59de419210b0a21f6173e4dba99264a4e8a91d20b2b67a94c8bf`;
+that hash matched on the controller, outer Mac, and Linux guest. The detached
+guest checkout reports the exact source SHA and a clean status.
+
+The durable build and gated watcher are running at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc
+sagelite-post54-rc-cp314-build.service
+sagelite-post54-rc-cp314-validate.service
+```
+
+The build uses the repository's native Linux CIBW contract with
+`CIBW_BUILD=cp314-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, and CPython 3.14
+paths throughout. If the build exits zero, the watcher will combine the exact
+new primary and rebuilt companions with the accepted CPython 3.14 `post38`
+companion seed, resolve a fresh binary-only closure, and run independent
+strict `--optional sage` short and full gates. It will not start validation
+after a nonzero build exit.
+
+At the latest checkpoint both services were active and no build exit artifact
+or wheel existed. The native manylinux container was still installing its
+bootstrap prerequisite set. Its selected EPEL mirror timed out twice while
+fetching filelists metadata, then resumed measurable transfer on its automatic
+retry. This is transient network progress only: no wheel, install, smoke, or
+full-pass result is claimed yet.

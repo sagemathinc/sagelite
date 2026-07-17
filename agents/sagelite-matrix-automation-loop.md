@@ -200,6 +200,20 @@ doctest sweep took 819.8 seconds and the full validator exited zero after
 1,550.013 seconds. Details are in
 `agents/sagelite-linux-aarch64-cp313-validation.md`.
 
+The next scheduled iteration again found `host` unreachable by SSH, while the
+native Linux arm64 guest was idle and had 105,595,858,944 bytes free. The
+public R2 manifest remained the 177-wheel set generated on 2026-07-09. Exact
+pushed release-candidate source `4071f482bcc` and its verified
+145,752,626-byte bundle were checked out cleanly for the Linux aarch64 CPython
+3.14 rerun at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260717-023339-4071f482bcc`.
+The durable native CIBW build and gated short/full watcher are active. At the
+checkpoint, the manylinux container was still installing bootstrap
+prerequisites after its selected EPEL mirror resumed a slow filelists transfer
+on an automatic retry. No build exit artifact or wheel existed, so no new
+validation result is claimed. Details are in
+`agents/sagelite-linux-aarch64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
