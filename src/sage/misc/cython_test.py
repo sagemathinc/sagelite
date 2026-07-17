@@ -132,6 +132,15 @@ def test_filter_zig_libcxx_diagnostics_is_narrow():
     )
     assert cython._filter_zig_libcxx_diagnostics(source_excerpt_interleaving) == ""
 
+    character_interleaving = warning + (
+        "site-packages/ziglang/lib/libcxx/include/string:3199:84: warning: "
+        "pointer is missing a nullability type specifier "
+        "[-Wnullability-completeness]\n"
+        " _type:3199:84: warning: pointer is missing a nullability type "
+        "specifier [-Wnullability-completeness]\n"
+    )
+    assert cython._filter_zig_libcxx_diagnostics(character_interleaving) == ""
+
     uncorroborated_excerpt = warning + (
         "   69 |     Func(int b:3867:65: warning: pointer is missing a "
         "nullability type specifier [-Wnullability-completeness]\n"
@@ -139,6 +148,15 @@ def test_filter_zig_libcxx_diagnostics_is_narrow():
     assert (
         cython._filter_zig_libcxx_diagnostics(uncorroborated_excerpt)
         == uncorroborated_excerpt
+    )
+
+    uncorroborated_character_fragment = warning + (
+        " _type:3199:84: warning: pointer is missing a nullability type "
+        "specifier [-Wnullability-completeness]\n"
+    )
+    assert (
+        cython._filter_zig_libcxx_diagnostics(uncorroborated_character_fragment)
+        == uncorroborated_character_fragment
     )
 
     with_other_category = warning + (

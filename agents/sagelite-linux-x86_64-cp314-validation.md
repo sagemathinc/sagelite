@@ -295,3 +295,42 @@ The detached checkout is clean at the exact repair SHA, reports
 guards before launch.  The live native manylinux build entered the cached
 CPython 3.14 environment setup with 107,703,951,360 bytes free at the latest
 checkpoint.  No `post58` wheel or validation result is claimed yet.
+
+## Post58 Full-Gate Rejection And Post59 Correction
+
+The exact `post58` build completed with exit code zero and produced this
+repaired primary:
+
+```text
+sagelite-10.9.post58-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244935373
+sha256: 101544fef2dbd3b1b3ff35ca9013bb4196ebfd0283d1ac80540004a33e84c02d
+```
+
+Its strict 181-wheel closure totals 14,288,021,423 bytes and has aggregate
+SHA256 `6119debfc64c078083986a110b45e6c7821d3dc633a8d3e5cfe22f5216a312b5`.
+The fresh short gate passed strict preflight, binary-only installation,
+`pip check`, runtime isolation, every selftest, all 3,953 standard modules
+with zero failures, and packaged pytest with 229 passes and 2 skips.  The
+validator exited zero after 1,570.383 seconds.
+
+The separate fresh full gate passed installation, isolation, selftest, and
+packaged pytest with 229 passes and 2 skips, but rejected one of 3,954 seen
+modules.  `sage.misc.cython` again received only Zig libc++
+`-Wnullability-completeness` output, this time with character-level parallel
+interleaving that split `_type:3199:84: warning:` from intact libc++
+diagnostics at the same location by thousands of lines.  The `post58`
+eight-line corroboration window therefore preserved the 4,458,206-byte
+compiler stream.  The reducer reported one failed module and one failed
+example; the full validator exited one after 1,945.082 seconds.  No full pass
+is claimed.
+
+The `post59` working correction collects exact line-and-column locations from
+complete Zig libc++ diagnostics across the same compiler stream.  It
+suppresses a pathless interleaved fragment only when one of those full
+diagnostics corroborates the location; errors, other warning categories,
+complete non-Zig diagnostics, and uncorroborated fragments remain visible.
+All focused positive and negative cases pass, including corroboration by a
+libc++ `note:`, and the exact preserved 4,458,206-byte stream reduces to zero.
+Python compilation and `git diff --check` pass.  An exact committed `post59`
+rebuild and independent fresh short and full gates are required.

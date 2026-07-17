@@ -352,6 +352,25 @@ The live build passed source, architecture, capacity, idle-Docker, and prefix
 guards and entered cached CPython 3.14 environment setup. No `post58` wheel or
 validation result is claimed yet.
 
+That exact build completed and produced a repaired 244,935,373-byte `post58`
+primary with SHA256
+`101544fef2dbd3b1b3ff35ca9013bb4196ebfd0283d1ac80540004a33e84c02d`.
+Its strict 181-wheel, 14,288,021,423-byte closure passed the independent fresh
+short gate with strict preflight, binary-only installation, `pip check`,
+runtime isolation, every selftest, all 3,953 standard modules with zero
+failures, and packaged pytest with 229 passes and 2 skips. The separate fresh
+full gate passed installation, isolation, selftest, and packaged pytest, but
+rejected `sage.misc.cython` after character-level parallel interleaving split
+one pathless Zig libc++ warning fragment from intact matching diagnostics by
+thousands of lines. The reducer reported one failed module and one failed
+example. The `post59` working correction requires exact line-and-column
+corroboration from any complete Zig libc++ diagnostic in the same compiler
+stream, while preserving unrelated and uncorroborated output. Its focused
+positive and negative cases pass, and the exact preserved 4,458,206-byte
+stream reduces to zero. An exact committed rebuild and both fresh gates are
+required. Details are in
+`agents/sagelite-linux-x86_64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -428,7 +447,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post57`, local; `post9`, public) | smoke only; exact pushed `post57` source `6361dc1935c` produced a repaired primary and strict 181-wheel closure. Fresh installation, `pip check`, isolation, selftest, and packaged pytest passed, but the short gate found one `sage.misc.cython` failure caused by an interleaved Zig libc++ warning flood, so the full gate was skipped. Exact pushed `post58` repair source `8bbd27d5134` is rebuilding after the focused fix passed against the preserved stderr | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post58`, local; `post9`, public) | smoke only; exact pushed `post58` source `8bbd27d5134` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate rejected one `sage.misc.cython` example because a matching Zig libc++ diagnostic was separated from a character-interleaved warning fragment by thousands of lines. The focused `post59` correction passes synthetic cases and reduces the preserved 4,458,206-byte stream to zero; an exact rebuild and both fresh gates remain required | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
