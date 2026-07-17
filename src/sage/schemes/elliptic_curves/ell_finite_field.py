@@ -3060,6 +3060,16 @@ def special_supersingular_curve(F, q=None, *, endomorphism=False):
         sage: pi * endo == -endo * pi
         True
 
+    A composite value of `q` may require assembling the endomorphism from
+    several cyclic isogenies::
+
+        sage: E, endo = special_supersingular_curve(GF(263^8), q=12,
+        ....:                                        endomorphism=True)
+        sage: endo.domain() is endo.codomain() is E
+        True
+        sage: endo.degree(), endo.trace()
+        (12, 0)
+
     .. NOTE::
 
         This function makes no guarantees about the distribution of
@@ -3135,7 +3145,9 @@ def special_supersingular_curve(F, q=None, *, endomorphism=False):
         iso = E.isomorphism(F(-q).sqrt(), is_codomain=True)
         try:
             endo = iso * E.isogeny(None, iso.domain(), degree=q)
-        except NotImplementedError:
+        except (NotImplementedError, ValueError):
+            # The direct constructor requires a cyclic normalized isogeny,
+            # which need not exist when q is composite.
             endos = (iso*phi for phi in E.isogenies_degree(q)
                              for iso in phi.codomain().isomorphisms(E))
             endo = next(endo for endo in endos if endo.trace().is_zero())

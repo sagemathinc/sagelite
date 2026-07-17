@@ -361,3 +361,68 @@ four exact CPython 3.14 ABI inputs, then run independent fresh short and full
 gates.  It records distinct exit artifacts and skips the full gate if the
 short gate fails.  No `post59` wheel, install, short, or full result is claimed
 yet, and no publication was attempted.
+
+## Post59 Short Pass, Full Rejection, And Post60 Correction
+
+The exact `post59` build completed with exit code zero and produced this
+repaired primary:
+
+```text
+sagelite-10.9.post59-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244935382
+sha256: f1aa27bb993bcbae3340409c9152c44196cef7c70a126738d042ce56cb2e785d
+```
+
+Its strict closure contains 181 wheels totaling 14,288,021,432 bytes. The
+fresh short gate passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post59` installation, `pip check`, runtime
+isolation, every selftest, all 3,953 installed standard modules with zero
+failures, and packaged pytest with 229 passes and 2 skips. The installed
+doctest validator exited zero after 1,433.526 seconds; the module sweep itself
+took 564.0 seconds.
+
+The independent fresh full gate passed the same preflight, installation,
+`pip check`, isolation, and selftest contract. The unrestricted sweep took
+923.1 seconds and confirmed that the `post59` Zig diagnostic correction fixed
+`sage.misc.cython`. It rejected one of 3,954 seen modules, however:
+`sage.schemes.elliptic_curves.ell_finite_field` had four failed examples under
+random seed `166469527479524600599751122278591708351`. Packaged pytest still
+passed with 229 tests and 2 skips. The reduced analysis reports one failed
+core-supported module and four failed examples, so the full validator and
+guarded follow-on service exited one. Durable evidence is below:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39/validation/short-post59/
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39/validation/full-post59/
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39/validation-short-command.log
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39/validation-full-command.log
+```
+
+The reducer-provided exact-seed module replay reproduced all four failures in
+13.5 seconds. The primary exception occurred for `p=263`, extension degree 8,
+and composite `q=12`: the direct kernel-polynomial constructor correctly
+reported that no cyclic normalized degree-12 isogeny linked the selected
+curves. The remaining examples then reused stale doctest variables and were
+cascading failures. An exhaustive diagnostic over all 38 conductor-valid
+values below `p/4` found this direct-constructor failure only for `q=12`; the
+function's existing composite-isogeny enumeration successfully constructed a
+degree-12 trace-zero endomorphism for that exact case.
+
+The `post60` working correction lets this `ValueError` select the existing
+enumerative fallback and adds a deterministic `p=263`, `q=12` regression
+example. A source-file overlay on the unchanged rejected wheel install is
+focused evidence only, not acceptance. Under the exact failing seed it passed
+all 548 module doctests in 8.4 seconds. The overlay source and durable focused
+log are at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-post60-focused-20260717-ell-composite/
+```
+
+The source SHA256 is
+`3875400d6269e418b9aab826b6fedc9edd21bfca5041fcb157f4d1704c841c2d`;
+the log SHA256 is
+`f0d48f5436016f601ad1f8298b4b944284c5e1031142dcbf05a7c47bd7ed6810`.
+Python compilation and `git diff --check` pass. A committed exact `post60`
+wheel rebuild and both independent fresh strict gates are required; no
+`post59` full pass is claimed.
