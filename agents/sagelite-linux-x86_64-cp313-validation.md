@@ -137,3 +137,48 @@ is installing from the strict closure. No install, `pip check`, selftest,
 short-gate, full-gate, or publication result is claimed yet. The next resumed
 iteration must reconcile this validation unit and its short/full artifacts
 before launching another x86_64 job.
+
+## 2026-07-17 Post60 Full Acceptance
+
+The durable retry completed with exit code zero. Its strict 192-wheel closure
+totals 14,292,168,533 bytes and has wheelhouse SHA256
+`076e61d239b295f985d1e17bf9b9658b3be7a0830f22011470beb1820db49a06`.
+It contains one repaired primary, 81 Sagelite companion wheels, and 110
+third-party wheels. The exact primary remains:
+
+```text
+sagelite-10.9.post60-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244669165
+sha256: f65a0903fa98471a38e5f6e145901258d6ef4503369d7febd46a078533f90885
+```
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post60` installation, `pip check`,
+runtime isolation, every selftest, all 3,953 installed
+`--optional=sage` modules with zero failures in 545.0 seconds, and packaged
+pytest with 229 passes and 2 skips.
+
+The separate fresh full gate passed the same preflight, installation,
+isolation, and selftest contract. Its unrestricted installed standard doctest
+sweep passed all 3,953 modules with zero failures in 930.2 seconds. Packaged
+pytest then passed with 229 passes and 2 skips. The reducer recorded no failed
+modules, examples, framework errors, timeouts, fingerprints, or actionable
+buckets, and both the full validator and guarded orchestration service exited
+zero. Durable evidence is below:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/validation/short-post60
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/validation/full-post60
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/validation-short-command.log
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/validation-full-command.log
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260717-200455-22a2cb56739/validation-follow.log
+```
+
+After preserving the exact wheelhouse and validation evidence, deliberate
+cleanup removed only completed short/full install environments and disposable
+exact-source/helper-venv copies from this run and the accepted CPython 3.14
+run. One old extracted macOS transfer source was also removed while its source
+archive and validation directory were retained. The builder then had
+107,929,792,512 bytes free on `/mnt/cocalc-scratch`, above the binary 100 GiB
+heavy-build threshold. The public R2 manifest remained the 177-wheel set
+generated on 2026-07-09; no artifact was published.

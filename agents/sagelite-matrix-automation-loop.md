@@ -454,10 +454,17 @@ resolution stopped before installation because PyPI has no CPython 3.13
 `bbde2e7c9c887e8e6f63015ac53145d96493dda4976f8ec69626b965641c5773`.
 After preserving the initial resolver log, a single guarded validation retry
 added that wheel as an ABI-specific input and resolved a strict 192-wheel,
-14,292,168,533-byte closure. Its fresh short gate is active under
-`sagelite-post60-x86-cp313-validation-r1.service`. No install, short-gate, or
-full-gate result is claimed yet. The public R2 manifest remains the 177-wheel
-set generated on 2026-07-09.
+14,292,168,533-byte closure. Independent fresh short and full gates passed
+strict preflight, binary-only `sagelite[all-needed-extras]` installation,
+`pip check`, runtime isolation, every selftest, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips. The unrestricted sweep took 930.2 seconds and the full
+validator exited zero. Exact pushed `post60` source `22a2cb56739` is accepted
+locally for Linux x86_64 CPython 3.13. Deliberate cleanup retained its exact
+wheelhouse and validation evidence while restoring 107,929,792,512 bytes free
+on `/mnt/cocalc-scratch`. The public R2 manifest remains the 177-wheel set
+generated on 2026-07-09; no artifact was published. Details are in
+`agents/sagelite-linux-x86_64-cp313-validation.md`.
 
 ## Scratch Layout
 
@@ -534,7 +541,7 @@ Status meanings:
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
-| Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | smoke only; exact pushed `post60` source `22a2cb56739` produced a repaired 244,669,165-byte primary with SHA256 `f65a0903fa98471a38e5f6e145901258d6ef4503369d7febd46a078533f90885`. After adding the hash-verified accepted CPython 3.13 `pycosat` preview wheel, deterministic resolution produced a strict 192-wheel closure and the fresh short gate is active. No new install or validation result is claimed yet | smoke (`post8`) |
+| Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
@@ -566,18 +573,15 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Run and fix the full standard suite on Linux x86_64 CPython 3.13 on
-   `host`; this is now the highest-priority cocalc.ai target when the required
-   heavy-build scratch storage is available.
-2. Complete the synchronized full standard-suite rerun from exact pushed
-   `post60` release-candidate source `22a2cb56739` on the remaining cells.
-   Linux x86_64 CPython 3.14 now has accepted independent short and full
-   `post60` gates; the earlier post51 through post56 passes on other cells
-   remain useful baseline evidence but do not establish a synchronized
-   `post60` matrix.
-3. Validate the current optional-wheel-ready extra across all nine cells,
+1. Complete the synchronized full standard-suite rerun from exact pushed
+   `post60` release-candidate source `22a2cb56739` on the remaining cells,
+   beginning with Linux x86_64 CPython 3.12 on `host`. Linux x86_64 CPython
+   3.13 and 3.14 now have accepted independent short and full `post60` gates;
+   the earlier post51 through post56 passes on other cells remain useful
+   baseline evidence but do not establish a synchronized `post60` matrix.
+2. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-4. Resume systematic optional-package expansion in install-smoke batches.
+3. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected
