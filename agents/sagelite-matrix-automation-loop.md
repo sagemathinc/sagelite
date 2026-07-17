@@ -270,6 +270,23 @@ suite completed in 742.4 seconds and the full validator exited zero after
 preview remains unchanged and no artifact was published. Details are in
 `agents/sagelite-macos-arm64-cp312-validation.md`.
 
+The following scheduled iteration found the higher-priority `host` target
+reachable as Linux `x86_64` with its expected bulk mount restored, but only
+96,531,124,224 bytes free. Targeted cleanup removed only two superseded,
+inactive `post6` and `post7` automation validation trees, restoring
+129,343,483,904 bytes free. Exact pushed `post56` source
+`288c3f21968` passed architecture, version, and clean-checkout guards. Its
+first durable launch stopped before compilation because cibuildwheel's
+read-only `/host` mount prevented writing the retained manylinux prefix. A
+focused container probe proved a read/write bulk over-mount, and a fresh
+exact-SHA replacement is now building natively for Linux x86_64 CPython 3.14
+under `sagelite-post56-x86-cp314-build-r1.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-095911-288c3f21968`.
+It passed the failed prefix-write phase in an actual x86_64 manylinux
+container. No wheel or validation result is claimed yet. The public R2
+manifest remains the 177-wheel set generated on 2026-07-09. Details are in
+`agents/sagelite-linux-x86_64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
