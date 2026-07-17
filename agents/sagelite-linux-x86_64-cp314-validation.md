@@ -234,3 +234,47 @@ metadata is at
 
 No install, smoke, short, full, or publication result is claimed. The directly
 inspected public manifest remains the 177-wheel set generated on 2026-07-09.
+
+## Post57 Strict Short-Gate Rejection And Post58 Fix
+
+The durable 9,100,370,523-byte 4D polytope database transfer completed at
+`2026-07-17T13:31:43Z` with exit code zero.  The destination SHA256 matched
+`e22d60ebd324d848871f0980a7e48226396b5ed5ebecab23f8e1b5482b6438f2`.
+The guarded watcher then launched exactly one host system service,
+`sagelite-post57-x86-cp314-validate.service`, and exited zero.
+
+The deterministic strict closure contained 181 compatible wheels totaling
+14,288,021,185 bytes: one exact `post57` primary, 81 Sagelite companions, and
+99 third-party wheels.  Strict preflight reported no invalid filenames,
+missing requested dependencies, duplicate primaries, or tag mismatches.  A
+fresh binary-only `sagelite[all-needed-extras]==10.9.post57` installation and
+`pip check` passed.  Runtime manifest collection, runtime isolation, and all
+selftests also completed, and packaged pytest passed with 229 tests and 2
+skips.
+
+The 600-second installed `--optional=sage` short sweep was rejected after one
+of the 3,954 seen modules failed.  In `sage.misc.cython`, a successful C++
+compile emitted 119 copies of Zig 0.16's bundled libc++
+`-Wnullability-completeness` warning.  Parallel compiler output fused a Zig
+source excerpt with a pathless warning location, so the existing narrow
+filter conservatively retained the 4,464,649-byte stderr stream.  The reducer
+reported exactly one failed module and one failed example.  The short
+validator and follow-on service exited one; the full gate was correctly not
+started.  Durable evidence is below:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/validation/short-post57/
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/validation-short-command.log
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/validation-short-exit-code
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/validation-follow-exit-code
+```
+
+The `post58` working change suppresses a pathless warning spliced into a
+compiler source excerpt only when a nearby full Zig libc++ diagnostic repeats
+the same line and column.  Ordinary non-Zig diagnostics, other warning
+categories, compiler errors, and uncorroborated excerpts remain visible.  The
+exact helper passed seven focused positive and negative cases, and applying it
+to the preserved 4,464,649-byte stderr reduced the output to exactly zero.
+Python compilation and `git diff --check` pass.  A fresh exact-source `post58`
+primary rebuild and both independent strict gates are required; no `post57`
+install, smoke, short, or full pass is claimed.

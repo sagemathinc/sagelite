@@ -85,8 +85,11 @@ def _filter_zig_libcxx_diagnostics(messages):
     if re.search(r"(?:^|\s)(?:fatal )?error:", messages, re.MULTILINE):
         return messages
 
-    diagnostic = re.compile(r":\d+:\d+:\s*(?:fatal )?(?:warning|error):")
-    for line in messages.splitlines():
+    diagnostic = re.compile(
+        r":(?P<line>\d+):(?P<column>\d+):\s*(?:fatal )?(?:warning|error):"
+    )
+    lines = messages.splitlines()
+    for index, line in enumerate(lines):
         match = diagnostic.search(line)
         if match is None:
             continue
@@ -96,8 +99,20 @@ def _filter_zig_libcxx_diagnostics(messages):
         # location-only fragment such as ``:2503:1: warning:``.  A complete
         # diagnostic from anywhere other than the bundled libc++ is not safe
         # to suppress.
-        if "ziglang/lib/libcxx/" not in line and line[:match.start()].strip():
-            return messages
+        prefix = line[:match.start()].strip()
+        if "ziglang/lib/libcxx/" not in line and prefix:
+            # Parallel compiler jobs can splice a pathless warning location
+            # into a libc++ source excerpt.  Suppress that fragment only when
+            # a nearby full Zig diagnostic corroborates the same location.
+            if re.fullmatch(r"\d+\s*\|.*", prefix) is None:
+                return messages
+            location = f":{match['line']}:{match['column']}:"
+            nearby = lines[max(0, index - 8):index + 9]
+            if not any(
+                "ziglang/lib/libcxx/" in candidate and location in candidate
+                for candidate in nearby
+            ):
+                return messages
     if "warning:" not in messages:
         return messages
     return ""

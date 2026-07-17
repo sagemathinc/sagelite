@@ -325,6 +325,23 @@ then finish deterministic closure resolution and run independent fresh strict
 short and full gates. No install or validation result is claimed yet, and the
 public manifest remains the 177-wheel set generated on 2026-07-09.
 
+The durable transfer subsequently completed with the expected size and SHA256,
+and the watcher launched exactly one guarded validation service. The strict
+181-wheel, 14,288,021,185-byte closure passed deterministic preflight, fresh
+binary-only installation, `pip check`, runtime isolation, every selftest, and
+packaged pytest with 229 passes and 2 skips. The short gate was rejected after
+one of 3,954 seen modules failed: a successful `sage.misc.cython` C++ compile
+printed Zig libc++'s nullability-warning flood because one parallel-output
+fragment fused a Zig source excerpt with a pathless warning location. The
+reducer reported one failed module and one failed example; the full gate was
+correctly skipped. The `post58` working fix suppresses this interleaving shape
+only when a nearby full Zig diagnostic corroborates the same line and column.
+It preserves errors, unrelated warnings, and uncorroborated fragments. Seven
+focused cases pass, and the exact helper reduces the preserved 4,464,649-byte
+stderr to zero. An exact committed `post58` rebuild and both fresh gates are
+required. Details are in
+`agents/sagelite-linux-x86_64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -401,7 +418,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post57`, local; `post9`, public) | smoke only; exact pushed `post57` source `6361dc1935c` produced a repaired primary and synchronized current platform companions, but strict closure assembly and fresh gates are still pending the durable portable 4D database transfer | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post57`, local; `post9`, public) | smoke only; exact pushed `post57` source `6361dc1935c` produced a repaired primary and strict 181-wheel closure. Fresh installation, `pip check`, isolation, selftest, and packaged pytest passed, but the short gate found one `sage.misc.cython` failure caused by an interleaved Zig libc++ warning flood, so the full gate was skipped. The focused `post58` fix passes against the exact preserved stderr; rebuild and both fresh gates are required | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |

@@ -122,6 +122,25 @@ def test_filter_zig_libcxx_diagnostics_is_narrow():
     )
     assert cython._filter_zig_libcxx_diagnostics(interleaved_warning) == ""
 
+    source_excerpt_interleaving = warning + (
+        "site-packages/ziglang/lib/libcxx/include/"
+        "__string/extern_template_lists.h:69:81: note: expanded from macro\n"
+        "   69 |     Func(int b:3867:65: warning: pointer is missing a "
+        "nullability type specifier [-Wnullability-completeness]\n"
+        "site-packages/ziglang/lib/libcxx/include/string:3867:65: note: "
+        "insert '_Nullable' if the pointer may be null\n"
+    )
+    assert cython._filter_zig_libcxx_diagnostics(source_excerpt_interleaving) == ""
+
+    uncorroborated_excerpt = warning + (
+        "   69 |     Func(int b:3867:65: warning: pointer is missing a "
+        "nullability type specifier [-Wnullability-completeness]\n"
+    )
+    assert (
+        cython._filter_zig_libcxx_diagnostics(uncorroborated_excerpt)
+        == uncorroborated_excerpt
+    )
+
     with_other_category = warning + (
         "extension.cpp:12:3: warning: unused variable [-Wunused-variable]\n"
     )
