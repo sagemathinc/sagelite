@@ -426,3 +426,37 @@ the log SHA256 is
 Python compilation and `git diff --check` pass. A committed exact `post60`
 wheel rebuild and both independent fresh strict gates are required; no
 `post59` full pass is claimed.
+
+## Post60 Exact Build Start
+
+The focused repair commit
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36` was pushed to
+`origin/develop` and verified there. Targeted cleanup removed only the two
+completed `post59` install venvs and homes plus three superseded failed
+`post56` run trees whose failure evidence is already recorded above. The
+`post59` wheelhouse and all validation evidence remain. This restored
+108,025,143,296 bytes free; the exact clean `post60` checkout left
+107,563,696,128 bytes free at launch, above the 100 GiB heavy-build threshold.
+
+The native Linux `x86_64` CPython 3.14 build is running under
+`sagelite-post60-x86-cp314-build.service` at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-175700-22a2cb56739
+```
+
+The run passed exact-source, clean-checkout, version, architecture,
+idle-Docker, persistent-prefix, and pre-launch capacity guards. Its live
+manylinux container entered cached native prerequisite setup. The durable
+build, watcher, and validation scripts have SHA256 values
+`5c1a00f796d41f972b3f0c4be86b370e41f097f64b57898d39ec3404d4a7462f`,
+`b759a477d1932b0b4f0c56c31c0c561e62e42f1dc5c25fc4e86e08dcc9111ef2`,
+and `17d8df1f44ea681ed4a78b42b4aef6ff0a5a24feec495a624141df7cfcd27edb`,
+respectively.
+
+One separate guarded watcher,
+`sagelite-post60-x86-cp314-watch.service`, is active. It will accept only a
+successful exact build, assemble the strict closure from the synchronized
+companion set and four exact CPython 3.14 ABI inputs, and run independent
+fresh short and full gates. No `post60` wheel or validation result is claimed
+yet, and no artifact was published.

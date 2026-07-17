@@ -401,6 +401,18 @@ example. A focused source overlay passed all 548 module doctests under the
 exact failing seed. A committed exact `post60` rebuild and both fresh gates
 are required. No `post59` full pass or public publication is claimed.
 
+The focused repair is committed and pushed as exact `post60` source
+`22a2cb56739`. After targeted cleanup of only completed `post59` install homes
+and three superseded failed `post56` run trees, its exact clean checkout
+started a native Linux x86_64 CPython 3.14 build with 107,563,696,128 bytes
+free. The build is active under `sagelite-post60-x86-cp314-build.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-175700-22a2cb56739`.
+It passed exact-source, clean-checkout, version, architecture, idle-Docker,
+persistent-prefix, and pre-launch capacity guards and entered cached native
+prerequisite setup. A separate guarded watcher will assemble the strict
+closure and run both independent fresh gates only after build success. No
+`post60` wheel or validation result is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -477,7 +489,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post59`, local; `post9`, public) | smoke only; exact pushed `post59` source `48f88027b39` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate confirmed the `sage.misc.cython` fix but rejected one elliptic-curve module after composite `q=12` could not use the direct cyclic-isogeny constructor. The exact-seed replay reproduced the failure. The `post60` working correction selects the existing composite-isogeny fallback and passes all 548 module doctests under the failing seed; an exact rebuild and both fresh gates remain required | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post59`, local; `post9`, public) | smoke only; exact pushed `post59` source `48f88027b39` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate confirmed the `sage.misc.cython` fix but rejected one elliptic-curve module after composite `q=12` could not use the direct cyclic-isogeny constructor. Exact pushed `post60` repair source `22a2cb56739` selects the existing composite-isogeny fallback, passes all 548 module doctests under the failing seed, and is rebuilding under guarded durable build and validation services | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
@@ -512,8 +524,8 @@ Unless newer evidence changes the matrix, use this order:
    `host`; this remains the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-3. Complete the synchronized full standard-suite rerun from the next exact
-   pushed `post60` release-candidate source on the remaining cells.
+3. Complete the synchronized full standard-suite rerun from exact pushed
+   `post60` release-candidate source `22a2cb56739` on the remaining cells.
    macOS arm64 CPython 3.12 now has accepted independent short and full gates;
    the earlier post54 through post58 passes remain useful baseline evidence but
    do not establish the rest of a synchronized post60 matrix.
