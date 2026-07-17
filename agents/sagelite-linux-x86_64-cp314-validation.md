@@ -148,3 +148,72 @@ No `post57` wheel, install, smoke, short, or full result is claimed yet, and
 no artifact was published. The public manifest remains the 177-wheel set
 generated on 2026-07-09. A resumed iteration must reconcile this exact
 `post57` service before launching another x86_64 build.
+
+## Post57 Primary And Synchronized Companion Builds
+
+The exact CPython 3.14 build above completed with exit code zero. Its restored
+host prefix is again the original symlink to the retained bulk-backed prefix.
+The repaired primary is:
+
+```text
+sagelite-10.9.post57-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244935135
+sha256: 9f806bab9af28243e8437ef6b39d13188f3407f3f917e39ab1ffbd1e34b19b53
+```
+
+That ABI build also produced repaired CPython 3.14 `pplpy` and
+ABI-independent Maxima and QEPCAD wheels. Every filename in its four-wheel
+output passed the generated SHA256 inventory. No install or test result is
+inferred from the successful build.
+
+The Linux repair contract intentionally emits the complete platform companion
+set only from its CPython 3.12 leg. Exact source
+`6361dc1935cda24f0c080a6f0f55a5ff29fc23b2` therefore ran a separate cached
+CPython 3.12 build at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-companions-20260717-105534-6361dc1935c
+```
+
+It completed with exit code zero and produced 82 repaired wheels totaling
+4,654,304,280 bytes: one CPython 3.12 primary, one CPython 3.12 `pplpy`, and
+80 platform runtime/data companions. Its complete `SHA256SUMS` inventory
+passed. This synchronized set includes the current required Flatter `post1`,
+Graphviz `post4`, GIAC `post1`, ImageMagick `post3`, lrslib `post2`, Meataxe
+`post1`, msolve `post2`, Singular `post2`, Sympow `post2`, and Tachyon `post1`
+companions. The build restored the retained prefix symlink on exit and left
+118,918,078,464 bytes free.
+
+Maxima `post15` and QEPCAD `post4` were emitted by both ABI builds with the
+same filenames but different bytes. The strict CPython 3.14 closure therefore
+uses the complete CPython 3.12 platform companion set and only the primary and
+`pplpy` wheels from the CPython 3.14 build; it never exposes both byte variants
+to pip. A marker-aware inventory comparison found exactly one companion absent
+from the new 82-wheel output: the policy-gated, platform-independent
+`sagelite-database-polytopes-4d==10.9` wheel.
+
+The previously accepted portable 4D database wheel is being transferred from
+`m1` to the CPython 3.14 ABI input. Its expected identity is:
+
+```text
+sagelite_database_polytopes_4d-10.9-py3-none-any.whl
+size:   9100370523
+sha256: e22d60ebd324d848871f0980a7e48226396b5ed5ebecab23f8e1b5482b6438f2
+```
+
+The durable controller transfer is owned by tmux session
+`sagelite-polytopes4d-transfer`; its PID, command log, timestamps, and eventual
+exit code are under:
+
+```text
+/scratch/sagelite-automation/polytopes4d-transfer-20260717
+```
+
+Its destination is
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-101057-6361dc1935c/cp314-abi-input/`.
+A resumed iteration must reconcile the tmux session, destination size and
+SHA256, and transfer exit code before rerunning binary-only closure resolution.
+After that resolution, independent fresh strict short and full gates are still
+required. No install, smoke, short, full, or publication result is claimed.
+The directly inspected public manifest remains the 177-wheel set generated on
+2026-07-09.
