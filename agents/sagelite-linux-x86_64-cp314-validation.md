@@ -460,3 +460,46 @@ successful exact build, assemble the strict closure from the synchronized
 companion set and four exact CPython 3.14 ABI inputs, and run independent
 fresh short and full gates. No `post60` wheel or validation result is claimed
 yet, and no artifact was published.
+
+## Post60 Full Acceptance
+
+The exact build and guarded watcher completed with exit code zero. The repaired
+primary is:
+
+```text
+sagelite-10.9.post60-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   244935492
+sha256: 20c994068d744e08a0fd9c6c4196839517721a7b530a3f89e1caa47a473c96bb
+```
+
+The deterministic strict closure contains 181 compatible wheels totaling
+14,288,021,542 bytes: one exact primary, 81 Sagelite companion wheels, and 99
+third-party wheels. Its complete `SHA256SUMS` file contains 181 entries and has
+SHA256 `c87afd33ef0c100ba2b5df6baa61bc58f5863a196f6d9344db9c0c5c085f88b4`.
+The authoritative run and durable evidence are at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-175700-22a2cb56739
+```
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post60` installation,
+`pip check`, runtime isolation, every selftest, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips. Its validator exited zero after 1,587.481 seconds.
+
+The separately named fresh full gate passed the same preflight, installation,
+`pip check`, runtime-isolation, and selftest contract. The unrestricted sweep
+tested all 3,953 installed standard modules with eight threads and reported
+zero failures in 914.9 seconds. Packaged pytest again passed with 229 tests and
+2 skips. The reduced analysis has no actionable buckets, failed modules,
+failed examples, framework errors, or timeouts, and the full validator exited
+zero after 1,928.526 seconds. Build, short, full, and watcher exit artifacts
+are all zero.
+
+Exact pushed source `22a2cb56739940d7a9eb313e997fd0a004a9ea36` is therefore
+accepted locally for Linux x86_64 CPython 3.14. The two completed validation
+venvs and their disposable homes were removed after preserving the strict
+wheelhouse and validation artifacts, restoring 106,631,876,608 bytes free on
+`/mnt/cocalc-scratch`. The public R2 manifest remains the 177-wheel set
+generated on 2026-07-09, and no artifact was published.

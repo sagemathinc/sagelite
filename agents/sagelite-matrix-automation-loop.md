@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-16
+Last reviewed: 2026-07-17
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -413,6 +413,20 @@ prerequisite setup. A separate guarded watcher will assemble the strict
 closure and run both independent fresh gates only after build success. No
 `post60` wheel or validation result is claimed yet.
 
+That exact build completed with exit code zero and produced a repaired
+244,935,492-byte `post60` primary with SHA256
+`20c994068d744e08a0fd9c6c4196839517721a7b530a3f89e1caa47a473c96bb`.
+Its strict 181-wheel, 14,288,021,542-byte closure passed independent fresh
+short and full gates: strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation,
+every selftest, all 3,953 installed `--optional=sage` modules with zero
+failures, and packaged pytest with 229 passes and 2 skips. The unrestricted
+doctest sweep took 914.9 seconds and the full validator exited zero after
+1,928.526 seconds. Exact pushed `post60` source `22a2cb56739` is accepted
+locally for Linux x86_64 CPython 3.14. The public R2 manifest remains the
+177-wheel set generated on 2026-07-09; no artifact was published. Details are
+in `agents/sagelite-linux-x86_64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -489,7 +503,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post59`, local; `post9`, public) | smoke only; exact pushed `post59` source `48f88027b39` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate confirmed the `sage.misc.cython` fix but rejected one elliptic-curve module after composite `q=12` could not use the direct cyclic-isogeny constructor. Exact pushed `post60` repair source `22a2cb56739` selects the existing composite-isogeny fallback, passes all 548 module doctests under the failing seed, and is rebuilding under guarded durable build and validation services | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
@@ -520,18 +534,18 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Run and fix the full standard suite on Linux x86_64 CPython 3.14 on
-   `host`; this remains the highest-priority cocalc.ai target when the required
+1. Run and fix the full standard suite on Linux x86_64 CPython 3.13 on
+   `host`; this is now the highest-priority cocalc.ai target when the required
    heavy-build scratch storage is available.
-2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
-3. Complete the synchronized full standard-suite rerun from exact pushed
+2. Complete the synchronized full standard-suite rerun from exact pushed
    `post60` release-candidate source `22a2cb56739` on the remaining cells.
-   macOS arm64 CPython 3.12 now has accepted independent short and full gates;
-   the earlier post54 through post58 passes remain useful baseline evidence but
-   do not establish the rest of a synchronized post60 matrix.
-4. Validate the current optional-wheel-ready extra across all nine cells,
+   Linux x86_64 CPython 3.14 now has accepted independent short and full
+   `post60` gates; the earlier post51 through post56 passes on other cells
+   remain useful baseline evidence but do not establish a synchronized
+   `post60` matrix.
+3. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-5. Resume systematic optional-package expansion in install-smoke batches.
+4. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected
