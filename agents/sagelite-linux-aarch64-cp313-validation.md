@@ -1,5 +1,48 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-17 Cached-Meson Repair Rebuild Start
+
+Commit `4071f482bcc3865116d57391b00227ae0a9f28d4` adds the executable-aware
+cached-Meson probe described below. Focused repository validation passed with
+three Linux before-all tests, plus shell syntax and whitespace checks. The
+commit was pushed and verified as the exact `origin/develop` revision before
+builder staging.
+
+The selected source was transferred in a depth-one exact-HEAD bundle:
+
+```text
+bundle: sagelite-shallow-4071f482bcc.bundle
+size:   145,752,626 bytes
+sha256: 6dcb540bb8aa59de419210b0a21f6173e4dba99264a4e8a91d20b2b67a94c8bf
+```
+
+The hash and size agree on the controller, outer Mac, and Linux guest. To
+retain the 100 GiB heavy-build threshold, cleanup removed only the failed
+run's disposable checkout, host venv, empty cache, empty wheelhouse, and empty
+validation directories. Its logs, metadata, scripts, and exit artifacts were
+retained. After the replacement bundle was admitted, its superseded guest
+copy of the `e15c05ab4be` source bundle was also removed; that commit remains
+pushed and its failure evidence remains intact.
+
+The native guest had 107,499,569,152 bytes free at launch. The exact clean
+source checkout, build, and gated watcher are active at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260717-003947-4071f482bcc
+```
+
+The durable services are:
+
+```text
+sagelite-post54-meson-cp313-build.service
+sagelite-post54-meson-cp313-validate.service
+```
+
+Both services passed their initial PID and state checks, and the source
+checkout reports the selected SHA with no changes. This is exact-source build
+start evidence only. No new wheel, install, smoke, short, or full result is
+claimed, and no publication was attempted.
+
 ## 2026-07-17 Post54 Release-Candidate Rebuild Failure
 
 The scheduled matrix iteration retried the two higher-priority Linux
