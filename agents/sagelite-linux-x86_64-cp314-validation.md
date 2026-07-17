@@ -334,3 +334,29 @@ All focused positive and negative cases pass, including corroboration by a
 libc++ `note:`, and the exact preserved 4,458,206-byte stream reduces to zero.
 Python compilation and `git diff --check` pass.  An exact committed `post59`
 rebuild and independent fresh short and full gates are required.
+
+## Post59 Build And Validation Watcher Start
+
+The focused repair commit `48f88027b3946287f171fb781a37ed9cbcbd86d9` was
+pushed to `origin/develop` and verified there.  The public manifest remains the
+177-wheel set generated on 2026-07-09.  Exact clean `post59` source is now
+building natively for Linux `x86_64` CPython 3.14 under
+`sagelite-post59-x86-cp314-build.service` at:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39
+```
+
+The run passed source SHA, clean checkout, version, architecture, idle-Docker,
+persistent-prefix, and free-space guards.  Its recorded pre-build capacity was
+107,379,126,272 bytes, just above the 100 GiB heavy-build threshold.  The live
+manylinux container entered the 1,795-target native build and remained active
+with no exit artifact at the latest checkpoint.
+
+A separate durable watcher,
+`sagelite-post59-x86-cp314-watch.service`, will accept only a successful exact
+build, assemble the strict closure from the synchronized companion set and
+four exact CPython 3.14 ABI inputs, then run independent fresh short and full
+gates.  It records distinct exit artifacts and skips the full gate if the
+short gate fails.  No `post59` wheel, install, short, or full result is claimed
+yet, and no publication was attempted.

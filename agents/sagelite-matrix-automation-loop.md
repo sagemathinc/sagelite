@@ -342,6 +342,16 @@ stderr to zero. An exact committed `post58` rebuild and both fresh gates are
 required. Details are in
 `agents/sagelite-linux-x86_64-cp314-validation.md`.
 
+Exact pushed `post59` source `48f88027b39` is now building natively for Linux
+x86_64 CPython 3.14 under `sagelite-post59-x86-cp314-build.service` at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260717-160733-48f88027b39`.
+The run passed exact-source, clean-checkout, version, architecture, idle-Docker,
+persistent-prefix, and capacity guards and entered the 1,795-target manylinux
+build. A separate durable watcher will assemble the strict closure and run
+independent fresh short and full gates only after a successful build. No
+`post59` wheel or validation result is claimed yet. The public R2 manifest
+remains the 177-wheel set generated on 2026-07-09.
+
 The focused repair commit `8bbd27d5134` was pushed and verified. Precise
 cleanup removed only the rejected gate's inactive 21 GB install venv while
 retaining its wheelhouse and validation evidence, restoring 108,724,629,504
@@ -447,7 +457,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post9`) | full baseline; 3,953 modules and 0 failures on the earlier accepted build | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post9`) | smoke only | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post58`, local; `post9`, public) | smoke only; exact pushed `post58` source `8bbd27d5134` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate rejected one `sage.misc.cython` example because a matching Zig libc++ diagnostic was separated from a character-interleaved warning fragment by thousands of lines. The focused `post59` correction passes synthetic cases and reduces the preserved 4,458,206-byte stream to zero; an exact rebuild and both fresh gates remain required | smoke (`post9`) |
+| Linux x86_64 | 3.14 | yes (`post58`, local; `post9`, public) | smoke only; exact pushed `post58` source `8bbd27d5134` produced a repaired primary and strict 181-wheel closure. Its fresh short gate passed installation, `pip check`, isolation, selftest, all 3,953 modules with zero failures, and packaged pytest. The full gate rejected one `sage.misc.cython` example because a matching Zig libc++ diagnostic was separated from a character-interleaved warning fragment by thousands of lines. Exact pushed `post59` source `48f88027b39` contains the focused correction and is building under a guarded durable service; a separate watcher will run both fresh gates after success. No `post59` result is claimed yet | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post54`, local; `post9`, public) | full (`post54`); exact native source `9492b6cbf83` and strict 191-wheel closure passed independent fresh short and full gates with strict preflight, wheel-only installation, `pip check`, selftest, all 3,953 modules with zero failures, and packaged pytest with 229 passes and 2 skips | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
 | Linux aarch64 | 3.14 | yes (`post54`, local) | full (`post54`); exact pushed source `4071f482bcc` produced a repaired primary and strict 180-wheel closure. The fresh short gate passed. A transient first full failure reproduced neither in an exact-seed focused replay nor in a separately named fresh full rerun. The accepted rerun passed strict preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips | none |
@@ -483,10 +493,10 @@ Unless newer evidence changes the matrix, use this order:
    heavy-build scratch storage is available.
 2. Run and fix the full standard suite on Linux x86_64 CPython 3.13.
 3. Complete the synchronized full standard-suite rerun from exact pushed
-   `post57` release-candidate source `6361dc1935c` on the remaining cells.
+   `post59` release-candidate source `48f88027b39` on the remaining cells.
    macOS arm64 CPython 3.12 now has accepted independent short and full gates;
-   the earlier post54/post55 passes remain useful baseline evidence but do not
-   establish the rest of a synchronized post57 matrix.
+   the earlier post54 through post58 passes remain useful baseline evidence but
+   do not establish the rest of a synchronized post59 matrix.
 4. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 5. Resume systematic optional-package expansion in install-smoke batches.
