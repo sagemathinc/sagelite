@@ -930,3 +930,75 @@ No `post60` primary wheel, closure, install, short gate, full gate, or
 publication result is claimed yet. A resumed iteration must reconcile both
 services, `command.log`, log growth, the build `exit-code`, wheel inventory,
 and validation artifacts before launching any other heavy job on `m1`.
+
+## 2026-07-18 Post60 Synchronized Full Acceptance
+
+The resumed iteration first attempted the higher-priority Linux `x86_64`
+CPython 3.12 reconciliation. All three bounded connections through the
+required `host` alias timed out, so that possibly surviving job was left
+untouched. The public `dev/manifest.json` was fetched directly and remained
+the 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with
+fourteen Sagelite primaries and no `post60` artifact.
+
+The native Linux aarch64 build was healthy when reconciled: both guarded
+services were active, the actual manylinux container was `aarch64`, the
+command log and live compiler processes showed forward progress, and the
+source checkout was clean at exact pushed SHA
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36`. The build completed with exit
+code zero and produced four repaired wheels totaling 318,492,831 bytes. The
+primary is:
+
+```text
+sagelite-10.9.post60-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237289190 bytes
+sha256: c0efdcb2737ec69e7790a027fca870f78388921515491ccc55172342271169ad
+```
+
+The other three new outputs are CPython 3.14 `pplpy`, the Maxima runtime, and
+the QEPCAD runtime. The guarded watcher combined them with the synchronized
+CPython 3.12 companion set and the accepted CPython 3.14 `cysignals` and
+`pycosat` supplements. Binary-only resolution produced a strict closure with
+these properties:
+
+```text
+wheels:              180
+Sagelite projects:    82 (1 primary and 81 companions)
+third-party projects: 98
+total bytes:          16735951613
+wheelhouse SHA256:    285cdd9c9d6d0afe7a405a1c29155a271584f4a075affdba5e3fe738cd37b6c0
+```
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight
+and binary-only installation of `sagelite[all-needed-extras]==10.9.post60`.
+It also passed `pip check`, runtime isolation, all 102 selftests, and all 3,953
+installed standard
+modules with zero failures, and packaged pytest with 229 passes and 2 skips.
+The doctest sweep took 547.9 seconds; the validator exited zero after
+1,334.111 seconds.
+
+The separately named fresh full gate passed the same strict preflight,
+installation, `pip check`, runtime isolation, and selftests. Its unrestricted
+installed `--optional=sage` sweep reported `All tests passed!` after 898.3
+seconds. The reducer saw all 3,953 modules and zero failures. Packaged pytest
+again passed 229 tests with 2 skips and 15 warnings. The full validator ran
+from `2026-07-18T04:14:31Z` through `2026-07-18T04:42:03Z`, took 1,652.432
+seconds, and recorded exit code zero. The watcher also exited zero.
+
+The authoritative current artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation/short-post60/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation/full-post60/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation/full-post60/doctest-installed-linux-aarch64-cp314-post60-full-20260718-041712.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation-full-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739/validation-full-exit-code
+```
+
+Cleanup removed only the completed 21,840,131,519-byte full-validation
+install home and the run's disposable source checkout and host venv. The
+exact build wheelhouse, strict closure, summaries, manifests, reduced
+analyses, logs, and exit artifacts remain. Guest free space increased to
+107,425,660,928 bytes. Exact pushed `post60` source `22a2cb56739` is accepted
+locally for this cell. No publication was attempted.
