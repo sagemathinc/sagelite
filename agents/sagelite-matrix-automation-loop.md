@@ -674,6 +674,28 @@ CPython 3.12.  Precise cleanup retained the source archive, strict wheelhouse,
 and all validation evidence while restoring 110,707,924,992 bytes free.  No
 artifact was published.
 
+The next scheduled iteration could not reconcile the possibly surviving Linux
+x86_64 CPython 3.12 `post60` build and watcher because all three bounded SSH
+attempts to `host` timed out.  They were left untouched, and no result was
+inferred.  The public R2 manifest remains the 177-wheel set generated on
+2026-07-09, with fourteen Sagelite primary wheels and no `post60` or `post61`
+artifact.  Independent preflight found `m1` and its native Linux aarch64 Lima
+guest idle.  Precise cleanup removed only regenerated closures, obsolete
+primary-wheel directories from superseded failure runs, and the recorded
+`post60` source bundle while retaining accepted wheelhouses and validation
+evidence.  This restored 110,247,145,472 bytes free in the guest.  Exact pushed
+`post61` source `33f8a4dae1d` was transferred in a verified 145,788,566-byte
+depth-one bundle with SHA256
+`c2670796bf1b7a7254b7a9824f1caedd60dbb5295c2c08d658ce3bf5e00a4ab7`.
+Its clean native Linux aarch64 CPython 3.12 build is active under
+`sagelite-post61-arm-cp312-build.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-083928-33f8a4dae1d`.
+The guarded `sagelite-post61-arm-cp312-watch.service` will assemble a strict
+closure and run independent fresh short and full gates only after build
+success.  The actual manylinux container reports Linux `aarch64` and CPython
+3.12.13.  Pre-launch guest capacity was 110,101,356,544 bytes.  No `post61`
+wheel, validation pass, or publication is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -751,7 +773,7 @@ Status meanings:
 | Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. The exact pushed `post60` build and guarded watcher may still survive on `host`, but three new bounded SSH attempts timed out. They were left untouched; no synchronized `post60` result is claimed yet | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
-| Linux aarch64 | 3.12 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 888.6 seconds | smoke (`post8`), with system `git` for GitPython |
+| Linux aarch64 | 3.12 | yes (`post60`, local; `post9`, public); exact `post61` rebuild active | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The synchronized exact pushed `post61` rebuild and guarded validator are active on the native Linux aarch64 backend; no `post61` wheel or pass is claimed yet | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post60`, local) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. The short gate passed. After one transient `msolve` failure and one independent SAT-worker timeout in rejected full attempts, a separately named init-wrapped fresh full rerun passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 842.2 seconds | none |
 | Linux aarch64 | 3.14 | yes (`post60`, local) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 898.3 seconds | none |
 | macOS arm64 | 3.12 | yes (`post61`, local; `post9`, public) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, all 102 selftest checks, all 3,953 installed standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 747.9 seconds, and the earlier prime-square failure did not recur | smoke (`post8`) |

@@ -1,5 +1,72 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-18 Post61 Synchronized Build Start
+
+All three bounded attempts to reconcile the higher-priority Linux `x86_64`
+CPython 3.12 `post60` job through the required `host` alias timed out before a
+session was established.  That possibly surviving job was left untouched, and
+no result was inferred.  The directly fetched public `dev/manifest.json`
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `10.9.post60` or `10.9.post61` artifact.
+
+Independent preflight on `m1` found the outer host native Darwin `arm64` and
+the persistent Lima guest running Linux `aarch64`.  No Sagelite automation
+service, validation process, tmux session, or Docker container was active.
+The outer `/Volumes/sage` filesystem had 108,113,384 KiB free.  The guest
+initially had 107,425,144,832 bytes free, only about 49 MiB above the binary
+100 GiB heavy-build threshold.  Precise cleanup removed only a regenerated
+closure from the rejected `post14` run, obsolete primary-wheel directories
+from superseded `post10` through `post18` failure runs, and the already
+recorded `post60` source bundle.  Accepted wheelhouses, validation summaries,
+runtime manifests, reduced analyses, inventories, and current failure evidence
+remain.  This restored 110,247,145,472 bytes free before source staging.
+
+Exact pushed release-candidate source is:
+
+```text
+source SHA: 33f8a4dae1da1571b07b9bbf8adddfe07a41af6c
+version:    10.9.post61
+bundle:     sagelite-shallow-33f8a4dae1d.bundle
+size:       145,788,566 bytes
+sha256:     c2670796bf1b7a7254b7a9824f1caedd60dbb5295c2c08d658ce3bf5e00a4ab7
+```
+
+The bundle hash matched on the controller, outer Mac, and Linux guest.  The
+new native run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-083928-33f8a4dae1d
+```
+
+Its checkout is clean at the exact source SHA and reports `10.9.post61` from
+`VERSION.txt`.  The actual manylinux container reports Linux `aarch64` and
+CPython 3.12.13.  Pre-launch guest capacity was 110,101,356,544 bytes.  The
+build uses the repository Linux CIBW helpers with
+`CIBW_BUILD=cp312-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, and the accepted
+`post60` CPython 3.12 closure as the guarded source of ABI-specific supplements
+and portable wheels.  This leg emits a synchronized platform companion set
+before the watcher resolves a fresh strict closure and runs independent short
+and full gates.
+
+The durable services are active as:
+
+```text
+sagelite-post61-arm-cp312-build.service  main PID 1008691
+sagelite-post61-arm-cp312-watch.service  main PID 1008698
+```
+
+Script hashes are:
+
+```text
+addb1ea883e18836e839588981f63be6397bb01eaf32f1dd5c37ad6f2c967deb  start-build.sh
+14cb096a77ef48b77f6c4f1a739c9e517049f991c35a263cace77d340ef71bf7  validate-after-build.sh
+1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15  watch-and-validate.sh
+```
+
+This is exact-source build-start evidence only.  No `post61` wheel, install,
+short gate, full-suite pass, or publication is claimed yet.
+
 ## 2026-07-18 Post60 Wheel And Strict Short/Full Passes
 
 All three bounded attempts to reconcile the higher-priority Linux `x86_64`
