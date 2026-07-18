@@ -1,5 +1,48 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-18 Post62 Wheel And Strict Short Pass
+
+The exact pushed build recorded below completed with exit code zero and
+produced 82 repaired primary and companion wheels totaling 4,623,984,628
+bytes. The primary is:
+
+```text
+sagelite-10.9.post62-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,679,178 bytes
+sha256: 62e5c439081cd34af75e70176e7f765b712e4b8bac47dea15af19799ef4f11f1
+```
+
+The build-wheel inventory SHA256 is
+`329a7d9a6cc3e34da92168ea3cd5a175b278b663a16ef8f63225246be80b508b`.
+The guarded watcher combined those exact outputs with the accepted
+ABI-specific supplements and portable companions, then resolved a
+deterministic strict 191-wheel closure totaling 16,739,264,796 bytes. Its
+inventory SHA256 is
+`16edafdaad0f0ba0c9f4627622d85957c76d5a3aef852878b08f8f51f64298c5`.
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post62` installation,
+`python -m pip check`, runtime isolation, all 102 selftest checks, all 3,953
+installed `--optional=sage --short 600` modules with zero failures, and
+packaged pytest with 229 passes and 2 skips. The standard sweep took 512.9
+seconds, the independent reducer reported 3,953 modules seen and zero failed
+modules, and the validator exited zero after 1,247.279 seconds.
+
+The watcher then created a separate fresh install for the unrestricted full
+gate. At this checkpoint it had passed strict preflight, binary-only
+installation, `pip check`, its independent runtime-manifest scan, and all
+selftests before entering the unrestricted installed-module sweep. It remains
+active as
+`sagelite-post62-arm-cp312-watch.service`; no full pass or cell acceptance is
+claimed yet. Authoritative artifacts are retained at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-170343-b68997abc23
+```
+
+The directly fetched public manifest remains the 177-wheel set generated on
+2026-07-09; no artifact was published.
+
 ## 2026-07-18 Post62 Synchronized Build Start
 
 The higher-priority Linux `x86_64` CPython 3.12 target was reachable, but its
