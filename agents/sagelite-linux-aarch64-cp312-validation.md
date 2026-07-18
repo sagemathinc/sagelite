@@ -1,5 +1,66 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-18 Post60 Wheel And Strict Short/Full Passes
+
+All three bounded attempts to reconcile the higher-priority Linux `x86_64`
+CPython 3.12 job through the required `host` alias timed out during SSH
+connection. That possibly surviving job was left untouched. The public
+`dev/manifest.json` remained the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels, so
+no local `post60` artifact was assumed public.
+
+The native Linux arm64 build and watcher described below completed from exact
+pushed source `22a2cb56739940d7a9eb313e997fd0a004a9ea36`
+(`10.9.post60`). The clean native `aarch64` build exited zero and produced 82
+repaired primary and companion wheels totaling 4,623,974,563 bytes. The
+primary is:
+
+```text
+sagelite-10.9.post60-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,678,592 bytes
+sha256: 95ab03ac02865369c08ce3b6b2acb00f5cc54189404084ce4518f65ab7bcfd3b
+```
+
+The build-wheel inventory SHA256 is
+`13bf345e42a91fa19c6452dc342eef0266202abf3a44bfd0362a569e6107a370`.
+The watcher combined the new exact-build wheels with accepted ABI-specific
+supplements and portable companions, then resolved a deterministic strict
+191-wheel closure totaling 16,739,251,241 bytes. Its inventory SHA256 is
+`e0bf111356e5848111a6b24d8b4f320dd62ea9d3411b2a4b6d664c4b425f6592`.
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post60` installation,
+`python -m pip check`, runtime-manifest isolation, every selftest, all 3,953
+installed `--optional=sage --short 600` modules with zero failures, and
+packaged pytest with 229 passes, 2 skips, and 15 warnings. The doctest sweep
+took 519.2 seconds, pytest took 295.89 seconds, and the validator exited zero
+after 1,266.143 seconds. Its reduced-analysis JSON reports 3,953 modules seen,
+zero failed modules, and no actionable buckets.
+
+The separately named full gate created a second fresh install from the same
+strict closure. Preflight, wheel-only installation, `pip check`, runtime
+isolation, and every selftest passed again. The unrestricted installed
+`--optional=sage` sweep reported `All tests passed` for all 3,953 modules in
+888.6 seconds. Packaged pytest then passed 229 tests with 2 skips and 15
+warnings in 298.02 seconds. The validator exited zero after 1,617.91 seconds,
+and the independent reducer again reported 3,953 modules seen and zero failed
+modules. The durable build, short, full, and watcher exit-code files all
+contain zero.
+
+Authoritative artifacts are retained at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260717-223804-22a2cb56739
+```
+
+Deliberate cleanup retained the exact strict closure, build inventory,
+validation summaries, runtime manifests, selftest logs, reduced analyses, and
+top-level command logs. It removed only completed install homes and build
+venvs, inactive pushed-source checkouts, one resolved superseded closure, two
+obsolete pre-post60 bundles, and the unused 2025 manylinux image. Final guest
+capacity is 107,698,089,984 bytes free, above the binary 100 GiB heavy-build
+threshold. No artifact was published.
+
 ## 2026-07-17 Post60 Synchronized Build Start
 
 Three bounded attempts to reconcile the higher-priority Linux `x86_64`
