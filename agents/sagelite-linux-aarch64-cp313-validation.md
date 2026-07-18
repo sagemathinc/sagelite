@@ -61,6 +61,59 @@ dbf6d4d6f015b0f8117cd1100e073d2027a9221c182185dd4ebad966d6b0a7bc  validate-after
 No `post61` CPython 3.13 wheel, install, short gate, full gate, or publication
 result is claimed yet.
 
+## 2026-07-18 Post61 Synchronized Full Pass
+
+The exact pushed `post61` build completed with exit code zero and emitted four
+repaired wheels totaling 317,620,874 bytes.  The primary is:
+
+```text
+sagelite-10.9.post61-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,421,997 bytes
+sha256: b79d50401786b545bf766a08858b57e9f75ec4b01d6f9c3bededbe584614f44e
+```
+
+The other exact-build outputs are CPython 3.13 `pplpy`, Maxima, and QEPCAD
+wheels.  The guarded watcher combined those outputs with synchronized
+`post61` companions from the accepted CPython 3.12 closure and compatible
+CPython 3.13 `cysignals` and `pycosat` supplements.  The resulting strict
+closure contains 191 wheels totaling 16,738,873,278 bytes: one primary, 81
+companions, and 109 third-party wheels.  Its validator wheelhouse SHA256 is
+`51c0895c22e53058972c6cde45fe141a6b27ce65fa00e4b30c04dbbac8a7660f`.
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post61` installation, `pip
+check`, all 102 selftest checks, runtime isolation with zero leaks, all 3,953
+installed `--optional=sage` modules with zero failures, and packaged pytest
+with 229 passes and 2 skips.  The gate exited zero after 1,295.421 seconds.
+
+The separate fresh full gate repeated that contract.  Its unrestricted
+installed sweep passed all 3,953 modules with zero failures in 821.9 seconds;
+packaged pytest passed 229 tests with 2 skips.  The reducer reported zero
+failed modules, and the validator exited zero after 1,574.419 seconds.  The
+build, short gate, full gate, and guarded follow-on wrapper all recorded exit
+code zero.  Authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/short-post61/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/short-post61/doctest-installed-linux-aarch64-cp313-post61-short-20260718-111414.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/full-post61/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/full-post61/doctest-installed-linux-aarch64-cp313-post61-full-20260718-113607.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/full-post61/doctest-installed-linux-aarch64-cp313-post61-full-20260718-113607.runtime-manifest.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation/full-post61/doctest-installed-linux-aarch64-cp313-post61-full-20260718-113607.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation-short-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d/validation-full-command.log
+```
+
+Deliberate cleanup removed only the completed full install, its two disposable
+install homes, the host venv, and the extracted source checkout.  The exact
+strict wheelhouse, validation evidence, logs, and verified source bundle
+remain, and guest capacity returned to 108,068,274,176 bytes.  Exact pushed
+source `33f8a4dae1d` is accepted locally for Linux aarch64 CPython 3.13.  Three
+new bounded attempts to reach `host` timed out, so the possibly surviving
+Linux x86_64 CPython 3.12 job remains untouched and unreconciled.  The public
+R2 manifest remains the 177-wheel set generated on 2026-07-09; no artifact was
+published.
+
 ## 2026-07-18 Post60 Synchronized Build Start
 
 All three bounded attempts to reconcile the higher-priority Linux `x86_64`

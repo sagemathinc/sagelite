@@ -735,6 +735,24 @@ Pre-launch guest capacity was 109,758,222,336 bytes.  No `post61` CPython 3.13
 wheel, validation pass, or publication is claimed yet.  Details are in
 `agents/sagelite-linux-aarch64-cp313-validation.md`.
 
+That exact native build then completed with exit code zero and produced a
+repaired 236,421,997-byte `post61` primary with SHA256
+`b79d50401786b545bf766a08858b57e9f75ec4b01d6f9c3bededbe584614f44e`.
+Its deterministic strict 191-wheel closure totals 16,738,873,278 bytes.
+Independent fresh short and full gates passed strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation
+with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips.  The unrestricted sweep took 821.9 seconds and the full
+validator exited zero after 1,574.419 seconds.  Exact pushed `post61` source
+`33f8a4dae1d` is accepted locally for Linux aarch64 CPython 3.13.  Deliberate
+cleanup retained its exact strict closure and validation evidence while
+restoring 108,068,274,176 bytes free in the native guest.  Three new bounded
+`host` attempts timed out, so the possibly surviving Linux x86_64 CPython 3.12
+job remains untouched and unreconciled.  The public R2 manifest remains the
+177-wheel set generated on 2026-07-09; no artifact was published.  Details
+are in `agents/sagelite-linux-aarch64-cp313-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -813,7 +831,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post61`, local; `post9`, public) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 901.0 seconds | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post60`, local); exact `post61` rebuild active | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. The short gate passed. After one transient `msolve` failure and one independent SAT-worker timeout in rejected full attempts, a separately named init-wrapped fresh full rerun passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. Exact pushed `post61` source `33f8a4dae1d` is building under a guarded watcher; no synchronized `post61` result is claimed yet | none |
+| Linux aarch64 | 3.13 | yes (`post61`, local) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 821.9 seconds | none |
 | Linux aarch64 | 3.14 | yes (`post60`, local) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 898.3 seconds | none |
 | macOS arm64 | 3.12 | yes (`post61`, local; `post9`, public) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, all 102 selftest checks, all 3,953 installed standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 747.9 seconds, and the earlier prime-square failure did not recur | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
@@ -843,9 +861,9 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 Unless newer evidence changes the matrix, use this order:
 
 1. Exact pushed `post61` square-order source `33f8a4dae1d` is accepted on
-   macOS arm64 CPython 3.12 and Linux aarch64 CPython 3.12. Complete the
-   synchronized full standard-suite rerun from that exact release-candidate
-   revision across the remaining seven cells. The
+   macOS arm64 CPython 3.12 and Linux aarch64 CPython 3.12 and 3.13. Complete
+   the synchronized full standard-suite rerun from that exact
+   release-candidate revision across the remaining six cells. The
    accepted `post60` gates remain useful baselines, and the possibly surviving
    Linux x86_64 CPython 3.12 `post60` job must still be reconciled when `host`
    returns, but they cannot establish the final matrix after the shared source
