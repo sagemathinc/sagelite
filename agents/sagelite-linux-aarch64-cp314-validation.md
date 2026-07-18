@@ -18,8 +18,9 @@ strict 180-wheel closure. Its fresh short gate passed, but both independent
 full gates hit the same PARI signal-stack `SystemError` in
 `Integer.digits`; `post61` is rejected for this cell. The `post62` working
 correction narrows the outer signal-protected region to GMP digit extraction,
-after the interval-backed exact digit-count and Python allocation work. A
-committed exact rebuild and both fresh gates are required.
+after the interval-backed exact digit-count and Python allocation work. Exact
+pushed `post62` source `b68997abc23` is now rebuilding natively; no wheel or
+validation result is claimed yet.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -1160,3 +1161,42 @@ with the repository's required `cdivision=True` directive. Exact committed
 source still needs a focused installed-module stress replay, a repaired wheel,
 and independent fresh short and full gates; no `post62` result or publication
 is claimed.
+
+## 2026-07-18 Post62 Exact Rebuild Start
+
+The repair was committed, pushed, and verified as exact source
+`b68997abc23abff78d8744ed7bb3cfa9c926b7c3` (`10.9.post62`). Its standalone
+Cython translation passed with the repository's `cdivision=True` directive.
+The public `dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primaries and no
+`post60`, `post61`, or `post62` artifact.
+
+Cleanup removed only the rejected `post61` validation installs, its disposable
+source checkout and host venv, and three superseded CPython 3.14 closure trees
+whose complete SHA256 inventories were first archived with their validation
+evidence. The accepted `post60` closure and current `post61` closure remain.
+Guest free space was 109,266,255,872 bytes immediately before launch, above
+the binary 100 GiB heavy-build threshold.
+
+The self-contained depth-one exact-SHA bundle is 145,796,607 bytes with
+SHA256:
+
+```text
+323f23af946b83e059ce23f06887ea4f720c034db3ee54bc42f5462702d9cfc3
+```
+
+That hash matches on the controller, outer Mac, and Linux guest. The exact
+detached checkout is clean at the selected SHA. The actual manylinux container
+reports Linux `aarch64` and CPython 3.14.3. The durable services and run root
+are:
+
+```text
+sagelite-post62-arm-cp314-build.service
+sagelite-post62-arm-cp314-watch.service
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23
+```
+
+Both services are active. The build entered native prerequisite setup, and the
+guarded watcher will assemble the strict closure and run independent fresh
+short and full gates only after build success. No `post62` wheel, install,
+validation pass, or publication is claimed.
