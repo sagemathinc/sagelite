@@ -843,6 +843,32 @@ manifest remains the 177-wheel set generated on 2026-07-09; no artifact was
 published. Details are in
 `agents/sagelite-linux-aarch64-cp314-validation.md`.
 
+The next scheduled iteration reached `host` as Linux `x86_64`, but the
+expected `/mnt/cocalc-scratch` bulk mount was still absent: it resolved to the
+24 GB root filesystem with 15,026,716,672 bytes free. The recorded Linux
+x86_64 CPython 3.12 `post60` services were inactive with successful service
+status, but their bulk run root remained invisible, so no result was inferred
+and no x86_64 build was started. The directly fetched public
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with no `post60`, `post61`, or `post62`
+artifact.
+
+Independent preflight found `m1` and its native Linux aarch64 Lima guest idle.
+The outer `/Volumes/sage` filesystem had 108,794,488 KiB free, and the guest
+had 108,433,301,504 bytes free, above the binary 100 GiB heavy-build
+threshold. Exact pushed `post62` source `b68997abc23` is now building natively
+for Linux aarch64 CPython 3.12 under
+`sagelite-post62-arm-cp312-build.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-170343-b68997abc23`.
+The retained 145,796,607-byte depth-one bundle has verified SHA256
+`323f23af946b83e059ce23f06887ea4f720c034db3ee54bc42f5462702d9cfc3`.
+The exact checkout is clean, and the actual manylinux container reports Linux
+`aarch64` and CPython 3.12.13. The guarded
+`sagelite-post62-arm-cp312-watch.service` will assemble a strict closure from
+the new synchronized build and the accepted CPython 3.12 closure seed, then
+run independent fresh short and full gates only after build success. No
+`post62` CPython 3.12 wheel, validation pass, or publication is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:

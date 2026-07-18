@@ -1,5 +1,67 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-18 Post62 Synchronized Build Start
+
+The higher-priority Linux `x86_64` CPython 3.12 target was reachable, but its
+required `/mnt/cocalc-scratch` bulk mount remained absent. That path resolved
+to the 24 GB root filesystem with 15,026,716,672 bytes free. The recorded
+`post60` build and watcher services were inactive with successful service
+status, but their bulk run root was not visible. No result was inferred and no
+x86_64 build was started.
+
+The directly fetched public `dev/manifest.json` remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels and no `10.9.post60`, `10.9.post61`, or `10.9.post62`
+artifact. Independent preflight found the outer `m1` host native Darwin
+`arm64`, the Lima guest native Linux `aarch64`, and no active Sagelite service
+or Docker container. The outer `/Volumes/sage` filesystem had 108,794,488 KiB
+free. The guest had 108,433,301,504 bytes free before launch, above the binary
+100 GiB heavy-build threshold.
+
+Exact pushed release-candidate source is:
+
+```text
+source SHA: b68997abc23abff78d8744ed7bb3cfa9c926b7c3
+version:    10.9.post62
+bundle:     sagelite-b68997abc23-depth1.bundle
+size:       145,796,607 bytes
+sha256:     323f23af946b83e059ce23f06887ea4f720c034db3ee54bc42f5462702d9cfc3
+```
+
+The retained bundle hash matches the previously verified Linux aarch64
+CPython 3.14 source input. The new native run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-170343-b68997abc23
+```
+
+Its detached checkout is clean at the exact source SHA and reports
+`10.9.post62` from `VERSION.txt`. The actual manylinux container reports Linux
+`aarch64` and CPython 3.12.13. This CPython 3.12 leg uses the repository's
+Linux CIBW helpers and emits a synchronized platform companion set. The
+accepted `post61` CPython 3.12 strict closure is used only as a guarded source
+of ABI-specific supplements and portable dependency wheels.
+
+The durable services are active as:
+
+```text
+sagelite-post62-arm-cp312-build.service  main PID 1683637
+sagelite-post62-arm-cp312-watch.service  main PID 1683846
+```
+
+Script hashes are:
+
+```text
+a97cb6ed7d642d08b680941d6ef0ef07c7016e50a31ccb9373f91b03d96d3a0b  start-build.sh
+2f421f81722eb144228cc88071a12367891b02f7c2c7428b5da4e7e5c4d642d2  validate-after-build.sh
+1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15  watch-and-validate.sh
+```
+
+The watcher will assemble a deterministic strict closure and run independent
+fresh short and full gates only after a zero build exit. This is exact-source
+build-start evidence only; no `post62` wheel, install, validation pass, or
+publication is claimed yet.
+
 ## 2026-07-18 Post61 Wheel And Strict Short/Full Passes
 
 The native build and guarded watcher from the exact pushed source recorded
