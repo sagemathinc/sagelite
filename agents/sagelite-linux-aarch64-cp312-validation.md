@@ -1,6 +1,6 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
-## 2026-07-18 Post62 Wheel And Strict Short Pass
+## 2026-07-18 Post62 Wheel And Strict Short/Full Passes
 
 The exact pushed build recorded below completed with exit code zero and
 produced 82 repaired primary and companion wheels totaling 4,623,984,628
@@ -29,19 +29,27 @@ seconds, the independent reducer reported 3,953 modules seen and zero failed
 modules, and the validator exited zero after 1,247.279 seconds.
 
 The watcher then created a separate fresh install for the unrestricted full
-gate. At this checkpoint it had passed strict preflight, binary-only
-installation, `pip check`, its independent runtime-manifest scan, and all
-selftests before entering the unrestricted installed-module sweep. It remains
-active as
-`sagelite-post62-arm-cp312-watch.service`; no full pass or cell acceptance is
-claimed yet. Authoritative artifacts are retained at:
+gate. It repeated strict preflight, binary-only installation, `pip check`,
+runtime isolation, and all 102 selftest checks. The unrestricted installed
+`--optional=sage` sweep passed all 3,953 modules with zero failures in 825.9
+seconds. Packaged pytest passed with 229 passes, 2 skips, and 15 warnings in
+296.10 seconds. The independent reducer reported 3,953 modules seen, zero
+failed modules, and no actionable buckets. The full validator exited zero
+after 1,558.319 seconds, and the durable build, watcher, short, and full exit
+artifacts all contain zero. Authoritative artifacts are retained at:
 
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260718-170343-b68997abc23
 ```
 
-The directly fetched public manifest remains the 177-wheel set generated on
-2026-07-09; no artifact was published.
+Exact pushed `post62` source `b68997abc23` is accepted locally for Linux
+aarch64 CPython 3.12. Deliberate cleanup retained the exact strict closure,
+wheel inventories, validation summaries, runtime manifests, selftest logs,
+reduced analyses, and command logs. It removed only the completed fresh full
+install, disposable exact-source checkout, and host validation venv, restoring
+102,807,773,184 bytes free in the native guest. The directly fetched public
+manifest remains the 177-wheel set generated on 2026-07-09; no artifact was
+published.
 
 ## 2026-07-18 Post62 Synchronized Build Start
 
