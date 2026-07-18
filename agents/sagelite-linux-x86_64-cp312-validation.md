@@ -1,5 +1,24 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-18 Post60 Build Still Unreconciled
+
+The next scheduled matrix iteration made three new bounded SSH connection
+attempts through the required `host` alias. All three timed out before a
+session was established. The possibly surviving build and guarded watcher at
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260717-220219-22a2cb56739
+```
+
+were therefore left untouched. No wheel, service exit status, install, short
+gate, full gate, or failure is inferred from the unavailable host.
+
+The directly fetched public `dev/manifest.json` remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels and no `10.9.post60` artifact. Independent work continued on
+the correctly assigned macOS arm64 builder; its checkpoint is recorded in
+`agents/sagelite-macos-arm64-cp312-validation.md`.
+
 ## 2026-07-17 Post60 Release-Candidate Build Start
 
 The scheduled matrix iteration selected Linux `x86_64` with CPython 3.12,

@@ -1,5 +1,50 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post60 Release-Candidate Build Start
+
+The scheduled matrix iteration first attempted to reconcile the
+higher-priority Linux x86_64 CPython 3.12 job. All three bounded SSH attempts
+through the required `host` alias timed out, so that possibly surviving job
+was left untouched and no result was inferred. The directly fetched public
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `10.9.post60` artifact.
+
+Independent preflight found `m1` idle and native Darwin `arm64`, with
+Homebrew CPython 3.12, 3.13, and 3.14 available. `/Volumes/sage` initially had
+111,955,656,704 bytes free, above the 100 GiB heavy-build threshold. Exact
+pushed release-candidate source
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36` (`10.9.post60`) is an ancestor of
+verified `origin/develop` tip `2c4aca1dfb7130d9fcf7ae40b82700bf936bf648`.
+It was transferred as an exact-tree archive:
+
+```text
+name:   sagelite-22a2cb567399.tar.gz
+size:   144070311
+sha256: 2664484d573b1626904a337c03818a035f5ab48619d8a4f670df1bbc6c644ec7
+tree:   82f7785253d84ab5c634b29aeeb364733e6524fa
+```
+
+The native macOS arm64 CPython 3.12.13 build is active under tmux session
+`sagelite_cp312_post60_build`, with recorded PID 77663, at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-050339-22a2cb56739
+```
+
+The durable launcher reuses the proven native dependency prefix, raises the
+soft file-descriptor limit to 4,096 before compilation, and records its output,
+PID, metadata, disk state, and final exit code below the run root. The source
+checkout passed exact SHA, tree, archive hash, version, interpreter, operating
+system, and architecture guards. At this checkpoint the log was growing and
+the build had entered its 1,795-edge native Ninja compilation. The launcher
+script SHA256 is
+`6e3e8efafe83375b2809db1b3a09c58e9abf8c67a99efb6ef17019ba177c104f`.
+
+This is exact-source build-start evidence only. No `post60` CPython 3.12
+wheel, compatible closure, fresh installation, `pip check`, selftest, short
+gate, full-suite pass, or publication result is claimed yet.
+
 ## 2026-07-17 Post56 Full Acceptance
 
 The scheduled continuation first retried the higher-priority Linux x86_64
