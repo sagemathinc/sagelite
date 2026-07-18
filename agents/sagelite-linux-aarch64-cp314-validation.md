@@ -2,6 +2,63 @@
 
 Last updated: 2026-07-18
 
+## 2026-07-18 Post63 Full Acceptance
+
+The exact native build and guarded watcher both completed with exit code zero.
+The repaired primary is:
+
+```text
+sagelite-10.9.post63-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237290280 bytes
+sha256: 65773c8325493f7fc471ccd2bed0778ca8181adb3b49eeed2a9872b4babd1948
+```
+
+The watcher combined the synchronized CPython 3.12 companion set, the new
+primary and rebuilt wheels, and the accepted CPython 3.14 `cysignals` and
+`pycosat` supplements. Binary-only resolution produced this strict closure:
+
+```text
+wheels:                 180
+Sagelite projects:       82 (1 primary and 81 companions)
+third-party projects:    98
+total bytes:             16735962345
+wheelhouse SHA256:       38edf8389bf0c8b30febcc8b40b77eb8d3cc1b017a9bf66da0541b43feea1501
+SHA256SUMS file SHA256:  171570c6e78e897ac6b9e63c1f6d7f6eed04363ebb55e40ccd29688c5a718d32
+```
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only installation of `sagelite[all-needed-extras]==10.9.post63`, `pip
+check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953
+installed `--optional=sage` modules with zero failures, and packaged pytest
+with 229 passes and 2 skips. The validator exited zero after 1,235.817
+seconds.
+
+The separate fresh full gate repeated that contract. Its unrestricted sweep
+reported `All tests passed!` after 881.5 seconds; the independent reducer saw
+all 3,953 modules and zero failures. Packaged pytest passed 229 tests with 2
+skips and 15 warnings. The complete full validator exited zero after 1,636.447
+seconds. The build, short gate, full gate, and guarded watcher exit artifacts
+all record zero.
+
+The retained authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation-wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation/short-post63/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation/full-post63/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation/full-post63/doctest-installed-linux-aarch64-cp314-post63-full-20260718-230817.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a/validation-full-command.log
+```
+
+Cleanup removed only the completed full-validation venv, its two generated
+homes, and the disposable source checkout and host venv. The exact source is
+recoverable from the retained verified bundle. Both wheelhouses and all
+validation evidence remain, and the guest has 105,984,348,160 bytes free.
+Exact pushed `post63` source `16d6d78012a` is accepted locally for this cell.
+The public preview remains unchanged; no artifact was published.
+
 ## 2026-07-18 Post63 Synchronized Rebuild Start
 
 The higher-priority Linux `x86_64` target is reachable, but its required
@@ -55,15 +112,16 @@ publication is claimed yet.
 
 ## Current status
 
-Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post62`.
-Exact pushed source `b68997abc23abff78d8744ed7bb3cfa9c926b7c3` produced a
+Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post63`.
+Exact pushed source `16d6d78012a4971870e165e3ae948a24b8f7ed9c` produced a
 repaired primary and strict 180-wheel closure. Independent fresh short and
 full gates passed strict preflight, wheel-only installation of
 `sagelite[all-needed-extras]`, `pip check`, runtime isolation with zero leaks,
 all 102 selftests, all 3,953 installed standard modules with zero failures,
 and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took
-880.5 seconds. This validates the narrowed `Integer.digits` signal guard that
-replaces the rejected `post61` build for this cell.
+881.5 seconds. This synchronizes the cell with the selected release-candidate
+revision and retains the narrowed `Integer.digits` signal guard validated by
+the earlier `post62` baseline.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
