@@ -14,9 +14,12 @@ packaged pytest with 229 passes and 2 skips.
 
 The synchronized `10.9.post61` build from exact pushed source
 `33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` produced a repaired primary and
-strict 180-wheel closure. Its fresh short gate passed. The first full gate had
-two transient failures whose exact-seed focused replays passed. A separately
-named fresh full rerun is active; no `post61` full pass is claimed yet.
+strict 180-wheel closure. Its fresh short gate passed, but both independent
+full gates hit the same PARI signal-stack `SystemError` in
+`Integer.digits`; `post61` is rejected for this cell. The `post62` working
+correction narrows the outer signal-protected region to GMP digit extraction,
+after the interval-backed exact digit-count and Python allocation work. A
+committed exact rebuild and both fresh gates are required.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -1134,3 +1137,26 @@ progressing, and the guest had 84,752,695,296 bytes free. No `post61` full
 pass or publication is claimed. A resumed iteration must reconcile
 `validation-full-rerun1-exit-code`, the validation summary and reduced
 analysis, and service/container state before starting other work on `m1`.
+
+## 2026-07-18 Post61 Full Rerun Rejection And Post62 Repair
+
+The separately named fresh full rerun completed with exit code 1. It again
+passed strict preflight, binary-only installation, `pip check`, runtime
+isolation, all 102 selftests, and packaged pytest with 229 passes and 2 skips.
+Its unrestricted sweep tested 3,954 modules in 961.1 seconds and rejected only
+`sage.rings.integer`: the same large `Integer.digits` example raised
+`SystemError: calling remove_from_pari_stack() inside sig_on()`. The reducer
+recorded one failed module and one failed example. This second independent
+occurrence makes the failure coherent rather than transient.
+
+The traceback enters `Integer.digits`, enables its broad outer `sig_on()`, and
+then calls `exact_log()`. For this large value, `exact_log()` uses real
+interval arithmetic; normal Python cleanup can release a PARI-backed object
+while that unrelated signal region is active. The `post62` working change
+moves `sig_on()` below exact digit counting, digit-object allocation, and
+power-table construction, immediately around only `_digits_naive` or
+`_digits_internal`. The edited Cython source passes standalone translation
+with the repository's required `cdivision=True` directive. Exact committed
+source still needs a focused installed-module stress replay, a repaired wheel,
+and independent fresh short and full gates; no `post62` result or publication
+is claimed.

@@ -1598,8 +1598,6 @@ cdef class Integer(sage.structure.element.EuclideanDomainElement):
         else:
             s = mpz_sizeinbase(self.value, 2)
             do_sig_on = (s > 256)
-            if do_sig_on:
-                sig_on()
 
             # We use a divide and conquer approach (suggested by the prior
             # author, malb?, of the digits method) here: for base b, compute
@@ -1635,7 +1633,13 @@ cdef class Integer(sage.structure.element.EuclideanDomainElement):
                     digits = [Integer(i) for i in range(-_base,0)]
                     digits[0] = the_integer_ring._zero_element
 
+            # Keep the signal-protected region limited to the GMP digit
+            # extraction below.  In particular, ``exact_log`` above can use
+            # real intervals and release PARI-backed objects; PARI stack
+            # cleanup is not allowed inside an unrelated ``sig_on`` region.
             if s < 40:
+                if do_sig_on:
+                    sig_on()
                 _digits_naive(self.value,l,0,_base,digits)
             else:
                 # count the bits of s
@@ -1648,6 +1652,8 @@ cdef class Integer(sage.structure.element.EuclideanDomainElement):
                 for power_index from 1 <= power_index < i:
                     power_list[power_index] = power_list[power_index-1]**2
 
+                if do_sig_on:
+                    sig_on()
                 # Note that it may appear that the recursive calls to
                 # _digit_internal would be assigning list elements i in l for
                 # anywhere from 0<=i<(1<<power_index).  However, this is not
