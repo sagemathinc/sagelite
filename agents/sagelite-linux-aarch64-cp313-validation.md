@@ -1,5 +1,53 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-18 Post63 Synchronized Full Pass
+
+The exact pushed `post63` native build completed with exit code zero from
+source `16d6d78012a4971870e165e3ae948a24b8f7ed9c`.  It produced this repaired
+primary:
+
+```text
+sagelite-10.9.post63-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size: 236422883
+sha256: 9e87c68e4e050af12ba652c228be8d3874583be5c1c6457ba3bcfc83baaf91f4
+```
+
+The deterministic strict closure contains 191 wheels: one primary, 81
+companions, and 109 third-party wheels totaling 16,738,874,163 bytes.  Its
+wheelhouse SHA256 is
+`4435f460e77f4452424a20557327e95dd6c6df6445f2544573d466cf22656492`.
+All 68 requested Sagelite dependency packages were present, all staged wheel
+filenames were valid, and every ABI and platform preflight passed.
+
+Independent fresh short and full gates both passed strict preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post63` installation, `pip
+check`, runtime isolation with zero dependency, executable, Python-path,
+source-path, or GAP host-path leaks, and all 102 selftest checks.  Both gates
+passed all 3,953 installed `--optional=sage` modules with zero failures and
+packaged pytest with 229 passes and 2 skips.  The short standard sweep took
+521.9 seconds and its validator exited zero after 1,285.38 seconds.  The
+unrestricted full sweep took 850.9 seconds and its validator exited zero after
+1,617.668 seconds.  The monotonic-clock regression did not recur.
+
+The retained authoritative evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-202232-16d6d78012a
+validation/short-post63/validation-summary.md
+validation/short-post63/doctest-installed-linux-aarch64-cp313-post63-short-20260718-210108.analysis.md
+validation/full-post63/validation-summary.md
+validation/full-post63/doctest-installed-linux-aarch64-cp313-post63-full-20260718-212238.analysis.md
+validation-wheelhouse/
+```
+
+Deliberate cleanup removed only the inactive disposable source checkout,
+host venv, and completed install homes.  It retained the exact build outputs,
+strict closure, and validation evidence while restoring 106,578,927,616 bytes
+free in the native guest.  Exact pushed `post63` is accepted locally for Linux
+aarch64 CPython 3.13 as the first synchronized full-pass cell for this
+release-candidate revision.  The public R2 manifest remains the 177-wheel set
+generated on 2026-07-09; no artifact was published.
+
 ## 2026-07-18 Post63 Exact Build Start
 
 The monotonic-clock repair was committed, pushed, and verified as exact
