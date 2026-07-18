@@ -1,5 +1,50 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-18 Post63 Exact Build Start
+
+The monotonic-clock repair was committed, pushed, and verified as exact
+`post63` source `16d6d78012a4971870e165e3ae948a24b8f7ed9c`.  The public R2
+manifest remains the 177-wheel set generated on 2026-07-09.  The Linux
+`x86_64` alias is reachable, but its required `/mnt/cocalc-scratch` path still
+resolves to the 24 GB root filesystem with about 15 GB free, so no x86_64
+build was started.
+
+Cleanup on the native Linux arm64 guest removed only the rejected `post62`
+short gate's 21 GB disposable install, its focused overlay checkout, completed
+install homes and source checkouts, superseded source bundles, and unused test
+container images.  It also removed the regenerated accepted `post61` CPython
+3.13 closure after all 191 hashes were reverified and its SHA256 inventory and
+check log were archived alongside the retained validation evidence.  The
+exact `post62` closure, rejected-gate evidence, focused diagnostic logs, and
+accepted primary outputs remain.
+
+The exact 145,792,413-byte depth-one `post63` source bundle has SHA256
+`89c36c7de5b51212c1d1dc386ead6dc85dbd3b39188f6cbe95ff463cf5a83e20`.
+Its clean detached checkout reports the exact pushed SHA and version
+`10.9.post63`.  The authoritative native build and guarded watcher are active
+at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-202232-16d6d78012a
+sagelite-post63-arm-cp313-build.service  main PID 1940892
+sagelite-post63-arm-cp313-watch.service  main PID 1940902
+```
+
+The actual manylinux container reports Linux `aarch64` and CPython 3.13.12.
+Pre-launch guest capacity was 108,310,536,192 bytes.  The watcher will assemble
+a strict closure from synchronized `post62` companions and the exact new
+primary and ABI-specific outputs, then run independent fresh short and full
+gates only after build success.  Script hashes are:
+
+```text
+981824058b6f2c4ce0afa13ad616195a9162389232bedf58fddd17393b18b948  start-build.sh
+95f14fb99d5eb61ea4750e4c53fcac851e2d6c1615f3d438cf44c1ca54a0ef2b  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post63` wheel, install, validation pass, cell acceptance, or publication
+is claimed yet.
+
 ## 2026-07-18 Post62 Short Rejection And Post63 Focused Repair
 
 The exact pushed `post62` build completed with exit code zero and emitted four
