@@ -1,5 +1,57 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-18 Post62 Short Rejection And Post63 Focused Repair
+
+The exact pushed `post62` build completed with exit code zero and emitted four
+repaired wheels.  The 236,422,776-byte primary is:
+
+```text
+sagelite-10.9.post62-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+sha256: 703ffa5d2533659762b1fb2c2e3ca771123dce4c4e5050fa5c9fbc81f3532e58
+```
+
+The deterministic strict closure contains 191 wheels totaling
+16,738,874,056 bytes, with wheelhouse SHA256
+`b1c6ad542c31f149f80504efbcff4efc40e7f8e5a7409695bd12ca8d1ff98cb1`.
+The fresh short gate passed strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation,
+all 102 selftest checks, and packaged pytest with 229 passes and 2 skips.  Its
+installed standard sweep rejected one of 3,954 seen modules, however:
+`ensure_interruptible_after(0.45)` reported that an alarm fired after only
+0.3481 seconds in
+`sage.sets.recursively_enumerated_set.RecursivelyEnumeratedSet_symmetric.graded_component`.
+The reducer recorded one failed module and one failed example.  The validator
+exited with code 1 after 1,284.98 seconds, and the guarded full gate was
+correctly skipped.
+
+The exact-seed 374-doctest module replay passed, but a 100-iteration replay of
+the same operation in the unchanged installed environment reproduced the
+early-alarm error twice, at 0.3481 and 0.3439 seconds.  A separate 100-sample
+raw `cysignals.alarm(0.45)` probe measured the same two events with both clocks:
+the monotonic elapsed times remained at least 0.4501 seconds, while wall-clock
+elapsed time jumped backward by 0.1073 and 0.1040 seconds.  This proved that
+the alarm was timely and that `ensure_interruptible_after` misclassified it
+because it measured intervals with the adjustable wall clock.
+
+The `post63` working repair measures this context manager's elapsed intervals
+with `time.monotonic()` and adds a doctest that simulates a backward wall-clock
+adjustment.  A source overlay of the exact working diff passed all 185
+`sage.doctest.util` doctests, all 374 doctests in the originally failing module
+under the exact seed, and 100 repetitions of the operation with zero failures;
+monotonic elapsed time ranged from 0.4512 to 0.4614 seconds.  Evidence is at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23/validation/short-post62/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23/validation/short-post62/doctest-installed-linux-aarch64-cp313-post62-short-20260718-194638.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23/focused-exact-seed-and-stress.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23/alarm-wall-monotonic-probe.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23/focused-post63-overlay-validation.log
+```
+
+An exact committed and pushed `post63` rebuild and both independent fresh
+strict gates are required.  No `post62` short pass, full pass, cell acceptance,
+or publication is claimed.
+
 ## 2026-07-18 Post62 Synchronized Build Start
 
 The higher-priority Linux `x86_64` target was reachable, but its required

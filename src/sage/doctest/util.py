@@ -23,6 +23,7 @@ AUTHORS:
 # ****************************************************************************
 
 from os import times
+from time import monotonic
 from time import time as walltime
 from contextlib import contextmanager
 
@@ -869,6 +870,14 @@ def ensure_interruptible_after(seconds: float, max_wait_after_interrupt: float =
         ValueError
         sage: data  # abs tol 0.1
         {'alarm_raised': False, 'elapsed': 0.0}
+
+    Elapsed time is measured with a monotonic clock, so wall-clock
+    adjustments cannot make an alarm appear to fire early::
+
+        sage: from unittest.mock import patch
+        sage: with patch("sage.doctest.util.walltime", side_effect=[1.0, 0.5, 0.5]):
+        ....:     with ensure_interruptible_after(0.01):
+        ....:         sleep(1)
     """
     from cysignals.alarm import alarm, cancel_alarm, AlarmInterrupt
 
@@ -877,7 +886,7 @@ def ensure_interruptible_after(seconds: float, max_wait_after_interrupt: float =
     inaccuracy_tolerance = float(inaccuracy_tolerance)
     # use Python float to avoid slowdown with Sage Integer (see https://github.com/sagemath/cysignals/issues/215)
     data = {}
-    start_time = walltime()
+    start_time = monotonic()
     alarm(seconds)
     alarm_raised = False
 
@@ -887,9 +896,9 @@ def ensure_interruptible_after(seconds: float, max_wait_after_interrupt: float =
         e.__traceback__ = None  # workaround for https://github.com/python/cpython/pull/129276
         alarm_raised = True
     finally:
-        before_cancel_alarm_elapsed = walltime() - start_time
+        before_cancel_alarm_elapsed = monotonic() - start_time
         cancel_alarm()
-        elapsed = walltime() - start_time
+        elapsed = monotonic() - start_time
         data["elapsed"] = elapsed
         data["alarm_raised"] = alarm_raised
 
