@@ -1,5 +1,45 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post60 Short Pass And Full Rejection
+
+The guarded validator completed both independent fresh gates from the exact
+180-wheel `post60` closure.  The short gate passed strict preflight,
+binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime
+isolation, every selftest, all 3,953 installed standard modules with zero
+failures, and packaged pytest with 226 passes and 5 skips.  Its validator
+exited zero after 1,753.648 seconds.
+
+The separate fresh full gate passed the same installation, isolation, and
+selftest contract.  Its unrestricted sweep saw 3,954 modules but rejected
+`sage.rings.polynomial.multi_polynomial_libsingular` under seed
+`213528177385953471796963154323692312109`.  Four repeated
+`GF((2^29-3)^2)` constructors unexpectedly rejected the square as a prime
+power, and four following examples cascaded from the missing ring.  The
+reducer found one failed module and eight failed examples.  Packaged pytest
+still passed with 226 passes and 5 skips, and the validator exited 1 after
+1,981.702 seconds.  This is the same prime-square decomposition failure seen
+once in the earlier Linux aarch64 CPython 3.14 full run, so it is now treated
+as a shared source failure rather than a transient acceptance candidate.
+
+An exact-seed replay passed all 1,363 polynomial-module doctests.  One million
+fresh primality checks and two million parallel perfect-power decompositions
+also passed, confirming the rare nature of the failure.  The `post61` working
+repair makes finite-field construction decompose square orders first through
+GMP's exact integer square root, recursively preserving the maximal exponent,
+before using the general PARI perfect-power path.  A diagnostic source overlay
+passed all 150 finite-field-constructor doctests and the complete polynomial
+module under the exact failing seed.  The rejected install was restored to its
+original SHA256 after the overlay.  A committed exact `post61` rebuild and
+both independent fresh gates are required; no `post60` full pass or public
+publication is claimed.
+
+All closure, short-pass, full-rejection, reducer, and focused replay evidence
+is retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-050339-22a2cb56739/
+```
+
 ## 2026-07-18 Post60 Build Complete And Strict Validation Start
 
 The exact-source build started in the preceding checkpoint completed with exit

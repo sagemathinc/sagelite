@@ -195,6 +195,33 @@ from sage.structure.factory import UniqueFactory
 from sage.misc.decorators import rename_keyword
 
 
+def _factor_order(order):
+    r"""
+    Return a maximal perfect-power decomposition of a positive integer.
+
+    Square orders are decomposed using GMP's exact integer square root before
+    falling back to the general perfect-power algorithm.  Besides being a
+    fast path, this keeps finite-field construction from depending on PARI's
+    general power detection for this common case.
+
+    EXAMPLES::
+
+        sage: from sage.rings.finite_rings.finite_field_constructor import _factor_order
+        sage: _factor_order(144)                                                        # needs sage.libs.pari
+        (12, 2)
+        sage: _factor_order((2^29 - 3)^2)                                               # needs sage.libs.pari
+        (536870909, 2)
+        sage: _factor_order(3^5)                                                        # needs sage.libs.pari
+        (3, 5)
+        sage: _factor_order(2^12)
+        (2, 12)
+    """
+    if order.is_square():
+        base, exponent = order.isqrt().perfect_power()
+        return base, 2 * exponent
+    return order.perfect_power()
+
+
 class FiniteFieldFactory(UniqueFactory):
     """
     Return the globally unique finite field of given order with
@@ -676,7 +703,7 @@ class FiniteFieldFactory(UniqueFactory):
                     order = p**n
                     name = None
                 else:
-                    p, n = order.perfect_power()
+                    p, n = _factor_order(order)
             # at this point, order = p**n
             # note that we haven't tested p for primality
 
