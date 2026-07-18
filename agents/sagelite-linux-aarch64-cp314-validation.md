@@ -2,6 +2,57 @@
 
 Last updated: 2026-07-18
 
+## 2026-07-18 Post63 Synchronized Rebuild Start
+
+The higher-priority Linux `x86_64` target is reachable, but its required
+`/mnt/cocalc-scratch` bulk mount remains absent. That path resolves to the
+24 GB root filesystem with 15,028,146,176 bytes free. The old CPython 3.12
+`post60` services are inactive with successful status, but their bulk run root
+is not visible, so no result was inferred and no x86_64 build was started.
+The directly fetched public `dev/manifest.json` remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primaries from `post8` and `post9`.
+
+Native macOS and its Linux aarch64 Lima guest were idle. The guest initially
+had 106,578,915,328 bytes free, below the binary 100 GiB heavy-build
+threshold. Deliberate cleanup reverified and archived the complete inventory
+of one superseded `post29` CPython 3.13 closure, then removed that regenerated
+closure and two unused test-container images. It also reverified and archived
+the complete inventories of the superseded `post60` and rejected `post61`
+CPython 3.14 closures before removing them. Their summaries, reduced
+analyses, logs, and exit artifacts remain, as do the accepted current
+`post62` CPython 3.12 and 3.14 closures and the synchronized `post63` CPython
+3.13 closure. This restored 107,941,404,672 bytes free in the guest; the
+outer `/Volumes/sage` filesystem also remained above 100 GiB free.
+
+Exact pushed `post63` source
+`16d6d78012a4971870e165e3ae948a24b8f7ed9c` is now building natively for
+Linux aarch64 CPython 3.14 at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-220841-16d6d78012a
+sagelite-post63-arm-cp314-build.service  main PID 2095391
+sagelite-post63-arm-cp314-watch.service  main PID 2095398
+```
+
+The retained 145,792,413-byte depth-one bundle reverified with SHA256
+`89c36c7de5b51212c1d1dc386ead6dc85dbd3b39188f6cbe95ff463cf5a83e20`.
+The detached checkout is clean at the exact selected SHA and reports version
+`10.9.post63`. All 191 CPython 3.12 seed-wheel hashes and all 180 CPython
+3.14 ABI-seed hashes passed before launch. The actual pinned manylinux
+container reports Linux `aarch64` and CPython 3.14.3. The guarded watcher
+will assemble the strict closure and run independent fresh short and full
+gates only after build success. Launcher hashes are:
+
+```text
+38a77016a6807f8e4b77049ec78eb226cea02e728c7575c256e1c39fa29e89fc  start-build.sh
+01fd98a3831ac51f943a45557863a420d4fbc5031b855b6da2ac48b2b86ad0cf  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post63` CPython 3.14 wheel, validation pass, cell acceptance, or
+publication is claimed yet.
+
 ## Current status
 
 Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post62`.
