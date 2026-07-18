@@ -1,5 +1,41 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post61 Build Complete And Strict Validation Start
+
+The exact-source build completed with exit code zero at
+`2026-07-18T07:13:01Z`.  Repair injected 2,079 native headers, rewrote 23
+companion dependencies in 16 Mach-O files, and audited 1,176 dependencies
+across 637 Mach-O files.  It produced:
+
+```text
+sagelite-10.9.post61-cp312-cp312-macosx_26_0_arm64.whl
+  102,263,610 bytes
+  0056083a2847e795d38e2e146f9d3684a1b5253ed54c407f27e52c66781cc17e
+```
+
+The deterministic strict closure completed with exit code zero at
+`2026-07-18T07:15:01Z`.  Its resolver selected all 180 staged projects and
+removed none.  The closure contains one primary, 68 companion, and 111
+third-party wheels totaling 13,896,963,812 bytes.  The closure inventory has
+SHA256
+`622f63be408b4e495b306321cc7cf605d78113db1901fe46f6ea5b7e8dd976d6`,
+and the independent pip resolution report has SHA256
+`9fb059ac3a1b25e8d8eeb2051258f6e1a5f32d00ff7cfd8b3ec6ba16429a9558`.
+
+One guarded validator is active under tmux session
+`sagelite_cp312_post61_validate`, with recorded PID 9830.  It starts the
+separately named fresh full gate only after a zero short-gate exit.  Both
+commands use the exact checksummed closure, strict macOS wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post61` installation, a neutral
+environment, runtime isolation, every selftest, packaged pytest, and the
+installed standard-module sweep.  At this checkpoint the short gate was
+installing the resolved closure in its fresh environment.  No short-gate,
+full-suite, or publication pass is claimed yet.  Evidence remains under:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-065714-33f8a4dae1d/
+```
+
 ## 2026-07-18 Post61 Exact Rebuild Start
 
 Exact pushed repair commit
