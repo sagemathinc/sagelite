@@ -1,6 +1,6 @@
 # Sagelite Linux aarch64 CPython 3.14 Validation
 
-Last updated: 2026-07-17
+Last updated: 2026-07-18
 
 ## Current status
 
@@ -14,6 +14,10 @@ separately named fresh full rerun did not reproduce it. The accepted full
 rerun passed strict preflight, wheel-only installation, `pip check`, runtime
 isolation, every selftest, all 3,953 installed modules with zero failures, and
 packaged pytest with 229 passes and 2 skips.
+
+The synchronized `10.9.post60` rerun is now building from exact pushed source
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36`. No `post60` wheel or validation
+result is claimed yet.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -866,3 +870,63 @@ remain. The guest then had 103,443,734,528 bytes free, above the explicit
 The public `dev/manifest.json` remains the 177-wheel set generated at
 `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primaries from
 `post8` and `post9`. No publication was attempted.
+
+## 2026-07-18 Post60 Synchronized Rerun Start
+
+The higher-priority Linux `x86_64` CPython 3.12 job could not be reconciled:
+all three bounded connections through the required `host` SSH alias timed out.
+The possibly surviving build and watcher were left untouched. The public
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`; no `post60` artifact was assumed public.
+
+Independent preflight found the outer Mac reachable as `arm64`, its Lima
+instance running, and the guest idle as native Linux `aarch64` with no Docker
+container or Sagelite automation service active. The guest initially had
+107,511,595,008 bytes free. Cleanup removed only the completed CPython 3.13
+post60 run's disposable source checkout, host venv, and four install-home
+directories. Its strict 191-wheel closure, accepted summaries, reductions,
+logs, and exit artifacts remain. The cleanup restored 108,741,181,440 bytes
+free, above the binary 100 GiB heavy-build threshold.
+
+The exact source input is pushed commit
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36` (`10.9.post60`). Its retained
+145,770,108-byte shallow bundle has SHA256
+`84f2902d2051d598b04430d9ef95b4e9fe672f4d02a0701a653d2764b82285dc`,
+which was reverified immediately before launch. The new run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-031637-22a2cb56739
+```
+
+The detached source checkout reports the exact selected SHA and a clean
+status. The build uses the repository CIBW helpers with
+`CIBW_BUILD=cp314-manylinux_aarch64`, `CIBW_ARCHS=aarch64`, CPython 3.14
+paths throughout, the retained bulk prefix, and the bounded 2 GiB per-ABI
+ccache. The actual pinned manylinux container reports `aarch64` and CPython
+3.14.3. Its guarded watcher will combine the accepted synchronized CPython
+3.12 post60 companion closure, the new primary and rebuilt wheels, and the
+accepted CPython 3.14 `cysignals` and `pycosat` supplements. It will then
+resolve the binary-only closure and run independent strict short and full
+gates with explicit `--optional sage`.
+
+The durable services are:
+
+```text
+sagelite-post60-arm-cp314-build.service
+sagelite-post60-arm-cp314-watch.service
+```
+
+At the launch checkpoint both services were active, with main PIDs 855079 and
+855086. The source was bootstrapped and the command log was growing; no build
+exit artifact or wheel existed yet. The launcher hashes are:
+
+```text
+ea2ecc11d064cbad84f7913da31864db0d4129e0b979a657f98a65cd2ec04d8c  start-build.sh
+3350bb883d8fa1af201f8b1019fbe7c3b7bcaf9e0663a7e6216c53d864ad7af4  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post60` primary wheel, closure, install, short gate, full gate, or
+publication result is claimed yet. A resumed iteration must reconcile both
+services, `command.log`, log growth, the build `exit-code`, wheel inventory,
+and validation artifacts before launching any other heavy job on `m1`.
