@@ -1,5 +1,72 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-18 Post62 Synchronized Build Start
+
+The higher-priority Linux `x86_64` target was reachable, but its required
+`/mnt/cocalc-scratch` bulk mount was still absent.  That path resolved to the
+24 GB root filesystem with 15,016,804,352 bytes free, and the recorded
+CPython 3.12 `post60` run root remained invisible.  Its build and watcher
+services were inactive with successful status, but no artifact result was
+inferred and no x86_64 build was started.  The directly fetched public
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post62` artifact.
+
+Independent preflight found `m1` native Darwin `arm64` and its running Lima
+guest native Linux `aarch64`, with Docker reporting `linux/arm64` and no
+active Sagelite service or container.  The guest initially had
+102,807,740,416 bytes free, below the binary 100 GiB heavy-build threshold.
+Cleanup removed only the regenerated strict closure from the superseded
+`post61` CPython 3.12 run after verifying its complete 191-wheel SHA256
+inventory, plus five completed-validator Python core dumps totaling about
+4.4 GB.  The current `post62` CPython 3.12 and 3.14 closures, the accepted
+`post61` CPython 3.13 closure, and concise validation evidence remain.
+
+An initial guarded launch stopped before checkout with exit code 128 because
+its launcher argument contained an incorrect expansion of the selected short
+SHA.  The source bundle itself reported the correct commit, no wheel was
+created, and its preserved failed run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190516-b68997abc23
+```
+
+The fresh exact replacement is active at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-190553-b68997abc23
+```
+
+It uses exact pushed `post62` source
+`b68997abc23abff78d8744ed7bb3cfa9c926b7c3` from the retained
+145,796,607-byte depth-one bundle with verified SHA256
+`323f23af946b83e059ce23f06887ea4f720c034db3ee54bc42f5462702d9cfc3`.
+The detached checkout is clean and reports `10.9.post62`.  Pre-launch guest
+capacity was 107,703,447,552 bytes.  The actual manylinux container reports
+Linux `aarch64` and CPython 3.13.12.
+
+The durable services are active as:
+
+```text
+sagelite-post62-arm-cp313-build.service  main PID 1841680
+sagelite-post62-arm-cp313-watch.service  main PID 1841688
+```
+
+The guarded watcher will combine the accepted synchronized `post62` CPython
+3.12 companion closure, compatible CPython 3.13 `cysignals` and `pycosat`
+supplements from the accepted `post61` closure, and the exact new primary and
+ABI-specific outputs.  It will run independent fresh strict short and full
+gates only after build success.  Script hashes are:
+
+```text
+34f467af2d165057dba47114b0518fb15281e8dad37f1d7c1ad9319868f126f7  start-build.sh
+9ad84e3bc275860fed7915c7ef8847a49172ead42175b79b0a3a7944ea6d6713  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post62` CPython 3.13 wheel, install, validation pass, or publication is
+claimed yet.
+
 ## 2026-07-18 Post61 Synchronized Build Start
 
 All three bounded attempts to reconcile the higher-priority Linux `x86_64`
