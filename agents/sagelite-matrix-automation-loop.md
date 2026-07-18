@@ -713,6 +713,28 @@ native guest.  The public R2 manifest remains the 177-wheel set generated on
 2026-07-09; no artifact was published.  Details are in
 `agents/sagelite-linux-aarch64-cp312-validation.md`.
 
+The next scheduled iteration again could not reconcile the possibly surviving
+Linux x86_64 CPython 3.12 build and watcher because all three bounded `host`
+SSH attempts timed out.  They were left untouched, and no result was inferred.
+The public R2 manifest remains the 177-wheel set generated on 2026-07-09, with
+fourteen Sagelite primary wheels and no `post60` or `post61` artifact.
+Independent preflight found `m1` and its native Linux aarch64 Lima guest idle.
+Precise cleanup removed only two completed install-home trees and the
+regenerated strict closure from the superseded `post54` CPython 3.13 run while
+retaining accepted current wheelhouses and validation evidence.  Exact pushed
+`post61` source `33f8a4dae1d` is now building natively for Linux aarch64
+CPython 3.13 under `sagelite-post61-arm-cp313-build.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-103503-33f8a4dae1d`.
+The retained 145,788,566-byte exact-SHA bundle has verified SHA256
+`c2670796bf1b7a7254b7a9824f1caedd60dbb5295c2c08d658ce3bf5e00a4ab7`.
+The exact checkout is clean, and the actual manylinux container reports Linux
+`aarch64` and CPython 3.13.12.  The guarded
+`sagelite-post61-arm-cp313-watch.service` will assemble a strict closure and
+run independent fresh short and full gates only after build success.
+Pre-launch guest capacity was 109,758,222,336 bytes.  No `post61` CPython 3.13
+wheel, validation pass, or publication is claimed yet.  Details are in
+`agents/sagelite-linux-aarch64-cp313-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -791,7 +813,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post61`, local; `post9`, public) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 901.0 seconds | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post60`, local) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. The short gate passed. After one transient `msolve` failure and one independent SAT-worker timeout in rejected full attempts, a separately named init-wrapped fresh full rerun passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 842.2 seconds | none |
+| Linux aarch64 | 3.13 | yes (`post60`, local); exact `post61` rebuild active | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 191-wheel closure. The short gate passed. After one transient `msolve` failure and one independent SAT-worker timeout in rejected full attempts, a separately named init-wrapped fresh full rerun passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. Exact pushed `post61` source `33f8a4dae1d` is building under a guarded watcher; no synchronized `post61` result is claimed yet | none |
 | Linux aarch64 | 3.14 | yes (`post60`, local) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 898.3 seconds | none |
 | macOS arm64 | 3.12 | yes (`post61`, local; `post9`, public) | full (`post61`); exact pushed source `33f8a4dae1d` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, all 102 selftest checks, all 3,953 installed standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 747.9 seconds, and the earlier prime-square failure did not recur | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public) | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
