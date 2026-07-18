@@ -4,23 +4,15 @@ Last updated: 2026-07-18
 
 ## Current status
 
-Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post60`.
-Exact pushed source `22a2cb56739940d7a9eb313e997fd0a004a9ea36` produced a
+Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post62`.
+Exact pushed source `b68997abc23abff78d8744ed7bb3cfa9c926b7c3` produced a
 repaired primary and strict 180-wheel closure. Independent fresh short and
 full gates passed strict preflight, wheel-only installation of
-`sagelite[all-needed-extras]`, `pip check`, runtime isolation, all 102
-selftests, all 3,953 installed standard modules with zero failures, and
-packaged pytest with 229 passes and 2 skips.
-
-The synchronized `10.9.post61` build from exact pushed source
-`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` produced a repaired primary and
-strict 180-wheel closure. Its fresh short gate passed, but both independent
-full gates hit the same PARI signal-stack `SystemError` in
-`Integer.digits`; `post61` is rejected for this cell. The `post62` working
-correction narrows the outer signal-protected region to GMP digit extraction,
-after the interval-backed exact digit-count and Python allocation work. Exact
-pushed `post62` source `b68997abc23` is now rebuilding natively; no wheel or
-validation result is claimed yet.
+`sagelite[all-needed-extras]`, `pip check`, runtime isolation with zero leaks,
+all 102 selftests, all 3,953 installed standard modules with zero failures,
+and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took
+880.5 seconds. This validates the narrowed `Integer.digits` signal guard that
+replaces the rejected `post61` build for this cell.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -1200,3 +1192,55 @@ Both services are active. The build entered native prerequisite setup, and the
 guarded watcher will assemble the strict closure and run independent fresh
 short and full gates only after build success. No `post62` wheel, install,
 validation pass, or publication is claimed.
+
+## 2026-07-18 Post62 Full Acceptance
+
+The exact native build and guarded watcher both completed with exit code zero.
+The repaired primary is:
+
+```text
+sagelite-10.9.post62-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237290139 bytes
+sha256: 0bb1c787b0e00832e9327fb87c1abc48f0becca56fa213e8d2143aba8a1c46b3
+```
+
+The watcher combined the synchronized CPython 3.12 companion set, the new
+primary and rebuilt wheels, and the accepted CPython 3.14 `cysignals` and
+`pycosat` supplements. Binary-only resolution produced this strict closure:
+
+```text
+wheels:           180
+total bytes:      16735962205
+SHA256SUMS sha256: 166ae7f98a9843bb4f33ae5741ddb3e02de60bd5add715bbb8313014cdc104ec
+```
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only installation of `sagelite[all-needed-extras]==10.9.post62`,
+`pip check`, runtime isolation with zero leaks, all 102 selftest checks, all
+3,953 installed `--optional=sage` modules with zero failures, and packaged
+pytest with 229 passes and 2 skips. Its bounded standard sweep took 535.7
+seconds.
+
+The separate fresh full gate repeated that contract. Its unrestricted sweep
+reported `All tests passed!` after 880.5 seconds; the reducer saw all 3,953
+modules and zero failures. Packaged pytest passed 229 tests with 2 skips and
+15 warnings. The complete full validator took 1,615.146 seconds and exited
+zero. The build, watcher, short gate, full gate, and follow-up exit artifacts
+all record zero.
+
+The retained authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation-wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation/short-post62/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation/full-post62/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation/full-post62/doctest-installed-linux-aarch64-cp314-post62-full-20260718-161439.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-151432-b68997abc23/validation-full-command.log
+```
+
+Cleanup removed only the completed run's disposable 21 GB install tree,
+465 MB source checkout, and 22 MB host venv. The strict closure and complete
+validation evidence remain, and the guest has 108,433,313,792 bytes free.
+Exact pushed `post62` source `b68997abc23` is accepted locally for this cell.
+The public preview remains unchanged; no artifact was published.
