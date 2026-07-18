@@ -1,5 +1,39 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post61 Exact Rebuild Start
+
+Exact pushed repair commit
+`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` (`10.9.post61`) is the
+verified `origin/develop` tip.  Its controller-created archive is 144,083,559
+bytes with SHA256
+`a708b1fbe826894a03c0ed2606756ff0e60a55c4bd2d6686c24bfb0266dc4314`.
+The independently materialized remote tree is
+`c74fc7f733b8934357e7db5bdd24208da0540ad8`, matching the committed tree.
+
+Capacity cleanup removed only the two completed disposable `post60` short-
+and full-gate install environments.  Their wheelhouse, command logs, reducer,
+focused diagnostics, source snapshot, and build evidence remain retained.
+The native Darwin `arm64` worker, its Linux arm64 guest, and the target tmux
+namespace had no other heavy build.  After the full archive transfer, the
+launch guard recorded 107,937,693,696 bytes free, above the binary 100 GiB
+threshold.
+
+The native macOS arm64 CPython 3.12.13 build is active under tmux session
+`sagelite_cp312_post61_build`, with recorded PID 70928, at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-065714-33f8a4dae1d/
+```
+
+The durable launcher reuses the proven native dependency prefix, raises the
+soft file-descriptor limit to 4,096, and records its output, PID, metadata,
+disk state, and eventual exit code below the run root.  Exact archive hash,
+source tree, version, architecture, operating system, and interpreter guards
+passed.  At this checkpoint the fresh build environment was installing its
+pinned native build dependencies.  No `post61` wheel, strict closure, fresh
+installation, short gate, full-suite pass, or publication result is claimed
+yet.
+
 ## 2026-07-18 Post60 Short Pass And Full Rejection
 
 The guarded validator completed both independent fresh gates from the exact
