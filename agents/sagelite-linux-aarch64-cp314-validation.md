@@ -12,9 +12,11 @@ full gates passed strict preflight, wheel-only installation of
 selftests, all 3,953 installed standard modules with zero failures, and
 packaged pytest with 229 passes and 2 skips.
 
-The synchronized `10.9.post61` rerun is now building from exact pushed source
-`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c`. This checkpoint is build-start
-evidence only; no `post61` wheel or validation result is claimed yet.
+The synchronized `10.9.post61` build from exact pushed source
+`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` produced a repaired primary and
+strict 180-wheel closure. Its fresh short gate passed. The first full gate had
+two transient failures whose exact-seed focused replays passed. A separately
+named fresh full rerun is active; no `post61` full pass is claimed yet.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -1065,3 +1067,70 @@ No `post61` wheel, closure, install, validation pass, or publication is
 claimed. A resumed iteration must reconcile both services, log growth, exit
 artifacts, wheel inventory, and validation evidence before launching another
 heavy job on `m1`.
+
+## 2026-07-18 Post61 Build, Short Pass, And Full Rerun
+
+The resumed iteration fetched the public `dev/manifest.json` directly. It
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`; no `post60` or `post61` artifact is
+public. The required `host` alias was reachable as Linux `x86_64`, but
+`/mnt/cocalc-scratch` still resolved to its 24 GB root filesystem with only
+15,028,678,656 bytes free. The recorded CPython 3.12 services were inactive,
+but their bulk run root was not visible, so no result was inferred and no
+x86_64 build was started.
+
+The exact Linux aarch64 build exited zero and produced this repaired primary:
+
+```text
+sagelite-10.9.post61-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   237289462 bytes
+sha256: 933bc988134159bd8ed94e1339d0b30235e44effa7b73d204c5113c6ee980ac7
+```
+
+The guarded watcher combined the synchronized CPython 3.12 `post61`
+companions, the new outputs, and the accepted CPython 3.14 `cysignals` and
+`pycosat` supplements. Binary-only resolution produced this exact closure:
+
+```text
+wheels:              180
+Sagelite projects:    82 (1 primary and 81 companions)
+third-party projects: 98
+total bytes:          16735961528
+SHA256SUMS sha256:    94b32e08421691d7487dbf5df23d6fb4955c5fe7584264cc6234d6555056a3cd
+```
+
+The fresh short gate exited zero after strict repaired-wheelhouse preflight,
+binary-only installation of `sagelite[all-needed-extras]==10.9.post61`,
+`pip check`, runtime isolation with zero leaks, all 102 selftest checks, all
+3,953 installed `--optional=sage` modules with zero failures, and packaged
+pytest with 229 passes and 2 skips.
+
+The separate fresh full gate passed the same setup and packaged pytest, but
+its unrestricted sweep rejected two of 3,954 seen modules under random seed
+`82629442647405722006767383889818940802`. `sage.rings.integer` raised
+`SystemError: calling remove_from_pari_stack() inside sig_on()` in one
+`Integer.digits` example. `sage.rings.polynomial.msolve` returned two exact
+solutions and one spurious rational approximation for a four-solution ideal.
+The reducer recorded two failed modules and two failed examples. Both complete
+modules then passed exact-seed focused replays in the unchanged full install:
+1,197 integer doctests and 54 `msolve` doctests. The first full gate remains
+rejected.
+
+One separately named fresh full rerun from the unchanged strict closure is
+active as:
+
+```text
+sagelite-post61-arm-cp314-full-rerun1.service
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-123524-33f8a4dae1d/install/full-post61-rerun1
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-123524-33f8a4dae1d/validation/full-post61-rerun1
+```
+
+Before launch, guards verified native Linux `aarch64`, exact clean source SHA
+`33f8a4dae1d`, the successful build and short-gate exit artifacts, all 180
+wheel hashes, no competing Docker container, and more than the required 30
+GiB test-only capacity. At the checkpoint the service and fresh
+`python:3.14-slim-bookworm` container were active, the binary-only install was
+progressing, and the guest had 84,752,695,296 bytes free. No `post61` full
+pass or publication is claimed. A resumed iteration must reconcile
+`validation-full-rerun1-exit-code`, the validation summary and reduced
+analysis, and service/container state before starting other work on `m1`.
