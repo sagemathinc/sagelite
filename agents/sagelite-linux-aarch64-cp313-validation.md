@@ -1,5 +1,65 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-18 Post60 Synchronized Build Start
+
+All three bounded attempts to reconcile the higher-priority Linux `x86_64`
+CPython 3.12 job through the required `host` alias timed out during SSH
+connection. That possibly surviving job was left untouched. The directly
+fetched public `dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post60` artifact.
+
+Independent preflight found the outer `m1` host native Darwin `arm64`, the
+persistent Lima guest native Linux `aarch64`, and no active Sagelite service
+or Docker container. The outer `/Volumes/sage` filesystem had 112,185,819,136
+bytes free. The guest initially had 107,698,077,696 bytes free. Deliberate
+cleanup removed only the completed disposable install directories from the
+accepted `post54` CPython 3.13 and 3.14 runs; their wheelhouses, validation
+summaries, reduced analyses, logs, and other evidence remain. Guest capacity
+then rose to 108,866,015,232 bytes, above the binary 100 GiB heavy-build
+threshold.
+
+The new native run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739
+```
+
+It uses exact pushed release-candidate source
+`22a2cb56739940d7a9eb313e997fd0a004a9ea36` (`10.9.post60`) from the retained
+145,770,108-byte shallow bundle whose SHA256 is
+`84f2902d2051d598b04430d9ef95b4e9fe672f4d02a0701a653d2764b82285dc`.
+The bundle hash was reverified before launch. The detached checkout reports
+the exact SHA and version and is clean. The actual manylinux container reports
+Linux `aarch64` and CPython 3.13.12. Its selected-ABI cache guard detected the
+retained CPython 3.12 prefix interpreter, removed the stale frontend, and
+initialized the requested CPython 3.13 environment.
+
+The guarded validation launcher will assemble synchronized `post60` platform
+companions from the accepted CPython 3.12 closure, take only the compatible
+CPython 3.13 `cysignals` and `pycosat` supplements from the accepted `post54`
+closure, then let the exact new build replace the primary and ABI-specific
+outputs. It will resolve a fresh binary-only closure and run separate strict
+short and full gates only after build success.
+
+The durable services are active as:
+
+```text
+sagelite-post60-arm-cp313-build.service  main PID 589768
+sagelite-post60-arm-cp313-watch.service  main PID 589776
+```
+
+Script hashes are:
+
+```text
+03023fb12998557d083ae5bf9481ce5fc1598a440da9e3dd6431ac5133828169  start-build.sh
+a90139d5ce75fde67ed8e3351ea64459551fb3e14cbb20725bf302f106424845  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post60` CPython 3.13 wheel, install, short gate, full gate, or publication
+result is claimed yet.
+
 ## 2026-07-17 Post54 Release-Candidate Full Pass
 
 The cached-Meson repair rebuild from exact pushed source
