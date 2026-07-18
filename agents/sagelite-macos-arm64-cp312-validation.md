@@ -1,5 +1,51 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post60 Build Complete And Strict Validation Start
+
+The exact-source build started in the preceding checkpoint completed with exit
+code zero at `2026-07-18T05:18:11Z`. Repair injected 2,079 native headers,
+rewrote 23 companion dependencies in 16 Mach-O files, and audited 1,176
+dependencies across 637 Mach-O files. It produced:
+
+```text
+sagelite-10.9.post60-cp312-cp312-macosx_26_0_arm64.whl
+  102,263,875 bytes
+  4b450cf0fc612aca7737f55d1df8b332bfbd18af28bb38b022cb802480dc2566
+```
+
+The deterministic strict closure completed at `2026-07-18T05:35:06Z`. It
+contains 180 compatible wheels: one primary, 68 companions, and 111
+third-party wheels totaling 13,896,964,077 bytes. The closure inventory has
+SHA256
+`476b952d64ec0eed3fa612b3e06d3f7d05c4184ab5756f7216fc770689f69d84`,
+and the independent pip resolution report has SHA256
+`2193588c3c9e751ffbaff9f10854650ce0313dcf4845f4739ecd00bf1a65b181`.
+Resolution selected all 180 staged projects and removed none.
+
+A single guarded watcher is active under tmux session
+`sagelite_cp312_post60_validate`. It runs the fresh neutral-path short gate and
+starts a separately named fresh full gate only if the short gate exits zero.
+The short gate passed strict 180-wheel preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post60` installation, and `pip check`.
+At this checkpoint it was collecting the installed runtime manifest before
+selftest and the 600-second standard module sweep. The validator environment
+sets `PYTHONNOUSERSITE=1`, uses only `/usr/bin:/bin` after the fresh install on
+`PATH`, and records `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` explicitly.
+
+This is a completed repaired-wheel and strict-closure result, plus partial
+short-gate evidence. No short gate, full-suite pass, or publication is claimed
+yet. All durable artifacts are retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-050339-22a2cb56739/
+```
+
+The higher-priority Linux x86_64 CPython 3.12 job remains unreconciled: all
+three bounded attempts through the required `host` alias timed out. The public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen primary Sagelite wheels and
+no `10.9.post60` artifact.
+
 ## 2026-07-18 Post60 Release-Candidate Build Start
 
 The scheduled matrix iteration first attempted to reconcile the
