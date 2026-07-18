@@ -1,5 +1,35 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-18 Post61 Full Acceptance
+
+The guarded validator completed both independent fresh gates and exited zero
+at `2026-07-18T08:19:50Z`.  The short gate passed strict preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post61` installation,
+`pip check`, all 102 selftest checks, runtime isolation with zero host or
+source leaks, all 3,953 installed standard modules with zero failures, and
+packaged pytest with 226 passes and 5 skips.  Its standard sweep completed in
+477.1 seconds, and the gate exited zero after 1,773.109 seconds.
+
+The separately named full gate repeated the fresh installation, dependency,
+selftest, and isolation contract.  Its unrestricted sweep passed all 3,953
+installed standard modules with zero failures in 747.9 seconds.  Packaged
+pytest again passed with 226 passes and 5 skips, and the gate exited zero after
+1,988.185 seconds.  The earlier rare `GF((2^29-3)^2)` decomposition failure
+did not recur with the committed square-order repair.  Exact pushed
+`10.9.post61` source `33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` is accepted
+locally for macOS arm64 CPython 3.12.  No public publication is claimed.
+
+Precise cleanup removed only the two reproducible validation installs and the
+now-disposable `post60` and `post61` extracted source/build trees.  The exact
+`post61` source archive, repaired 180-wheel closure, hashes, command logs,
+runtime manifests, selftest logs, reducers, and validation summaries remain
+retained.  The worker finished with 110,707,924,992 bytes free, above the
+binary 100 GiB heavy-build threshold.  Durable accepted evidence is at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260718-065714-33f8a4dae1d/
+```
+
 ## 2026-07-18 Post61 Build Complete And Strict Validation Start
 
 The exact-source build completed with exit code zero at
