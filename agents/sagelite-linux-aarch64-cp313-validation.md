@@ -60,6 +60,63 @@ a90139d5ce75fde67ed8e3351ea64459551fb3e14cbb20725bf302f106424845  validate-after
 No `post60` CPython 3.13 wheel, install, short gate, full gate, or publication
 result is claimed yet.
 
+## 2026-07-18 Post60 Synchronized Full Pass
+
+The exact pushed `post60` build completed with exit code zero and emitted four
+repaired wheels. The primary is:
+
+```text
+sagelite-10.9.post60-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   236,421,729 bytes
+sha256: 3e7b5af8f2381f3a90379561c5f503b92d2a4f7bb19b116c4357575aae097e93
+```
+
+The other exact-build outputs are CPython 3.13 `pplpy`, Maxima, and QEPCAD
+wheels. The guarded watcher combined those outputs with synchronized `post60`
+companions from the accepted CPython 3.12 closure and compatible CPython 3.13
+`cysignals` and `pycosat` supplements. The resulting strict closure contains
+191 wheels totaling 16,738,859,145 bytes: one primary, 81 companions, and 109
+third-party wheels. Its validator wheelhouse SHA256 is
+`c2a0a4ecc5b2047d07203633dbda09f156ef2b685258350c28102b2013cd4b05`.
+
+The independent fresh short gate passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post60` installation, `pip check`,
+runtime isolation, every selftest, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips.
+
+The first fresh full gate rejected one of 3,954 seen modules under seed
+`95403558619174765534416488507416295018`: one `msolve` example returned two
+expected points and one invalid point rather than the four expected points.
+The exact-seed module replay passed all 986 tests, and 200 repetitions of the
+same `msolve` operation each returned the four valid expected points. A fresh
+full rerun then encountered an independent `sage.sat.solvers.dimacs` worker
+timeout while reading from GlucoseSyrup. That result was also rejected.
+
+A separately named fresh full rerun used Docker's init process so child
+processes were reaped correctly. It passed the same strict wheel-only install,
+`pip check`, runtime isolation, and every selftest. The unrestricted installed
+suite passed all 3,953 modules with zero failures in 842.2 seconds; packaged
+pytest passed 229 tests with 2 skips. The reducer reported zero failed modules,
+and the validator exited zero after 1,644.45 seconds. Authoritative artifacts
+are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation/full-post60-init-rerun-20260718-024100/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation/full-post60-init-rerun-20260718-024100/doctest-installed-linux-aarch64-cp313-post60-full-init-rerun-20260718-024100-20260718-024414.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation/full-post60-init-rerun-20260718-024100/doctest-installed-linux-aarch64-cp313-post60-full-init-rerun-20260718-024100-20260718-024414.runtime-manifest.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation/full-post60-init-rerun-20260718-024100/doctest-installed-linux-aarch64-cp313-post60-full-init-rerun-20260718-024100-20260718-024414.selftest.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation-full-init-rerun-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260718-003520-22a2cb56739/validation-full-init-rerun-exit-code
+```
+
+Deliberate cleanup removed only the two completed rerun install venvs and
+their disposable install home while retaining the exact wheelhouse and all
+validation evidence. Guest capacity returned to 107,511,595,008 bytes. Exact
+pushed source `22a2cb56739` is accepted locally for Linux aarch64 CPython
+3.13. The public R2 manifest remains the 177-wheel set generated on
+2026-07-09; no artifact was published.
+
 ## 2026-07-17 Post54 Release-Candidate Full Pass
 
 The cached-Meson repair rebuild from exact pushed source
