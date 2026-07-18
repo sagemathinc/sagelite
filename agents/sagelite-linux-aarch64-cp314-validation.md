@@ -4,20 +4,17 @@ Last updated: 2026-07-18
 
 ## Current status
 
-Native Linux `aarch64` CPython 3.14 is now `full` for Sagelite
-`10.9.post54`. Exact pushed release-candidate source
-`4071f482bcc3865116d57391b00227ae0a9f28d4` produced a repaired primary and
-three rebuilt companion wheels. Its 180-wheel strict closure passed a fresh
-wheel-only `sagelite[all-needed-extras]` short gate. The first full run had a
-transient finite-field constructor failure; an exact-seed focused replay and a
-separately named fresh full rerun did not reproduce it. The accepted full
-rerun passed strict preflight, wheel-only installation, `pip check`, runtime
-isolation, every selftest, all 3,953 installed modules with zero failures, and
+Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post60`.
+Exact pushed source `22a2cb56739940d7a9eb313e997fd0a004a9ea36` produced a
+repaired primary and strict 180-wheel closure. Independent fresh short and
+full gates passed strict preflight, wheel-only installation of
+`sagelite[all-needed-extras]`, `pip check`, runtime isolation, all 102
+selftests, all 3,953 installed standard modules with zero failures, and
 packaged pytest with 229 passes and 2 skips.
 
-The synchronized `10.9.post60` rerun is now building from exact pushed source
-`22a2cb56739940d7a9eb313e997fd0a004a9ea36`. No `post60` wheel or validation
-result is claimed yet.
+The synchronized `10.9.post61` rerun is now building from exact pushed source
+`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c`. This checkpoint is build-start
+evidence only; no `post61` wheel or validation result is claimed yet.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
@@ -1002,3 +999,69 @@ exact build wheelhouse, strict closure, summaries, manifests, reduced
 analyses, logs, and exit artifacts remain. Guest free space increased to
 107,425,660,928 bytes. Exact pushed `post60` source `22a2cb56739` is accepted
 locally for this cell. No publication was attempted.
+
+## 2026-07-18 Post61 Synchronized Rerun Start
+
+The required `host` alias was reachable again as Linux `x86_64`, but the
+expected `/mnt/cocalc-scratch` bulk mount was absent: that path resolved to
+the 24 GB root filesystem with about 14 GB free. The old exact `post60` Linux
+x86_64 CPython 3.12 run root was therefore not visible on this host. Its two
+recorded services were inactive with zero service status, but no build or
+validation result is inferred because the assigned bulk artifacts could not
+be inspected. No heavy x86_64 job was started.
+
+The public `dev/manifest.json` was fetched directly and remains the 177-wheel
+set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels and no `post60` or `post61` artifact.
+
+Independent preflight found `m1` reachable as native `arm64` and its Lima
+guest idle as Linux `aarch64`. The guest initially had 108,068,257,792 bytes
+free, only about 694 MB above the binary 100 GiB build threshold. Precise
+cleanup affected only the superseded accepted `post54` CPython 3.14 build and
+closure directories plus its obsolete resolver seed. Their SHA256 lists and
+inventories were first archived under that run's retained validation tree;
+all summaries, logs, reduced analyses, focused replay, and exit artifacts
+remain. The current accepted `post60` strict closure was not touched. Cleanup
+restored 108,894,273,536 bytes free.
+
+The exact source input is pushed commit
+`33f8a4dae1da1571b07b9bbf8adddfe07a41af6c` (`10.9.post61`). Its retained
+145,788,566-byte shallow bundle again verified with SHA256
+`c2670796bf1b7a7254b7a9824f1caedd60dbb5295c2c08d658ce3bf5e00a4ab7`.
+The new run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260718-123524-33f8a4dae1d
+```
+
+Its detached checkout reports the exact selected SHA and a clean status. The
+actual pinned manylinux container reports Linux `aarch64` and CPython 3.14.3.
+The build uses `CIBW_BUILD=cp314-manylinux_aarch64`, `CIBW_ARCHS=aarch64`,
+the retained bulk prefix, and the repository Linux build and repair helpers.
+The guarded watcher will combine the accepted `post61` CPython 3.12 companion
+closure, the new build outputs, and the accepted CPython 3.14 `cysignals` and
+`pycosat` supplements before binary-only resolution and independent strict
+short and full gates with explicit `--optional sage`.
+
+The durable services are:
+
+```text
+sagelite-post61-arm-cp314-build.service
+sagelite-post61-arm-cp314-watch.service
+```
+
+At the checkpoint both services were active with main PIDs 1319097 and
+1319104. The source was bootstrapped, the native manylinux container was in
+prerequisite setup, and neither build nor validation had an exit artifact.
+The launcher hashes are:
+
+```text
+f523191ba438f0efeecb8fb5813247fbf194affd2f2e00624b0c43e5098bb93e  start-build.sh
+b26bf83ae996825975634c47bf5cd4339c149cbaf5994b5395dd8713c9d6df44  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+No `post61` wheel, closure, install, validation pass, or publication is
+claimed. A resumed iteration must reconcile both services, log growth, exit
+artifacts, wheel inventory, and validation evidence before launching another
+heavy job on `m1`.
