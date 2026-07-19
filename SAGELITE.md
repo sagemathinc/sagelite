@@ -179,6 +179,12 @@ Test status:
   Full-suite macOS validation currently sets
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
+- The macOS arm64 CPython 3.13 installed-wheel baseline has also passed from
+  the same exact pushed `10.9.post63` source. Both fresh strict gates passed
+  binary-only installation, `pip check`, runtime isolation, all selftests,
+  packaged pytest with 226 passes and 5 skips, and all 3,953 installed
+  standard modules with zero failures. The unrestricted sweep took 732.6
+  seconds.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
   3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`,
   including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP

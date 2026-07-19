@@ -1,5 +1,59 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-19 Post63 Full Acceptance
+
+Exact pushed `10.9.post63` source
+`16d6d78012a4971870e165e3ae948a24b8f7ed9c` completed the durable native
+macOS arm64 build with Homebrew CPython 3.13.14.  The verified source archive
+is 144,034,365 bytes with SHA256
+`2c8e167e60ba6d84fbb58fc4e3602f4097d3555aee78a2d29ff3d14017df0a44`,
+and its independently materialized tree matches committed tree
+`2f95f24b66612b95bf8b5dc7329dbc1621eb657d`.
+
+The repaired primary is:
+
+```text
+sagelite-10.9.post63-cp313-cp313-macosx_26_0_arm64.whl
+  102,094,065 bytes
+  c196f955ae82cae03b34f5abad7ba6ddef1fa18af4050ca95baa25d2221cdd5e
+```
+
+Its deterministic strict closure contains 179 wheels totaling
+13,895,771,529 bytes.  The closure inventory has SHA256
+`29129ad5c1bb0f0f201cc555e2819652300d8845f08cf202c31b05edbd2c09bc`,
+and the complete `SHA256SUMS` file has SHA256
+`9d81ff7762c1296d75560677701deebea6930a8f2d57e6e5d332a218f854b423`.
+
+The fresh short gate passed strict macOS preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post63` installation, `pip check`, runtime
+isolation with zero dependency, GAP-host, executable, Python-path, or
+source-path leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 226
+passes and 5 skips.  The standard sweep took 480.3 seconds and the validator
+exited zero after 1,775.621 seconds.
+
+The separate fresh full gate repeated that contract.  Its unrestricted sweep
+passed all 3,953 installed modules with zero failures in 732.6 seconds,
+packaged pytest again passed with 226 passes and 5 skips, the independent
+reducer reported zero failed modules, and the validator exited zero after
+2,049.257 seconds.  Every build, closure, short, full, watcher, and top-level
+orchestration exit artifact records zero.
+
+Exact pushed `post63` source `16d6d78012a` is therefore accepted locally for
+macOS arm64 CPython 3.13 as the fifth synchronized full-pass cell for this
+release-candidate revision.  Deliberate cleanup removed only the two completed
+validation installs and their run-local homes while retaining the strict
+wheelhouse, exact source inputs, and complete validation evidence.  This
+restored 108,638,336 KiB free on `/Volumes/sage`.  Durable artifacts are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260719-040705-16d6d78012a
+```
+
+The Linux x86_64 bulk mount remains absent.  The public R2 manifest is still
+the 177-wheel set generated on 2026-07-09, with no `post63` artifact; nothing
+was published by this validation.
+
 ## 2026-07-19 Post63 Exact Rebuild Started
 
 The scheduled matrix iteration first reconciled the higher-priority Linux

@@ -1174,6 +1174,25 @@ CPython 3.13 wheel, validation pass, cell acceptance, or publication is
 claimed yet. Details are in
 `agents/sagelite-macos-arm64-cp313-validation.md`.
 
+That exact native build and its guarded validator then completed with exit
+code zero. The repaired 102,094,065-byte primary has SHA256
+`c196f955ae82cae03b34f5abad7ba6ddef1fa18af4050ca95baa25d2221cdd5e`.
+Its deterministic strict closure contains 179 wheels totaling
+13,895,771,529 bytes, with inventory SHA256
+`29129ad5c1bb0f0f201cc555e2819652300d8845f08cf202c31b05edbd2c09bc`.
+Independent fresh short and full gates passed strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation
+with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 226
+passes and 5 skips. The unrestricted sweep took 732.6 seconds and the full
+validator exited zero after 2,049.257 seconds. Exact pushed `post63` source
+`16d6d78012a` is accepted locally for macOS arm64 CPython 3.13 as the fifth
+synchronized full-pass cell for this release-candidate revision. Deliberate
+cleanup retained the strict wheelhouse and complete validation evidence while
+restoring 108,638,336 KiB free on `/Volumes/sage`. The public R2 manifest
+remains the 177-wheel set generated on 2026-07-09; no artifact was published.
+Details are in `agents/sagelite-macos-arm64-cp313-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -1255,7 +1274,7 @@ Status meanings:
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 746.2 seconds; this is the fourth synchronized full-pass cell from the selected `post63` revision | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post51`, local; `post9`, public); exact `post63` rebuild active | full (`post51`); exact pushed source `30bc6ffce55` produced a repaired 102,092,637-byte primary and strict 179-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, selftest, runtime isolation, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Exact pushed `post63` source `16d6d78012a` is building under `sagelite_cp313_post63_build`, with a guarded closure and validation watcher; no synchronized result is claimed yet. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.13 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 732.6 seconds; this is the fifth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post54`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired 102,365,990-byte primary and strict 168-wheel closure. Independent fresh neutral-path short and full gates passed preflight, wheel-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, selftest, packaged pytest, and all 3,953 installed `--optional=sage` modules with zero failures. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
 The recorded full passes establish that the standard installed runtime can
@@ -1283,10 +1302,10 @@ Unless newer evidence changes the matrix, use this order:
 
 1. Exact pushed `post63` source `16d6d78012a` is the selected
    release-candidate revision. Linux aarch64 CPython 3.12, 3.13, and 3.14 and
-   macOS arm64 CPython 3.12 have completed the first four synchronized full
-   passes. The macOS arm64 CPython 3.13 rebuild and guarded validator are
-   active. Run the same fresh full contract across that cell and the other
-   four cells,
+   macOS arm64 CPython 3.12 and 3.13 have completed the first five
+   synchronized full passes. Run the same fresh full contract across the
+   remaining four cells, starting with macOS arm64 CPython 3.14 while the
+   Linux x86_64 bulk mount remains absent,
    selecting the highest-priority available cell each iteration. Reconcile
    the old Linux x86_64 CPython 3.12
    `post60` job if its bulk mount returns, but rebuild and validate that cell
