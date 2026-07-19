@@ -185,6 +185,12 @@ Test status:
   packaged pytest with 226 passes and 5 skips, and all 3,953 installed
   standard modules with zero failures. The unrestricted sweep took 732.6
   seconds.
+- The macOS arm64 CPython 3.14 installed-wheel baseline has passed from that
+  same exact pushed source. Its strict 168-wheel closure passed independent
+  fresh short and full gates, including binary-only installation, `pip check`,
+  zero runtime leaks, all selftests, packaged pytest with 226 passes and 5
+  skips, and all 3,953 installed standard modules with zero failures. The
+  unrestricted sweep took 788.7 seconds.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
   3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`,
   including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP

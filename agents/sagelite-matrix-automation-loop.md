@@ -1259,6 +1259,22 @@ the unrestricted sweep. No synchronized full pass, cell acceptance, or
 publication is claimed yet. Details are in
 `agents/sagelite-macos-arm64-cp314-validation.md`.
 
+That separate fresh full gate then completed with exit code zero. It repeated
+strict preflight, binary-only installation, `pip check`, runtime isolation with
+zero leaks, all 102 selftest checks, and all 3,953 installed
+`--optional=sage` modules with zero failures. The unrestricted sweep took
+788.7 seconds, packaged pytest passed with 226 passes and 5 skips, the
+independent reducer reported zero failed modules, and the full validator exited
+zero after 2,196.042 seconds. Exact pushed `post63` source `16d6d78012a` is
+accepted locally for macOS arm64 CPython 3.14 as the sixth synchronized
+full-pass cell for this release-candidate revision. A complete wheelhouse hash
+recheck passed before deliberate cleanup retained the strict closure, source
+archive, and complete evidence while restoring 111,571,288 KiB free on
+`/Volumes/sage`. The Linux x86_64 bulk mount remains absent, and the public R2
+manifest remains the 177-wheel set generated on 2026-07-09; no artifact was
+published. Details are in
+`agents/sagelite-macos-arm64-cp314-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -1341,7 +1357,7 @@ Status meanings:
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 746.2 seconds; this is the fourth synchronized full-pass cell from the selected `post63` revision | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 732.6 seconds; this is the fifth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post63`, local; `post9`, public) | full (`post54`); exact pushed source `cf0c58f7131` produced a repaired primary and strict 168-wheel closure whose independent fresh short and full gates passed. Exact pushed `post63` source `16d6d78012a` produced a repaired 102,366,502-byte primary and deterministic strict 168-wheel closure. Its fresh short gate passed binary-only installation, `pip check`, runtime isolation, all selftests, all 3,953 standard modules with zero failures, and the packaged pytest tests. A separate fresh full gate has passed installation and `pip check` and is collecting its independent runtime evidence under `sagelite_cp314_post63_resume2`. No synchronized `post63` full pass is claimed yet. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.14 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 168-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 788.7 seconds; this is the sixth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
 The recorded full passes establish that the standard installed runtime can
 pass on Linux x86_64, Linux aarch64, and macOS arm64. They are not a
@@ -1368,12 +1384,10 @@ Unless newer evidence changes the matrix, use this order:
 
 1. Exact pushed `post63` source `16d6d78012a` is the selected
    release-candidate revision. Linux aarch64 CPython 3.12, 3.13, and 3.14 and
-   macOS arm64 CPython 3.12 and 3.13 have completed the first five
-   synchronized full passes. The exact macOS arm64 CPython 3.14 rebuild and
-   short gate passed; its independent full validator is active and must be
-   reconciled before selecting another cell. Run the same fresh full contract
-   across the remaining four
-   cells, selecting the highest-priority available cell each iteration.
+   macOS arm64 CPython 3.12, 3.13, and 3.14 have completed the first six
+   synchronized full passes. Run the same fresh full contract across the
+   remaining three Linux x86_64 cells, selecting the highest-priority
+   available cell each iteration once the required bulk mount returns.
    Reconcile the old Linux x86_64 CPython 3.12
    `post60` job if its bulk mount returns, but rebuild and validate that cell
    from exact `post63`; accepted `post60`, `post61`, and `post62` gates remain

@@ -1,6 +1,6 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
-## 2026-07-19 Post63 Wheel, Closure, And Strict Validation Start
+## 2026-07-19 Post63 Full Acceptance
 
 The scheduled matrix iteration first reconciled the higher-priority Linux
 `x86_64` builder. The `host` alias is reachable and reports native Linux
@@ -74,11 +74,24 @@ runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed
 `--optional=sage` modules with zero failures, and the packaged pytest tests.
 The standard sweep took 494.8 seconds, its independent reducer reported zero
 failed modules, and the validator exited zero after 1,938.567 seconds. The
-guard then launched a separate fresh full gate at
-`2026-07-19T07:09:15Z` under the same tmux session. Its authoritative work
-directory is `full-neutral`, and it is collecting its independent runtime
-manifest and selftest evidence before the unrestricted sweep. No full pass,
-synchronized cell acceptance, or publication is claimed yet.
+separate fresh full gate repeated that contract. Its unrestricted sweep passed
+all 3,953 installed modules with zero failures in 788.7 seconds, packaged
+pytest passed with 226 passes and 5 skips, and the independent reducer reported
+zero failed modules. The full validator exited zero after 2,196.042 seconds;
+the full-gate, watcher, and final resume exit artifacts all record zero.
+
+Exact pushed `post63` source `16d6d78012a` is therefore accepted locally for
+macOS arm64 CPython 3.14 as the sixth synchronized full-pass cell for this
+release-candidate revision. A complete SHA256 recheck passed before deliberate
+cleanup removed only the two completed validation installs and homes plus the
+disposable source, build, cache, and temporary trees. The strict wheelhouse,
+exact source archive, logs, summaries, runtime evidence, and reducer artifacts
+remain at the authoritative run path above. Cleanup restored 111,571,288 KiB
+free on `/Volumes/sage`.
+
+The Linux x86_64 bulk mount remains absent. The public R2 manifest is still the
+177-wheel set generated on 2026-07-09, with no `post63` artifact; nothing was
+published by this validation.
 
 ## 2026-07-16 Post54 Strict Short And Full Pass
 
