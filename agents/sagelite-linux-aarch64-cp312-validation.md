@@ -1,5 +1,81 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-19 Post63 Synchronized Build Start
+
+The higher-priority Linux `x86_64` CPython 3.12 target was reachable, but its
+required `/mnt/cocalc-scratch` bulk mount remained absent. That path resolved
+to the 24 GB root filesystem with 15,139,332,096 bytes free. The recorded
+`post60` build and watcher services were inactive with successful status, but
+their bulk run root remained invisible. No result was inferred and no x86_64
+build was started.
+
+The directly fetched public `dev/manifest.json` remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels and no `10.9.post63` artifact. Independent preflight found the
+outer `m1` host native Darwin `arm64`, the Lima guest native Linux `aarch64`,
+and no active Sagelite service or Docker container. The outer
+`/Volumes/sage` filesystem had 106,205,328 KiB free. The guest initially had
+105,984,335,872 bytes free, below the binary 100 GiB heavy-build threshold.
+
+Precise cleanup first archived a complete SHA256 inventory of the superseded
+82-wheel `post61` CPython 3.12 build wheelhouse, whose wheels total
+4,623,984,325 bytes, before removing only that wheel directory. Its archived
+inventory SHA256 is
+`6630bf4b4521932dbab19edfcf9f4c4235417941b45b7ab614043ef6b634beb8`.
+Because those files were mostly hard-linked into newer closures, additional
+cleanup archived and removed only the obsolete `post54` CPython 3.13 retry
+closure. Its 83 wheels total 15,981,989,574 bytes, and its archived inventory
+SHA256 is
+`e440a77da0d97526cffc2bd33e492af71b23d6d1c6f21907fb463c77017c4e85`.
+All concise validation evidence and the current `post62` CPython 3.12 and
+`post63` CPython 3.13/3.14 closures remain. Guest capacity rose to
+110,680,354,816 bytes.
+
+Exact pushed release-candidate source is:
+
+```text
+source SHA: 16d6d78012a4971870e165e3ae948a24b8f7ed9c
+version:    10.9.post63
+bundle:     sagelite-16d6d78012a-depth1.bundle
+size:       145,792,413 bytes
+sha256:     89c36c7de5b51212c1d1dc386ead6dc85dbd3b39188f6cbe95ff463cf5a83e20
+```
+
+The bundle hash and exact head passed independently in the guest. All 191
+hashes in the retained accepted `post62` CPython 3.12 seed closure also
+passed; its inventory SHA256 is
+`16edafdaad0f0ba0c9f4627622d85957c76d5a3aef852878b08f8f51f64298c5`.
+The new native run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260719-000623-16d6d78012a
+```
+
+Its exact checkout reached pushed source `16d6d78012a497` and reports
+`10.9.post63` from `VERSION.txt`. The actual manylinux container reports Linux
+`aarch64` and CPython 3.12.13. This leg uses the repository Linux CIBW helpers
+and will emit a synchronized platform companion set. The guarded watcher will
+assemble a deterministic strict closure and run independent fresh short and
+full gates only after a zero build exit.
+
+The durable services are active as:
+
+```text
+sagelite-post63-arm-cp312-build.service  main PID 2249335
+sagelite-post63-arm-cp312-watch.service  main PID 2249343
+```
+
+Script hashes are:
+
+```text
+766f1d113d08811fee2994645ad368a32460b7ac65e2e9f94123b8ceddf2b0b3  start-build.sh
+fb7ce6c48c9b665495d734cfb781176c230995b10e3c398685afee9485ec873b  validate-after-build.sh
+1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15  watch-and-validate.sh
+```
+
+This is exact-source build-start evidence only; no `post63` CPython 3.12
+wheel, validation pass, cell acceptance, or publication is claimed yet.
+
 ## 2026-07-18 Post62 Wheel And Strict Short/Full Passes
 
 The exact pushed build recorded below completed with exit code zero and
