@@ -1,5 +1,35 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-19 Assigned Mount Remains Undersized At 14:01 UTC
+
+Read-only preflight at `2026-07-19T14:01:53Z` reached `host` as native Linux
+`x86_64`. The required `/mnt/cocalc-scratch` path remains the new
+20,957,446,144-byte ext4 filesystem, with 19,866,902,528 bytes free. A direct
+inventory at `2026-07-19T14:02:05Z` found only `lost+found` and 20,480 bytes
+used, so no automation-owned cleanup can make this filesystem satisfy the
+binary 100 GiB heavy-build threshold.
+
+The recorded exact `post60` run root remains absent. Systemd reported both
+historical units as not found and inactive while retaining `Result=success`
+and `ExecMainStatus=0`; no artifact result is inferred without the historical
+bulk files. Docker remains absent, Podman has no active container, and no
+Sagelite automation process is running.
+
+The separate writable `/mnt/cocalc` btrfs filesystem now has
+207,321,169,920 bytes free, but it is not the build root assigned by the
+automation runbook. This iteration therefore did not move the build there
+without explicit direction. No cleanup or Linux x86_64 build was started.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. The
+canonical checkout was clean on `develop` at
+`db1055a9c203e8fed5c7b2903d20620f892e9ba8`, synchronized with
+`origin/develop`. Exact pushed `post63` source `16d6d78012a` remains the
+selected release candidate. This cell is blocked until a qualifying assigned
+bulk mount returns or the larger `/mnt/cocalc` filesystem is explicitly
+approved as the automation root.
+
 ## 2026-07-19 Assigned Mount Returned Undersized At 13:31 UTC
 
 Read-only preflight at `2026-07-19T13:31:26Z` reached `host` as native Linux
