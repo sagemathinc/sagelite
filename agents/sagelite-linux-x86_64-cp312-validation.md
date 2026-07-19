@@ -1,5 +1,30 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-19 Assigned Bulk Mount Still Absent At 12:01 UTC
+
+Read-only preflight at `2026-07-19T12:01:17Z` reached `host` as native Linux
+`x86_64`. The required `/mnt/cocalc-scratch` path still resolved to the 24 GB
+root filesystem, which had 15,093,563,392 bytes free. The recorded exact
+`post60` run root was not visible. Systemd reported both historical units as
+not found and inactive, while retaining `Result=success` and
+`ExecMainStatus=0`; no wheel or validation result is inferred without the
+assigned bulk artifacts.
+
+The complete mount inventory again found only `/mnt/cocalc` as a separate
+writable bulk filesystem. It had 85,317,668,864 bytes free, below the binary
+100 GiB heavy-build threshold. Docker was absent; Podman was installed but had
+no active container, and no Sagelite automation process was running. The
+visible bulk volume is not assigned to this job, and no safe automation-owned
+cleanup target was identified, so no cleanup or Linux x86_64 build was
+started.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. Exact pushed
+`post63` source `16d6d78012a` remains the selected release candidate. This
+cell is blocked until the assigned bulk mount returns or another explicitly
+in-scope filesystem meets the threshold.
+
 ## 2026-07-19 Assigned Bulk Mount Still Absent At 11:31 UTC
 
 Read-only preflight at `2026-07-19T11:31:14Z` reached `host` as native Linux
