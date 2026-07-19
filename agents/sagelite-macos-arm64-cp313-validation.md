@@ -1,5 +1,45 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-19 Post63 Exact Rebuild Started
+
+The scheduled matrix iteration first reconciled the higher-priority Linux
+`x86_64` builder.  The `host` alias is reachable and reports native Linux
+`x86_64`, but `/mnt/cocalc-scratch` still resolves to its 24 GB root
+filesystem with only 15,099,777,024 bytes free.  The recorded CPython 3.12
+`post60` build and watcher services are inactive with successful service
+status, but their bulk run root remains invisible.  No x86_64 result was
+inferred and no build was started there.  The directly fetched public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` artifact.
+
+Independent preflight found native macOS idle.  The retained accepted
+CPython 3.13 `post51` wheelhouse and native-prefix seed are intact.  A complete
+SHA256 recheck preceded removal of only the superseded `post61` CPython 3.12
+closure link set; its inventory and full-pass evidence remain.  Because that
+closure shared most files with the current closure, additional precise
+cleanup removed only disposable source, build, cache, and temporary trees
+from three completed superseded CPython 3.13 runs while retaining their
+wheels, logs, and validation evidence.  This restored 111,895,024 KiB free on
+`/Volumes/sage`.
+
+Exact pushed `post63` source `16d6d78012a` is now building natively for macOS
+arm64 CPython 3.13 under tmux session `sagelite_cp313_post63_build` at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260719-040705-16d6d78012a
+```
+
+The guarded `sagelite_cp313_post63_watch` session will assemble a strict
+closure and run independent fresh short and full gates only after build
+success.  The exact 144,034,365-byte source archive has verified SHA256
+`2c8e167e60ba6d84fbb58fc4e3602f4097d3555aee78a2d29ff3d14017df0a44`.
+The materialized source tree matches committed tree
+`2f95f24b66612b95bf8b5dc7329dbc1621eb657d`, and the recorded environment is
+Darwin `arm64` with CPython 3.13.14.  This is build-start evidence only; no
+`post63` CPython 3.13 wheel, validation pass, cell acceptance, or publication
+is claimed yet.
+
 ## 2026-07-16 Post51 Exact Rebuild And Full Acceptance
 
 The exact pushed `10.9.post51` source
