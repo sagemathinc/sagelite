@@ -1,6 +1,6 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
-## 2026-07-19 Post63 Exact Rebuild Started
+## 2026-07-19 Post63 Wheel, Closure, And Strict Validation Start
 
 The scheduled matrix iteration first reconciled the higher-priority Linux
 `x86_64` builder. The `host` alias is reachable and reports native Linux
@@ -31,23 +31,49 @@ created, and the concise failure evidence is preserved at:
 
 The exact fresh replacement uses the intact CPython-independent native prefix
 from the accepted CPython 3.13 `post51` build. Exact pushed `post63` source
-`16d6d78012a` is now building natively for macOS arm64 CPython 3.14 under
-tmux session `sagelite_cp314_post63_build` at:
+`16d6d78012a` then built natively for macOS arm64 CPython 3.14 under tmux
+session `sagelite_cp314_post63_build` at:
 
 ```text
 /Volumes/sage/sagelite-automation/macos-arm64-cp314-20260719-060814-16d6d78012a
 ```
 
-The guarded `sagelite_cp314_post63_watch` session will assemble a strict
-CPython 3.14 closure from the accepted `post63` CPython 3.13 wheelhouse and
-run independent fresh short and full gates only after build success. The
-exact 144,034,365-byte source archive has verified SHA256
+The exact 144,034,365-byte source archive has verified SHA256
 `2c8e167e60ba6d84fbb58fc4e3602f4097d3555aee78a2d29ff3d14017df0a44`.
 The materialized source tree matches committed tree
 `2f95f24b66612b95bf8b5dc7329dbc1621eb657d`, and the recorded environment is
-Darwin `arm64` with CPython 3.14.6. This is build-start evidence only; no
-`post63` CPython 3.14 wheel, validation pass, cell acceptance, or publication
-is claimed yet.
+Darwin `arm64` with CPython 3.14.6. The build completed with exit code zero
+and produced this repaired primary:
+
+```text
+sagelite-10.9.post63-cp314-cp314-macosx_26_0_arm64.whl
+  102,366,502 bytes
+  34c1362c36408083be0dfee830af7aad609a708a96f18ed65aa1b8a0e4e63373
+```
+
+The first closure attempt stopped immediately because its script tested for
+an empty `wheelhouse-resolved` directory before the script's own `mkdir`.
+The orchestration wrapper lacked fail-fast behavior and therefore invoked the
+short validator against the lone primary; strict preflight rejected all 68
+missing companion projects before installation. That rejected attempt remains
+preserved as `short-neutral-preclosure-rejected-20260719-062015`.
+
+A guarded resume created the expected empty staging directory and linked 155
+compatible wheels, then stopped because the closure command unconditionally
+asked pip to download optional `pycryptosat`. Neither PyPI nor the preview
+index has a CPython 3.14 wheel for it. The accepted CPython 3.13 closure omits
+that project, and deterministic `all-needed-extras` resolution does not select
+it. A second guarded resume therefore omitted only that unnecessary download.
+It selected a strict closure of 168 wheels: one primary, 68 companions, and 99
+third-party wheels totaling 13,890,636,156 bytes. The inventory SHA256 is
+`3954c9a2c7ab75ef0b2833b50399025718a44d16c0baac8f4ab371c4f115af12`.
+
+The fresh short gate passed strict macOS wheelhouse preflight with all 68
+requested companion projects present and began the binary-only install at
+`2026-07-19T06:36:57Z`. It is active under tmux session
+`sagelite_cp314_post63_resume2`; a fresh full gate is guarded on its zero exit.
+This is wheel, closure, and validation-start evidence only. No short or full
+pass, synchronized cell acceptance, or publication is claimed yet.
 
 ## 2026-07-16 Post54 Strict Short And Full Pass
 
