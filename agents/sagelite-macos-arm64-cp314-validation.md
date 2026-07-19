@@ -69,11 +69,16 @@ third-party wheels totaling 13,890,636,156 bytes. The inventory SHA256 is
 `3954c9a2c7ab75ef0b2833b50399025718a44d16c0baac8f4ab371c4f115af12`.
 
 The fresh short gate passed strict macOS wheelhouse preflight with all 68
-requested companion projects present and began the binary-only install at
-`2026-07-19T06:36:57Z`. It is active under tmux session
-`sagelite_cp314_post63_resume2`; a fresh full gate is guarded on its zero exit.
-This is wheel, closure, and validation-start evidence only. No short or full
-pass, synchronized cell acceptance, or publication is claimed yet.
+requested companion projects present, binary-only installation, `pip check`,
+runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and the packaged pytest tests.
+The standard sweep took 494.8 seconds, its independent reducer reported zero
+failed modules, and the validator exited zero after 1,938.567 seconds. The
+guard then launched a separate fresh full gate at
+`2026-07-19T07:09:15Z` under the same tmux session. Its authoritative work
+directory is `full-neutral`, and it is collecting its independent runtime
+manifest and selftest evidence before the unrestricted sweep. No full pass,
+synchronized cell acceptance, or publication is claimed yet.
 
 ## 2026-07-16 Post54 Strict Short And Full Pass
 
