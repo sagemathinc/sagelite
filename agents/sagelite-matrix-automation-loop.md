@@ -1277,13 +1277,14 @@ published. Details are in
 
 The next scheduled iteration reached `host` as native Linux `x86_64`, but its
 required `/mnt/cocalc-scratch` bulk mount was still absent. The path resolved
-to the 24 GB root filesystem with 15,105,802,240 bytes free, and the recorded
+to the 24 GB root filesystem with 15,105,253,376 bytes free, and the recorded
 CPython 3.12 `post60` run root remained invisible. Its inactive build and
 watcher services reported successful status, but no artifact result was
 inferred. A complete mount inventory found only `/mnt/cocalc` as a separate
-writable bulk filesystem; its 85,399,818,240 bytes free were below the binary
-100 GiB heavy-build threshold, and Docker was absent on this staging host. No
-cleanup or x86_64 build was started. The directly fetched public
+writable bulk filesystem; its 85,377,052,672 bytes free were below the binary
+100 GiB heavy-build threshold, Docker was absent on this staging host, and no
+Sagelite automation service or Podman container was active. No cleanup or
+x86_64 build was started. The directly fetched public
 `dev/manifest.json` remains the 177-wheel set generated at
 `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
 no `post63` artifact. Exact pushed `post63` source `16d6d78012a` remains the
@@ -1364,7 +1365,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. The required alias is reachable, but `/mnt/cocalc-scratch` is not mounted and the recorded exact `post60` run is not visible. Its services are inactive, but no synchronized result is inferred without the assigned bulk artifacts. The only separate host bulk mount has 85,399,818,240 bytes free, below the 100 GiB build threshold | smoke (`post8`) |
+| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. The required alias is reachable, but `/mnt/cocalc-scratch` is not mounted and the recorded exact `post60` run is not visible. Its services are inactive, but no synchronized result is inferred without the assigned bulk artifacts. The only separate host bulk mount has 85,377,052,672 bytes free, below the 100 GiB build threshold | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
