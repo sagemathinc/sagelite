@@ -1385,6 +1385,21 @@ no `post63` artifact. Exact pushed `post63` source `16d6d78012a` remains the
 selected release candidate, and the six Linux aarch64 and macOS arm64 cells
 remain synchronized and accepted.
 
+The next scheduled iteration again could not reach `host`: all three bounded
+SSH attempts timed out, with the final controller checkpoint recorded at
+`2026-07-19T13:02:19Z`. No remote state was inferred, the invisible old Linux
+x86_64 CPython 3.12 `post60` artifacts were left untouched, and no build was
+started. The last reachable preflight at `2026-07-19T12:01:17Z` had still
+found the assigned `/mnt/cocalc-scratch` mount absent and only
+85,317,668,864 bytes free on the separate `/mnt/cocalc` volume, below the
+binary 100 GiB heavy-build threshold. The directly fetched public manifest
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` artifact. The canonical checkout and `origin/develop` were
+synchronized at `225d8240849ba42b161c948eb13529725ddd87e7`. Exact pushed
+`post63` source `16d6d78012a` remains the selected release candidate, and the
+six Linux aarch64 and macOS arm64 cells remain synchronized and accepted.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
