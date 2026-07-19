@@ -1,5 +1,35 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-19 Assigned Mount Returned Undersized At 13:31 UTC
+
+Read-only preflight at `2026-07-19T13:31:26Z` reached `host` as native Linux
+`x86_64`. The required `/mnt/cocalc-scratch` path was mounted again, but it
+was a new, empty 20,957,446,144-byte ext4 filesystem with only
+19,866,902,528 bytes free. That is far below the binary 100 GiB heavy-build
+threshold, and cleanup cannot make this filesystem large enough.
+
+The recorded exact `post60` run root was absent. Systemd reported both
+historical units as not found and inactive while retaining `Result=success`
+and `ExecMainStatus=0`; no artifact result is inferred without the historical
+bulk files. Docker was absent, Podman had no active container, and no Sagelite
+automation process was running.
+
+A separate writable `/mnt/cocalc` btrfs filesystem had
+210,119,565,312 bytes free, above the threshold. It is not the build root
+assigned by the automation runbook, so this iteration did not move the build
+there without explicit direction. No cleanup or Linux x86_64 build was
+started.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. The
+canonical checkout was clean on `develop` at
+`ca0284c7023e6049318183c35c38032127431d5b`, synchronized with
+`origin/develop`. Exact pushed `post63` source `16d6d78012a` remains the
+selected release candidate. This cell is blocked until a qualifying assigned
+bulk mount returns or the larger `/mnt/cocalc` filesystem is explicitly
+approved as the automation root.
+
 ## 2026-07-19 Host Timed Out At 13:02 UTC
 
 All three bounded SSH attempts through the required `host` alias timed out.
