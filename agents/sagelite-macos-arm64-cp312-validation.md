@@ -1,5 +1,52 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-19 Post63 Build Complete And Strict Validation Start
+
+The exact-source native build completed with exit code zero at
+`2026-07-19T02:21:29Z`. Repair injected 2,079 native headers, rewrote 23
+companion dependencies in 16 Mach-O files, and audited 1,176 dependencies
+across 637 Mach-O files. It produced:
+
+```text
+sagelite-10.9.post63-cp312-cp312-macosx_26_0_arm64.whl
+  102,264,120 bytes
+  0e4aa0c098d4ea60abd4d53567e1adea4f6a312bf23b9c9e92badf7acbe479d2
+```
+
+The deterministic strict closure completed with exit code zero at
+`2026-07-19T02:35:48Z`. It selected all 180 staged projects and removed none:
+one primary, 68 companions, and 111 third-party wheels totaling
+13,896,964,322 bytes. Its inventory has SHA256
+`c026b01da272b91423cc7cc81d07794e2be24f0edec2f6b7d871d352b775c1b0`,
+and the independent pip resolution report has SHA256
+`308744cc3db870fe49d7b8eae0e4c72766452944ed5f773270d8aba8b5caf810`.
+
+One guarded validator is active under tmux session
+`sagelite_cp312_post63_validate`, with recorded PID 78071. It started at
+`2026-07-19T02:36:48Z` and runs a separate fresh full gate only after a zero
+short-gate exit. Both commands use the exact checksummed closure, strict
+macOS wheelhouse preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post63` installation, a neutral
+environment, runtime isolation, every selftest, packaged pytest, and the
+installed `--optional=sage` module sweep. The explicitly recorded macOS
+environment includes `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. At this
+checkpoint the short gate was creating its fresh CPython 3.12 install. No
+short-gate pass, full-suite pass, cell acceptance, or publication is claimed
+yet.
+
+The higher-priority Linux x86_64 target remains unavailable for assigned
+work: `host` is reachable and native `x86_64`, but `/mnt/cocalc-scratch`
+still resolves to its 24 GB root filesystem with only 15,101,341,696 bytes
+free. The public manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` artifact.
+
+All build, closure, hash, and active validation evidence is retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260719-020352-16d6d78012a/
+```
+
 ## 2026-07-19 Post63 Synchronized Rebuild Start
 
 The scheduled matrix iteration first reconciled the higher-priority Linux
