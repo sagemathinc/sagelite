@@ -173,9 +173,10 @@ Test status:
   standard non-optional Sage doctest suite.
 - The macOS arm64 CPython 3.12 installed-wheel baseline has passed the full
   standard non-optional Sage doctest suite and packaged pytest tests from
-  exact pushed `10.9.post61` source. Both fresh short and full gates passed all
-  3,953 installed standard modules with zero failures; packaged pytest passed
-  with 226 passes and 5 skips. Full-suite macOS validation currently sets
+  exact pushed `10.9.post63` source. Both fresh short and full gates passed all
+  3,953 installed standard modules with zero failures; the unrestricted sweep
+  took 746.2 seconds, and packaged pytest passed with 226 passes and 5 skips.
+  Full-suite macOS validation currently sets
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
 - Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
