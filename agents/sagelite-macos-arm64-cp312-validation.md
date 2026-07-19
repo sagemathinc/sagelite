@@ -1,5 +1,49 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-19 Post63 Synchronized Rebuild Start
+
+The scheduled matrix iteration first reconciled the higher-priority Linux
+x86_64 CPython 3.12 target.  The `host` alias is reachable and reports native
+Linux `x86_64`, but its required `/mnt/cocalc-scratch` path still resolves to
+the 24 GB root filesystem with only 15,110,254,592 bytes free.  The old
+`post60` build and watcher services are inactive with successful status, but
+their bulk run root remains invisible.  No x86_64 result was inferred and no
+new x86_64 build was started.  The directly fetched public manifest remains
+the 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with
+fourteen Sagelite primary wheels and no `post63` artifact.
+
+Independent preflight found `m1` idle and native Darwin `arm64`, with Homebrew
+CPython 3.12, 3.13, and 3.14 available.  `/Volumes/sage` was initially about
+42 MB below the binary 100 GiB heavy-build threshold.  Precise cleanup removed
+only two completed, reproducible Fricas smoke-test install directories from
+July 15 while preserving their build logs and wheel artifacts.  The exact
+`post63` source archive was then transferred and verified; the final launch
+guard recorded 107,556,839,424 bytes free.
+
+Exact pushed source `16d6d78012a4971870e165e3ae948a24b8f7ed9c`
+(`10.9.post63`) is now building natively for macOS arm64 CPython 3.12 under
+tmux session `sagelite_cp312_post63_build`, with recorded PID 36125, at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260719-020352-16d6d78012a
+```
+
+The 144,034,365-byte exact-source archive has SHA256
+`2c8e167e60ba6d84fbb58fc4e3602f4097d3555aee78a2d29ff3d14017df0a44`.
+Its embedded Git commit is the selected source, and the independently
+materialized remote tree matches committed tree
+`2f95f24b66612b95bf8b5dc7329dbc1621eb657d`.  The proven build launcher has
+SHA256 `6e3e8efafe83375b2809db1b3a09c58e9abf8c67a99efb6ef17019ba177c104f`.
+The exact checkout is clean, and recorded guards report Darwin `arm64` and
+CPython 3.12.13.  The durable log entered native sdist configuration after
+installing the pinned build environment.  Two earlier ownership attempts
+stopped before invoking the build and are preserved as pre-build diagnostics;
+the active tmux process is the only build owner.
+
+This is exact-source build-start evidence only.  No `post63` macOS CPython
+3.12 wheel, strict closure, fresh installation, validation pass, cell
+acceptance, or publication is claimed yet.
+
 ## 2026-07-18 Post61 Full Acceptance
 
 The guarded validator completed both independent fresh gates and exited zero
