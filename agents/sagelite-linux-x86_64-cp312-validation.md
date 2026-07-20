@@ -1,5 +1,34 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-20 Assigned Host Unreachable At 11:02 UTC
+
+All three bounded SSH connection attempts through the required `host` alias
+timed out. The attempts began at `2026-07-20T11:01:17Z`,
+`2026-07-20T11:01:32Z`, and `2026-07-20T11:01:47Z`; the final attempt ended
+at `2026-07-20T11:02:02Z` after its 15-second connection timeout, and the
+bounded loop exited with status 255. No remote state is inferred, the missing
+historical CPython 3.12 `post60` artifacts remain untouched, and no Linux
+x86_64 build was started.
+
+The last reachable read-only preflight at `2026-07-20T03:31:15Z` found the
+assigned `/mnt/cocalc-scratch` path backed by an essentially empty
+20,957,446,144-byte ext4 filesystem with only 19,866,902,528 bytes free, far
+below the binary 100 GiB heavy-build threshold. The separate `/mnt/cocalc`
+filesystem had 207,010,279,424 bytes free but was not assigned by the runbook.
+No later capacity, mount, service, container, process, or artifact state is
+claimed.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. Before this
+evidence edit, the canonical checkout was clean on `develop` at
+`5b3b106dbda98242735e0b765f00ac7e67bd22ab`, synchronized with its local
+tracking ref and the directly queried `origin/develop` remote ref. Exact
+pushed `post63` source `16d6d78012a` remains the selected release candidate.
+This cell remains blocked until `host` is reachable and a qualifying assigned
+bulk filesystem can be verified, or a different filesystem is explicitly
+approved as the automation root.
+
 ## 2026-07-20 Assigned Host Unreachable At 10:32 UTC
 
 All three bounded SSH connection attempts through the required `host` alias
