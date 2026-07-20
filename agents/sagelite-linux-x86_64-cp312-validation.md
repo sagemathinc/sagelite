@@ -1,5 +1,33 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-20 Assigned Host Unreachable At 16:02 UTC
+
+Three confirmed bounded SSH connection attempts through the required `host`
+alias timed out. The confirmed attempts began at `2026-07-20T16:01:39Z`,
+`2026-07-20T16:01:54Z`, and `2026-07-20T16:02:19Z`; the final confirmed
+attempt ended at `2026-07-20T16:02:34Z` after its 15-second connection timeout
+with exit status 255. No remote state is inferred, the missing historical
+CPython 3.12 `post60` artifacts remain untouched, and no Linux x86_64 build
+was started.
+
+The last reachable read-only preflight at `2026-07-20T15:32:23Z` found the
+assigned `/mnt/cocalc-scratch` path absent. The only writable bulk filesystem
+then found was the separate `/mnt/cocalc` btrfs filesystem, with
+157,214,433,280 bytes free, but it is not assigned by the authoritative
+runbook. No later capacity, mount, service, container, process, or artifact
+state is claimed.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. Before this
+evidence edit, the canonical checkout was clean on `develop` at
+`66126ce23aaca83ac00f76aa5ac51d651108ad22`, synchronized with its local
+tracking ref and the directly queried `origin/develop` remote ref. Exact
+pushed `post63` source `16d6d78012a` remains the selected release candidate.
+This cell remains blocked until `host` is reachable and a qualifying assigned
+bulk filesystem can be verified, or a different filesystem is explicitly
+approved as the automation root.
+
 ## 2026-07-20 Assigned Bulk Filesystem Absent At 15:32 UTC
 
 Read-only preflight reached the required `host` alias on the first bounded
