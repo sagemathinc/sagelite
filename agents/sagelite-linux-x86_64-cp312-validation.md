@@ -1,5 +1,31 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-20 Assigned Bulk Filesystem Too Small At 02:01 UTC
+
+Read-only preflight reached the required `host` alias at
+`2026-07-20T02:01:27Z` as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remains an essentially empty 20,957,446,144-byte
+ext4 filesystem with 19,866,902,528 bytes free, far below the binary 100 GiB
+heavy-build threshold. The historical CPython 3.12 `post60` build and watcher
+are inactive with `Result=success` and `ExecMainStatus=0`, but their bulk run
+root is absent, so no wheel or validation result is inferred. Podman has no
+active container, Docker is absent, and no Sagelite automation process is
+running.
+
+The separate writable `/mnt/cocalc` filesystem has 207,077,015,552 bytes
+free, but it is not the build root assigned by the authoritative runbook. No
+cleanup or Linux x86_64 build was started there without explicit direction.
+
+The directly fetched public `dev/manifest.json` still contains 177 wheels,
+including fourteen Sagelite primary wheels and no `post63` artifact. Its
+generation timestamp remains `2026-07-09T17:17:42.743310+00:00`. The canonical
+checkout was clean on `develop` at
+`a483b15092d0a4fafbf0567d6c954f1d22139d7e`, synchronized with
+`origin/develop`. Exact pushed `post63` source `16d6d78012a` remains the
+selected release candidate. This cell remains blocked until a qualifying
+assigned bulk filesystem is restored or a different filesystem is explicitly
+approved as the automation root.
+
 ## 2026-07-20 Assigned Bulk Filesystem Too Small At 01:31 UTC
 
 Read-only preflight reached the required `host` alias at
