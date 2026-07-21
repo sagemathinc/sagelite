@@ -5,10 +5,10 @@
 The repair was committed, pushed, and verified on `origin/develop` as exact
 `10.9.post64` source `014ae4bf44318b6f5032053957a92291d4363b7a`.
 
-Read-only preflight at `2026-07-21T20:26:42Z` reached `host` as native Linux
+Read-only preflight at `2026-07-21T20:29:42Z` reached `host` as native Linux
 `x86_64`, but `/mnt/cocalc-scratch` was absent. The 24,883,167,232-byte root
-filesystem had only 9,356,034,048 bytes free. The only visible bulk
-filesystem, `/mnt/cocalc`, had 83,968,516,096 bytes free, below the binary
+filesystem had only 9,355,321,344 bytes free. The only visible bulk
+filesystem, `/mnt/cocalc`, had 83,927,445,504 bytes free, below the binary
 100 GiB heavy-build threshold, and it is not the runbook-assigned automation
 root. The historical `post60` run was absent, and both old service names were
 not found and inactive. Docker was absent, Podman had no active containers,
@@ -16,8 +16,9 @@ and an unrelated CoWasm Sagelite build was active outside the assigned
 automation scope. No remote state was changed and no `post64` build was
 started.
 
-The public manifest fetched at `2026-07-21T20:26:41Z` remains the 177-wheel
-set generated at `2026-07-09T17:17:42.743310+00:00`, with no `post64`
+The public manifest fetched during the same `2026-07-21T20:29Z`
+reconciliation remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with no `post64`
 artifact. The first fat-binary build remains blocked until the assigned bulk
 filesystem returns with at least 100 GiB free, or another qualifying
 automation root is explicitly approved.
