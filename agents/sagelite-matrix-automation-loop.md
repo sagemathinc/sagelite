@@ -3159,6 +3159,26 @@ pushed `post63` source `16d6d78012a` remains the selected release candidate,
 and the six Linux aarch64 and macOS arm64 cells remain synchronized and
 accepted.
 
+The next scheduled iteration made three confirmed bounded SSH connection
+attempts to the required `host` alias between `2026-07-21T11:31:30Z` and
+`2026-07-21T11:32:19Z`. All three timed out before a session was established.
+The assigned filesystem, historical CPython 3.12 `post60` artifacts, service
+state, container state, and process state could not be rechecked. The last
+successful read-only preflight remains the `2026-07-21T05:31:32Z` evidence:
+the assigned `/mnt/cocalc-scratch` path was an essentially empty
+20,957,446,144-byte ext4 filesystem with only 19,866,902,528 bytes free, while
+the unassigned `/mnt/cocalc` filesystem had 212,582,658,048 bytes free. No
+remote state was changed and no Linux x86_64 build was started. A direct
+public-manifest fetch at `2026-07-21T11:32:34Z` confirmed that
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` artifact. Before this checkpoint edit, the canonical checkout,
+its local tracking ref, and the directly queried `origin/develop` remote ref
+were synchronized at `1749137b083b5d340a765a305fa5d2133e8e2f95`. Exact
+pushed `post63` source `16d6d78012a` remains the selected release candidate,
+and the six Linux aarch64 and macOS arm64 cells remain synchronized and
+accepted.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -3233,7 +3253,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. Three confirmed bounded SSH attempts between `2026-07-21T11:01:15Z` and `2026-07-21T11:02:00Z` timed out before a session was established, so the target could not be rechecked. The last successful read-only preflight at `2026-07-21T05:31:32Z` found the assigned `/mnt/cocalc-scratch` path on an essentially empty 20,957,446,144-byte ext4 filesystem with only 19,866,902,528 bytes free, far below the binary 100 GiB heavy-build threshold. The recorded exact `post60` run was absent. The separate `/mnt/cocalc` filesystem had 212,582,658,048 bytes free but is not the assigned build root; restored host access plus a qualifying assigned mount, or explicit approval of another automation root, is required | smoke (`post8`) |
+| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. Three confirmed bounded SSH attempts between `2026-07-21T11:31:30Z` and `2026-07-21T11:32:19Z` timed out before a session was established, so the target could not be rechecked. The last successful read-only preflight at `2026-07-21T05:31:32Z` found the assigned `/mnt/cocalc-scratch` path on an essentially empty 20,957,446,144-byte ext4 filesystem with only 19,866,902,528 bytes free, far below the binary 100 GiB heavy-build threshold. The recorded exact `post60` run was absent. The separate `/mnt/cocalc` filesystem had 212,582,658,048 bytes free but is not the assigned build root; restored host access plus a qualifying assigned mount, or explicit approval of another automation root, is required | smoke (`post8`) |
 | Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
 | Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
