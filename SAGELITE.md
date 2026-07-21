@@ -157,6 +157,10 @@ Current preview platform support:
 Current limits:
 
 - These are preview wheels, not the final PyPI release.
+- The current public Linux `x86_64` wheels were built with CPU-specific GMP
+  and OpenBLAS tuning and can terminate with `SIGILL` on older processors that
+  lack BMI2 or ADX. A portable fat-binary rebuild is in progress; do not treat
+  the current Linux `x86_64` preview as a broad CPU-compatible wheel.
 - Linux `x86_64` CPython 3.13 and 3.14 are staged for feedback, but have
   smoke-test coverage rather than full doctest coverage.
 - macOS support is arm64 only. Intel macOS wheels are not a priority for this

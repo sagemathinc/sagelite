@@ -29,8 +29,8 @@ import sysconfig
 print(sysconfig.get_python_version())
 PY
 )"
-sage_site_packages="/host/sage-${AUDITWHEEL_PLAT}/lib/python${sage_python_version}/site-packages"
-sage_prefix="/host/sage-${AUDITWHEEL_PLAT}"
+sage_prefix="${SAGELITE_NATIVE_PREFIX:-/host/sage-fat-v1-${AUDITWHEEL_PLAT}}"
+sage_site_packages="${sage_prefix}/lib/python${sage_python_version}/site-packages"
 
 # The native prefix is intentionally retained between ABI builds, but its
 # virtual-environment interpreter links are not portable between CPython
@@ -211,12 +211,17 @@ export PYTHONPATH="${sage_site_packages}${PYTHONPATH:+:${PYTHONPATH}}"
 # builds depend on a benchmarking pass.
 export SAGE_FFLAS_FFPACK_SKIP_AUTOTUNE=yes
 
-if cp "/host/sage-${AUDITWHEEL_PLAT}/config.status" . 2>/dev/null; then
+if cp "${sage_prefix}/config.status" . 2>/dev/null; then
   chmod +x config.status
   source_version="$(cat VERSION.txt)"
   configured_version="$(sed -n 's/^S\["VERSION"\]="\(.*\)"$/\1/p' config.status)"
   configured_python_minor="$(sed -n 's/^S\["PYTHON_MINOR"\]="\(.*\)"$/\1/p' config.status)"
+  configured_fat_binary="$(sed -n 's/^S\["SAGE_FAT_BINARY"\]="\(.*\)"$/\1/p' config.status)"
   requested_python_minor="${sage_python_version#*.}"
+  if [ "${configured_fat_binary}" != "yes" ]; then
+    echo "Refusing non-fat cached native prefix ${sage_prefix}; use a new cache profile" >&2
+    exit 1
+  fi
   if [ "${configured_version}" != "${source_version}" ] || \
      [ "${configured_python_minor}" != "${requested_python_minor}" ]; then
     echo "Discarding cached config.status for Sage ${configured_version:-unknown} with Python 3.${configured_python_minor:-unknown}; source is ${source_version} with Python ${sage_python_version}"
@@ -227,8 +232,8 @@ fi
 if [ -x ./config.status ]; then
   ./config.status
 else
-  ./configure --disable-doc --enable-experimental-packages --enable-build-as-root --with-python="${SAGE_PYTHON}" --prefix="/host/sage-${AUDITWHEEL_PLAT}"
-  cp config.status prefix/
+  ./configure --disable-doc --enable-experimental-packages --enable-build-as-root --enable-fat-binary --with-python="${SAGE_PYTHON}" --prefix="${sage_prefix}"
+  cp config.status "${sage_prefix}/config.status"
 fi
 
 if [ -x "${sage_prefix}/bin/python3" ] && ! env -u PYTHONPATH "${sage_prefix}/bin/python3" -m pip --version >/dev/null 2>&1; then

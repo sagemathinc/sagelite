@@ -1,0 +1,62 @@
+# Sagelite Linux x86_64 CPU Portability Validation
+
+## 2026-07-21 Public Post9 SIGILL Diagnosis And Post64 Repair
+
+A Sage developer reported that the documented CPython 3.14 install command on
+Debian testing terminated during `from sage.all import *` with `SIGILL`.  The
+reported crash trace is preserved at `/home/user/scratch/sagelite`:
+
+```text
+size:   7,777 bytes
+sha256: acf7c40979f997a07d4dea37e058ea0dacb0c6df9c110d819c4176f03445a482
+```
+
+The first failing native frame is `__gmpn_sqr_basecase`, reached while
+`sage.misc.randstate` initializes GMP's random state.  The later cysignals
+frames and its missing-Cython diagnostic are crash-reporting behavior, not the
+source of the illegal instruction.
+
+The exact public CPython 3.14 wheel was downloaded to
+`/scratch/sagelite-cpu-diagnosis/sagelite-post9-cp314.whl`:
+
+```text
+filename: sagelite-10.9.post9-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:     244,864,035 bytes
+sha256:   0fe0a862dd0ec00b860d97d18df55995f5f54de6d2757e45a1d1047ed25c3e7c
+```
+
+Its bundled `libgmp-cf1565e2.so.10.5.0` has SHA256
+`2aa2677d980a53710bed8127b6f884f2982fd7c37e2c45994c140c810f8ad8a5`.
+`objdump -d -M intel --disassemble=__gmpn_sqr_basecase` shows unconditional
+BMI2 and ADX instructions including `mulx`, `shrx`, `sarx`, `adcx`, and
+`adox`.  The library has no `__gmpn_cpuvec_init` dynamic-dispatch symbol.  The
+same wheel bundles a 40,595,993-byte library named
+`libopenblas_zenp-r0-40fa294e.3.28.so`, confirming that OpenBLAS also selected
+the AMD Zen build host rather than a portable runtime-dispatch build.
+
+The Linux wheel hook previously configured Sage without
+`--enable-fat-binary`.  Sage's existing package recipes use that setting to
+enable GMP `--enable-fat`, OpenBLAS `DYNAMIC_ARCH=1`, and non-native modes for
+NTL, FFLAS-FFPACK, and other CPU-sensitive dependencies.  The public Linux
+x86_64 wheels and the retained local Linux x86_64 baselines are therefore
+rejected as portability evidence even where they passed on the build host.
+
+The `10.9.post64` working repair:
+
+- configures all Linux wheel prefixes with `--enable-fat-binary`;
+- moves the persistent native build into the new isolated profile
+  `/host/sage-fat-v1-${AUDITWHEEL_PLAT}` so no old tuned library or install
+  marker can be reused;
+- passes that exact profile through compile, link, repair, and companion-wheel
+  staging paths;
+- checks cached `config.status` for `SAGE_FAT_BINARY=yes` and fails closed if
+  an incompatible configuration is ever found in the fat profile.
+
+Focused validation passed shell syntax checks, `git diff --check`, and five
+Linux wheel-hook metadata tests. The complete companion-metadata file reported
+261 passes plus three unrelated pre-existing failures involving stale generated
+Flatter metadata and the already-absent Regina dependency. No repaired
+`post64` wheel, old-CPU smoke, fresh install, or doctest pass is claimed yet.
+The first authoritative Linux x86_64 build must start from the new empty fat
+profile, and acceptance must add an x86_64 baseline probe without BMI2 or ADX
+in addition to the standard fresh short and full gates.

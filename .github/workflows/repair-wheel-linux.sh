@@ -2548,7 +2548,7 @@ if [ -z "${AUDITWHEEL_PLAT:-}" ]; then
   exit 1
 fi
 
-prefix="/host/sage-${AUDITWHEEL_PLAT}"
+prefix="${SAGELITE_NATIVE_PREFIX:-/host/sage-fat-v1-${AUDITWHEEL_PLAT}}"
 if [ ! -d "$prefix" ]; then
   echo "bootstrap prefix not found: $prefix" >&2
   exit 1

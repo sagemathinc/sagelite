@@ -3363,6 +3363,26 @@ canonical checkout, its local tracking ref, and the directly queried
 `16d6d78012a` remains the selected release candidate, and the six Linux
 aarch64 and macOS arm64 cells remain synchronized and accepted.
 
+A Sage developer then reported a reproducible `SIGILL` during the documented
+public Linux x86_64 CPython 3.14 `post9` import. The preserved backtrace enters
+`__gmpn_sqr_basecase` while `sage.misc.randstate` initializes. Inspection of
+the exact 244,864,035-byte public wheel proved that its bundled GMP executes
+BMI2 and ADX instructions unconditionally and lacks fat-binary CPU dispatch;
+its bundled OpenBLAS name also records the Zen build-host target. The Linux
+wheel hook had omitted Sage's existing `--enable-fat-binary` contract. All
+public and local Linux x86_64 wheels from that tuned native prefix are rejected
+as broad CPU-portability evidence, including earlier full passes on newer
+hosts.
+
+The `10.9.post64` working repair enables fat-binary mode, moves every Linux
+compile, link, repair, and companion path to the isolated persistent profile
+`/host/sage-fat-v1-${AUDITWHEEL_PLAT}`, and refuses any cached configuration
+whose recorded `SAGE_FAT_BINARY` is not `yes`. Focused shell and metadata tests
+pass. No `post64` wheel or validation result is claimed yet. The first exact
+pushed build must use the new empty profile, and Linux x86_64 acceptance now
+requires an explicit old-CPU baseline probe without BMI2 or ADX. Detailed
+evidence is in `agents/sagelite-linux-x86_64-cpu-portability-validation.md`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -3431,15 +3451,17 @@ Status meanings:
 
 - `full`: a full installed standard doctest baseline has passed;
 - `smoke`: fresh install, `pip check`, and representative runtime tests pass;
+- `rejected`: earlier evidence violates a current acceptance requirement and
+  cannot be used for release certification;
 - `missing`: no current primary preview wheel exists;
 - a version in parentheses identifies the preview version that supplied the
   recorded evidence.
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post9` public); exact `post60` job unreconciled | full baseline; 3,953 modules and 0 failures on the earlier accepted build. Three confirmed bounded SSH attempts beginning at `2026-07-21T16:01:23Z`, `2026-07-21T16:01:47Z`, and `2026-07-21T16:02:09Z` timed out before a session was established, so the target could not be rechecked. The last successful read-only preflight at `2026-07-21T05:31:32Z` found the assigned `/mnt/cocalc-scratch` path on an essentially empty 20,957,446,144-byte ext4 filesystem with only 19,866,902,528 bytes free, far below the binary 100 GiB heavy-build threshold. The recorded exact `post60` run was absent. The separate `/mnt/cocalc` filesystem had 212,582,658,048 bytes free but is not the assigned build root; restored host access plus a qualifying assigned mount, or explicit approval of another automation root, is required | smoke (`post8`) |
-| Linux x86_64 | 3.13 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 192-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 930.2 seconds | smoke (`post8`) |
-| Linux x86_64 | 3.14 | yes (`post60`, local; `post9`, public) | full (`post60`); exact pushed source `22a2cb56739` produced a repaired primary and strict 181-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 914.9 seconds | smoke (`post9`) |
+| Linux x86_64 | 3.12 | `post64` rebuild required; `post9` public rejected for CPU portability | rejected; earlier full passes ran on newer CPUs against a non-fat GMP/OpenBLAS prefix and do not establish broad x86_64 compatibility. The new isolated fat-binary prefix requires a clean exact build, fresh short/full gates, and an old-CPU probe without BMI2 or ADX. The assigned builder must also regain a qualifying bulk filesystem | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
@@ -3470,19 +3492,19 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Exact pushed `post63` source `16d6d78012a` is the selected
-   release-candidate revision. Linux aarch64 CPython 3.12, 3.13, and 3.14 and
-   macOS arm64 CPython 3.12, 3.13, and 3.14 have completed the first six
-   synchronized full passes. Run the same fresh full contract across the
-   remaining three Linux x86_64 cells, selecting the highest-priority
-   available cell each iteration once the required bulk mount returns.
-   Reconcile the old Linux x86_64 CPython 3.12
-   `post60` job if its bulk mount returns, but rebuild and validate that cell
-   from exact `post63`; accepted `post60`, `post61`, and `post62` gates remain
-   baselines only.
-2. Validate the current optional-wheel-ready extra across all nine cells,
+1. The working `post64` fat-binary repair supersedes `post63` as the release
+   candidate because every existing Linux x86_64 wheel is rejected for CPU
+   portability. After the repair commit is pushed and verified, build Linux
+   x86_64 CPython 3.12 first from the new empty fat profile so it emits the
+   synchronized companion set, then build CPython 3.13 and 3.14. Each cell
+   requires both fresh standard gates and an explicit old-CPU probe without
+   BMI2 or ADX. Never reuse the old non-fat native prefix.
+2. Rebuild and rerun the six Linux aarch64 and macOS arm64 cells from the same
+   exact `post64` source revision. Their `post63` full passes remain useful
+   baselines but cannot complete a coherent `post64` matrix.
+3. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
-3. Resume systematic optional-package expansion in install-smoke batches.
+4. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected
@@ -3905,6 +3927,8 @@ not folded into the standard-suite pass rate.
   `agents/sagelite-copy-paste-preview-validation.md`
 - Linux x86_64 CPython 3.12 evidence:
   `agents/sagelite-linux-x86_64-cp312-validation.md`
+- Linux x86_64 CPU portability evidence:
+  `agents/sagelite-linux-x86_64-cpu-portability-validation.md`
 - Linux build matrix and CIBW contract: `.github/workflows/release.yml`
 - Wheelhouse validator: `tools/validate-sagelite-wheelhouse.py`
 - Installed doctest runner: `tools/run-installed-wheel-doctests.py`

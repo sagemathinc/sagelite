@@ -4755,6 +4755,22 @@ def test_linux_before_all_rejects_stale_cached_version_or_python_configuration()
     assert 'rm -f config.status' in before_all
 
 
+def test_linux_wheels_use_an_isolated_verified_fat_binary_native_prefix():
+    before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
+    repair = (ROOT / ".github/workflows/repair-wheel-linux.sh").read_text()
+    release = (ROOT / ".github/workflows/release.yml").read_text()
+    profile = "/host/sage-fat-v1-${AUDITWHEEL_PLAT}"
+
+    assert f'${{SAGELITE_NATIVE_PREFIX:-{profile}}}' in before_all
+    assert f'${{SAGELITE_NATIVE_PREFIX:-{profile}}}' in repair
+    assert f"SAGELITE_NATIVE_PREFIX={profile}" in release
+    assert "--enable-fat-binary" in before_all
+    assert 'configured_fat_binary="$(sed -n' in before_all
+    assert '[ "${configured_fat_binary}" != "yes" ]' in before_all
+    assert "Refusing non-fat cached native prefix" in before_all
+    assert 'cp config.status "${sage_prefix}/config.status"' in before_all
+
+
 def test_linux_before_all_resets_cross_python_cached_venv_interpreter():
     before_all = (ROOT / ".github/workflows/cibw-before-all-linux.sh").read_text()
 
