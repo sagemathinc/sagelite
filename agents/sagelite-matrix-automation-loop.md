@@ -3383,6 +3383,20 @@ pushed build must use the new empty profile, and Linux x86_64 acceptance now
 requires an explicit old-CPU baseline probe without BMI2 or ADX. Detailed
 evidence is in `agents/sagelite-linux-x86_64-cpu-portability-validation.md`.
 
+The repair was then committed, pushed, and verified as exact `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a`. Read-only preflight at
+`2026-07-21T20:26:42Z` reached `host` as native Linux `x86_64`, but the
+assigned `/mnt/cocalc-scratch` path was absent. The 24,883,167,232-byte root
+filesystem had only 9,356,034,048 bytes free. The unassigned `/mnt/cocalc`
+bulk filesystem had 83,968,516,096 bytes free, below the binary 100 GiB
+heavy-build threshold. The historical `post60` run was absent; its old service
+names were not found and inactive. Docker was absent, Podman had no active
+containers, and an unrelated CoWasm build was active outside the assigned
+automation scope. No remote state was changed and no `post64` build was
+started. The public manifest fetched at `2026-07-21T20:26:41Z` remains the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with no
+`post64` artifact.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -3459,7 +3473,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | `post64` rebuild required; `post9` public rejected for CPU portability | rejected; earlier full passes ran on newer CPUs against a non-fat GMP/OpenBLAS prefix and do not establish broad x86_64 compatibility. The new isolated fat-binary prefix requires a clean exact build, fresh short/full gates, and an old-CPU probe without BMI2 or ADX. The assigned builder must also regain a qualifying bulk filesystem | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | `post64` rebuild required; `post9` public rejected for CPU portability | rejected; earlier full passes ran on newer CPUs against a non-fat GMP/OpenBLAS prefix and do not establish broad x86_64 compatibility. Exact pushed repair source is `014ae4bf443`. At `2026-07-21T20:26:42Z`, `host` was native x86_64 but the assigned `/mnt/cocalc-scratch` path was absent; root had 9,356,034,048 bytes free and unassigned `/mnt/cocalc` had 83,968,516,096 bytes free, below the binary 100 GiB threshold. The new isolated fat-binary prefix requires a clean exact build, fresh short/full gates, and an old-CPU probe without BMI2 or ADX | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
@@ -3492,13 +3506,14 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. The working `post64` fat-binary repair supersedes `post63` as the release
-   candidate because every existing Linux x86_64 wheel is rejected for CPU
-   portability. After the repair commit is pushed and verified, build Linux
-   x86_64 CPython 3.12 first from the new empty fat profile so it emits the
-   synchronized companion set, then build CPython 3.13 and 3.14. Each cell
-   requires both fresh standard gates and an explicit old-CPU probe without
-   BMI2 or ADX. Never reuse the old non-fat native prefix.
+1. Exact pushed `post64` source `014ae4bf443` supersedes `post63` as the
+   release candidate because every existing Linux x86_64 wheel is rejected
+   for CPU portability. Once the assigned bulk filesystem returns with at
+   least 100 GiB free, build Linux x86_64 CPython 3.12 first from the new empty
+   fat profile so it emits the synchronized companion set, then build CPython
+   3.13 and 3.14. Each cell requires both fresh standard gates and an explicit
+   old-CPU probe without BMI2 or ADX. Never reuse the old non-fat native
+   prefix.
 2. Rebuild and rerun the six Linux aarch64 and macOS arm64 cells from the same
    exact `post64` source revision. Their `post63` full passes remain useful
    baselines but cannot complete a coherent `post64` matrix.
