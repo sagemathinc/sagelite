@@ -1,5 +1,35 @@
 # Sagelite Linux x86_64 CPU Portability Validation
 
+## 2026-07-22 Exact Post64 Fat-Binary Build Started
+
+The assigned `/mnt/cocalc-scratch` mount returned as a
+527,297,863,680-byte ext4 filesystem with 191,941,595,136 bytes free during
+the `2026-07-22T17:50:15Z` reconciliation. The old `post60` run was visible
+but interrupted during primary compilation with no exit-code and no wheel, so
+it supplies no evidence.
+
+An initial exact-`post64` launch was stopped and rejected before native
+compilation when live configuration exposed a doubled explicit overlay
+destination. It produced zero wheels, and its artifacts are preserved at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175330-014ae4bf443`.
+The fresh authoritative replacement is active at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`
+under `sagelite-post64-x86-cp312-build-r1.service` and its guarded watcher.
+
+The replacement uses exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` from a verified
+146,483,200-byte archive with SHA256
+`a7ce677432f01cff16fd93d88f6c12f3d988464d76a2c79aa215165d5df047ed`.
+The persistent `sage-fat-v1-manylinux_2_28_x86_64` profile was absent before
+the iteration and empty at launch. The actual manylinux environment reports
+Linux `x86_64` and CPython 3.12.13, and Docker inspection proves that the
+profile is over-mounted read/write at the exact path selected by the `post64`
+hooks. The guarded validation adds a QEMU Nehalem probe that executes CPUID
+leaf 7, asserts both BMI2 and ADX bits are absent, then imports Sage and
+exercises representative GMP, polynomial, and dense real-matrix operations.
+The normal strict short and full gates remain required after that probe. No
+wheel or pass is claimed yet.
+
 ## 2026-07-22 15:31 UTC Assigned Mount Still Absent
 
 Read-only preflight reached `host` on its first bounded attempt at

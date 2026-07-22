@@ -1,5 +1,51 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-22 Exact Post64 Fat-Binary Build Started At 17:59 UTC
+
+Read-only reconciliation at `2026-07-22T17:50:15Z` reached `host` as native
+Linux `x86_64` and found the assigned `/mnt/cocalc-scratch` mount restored.
+It is a 527,297,863,680-byte ext4 filesystem and initially had
+191,941,595,136 bytes free. The historical `post60` run root was visible
+again but contained no exit-code and no wheel; its log ended during primary
+compilation. Its service names were not found, Docker was idle through
+non-interactive `sudo`, and no Sagelite or cibuildwheel process was active.
+No result is inferred from that interrupted run.
+
+The first exact `post64` launch is preserved at
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175330-014ae4bf443`.
+It was deliberately stopped before native compilation after the live
+cibuildwheel configuration showed that its explicit write-overlay destination
+had been mechanically doubled to
+`/host/sage-fat-v1-fat-v1-manylinux_2_28_x86_64`. It produced zero wheels.
+The logs, source input, rejection metadata, and 309-byte partial prefix remain
+preserved; its service exit-code artifacts are explicitly not success evidence
+because its EXIT traps ran during the operator stop.
+
+The authoritative fresh replacement is
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`.
+Its exact clean checkout is pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` (`10.9.post64`), with committed
+tree `08c39ac15ef341f68af0676dfb4f9b61de0010db`. The 146,483,200-byte exact
+shallow-repository archive has SHA256
+`a7ce677432f01cff16fd93d88f6c12f3d988464d76a2c79aa215165d5df047ed`.
+The new persistent prefix
+`/mnt/cocalc-scratch/sagelite-manylinux-prefixes/sage-fat-v1-manylinux_2_28_x86_64`
+was absent before this iteration and had zero entries at launch. Available
+capacity was 188,728,115,200 bytes.
+
+The durable build and watcher are active as
+`sagelite-post64-x86-cp312-build-r1.service` and
+`sagelite-post64-x86-cp312-watch-r1.service`. The actual manylinux container
+reports Linux `x86_64` and CPython 3.12.13. Docker mount inspection proves
+that the exact empty fat profile is mounted read/write at
+`/host/sage-fat-v1-manylinux_2_28_x86_64`, and the live log entered bootstrap
+setup through that corrected path. The watcher will assemble the strict
+closure only after build success, then run a QEMU Nehalem probe whose CPUID
+check asserts that BMI2 and ADX are absent before importing Sage and exercising
+GMP, polynomial, and dense real-matrix paths. Independent fresh short and full
+gates follow only if that portability probe passes. No `post64` wheel,
+validation pass, cell acceptance, or publication is claimed yet.
+
 ## 2026-07-22 Assigned Bulk Mount Still Absent At 17:31 UTC
 
 Read-only preflight reached `host` on its first bounded attempt at
