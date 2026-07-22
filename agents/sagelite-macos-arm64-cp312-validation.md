@@ -1,5 +1,34 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-22 Post64 Short Pass And Full Gate Progress
+
+The fresh short gate completed with exit code zero. Strict preflight accepted
+all 180 staged wheels, including all 68 requested companion projects. The
+binary-only `sagelite[all-needed-extras]==10.9.post64` installation, `pip
+check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953
+installed `--optional=sage` modules with zero failures, and packaged pytest
+with 226 passes and 5 skips all passed. The standard sweep took 480.1 seconds,
+and the validator exited zero after 1,750.217 seconds at
+`2026-07-22T21:11:29Z`.
+
+The guard launched a separately named fresh full gate at
+`2026-07-22T21:11:46Z` under tmux session
+`sagelite_cp312_post64_validate`. Read-only reconciliation at
+`2026-07-22T21:31:56Z` found both the validator and installed-doctest child
+active. Its independent binary-only install and `pip check` passed, the
+runtime summary reported zero dependency, host-executable, Python-path,
+source-path, or GAP-host-path leaks, and all 102 selftests passed before the
+unrestricted eight-thread sweep began. The durable log was growing and
+contained only slow-doctest warnings. `/Volumes/sage` retained 69,585,000 KiB
+free, above the 30 GiB test-only threshold. No full-gate pass, `post64` cell
+acceptance, or publication is claimed yet.
+
+At the same reconciliation, the authoritative Linux x86_64 build remained
+inaccessible because `host` again resolved `/mnt/cocalc-scratch` to its
+24,883,167,232-byte root filesystem. The public manifest remained the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with no
+`post64` artifact. No remote state was changed.
+
 ## 2026-07-22 Post64 Short Gate Progress
 
 Read-only reconciliation at `2026-07-22T21:01:20Z` found the guarded
