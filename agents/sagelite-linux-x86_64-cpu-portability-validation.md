@@ -1,5 +1,31 @@
 # Sagelite Linux x86_64 CPU Portability Validation
 
+## 2026-07-22 08:31 UTC Assigned Mount Still Absent
+
+Read-only preflight reached `host` on its first bounded attempt at
+`2026-07-22T08:31:54Z` and confirmed native Linux `x86_64`, but the assigned
+`/mnt/cocalc-scratch` path was absent. The 24,883,167,232-byte root filesystem
+had 9,527,115,776 bytes free. The only visible bulk filesystem,
+`/mnt/cocalc`, had 102,412,967,936 bytes free, 4,961,214,464 bytes below the
+binary 100 GiB heavy-build threshold and outside the runbook-assigned
+automation root.
+
+The historical `post60` run root was absent. Its service names were not found
+and were inactive with successful retained result and exit-status properties.
+Docker was absent, Podman had no active containers, and the process scan found
+no Sagelite automation work beyond the read-only preflight shell itself. No
+remote state was changed and no `post64` build was started.
+
+A direct public-manifest fetch at `2026-07-22T08:31:53Z` confirmed that
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` or `post64` artifact. Before this evidence edit, the canonical
+checkout, its local tracking ref, and the directly queried `origin/develop`
+remote ref were synchronized at `c71a20a955689749bbaa2bc0e7952659d0c57c50`.
+Exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a`
+remains ready for the first clean fat-binary CPython 3.12 build once the
+assigned filesystem returns with at least 100 GiB free.
+
 ## 2026-07-22 08:01 UTC Assigned Mount Still Absent
 
 Read-only preflight reached `host` on its first bounded attempt at
