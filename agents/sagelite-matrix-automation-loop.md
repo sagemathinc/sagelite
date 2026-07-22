@@ -4223,7 +4223,15 @@ still active with their original build and watcher PIDs. The command log had
 grown through `2026-07-22T19:00:25Z`; GAP3 completed successfully and Gfan
 installation began. The isolated fat prefix had grown to 2,876,896,785 bytes,
 and the assigned filesystem retained 177,204,658,176 bytes free. No wheel,
-build exit-code, or validation summary existed. The guarded validator
+build exit-code, or validation summary existed. Read-only reconciliation at
+`2026-07-22T19:31:09Z` again found the exact clean source and both durable
+services active. The same native `x86_64` manylinux container reported CPython
+3.12.13, and Docker inspection reconfirmed that the isolated fat profile was
+mounted read/write at the intended path. The log had grown through
+`2026-07-22T19:30:48Z`; `msolve` completed successfully and `fplll`
+installation began. The prefix had grown to 4,050,336,312 bytes, and the
+assigned filesystem retained 176,123,146,240 bytes free. No wheel, exit-code,
+or validation summary existed. The guarded validator
 will require the deterministic strict closure, a QEMU Nehalem probe whose
 CPUID assertion proves BMI2 and ADX are absent, and independent fresh short
 and full gates. No `post64` wheel, validation pass, cell acceptance, or
@@ -4306,7 +4314,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned bulk mount returned with sufficient space. Exact pushed source `014ae4bf443` is building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; the actual container reports Linux `x86_64`, CPython 3.12.13, and the correct prefix over-mounted read/write. Native prerequisites through LinBox and GAP3 completed and Gfan installation began; its watcher requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned bulk mount returned with sufficient space. Exact pushed source `014ae4bf443` is building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; the actual container reports Linux `x86_64`, CPython 3.12.13, and the correct prefix over-mounted read/write. Native prerequisites through `msolve` completed and `fplll` installation began; its watcher requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |

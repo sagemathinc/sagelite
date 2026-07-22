@@ -53,7 +53,16 @@ services still active with their original build and watcher PIDs. The command
 log had grown through `2026-07-22T19:00:25Z`; GAP3 completed successfully and
 Gfan installation began. The isolated fat prefix had grown to 2,876,896,785
 bytes, while the assigned filesystem retained 177,204,658,176 bytes free. No
-wheel, build exit-code, or validation summary existed.
+wheel, build exit-code, or validation summary existed. Read-only
+reconciliation at `2026-07-22T19:31:09Z` again found exact source
+`014ae4bf44318b6f5032053957a92291d4363b7a` clean and both durable services
+active with their original PIDs. The same manylinux container remained up,
+reported native Linux `x86_64` with CPython 3.12.13, and retained the intended
+fat-profile mount read/write. The command log had grown through
+`2026-07-22T19:30:48Z`; `msolve` completed successfully and `fplll`
+installation began. The isolated prefix had grown to 4,050,336,312 bytes, and
+the assigned filesystem retained 176,123,146,240 bytes free. No wheel,
+build exit-code, or validation summary existed.
 
 The watcher will assemble the strict
 closure only after build success, then run a QEMU Nehalem probe whose CPUID
