@@ -1,5 +1,28 @@
 # Sagelite Linux x86_64 CPU Portability Validation
 
+## 2026-07-22 09:31 UTC Host Unreachable
+
+Three confirmed bounded SSH connection attempts to the required `host` alias
+began at `2026-07-22T09:31:40Z`, `2026-07-22T09:32:04Z`, and
+`2026-07-22T09:32:24Z`. All three timed out before a session was established.
+The assigned filesystem, historical CPython 3.12 `post60` artifacts, service
+state, container state, and process state therefore could not be rechecked.
+The last successful read-only preflight remains the
+`2026-07-22T08:31:54Z` evidence: `/mnt/cocalc-scratch` was absent, while the
+unassigned `/mnt/cocalc` filesystem had 102,412,967,936 bytes free,
+4,961,214,464 bytes below the binary 100 GiB heavy-build threshold. No remote
+state was changed and no `post64` build was started.
+
+A direct public-manifest fetch at `2026-07-22T09:31:20Z` confirmed that
+`dev/manifest.json` remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post63` or `post64` artifact. Before this evidence edit, the canonical
+checkout, its local tracking ref, and the directly queried `origin/develop`
+remote ref were synchronized at `bbffe12a763c853d2091311c56b56f123e1ca146`.
+Exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a`
+remains ready for the first clean fat-binary CPython 3.12 build once the
+assigned filesystem returns with at least 100 GiB free.
+
 ## 2026-07-22 09:01 UTC Host Unreachable
 
 Three confirmed bounded SSH connection attempts to the required `host` alias
