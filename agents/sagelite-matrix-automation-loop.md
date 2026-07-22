@@ -4363,6 +4363,22 @@ canonical checkout, local tracking ref, and directly queried
 `origin/develop` ref were synchronized at
 `37849d6d9c0394e4ef0f1c20a83b789c7b5c1335`. No artifact was published.
 
+Read-only reconciliation at `2026-07-22T22:30:55Z` again reached `host` as
+native Linux `x86_64`, but the assigned `/mnt/cocalc-scratch` run remained
+invisible because that path resolved to the 24,883,167,232-byte root
+filesystem with 14,641,491,968 bytes free. The authoritative `post64` run was
+left untouched, and no result was inferred from not-found inactive service
+properties on the currently reached machine. No active container or matching
+Sagelite process was visible. The separate `/mnt/cocalc` volume had
+78,554,972,160 bytes free, below the binary 100 GiB heavy-build threshold and
+outside the runbook-assigned root. The directly fetched public manifest
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact. Before this checkpoint edit, the canonical checkout,
+its local tracking ref, and the directly queried `origin/develop` ref were
+synchronized at `4024ba1d60c50fc23690dd450e6bc4eedb743b9f`. No artifact was
+published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
