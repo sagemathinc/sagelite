@@ -4208,11 +4208,14 @@ The required persistent fat profile was empty at launch, with
 188,728,115,200 bytes free on the assigned filesystem. The actual manylinux
 container reports Linux `x86_64` and CPython 3.12.13, and Docker inspection
 proves that the exact profile is over-mounted read/write at
-`/host/sage-fat-v1-manylinux_2_28_x86_64`. The guarded validator will require
-the deterministic strict closure, a QEMU Nehalem probe whose CPUID assertion
-proves BMI2 and ADX are absent, and independent fresh short and full gates.
-No `post64` wheel, validation pass, cell acceptance, or publication is claimed
-yet. The public manifest remains the 177-wheel set generated on 2026-07-09.
+`/host/sage-fat-v1-manylinux_2_28_x86_64`. The live log then ran the exact
+`./configure` command with `--enable-fat-binary`, copied its configuration into
+the persistent profile, and entered GMP installation. The guarded validator
+will require the deterministic strict closure, a QEMU Nehalem probe whose
+CPUID assertion proves BMI2 and ADX are absent, and independent fresh short
+and full gates. No `post64` wheel, validation pass, cell acceptance, or
+publication is claimed yet. The public manifest remains the 177-wheel set
+generated on 2026-07-09.
 
 ## Scratch Layout
 

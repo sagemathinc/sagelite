@@ -38,13 +38,15 @@ The durable build and watcher are active as
 `sagelite-post64-x86-cp312-watch-r1.service`. The actual manylinux container
 reports Linux `x86_64` and CPython 3.12.13. Docker mount inspection proves
 that the exact empty fat profile is mounted read/write at
-`/host/sage-fat-v1-manylinux_2_28_x86_64`, and the live log entered bootstrap
-setup through that corrected path. The watcher will assemble the strict
+`/host/sage-fat-v1-manylinux_2_28_x86_64`. The live log then ran `./configure`
+with `--enable-fat-binary`, copied `config.status` into that persistent
+profile, and entered GMP installation. The watcher will assemble the strict
 closure only after build success, then run a QEMU Nehalem probe whose CPUID
-check asserts that BMI2 and ADX are absent before importing Sage and exercising
-GMP, polynomial, and dense real-matrix paths. Independent fresh short and full
-gates follow only if that portability probe passes. No `post64` wheel,
-validation pass, cell acceptance, or publication is claimed yet.
+check asserts that BMI2 and ADX are absent before importing Sage and
+exercising GMP, polynomial, and dense real-matrix paths. Independent fresh
+short and full gates follow only if that portability probe passes. No
+`post64` wheel, validation pass, cell acceptance, or publication is claimed
+yet.
 
 ## 2026-07-22 Assigned Bulk Mount Still Absent At 17:31 UTC
 
