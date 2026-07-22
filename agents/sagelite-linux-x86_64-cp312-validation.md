@@ -1,5 +1,24 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-22 Assigned Bulk Run Became Inaccessible At 20:00 UTC
+
+Read-only reconciliation at `2026-07-22T20:00:59Z` again reached `host` as
+native Linux `x86_64`, but the assigned `/mnt/cocalc-scratch` filesystem was
+no longer mounted. The path resolved to the 24,883,167,232-byte root
+filesystem with 14,657,941,504 bytes free, and the authoritative `post64` run
+root was not visible. The build and watcher service names were inactive with
+retained `Result=success` and `ExecMainStatus=0`, but those properties are not
+accepted as evidence from the currently reached machine without the bulk run
+artifacts. No exit-code, wheel, validation file, active container, or
+Sagelite automation process was visible. No remote state was changed and no
+result was inferred from the inaccessible run.
+
+The directly fetched public `dev/manifest.json` remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with no `post64` artifact.
+The x86_64 run remains untouched pending restoration of its assigned mount.
+Independent work moved to an idle native macOS arm64 cell from the same exact
+pushed `post64` source; it does not duplicate the inaccessible x86_64 target.
+
 ## 2026-07-22 Exact Post64 Fat-Binary Build Started At 17:59 UTC
 
 Read-only reconciliation at `2026-07-22T17:50:15Z` reached `host` as native

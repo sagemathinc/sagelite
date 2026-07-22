@@ -1,5 +1,41 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-22 Exact Post64 Synchronized Rebuild Start
+
+The scheduled iteration first reconciled the higher-priority Linux x86_64
+CPython 3.12 target. The `host` alias was reachable, but its assigned bulk
+mount and active `post64` run became inaccessible again. No x86_64 result was
+inferred and no duplicate x86_64 job was launched.
+
+Independent preflight found native macOS and its Linux aarch64 guest idle.
+The outer `/Volumes/sage` filesystem had 113,541,160 KiB free before source
+transfer. Exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` (`10.9.post64`) was archived as a
+144,131,658-byte tarball with SHA256
+`8029bc4e83392f3ac4a5bed0865511f664b16871350eba2d56be60a8c9f65311`.
+The first copy was incomplete and was rejected by its size and SHA256 guard;
+the successful replacement matches both expected values. The final launch
+guard recorded 113,375,936 KiB, or 116,096,958,464 bytes, free.
+
+The exact native macOS arm64 CPython 3.12.13 build is active under tmux
+session `sagelite_cp312_post64_build`, with recorded PID 87378, at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260722-200600-014ae4bf443
+```
+
+Its independently materialized clean source tree is
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`. The proven build launcher has
+SHA256 `6e3e8efafe83375b2809db1b3a09c58e9abf8c67a99efb6ef17019ba177c104f`
+and reuses the retained native prefix at
+`/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260716-021120-d75dd63d011`.
+The recorded environment is Darwin `arm64` with CPython 3.12.13. The durable
+log completed sdist construction and Meson configuration, then entered the
+1,795-target native wheel build. The accepted `post63` strict closure remains
+intact for companion inputs after a successful primary build. No `post64`
+wheel, strict closure, validation pass, cell acceptance, or publication is
+claimed yet.
+
 ## 2026-07-19 Post63 Full Acceptance
 
 The guarded validator completed both independent fresh gates and exited zero
