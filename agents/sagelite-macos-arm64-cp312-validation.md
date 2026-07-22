@@ -1,5 +1,47 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-22 Post64 Build Complete And Strict Validation Start
+
+The exact-source native build completed with exit code zero at
+`2026-07-22T20:18:00Z`. Repair injected 2,079 native headers, rewrote 23
+companion dependencies in 16 Mach-O files, and audited 1,176 dependencies
+across 637 Mach-O files. It produced:
+
+```text
+sagelite-10.9.post64-cp312-cp312-macosx_26_0_arm64.whl
+  102,262,120 bytes
+  a4d8b24884ea7ba92a4fa2460369d825e1d263608c1581d76dc36b758e2ecbdc
+```
+
+The deterministic strict closure completed with exit code zero at
+`2026-07-22T20:38:18Z`. It selected all 180 staged projects and removed none:
+one primary, 68 companions, and 111 third-party wheels totaling
+13,896,962,322 bytes. Its `SHA256SUMS` inventory has SHA256
+`7961a64cd47a691ed9367cd25b1a90c70bd2aa94d481c7ca72db15d0e0c765c4`,
+and the independent pip resolution report has SHA256
+`00cc8e1fde73d815dec46a1f6f387ddfa7fae58ffd667d6cf59b9e78629be31c`.
+An independent prevalidation recheck verified all 180 wheel hashes.
+
+One guarded validator is active under tmux session
+`sagelite_cp312_post64_validate`, with recorded PID 70010. It started at
+`2026-07-22T20:42:02Z` and runs a separate fresh full gate only after a zero
+short-gate exit. Both commands use the exact checksummed closure, strict
+macOS wheelhouse preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, a neutral
+environment, runtime isolation, every selftest, packaged pytest, and the
+installed `--optional=sage` module sweep. The explicitly recorded macOS
+environment includes `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`. At this
+checkpoint the fresh short gate had entered deterministic wheel-only
+resolution. No short-gate pass, full-suite pass, cell acceptance, or
+publication is claimed yet.
+
+The source, repaired wheel, strict closure, and active validation evidence are
+retained at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260722-200600-014ae4bf443/
+```
+
 ## 2026-07-22 Exact Post64 Synchronized Rebuild Start
 
 The scheduled iteration first reconciled the higher-priority Linux x86_64
