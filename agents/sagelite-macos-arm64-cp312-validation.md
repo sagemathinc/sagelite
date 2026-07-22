@@ -1,5 +1,26 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-22 Post64 Short Gate Progress
+
+Read-only reconciliation at `2026-07-22T21:01:20Z` found the guarded
+validator and its installed-doctest child still active under tmux session
+`sagelite_cp312_post64_validate`. The short gate's strict preflight accepted
+all 180 staged wheels, including all 68 requested companion projects. Its
+fresh binary-only `sagelite[all-needed-extras]==10.9.post64` installation and
+`pip check` both exited zero, the runtime manifest was created, and all 102
+selftest checks completed before the installed `--optional=sage` sweep began.
+The live runner is testing 3,953 modules with eight threads and the durable log
+contains only slow-doctest warnings so far. No gate exit code or reduced
+analysis exists yet, so no short-gate pass, full-suite pass, cell acceptance,
+or publication is claimed.
+
+At the same reconciliation, `/Volumes/sage` retained 89,776,816 KiB free,
+well above the 30 GiB test-only threshold. The higher-priority x86_64 run
+remained inaccessible because `host` again resolved `/mnt/cocalc-scratch` to
+its 24,883,167,232-byte root filesystem. The public manifest remained the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with no
+`post64` artifact. No remote state was changed.
+
 ## 2026-07-22 Post64 Build Complete And Strict Validation Start
 
 The exact-source native build completed with exit code zero at

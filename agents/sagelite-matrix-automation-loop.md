@@ -4289,6 +4289,25 @@ inaccessible x86_64 run was left untouched. A direct public-manifest fetch
 confirmed the unchanged 177-wheel set generated on 2026-07-09, with fourteen
 Sagelite primary wheels and no `post64` artifact.
 
+Read-only reconciliation at `2026-07-22T21:01:20Z` found the guarded macOS
+arm64 CPython 3.12 validator and its installed-doctest child still active under
+tmux session `sagelite_cp312_post64_validate`. The short gate's strict
+preflight accepted all 180 staged wheels and all 68 requested companion
+projects. Its fresh binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation and `pip check` exited
+zero, the runtime manifest was created, and all 102 selftest checks completed.
+The live eight-thread `--optional=sage` sweep is testing 3,953 installed
+modules, with only slow-doctest warnings recorded so far. `/Volumes/sage` had
+89,776,816 KiB free, above the 30 GiB test-only threshold. No gate exit code or
+reduced analysis existed, so no short or full pass, cell acceptance, or
+publication is claimed. The same reconciliation again reached `host` as
+native Linux `x86_64`, but `/mnt/cocalc-scratch` resolved to its
+24,883,167,232-byte root filesystem with 14,652,166,144 bytes free. The
+inaccessible x86_64 run was left untouched. The directly fetched public
+manifest remained the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with no `post64` artifact. No remote state
+was changed.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4371,7 +4390,7 @@ Status meanings:
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
-| macOS arm64 | 3.12 | exact `post64` primary and strict closure built; yes (`post63`, local; `post9`, public) | full (`post63`) baseline; exact pushed `post64` source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. All closure hashes passed an independent recheck, and the guarded fresh short gate is active under tmux session `sagelite_cp312_post64_validate`; a separate fresh full gate follows only after a zero short-gate exit. No `post64` validation pass or cell acceptance is claimed yet | smoke (`post8`) |
+| macOS arm64 | 3.12 | exact `post64` primary and strict closure built; yes (`post63`, local; `post9`, public) | full (`post63`) baseline; exact pushed `post64` source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. All closure hashes passed an independent recheck. The guarded fresh short gate passed strict preflight, wheel-only installation, `pip check`, and all selftests, then entered the 3,953-module installed standard sweep under tmux session `sagelite_cp312_post64_validate`; a separate fresh full gate follows only after a zero short-gate exit. No `post64` validation pass or cell acceptance is claimed yet | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 732.6 seconds; this is the fifth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 168-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 788.7 seconds; this is the sixth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
