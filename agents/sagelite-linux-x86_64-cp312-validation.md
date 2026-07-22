@@ -1,5 +1,33 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-22 Assigned Bulk Mount Still Absent At 16:31 UTC
+
+Read-only preflight reached `host` on its first bounded attempt at
+`2026-07-22T16:31:25Z` as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path was absent. The 24,883,167,232-byte root filesystem
+had only 9,316,007,936 bytes free. The unassigned `/mnt/cocalc` btrfs
+filesystem had 109,651,382,272 bytes free, 2,277,199,872 bytes above the
+binary 100 GiB heavy-build threshold, but it remains outside the
+runbook-assigned automation root.
+
+The historical CPython 3.12 `post60` run root was absent. Its build and
+watcher service names were not found and were inactive with successful
+retained result and exit-status properties. Docker was absent, Podman had no
+active containers, and independent service and process scans found no
+Sagelite or cibuildwheel automation work. No remote state was changed and no
+Linux x86_64 build was started.
+
+A direct public-manifest fetch at `2026-07-22T16:31:43Z` confirmed that
+`dev/manifest.json` still contains 177 wheels, including fourteen Sagelite
+primary wheels and no `post63` or `post64` artifact. Its generation timestamp
+remains `2026-07-09T17:17:42.743310+00:00`. Before this evidence edit, the
+canonical checkout was clean on `develop` at
+`dacd58d463f30fcbb6c4f004848b1868f6be408f`, synchronized with its local
+tracking ref and the directly queried `origin/develop` remote ref. Exact
+pushed `post64` source `014ae4bf443` remains the selected release candidate.
+This cell remains blocked until a qualifying assigned bulk filesystem is
+restored or another automation root is explicitly approved.
+
 ## 2026-07-22 Assigned Bulk Mount Still Absent At 16:01 UTC
 
 Read-only preflight reached `host` on its first bounded attempt at
