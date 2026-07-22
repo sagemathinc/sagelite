@@ -47,7 +47,13 @@ manylinux container up for 30 minutes, and the command log growing through
 prerequisites through GF2X, NTL, and LinBox completed successfully, the log
 reported the Sage build/upgrade complete, and companion installation had
 entered GAP. The assigned filesystem still had 183,216,492,544 bytes free.
-No wheel or exit-code artifact existed.
+No wheel or exit-code artifact existed. A further read-only reconciliation at
+`2026-07-22T19:01:24Z` found the exact clean source checkout and both system
+services still active with their original build and watcher PIDs. The command
+log had grown through `2026-07-22T19:00:25Z`; GAP3 completed successfully and
+Gfan installation began. The isolated fat prefix had grown to 2,876,896,785
+bytes, while the assigned filesystem retained 177,204,658,176 bytes free. No
+wheel, build exit-code, or validation summary existed.
 
 The watcher will assemble the strict
 closure only after build success, then run a QEMU Nehalem probe whose CPUID
