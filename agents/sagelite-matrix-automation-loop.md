@@ -3807,6 +3807,25 @@ checkpoint edit, the canonical checkout, its local tracking ref, and the
 directly queried `origin/develop` remote ref were synchronized at
 `c71a20a955689749bbaa2bc0e7952659d0c57c50`.
 
+The next scheduled iteration made three confirmed bounded SSH connection
+attempts to the required `host` alias beginning at `2026-07-22T09:01:37Z`,
+`2026-07-22T09:01:56Z`, and `2026-07-22T09:02:14Z`. All three timed out before
+a session was established. The assigned filesystem, historical CPython 3.12
+`post60` artifacts, service state, container state, and process state could
+not be rechecked. The last successful read-only preflight remains the
+`2026-07-22T08:31:54Z` evidence: `/mnt/cocalc-scratch` was absent and the
+unassigned `/mnt/cocalc` filesystem had 102,412,967,936 bytes free,
+4,961,214,464 bytes below the binary 100 GiB heavy-build threshold. No remote
+state was changed and no `post64` build was started. A direct public-manifest
+fetch at `2026-07-22T09:01:37Z` confirmed that `dev/manifest.json` remains the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen
+Sagelite primary wheels and no `post63` or `post64` artifact. Before this
+checkpoint edit, the canonical checkout, its local tracking ref, and the
+directly queried `origin/develop` remote ref were synchronized at
+`b4f04be7789d9f81b93b3453dccdb21e75079a6b`. Exact pushed `post64` source
+`014ae4bf443` remains the selected release candidate, and the six Linux
+aarch64 and macOS arm64 cells remain synchronized and accepted at `post63`.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -3883,7 +3902,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | `post64` rebuild required; `post9` public rejected for CPU portability | rejected; earlier full passes ran on newer CPUs against a non-fat GMP/OpenBLAS prefix and do not establish broad x86_64 compatibility. Exact pushed repair source is `014ae4bf443`. At `2026-07-22T08:31:54Z`, `host` was native x86_64 but the assigned `/mnt/cocalc-scratch` path was absent; root had 9,527,115,776 bytes free and unassigned `/mnt/cocalc` had 102,412,967,936 bytes free, still 4,961,214,464 bytes below the binary 100 GiB threshold. The new isolated fat-binary prefix requires a clean exact build, fresh short/full gates, and an old-CPU probe without BMI2 or ADX | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | `post64` rebuild required; `post9` public rejected for CPU portability | rejected; earlier full passes ran on newer CPUs against a non-fat GMP/OpenBLAS prefix and do not establish broad x86_64 compatibility. Exact pushed repair source is `014ae4bf443`. Three bounded attempts beginning at `2026-07-22T09:01:37Z`, `09:01:56Z`, and `09:02:14Z` timed out. The last successful preflight at `08:31:54Z` found the assigned `/mnt/cocalc-scratch` path absent and unassigned `/mnt/cocalc` 4,961,214,464 bytes below the binary 100 GiB threshold. The new isolated fat-binary prefix requires a clean exact build, fresh short/full gates, and an old-CPU probe without BMI2 or ADX | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
