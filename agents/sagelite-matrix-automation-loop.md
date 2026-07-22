@@ -4336,6 +4336,33 @@ no `post64` artifact. Before this checkpoint edit, the canonical checkout,
 local tracking ref, and directly queried `origin/develop` ref were synchronized
 at `8fc7d6476053b81ba633917528b4b9b3253cf87e`. No artifact was published.
 
+Read-only reconciliation at `2026-07-22T22:01:02Z` found that the guarded
+macOS arm64 CPython 3.12 validator had completed with exit code zero. Both
+independent fresh gates passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 226
+passes and 5 skips. The unrestricted full sweep took 738.2 seconds, the
+independent reducer reported zero failed modules, and the full validator
+exited zero after 1,987.531 seconds. Exact pushed `post64` source
+`014ae4bf443` is accepted locally for macOS arm64 CPython 3.12 as the first
+synchronized full-pass cell for this release-candidate revision. A complete
+post-validation wheelhouse hash recheck passed. Precise cleanup retained the
+strict 180-wheel closure and complete evidence while restoring 110,509,896
+KiB free on `/Volumes/sage`.
+
+The same reconciliation reached `host` as native Linux `x86_64`, but the
+assigned `/mnt/cocalc-scratch` run remained invisible because the path
+resolved to the 24,883,167,232-byte root filesystem with 14,650,626,048 bytes
+free. The inaccessible x86_64 run was left untouched, and no result was
+inferred from not-found inactive service properties on the currently reached
+machine. The directly fetched public manifest remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels and no `post64` artifact. Before this checkpoint edit, the
+canonical checkout, local tracking ref, and directly queried
+`origin/develop` ref were synchronized at
+`37849d6d9c0394e4ef0f1c20a83b789c7b5c1335`. No artifact was published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4418,7 +4445,7 @@ Status meanings:
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
-| macOS arm64 | 3.12 | exact `post64` primary and strict closure built; yes (`post63`, local; `post9`, public) | full (`post63`) baseline; exact pushed `post64` source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. All closure hashes passed an independent recheck. The fresh short gate passed strict preflight, wheel-only installation, `pip check`, runtime isolation, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The separate fresh full gate passed installation, `pip check`, isolation, and all selftests, then entered the unrestricted module sweep under tmux session `sagelite_cp312_post64_validate`. No `post64` full pass or cell acceptance is claimed yet | smoke (`post8`) |
+| macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 732.6 seconds; this is the fifth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 168-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 788.7 seconds; this is the sixth synchronized full-pass cell from the selected `post63` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 

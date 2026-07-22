@@ -1,5 +1,38 @@
 # Sagelite macOS arm64 CPython 3.12 Validation
 
+## 2026-07-22 Post64 Full Acceptance
+
+The guarded validator completed both independent fresh gates and exited zero
+at `2026-07-22T21:44:54Z`. The short gate passed strict preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post64` installation, `pip
+check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953
+installed `--optional=sage` modules with zero failures, and packaged pytest
+with 226 passes and 5 skips. Its standard sweep took 480.1 seconds and the
+validator exited zero after 1,750.217 seconds.
+
+The separately named fresh full gate repeated that contract. Its unrestricted
+installed-module sweep passed all 3,953 modules with zero failures in 738.2
+seconds, packaged pytest again passed with 226 passes and 5 skips, and the
+independent reducer reported zero failed modules. The full validator exited
+zero after 1,987.531 seconds. Exact pushed `10.9.post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is accepted locally for macOS
+arm64 CPython 3.12 as the first synchronized full-pass cell for this
+release-candidate revision.
+
+An independent post-validation SHA256 recheck passed for all 180 wheels.
+Precise cleanup removed only the two completed validation installs and their
+neutral home directories while retaining the strict wheelhouse, exact source
+archive, build evidence, logs, summaries, runtime metadata, and reducer
+evidence. `/Volumes/sage` then had 110,509,896 KiB free. The public preview
+remains the unchanged 177-wheel set generated on 2026-07-09; no artifact was
+published.
+
+All retained acceptance evidence is at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp312-20260722-200600-014ae4bf443/
+```
+
 ## 2026-07-22 Post64 Short Pass And Full Gate Progress
 
 The fresh short gate completed with exit code zero. Strict preflight accepted
