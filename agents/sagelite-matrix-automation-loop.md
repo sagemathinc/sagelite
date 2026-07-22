@@ -4210,7 +4210,14 @@ container reports Linux `x86_64` and CPython 3.12.13, and Docker inspection
 proves that the exact profile is over-mounted read/write at
 `/host/sage-fat-v1-manylinux_2_28_x86_64`. The live log then ran the exact
 `./configure` command with `--enable-fat-binary`, copied its configuration into
-the persistent profile, and entered GMP installation. The guarded validator
+the persistent profile, and entered GMP installation. Read-only reconciliation
+at `2026-07-22T18:30:55Z` found both durable services active, the same
+manylinux container up for 30 minutes, and the command log growing through
+`2026-07-22T18:30:16Z`. The isolated fat prefix had grown to 2.1 GiB. Native
+prerequisites through GF2X, NTL, and LinBox completed successfully, the log
+reported the Sage build/upgrade complete, and companion installation had
+entered GAP. The assigned filesystem had 183,216,492,544 bytes free. No
+wheel or exit-code artifact existed. The guarded validator
 will require the deterministic strict closure, a QEMU Nehalem probe whose
 CPUID assertion proves BMI2 and ADX are absent, and independent fresh short
 and full gates. No `post64` wheel, validation pass, cell acceptance, or
@@ -4293,7 +4300,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned bulk mount returned with sufficient space. Exact pushed source `014ae4bf443` is building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; the actual container reports Linux `x86_64`, CPython 3.12.13, and the correct prefix over-mounted read/write. Its watcher requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned bulk mount returned with sufficient space. Exact pushed source `014ae4bf443` is building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; the actual container reports Linux `x86_64`, CPython 3.12.13, and the correct prefix over-mounted read/write. Native prerequisites through LinBox completed and GAP installation began; its watcher requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |

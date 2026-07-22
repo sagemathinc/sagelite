@@ -40,7 +40,16 @@ reports Linux `x86_64` and CPython 3.12.13. Docker mount inspection proves
 that the exact empty fat profile is mounted read/write at
 `/host/sage-fat-v1-manylinux_2_28_x86_64`. The live log then ran `./configure`
 with `--enable-fat-binary`, copied `config.status` into that persistent
-profile, and entered GMP installation. The watcher will assemble the strict
+profile, and entered GMP installation. Read-only reconciliation at
+`2026-07-22T18:30:55Z` found both durable services still active, the same
+manylinux container up for 30 minutes, and the command log growing through
+`2026-07-22T18:30:16Z`. The isolated fat prefix had grown to 2.1 GiB. Native
+prerequisites through GF2X, NTL, and LinBox completed successfully, the log
+reported the Sage build/upgrade complete, and companion installation had
+entered GAP. The assigned filesystem still had 183,216,492,544 bytes free.
+No wheel or exit-code artifact existed.
+
+The watcher will assemble the strict
 closure only after build success, then run a QEMU Nehalem probe whose CPUID
 check asserts that BMI2 and ADX are absent before importing Sage and
 exercising GMP, polynomial, and dense real-matrix paths. Independent fresh

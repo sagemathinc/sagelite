@@ -26,7 +26,12 @@ Linux `x86_64` and CPython 3.12.13, and Docker inspection proves that the
 profile is over-mounted read/write at the exact path selected by the `post64`
 hooks. The live build then ran `./configure` with `--enable-fat-binary`, copied
 the resulting configuration into the persistent profile, and entered GMP
-installation. The guarded validation adds a QEMU Nehalem probe that executes
+installation. At the `2026-07-22T18:30:55Z` reconciliation, both durable
+services and the same manylinux container remained active, the isolated fat
+prefix had grown to 2.1 GiB, and the live log had completed native
+prerequisites through GF2X, NTL, and LinBox before entering GAP installation.
+No wheel or exit-code artifact existed. The guarded validation adds a QEMU
+Nehalem probe that executes
 CPUID leaf 7, asserts both BMI2 and ADX bits are absent, then imports Sage and
 exercises representative GMP, polynomial, and dense real-matrix operations.
 The normal strict short and full gates remain required after that probe. No
