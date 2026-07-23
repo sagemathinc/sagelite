@@ -74,6 +74,15 @@ strict closure and run independent fresh short and full gates only after a
 zero build exit.  No replacement wheel, validation pass, cell acceptance, or
 publication is claimed yet.
 
+Read-only reconciliation at `2026-07-23T05:31:30Z` found both replacement
+services still loaded and active with the same build PID `2878432` and watcher
+PID `2878439`.  Neither exit artifact existed.  The native aarch64 manylinux
+container had been active for 20 minutes, the durable log had grown to
+345,552 bytes, and bootstrap had completed GC, Ninja, PPL, Pygments, and
+several Python prerequisites before starting Primecount.  Guest capacity was
+106,428,116,992 bytes.  The healthy run was left untouched, and no wheel or
+validation result is inferred from this progress checkpoint.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
