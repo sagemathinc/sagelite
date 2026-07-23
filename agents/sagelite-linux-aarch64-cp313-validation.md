@@ -1,5 +1,56 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Full-Gate Timing Rejection And Fresh Rerun
+
+The first fresh full gate completed with exit code 1 at
+`2026-07-23T09:58:33Z`. It passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, and all 102 selftest checks. Its unrestricted
+installed `--optional=sage` sweep saw 3,954 modules and rejected one example
+in `sage.doctest.util`; the other 3,953 modules passed. The busy-wait example
+expected an elapsed value of `1.0` with absolute tolerance `0.1` and observed
+`1.1027833910193294`, only about 0.0028 seconds beyond the tolerance boundary.
+The independent reducer classified the single failure as
+`core-supported` / `numeric-tolerance`. The sweep took 817.3 seconds, and the
+validator exited after 1,521.784 seconds. This gate is rejected and is not an
+acceptance pass.
+
+An exact-seed focused replay in the unchanged failed-gate install passed all
+185 `sage.doctest.util` tests with zero failures. Its retained evidence is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/focused-post64-full-failure-exact-seed-replay.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/focused-post64-full-failure-exact-seed-replay.exit-code
+```
+
+A separately named fresh full rerun started at `2026-07-23T10:06:41Z` under:
+
+```text
+sagelite-post64-arm-cp313-full-rerun1.service
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/full-rerun1.sh
+```
+
+The launch independently verified native `aarch64`, exact clean source
+`014ae4bf44318b6f5032053957a92291d4363b7a`, all 191 closure hashes, the
+focused replay exit, an idle Docker backend, and more than 30 GiB of test
+capacity. The launcher has SHA256
+`37d79069b7827e0d56d58b53c37fbe0b5ef0e9ac12a03a75e6ef9d41174ab98e`.
+At `2026-07-23T10:07:37Z`, the service remained active under its original PID
+`3986992`, and the fresh binary-only installation was in progress. No full
+pass or synchronized cell acceptance is claimed yet.
+
+The same reconciliation reached `host` as native Linux `x86_64`, but the
+assigned `/mnt/cocalc-scratch` path remained absent and the authoritative
+CPython 3.12 run remained invisible. The root filesystem had
+9,372,954,624 bytes free, and the separate `/mnt/cocalc` volume had
+106,276,093,952 bytes free but remains outside the assigned automation root.
+Historical `post64` units were not found and inactive, Docker was absent, and
+Podman had unrelated work but no Sagelite container. No result was inferred
+and no duplicate build was launched. The directly fetched public manifest
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primaries and no
+`post64` artifact.
+
 ## 2026-07-23 Post64 Build And Short-Gate Pass
 
 The exact native build completed with exit code zero from pushed source
