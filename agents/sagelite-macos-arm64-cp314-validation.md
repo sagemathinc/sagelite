@@ -1,5 +1,45 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-23 Post64 Wheel Built And Strict Validation Started
+
+The exact native build from pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` completed with exit code zero at
+`2026-07-23T02:30:50Z`. It produced this repaired primary:
+
+```text
+sagelite-10.9.post64-cp314-cp314-macosx_26_0_arm64.whl
+  102,367,424 bytes
+  3cd67f291d16db570fd642512220daac52a43c9c0135b3e22a00b68d2fb3fc27
+```
+
+Repair injected 2,079 native headers, rewrote 23 companion dependencies in
+16 Mach-O files, and audited 1,176 dependencies across 637 Mach-O files. The
+deterministic closure completed with exit code zero at
+`2026-07-23T02:32:42Z`. It contains 168 wheels: one primary, 68 companions,
+and 99 third-party wheels totaling 13,890,637,078 bytes. The SHA256 of its
+`SHA256SUMS` inventory is
+`cc1c05424f3fd1fe6f1904b91abc4f72d9c51e046ab2c717e488be0630175f1e`.
+Strict preflight recorded the same wheel count and total bytes, found zero
+invalid wheel filenames, and accepted all requested companion projects.
+
+The guarded fresh short gate started immediately under tmux session
+`sagelite_cp314_post64_watch`. At the latest `2026-07-23T02:36:23Z`
+reconciliation it had created its fresh CPython 3.14 environment, passed
+strict wheelhouse preflight, installed the exact binary-only
+`sagelite[all-needed-extras]==10.9.post64` closure, and passed `pip check`.
+Runtime-manifest collection was active. The separate fresh full gate remains
+guarded on a zero short-gate exit. No short or full pass, cell acceptance, or
+publication is claimed yet.
+
+The same iteration reached `host` as native Linux `x86_64`, but the assigned
+run remained invisible because `/mnt/cocalc-scratch` resolved to the
+24,883,167,232-byte root filesystem with 14,570,610,688 bytes free. The
+separate `/mnt/cocalc` volume had 78,029,946,880 bytes free, below the binary
+100 GiB threshold. The inaccessible authoritative run was left untouched and
+no duplicate was launched. The directly fetched public manifest remains the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen
+Sagelite primary wheels and no `post64` artifact.
+
 ## 2026-07-23 Post64 Exact Rebuild Started
 
 The scheduled matrix iteration first reconciled the higher-priority Linux
