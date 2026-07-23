@@ -1,5 +1,64 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Full Acceptance
+
+Exact pushed `10.9.post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` completed the durable native
+macOS arm64 build with Homebrew CPython 3.13.14. The verified source archive
+is 144,131,658 bytes with SHA256
+`8029bc4e83392f3ac4a5bed0865511f664b16871350eba2d56be60a8c9f65311`,
+and its independently materialized tree matches committed tree
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`.
+
+The repaired primary is:
+
+```text
+sagelite-10.9.post64-cp313-cp313-macosx_26_0_arm64.whl
+  102,094,222 bytes
+  0842bd8725ee873b06cb3c1a21896014d1d9bfeab557a1bdd8380643fccc98da
+```
+
+The build injected 2,079 headers, repaired 23 companion dependencies in 16
+Mach-O files, and audited 1,176 dependencies across 637 Mach-O files. Its
+deterministic strict closure contains 179 wheels: one primary, 68 companions,
+and 110 third-party wheels totaling 13,895,771,686 bytes. The staged
+wheelhouse digest is
+`61f24dd14e0d37e84dc6cd4d4ef7fd213d8ca4ad221a428d477c1461d48febde`,
+and the complete `SHA256SUMS` file has SHA256
+`cb966bbc619d34faa49d484e5f85bf912a263d249b046f132783ad8eb2702928`.
+A post-validation recheck verified all 179 wheel hashes.
+
+The fresh short gate passed strict macOS preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero dependency, GAP-host, executable, Python-path, or
+source-path leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage --short 600` modules with zero failures, and packaged pytest
+with 226 passes and 5 skips. The standard sweep took 480.6 seconds, packaged
+pytest took 283.88 seconds, and the validator exited zero after 1,724.899
+seconds.
+
+The separate fresh full gate repeated that contract. Its unrestricted sweep
+passed all 3,953 installed modules with zero failures in 735.2 seconds,
+packaged pytest again passed with 226 passes and 5 skips in 310.96 seconds,
+the independent reducer reported zero failed modules, and the validator
+exited zero after 2,024.343 seconds. Every build, closure, short, full,
+watcher, and top-level orchestration exit artifact records zero.
+
+Exact pushed `post64` source `014ae4bf443` is therefore accepted locally for
+macOS arm64 CPython 3.13 as the second synchronized full-pass cell for this
+release-candidate revision. Deliberate cleanup removed only the two completed
+validation installs while retaining the strict wheelhouse, exact source
+inputs, logs, and complete validation evidence. This restored 110,399,816
+KiB free on `/Volumes/sage`. Durable artifacts are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260723-003300-014ae4bf443
+```
+
+The Linux x86_64 bulk run remains invisible on the currently reached host.
+The public R2 manifest is still the 177-wheel set generated on 2026-07-09,
+with no `post64` artifact; nothing was published by this validation.
+
 ## 2026-07-23 Post64 Exact Rebuild Started
 
 The scheduled iteration first reconciled the higher-priority Linux `x86_64`
