@@ -1,5 +1,24 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-23 Post64 Short Gate Passed And Full Gate Started
+
+The guarded fresh short gate completed with exit code zero at
+`2026-07-23T03:04:53Z`. It passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 226
+passes and 5 skips. The standard sweep took 493.5 seconds, the independent
+reducer reported zero failed modules, and the validator exited zero after
+1,913.63 seconds.
+
+The guard launched the required separate fresh full gate at
+`2026-07-23T03:05:10Z`. At the latest `2026-07-23T03:05:56Z`
+reconciliation, its CPython 3.14 validator was active and installing the same
+exact binary-only closure under tmux session
+`sagelite_cp314_post64_watch`. `/Volumes/sage` retained 84,825,672 KiB free,
+above the 30 GiB test-only threshold. No full-gate pass, synchronized cell
+acceptance, or publication is claimed yet.
+
 ## 2026-07-23 Post64 Short Standard Sweep Passed
 
 Read-only reconciliation at `2026-07-23T03:03:37Z` found the guarded fresh
