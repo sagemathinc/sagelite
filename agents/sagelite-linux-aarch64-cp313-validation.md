@@ -1,5 +1,49 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Build And Short-Gate Pass
+
+The exact native build completed with exit code zero from pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a`. It produced a repaired
+247,440,598-byte primary with SHA256
+`89d7d66fda42e7126df04af4cc0da8e5e052fcf2daeea8b6124b3145cca6eeb5`.
+The deterministic strict closure contains 191 wheels totaling
+16,783,060,053 bytes: one primary, 81 companions, and 109 third-party wheels.
+Its `SHA256SUMS` file has SHA256
+`9502542b2045b6624bbc0abd22a58594e18dc70224c5806eba69f191e428ad24`,
+and strict preflight independently computed staged-wheelhouse SHA256
+`d61ae46e071ef79b62d8aea2fb922e28c5071bc6454d96e14f8e9525f3a293c8`.
+
+The fresh short gate completed with exit code zero at
+`2026-07-23T09:32:45Z`. It passed strict repaired-wheelhouse preflight,
+binary-only `sagelite[all-needed-extras]==10.9.post64` installation,
+`pip check`, runtime isolation with zero leaks, and all 102 selftest checks.
+Its explicit installed `--optional=sage --short 600` sweep passed all 3,953
+modules with zero failures in 524.4 seconds. Packaged pytest passed with 229
+passes and 2 skips, and the independent reducer reported zero failed modules.
+The validator exited zero after 1,103.52 seconds of installed validation.
+
+The guard launched a separate fresh full gate at
+`2026-07-23T09:32:47Z` from the unchanged strict closure. At the latest
+`2026-07-23T09:33:51Z` read-only check, its new CPython 3.13 container was
+performing the binary-only installation under the original watcher PID
+`3816615`; the guest retained 106,916,827,136 bytes free. No full pass or
+cell acceptance is claimed yet. Authoritative artifacts are retained under:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443
+```
+
+The same reconciliation reached `host` as native Linux `x86_64`, but its
+assigned `/mnt/cocalc-scratch` mount remained absent and the authoritative
+CPython 3.12 run remained invisible. The root filesystem had only
+9,380,614,144 bytes free; the separate `/mnt/cocalc` volume had
+108,086,747,136 bytes free but remains outside the assigned automation root.
+Historical units were not found and inactive, Docker was absent, and Podman
+had unrelated work but no Sagelite container. No result was inferred and no
+duplicate build was launched. The public manifest remains the 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primaries and no `post64` artifact.
+
 ## 2026-07-23 Post64 Primary Compilation Progress
 
 Read-only reconciliation at `2026-07-23T09:01:48Z` found the exact
