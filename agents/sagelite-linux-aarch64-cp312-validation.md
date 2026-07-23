@@ -156,6 +156,53 @@ under the original watcher PID `2878439`.  No full-gate exit artifact exists
 yet, so no full pass, synchronized cell acceptance, or publication is
 claimed.
 
+The separate fresh full gate subsequently completed with exit code zero at
+`2026-07-23T07:50:00Z`.  It repeated strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero dependency, Python-path, source-path, executable, or GAP
+host leaks, and all 102 selftest checks.  Its unrestricted installed
+`--optional=sage` sweep passed all 3,953 modules with zero failed modules in
+827.0 seconds.  The independent reducer reported no actionable buckets, and
+the full validator exited zero after 1,557.82 seconds.  The build, short,
+full, and watcher exit artifacts all contain zero.  Exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is accepted locally for Linux
+aarch64 CPython 3.12 as the fourth synchronized full-pass cell from the
+`post64` release-candidate revision.
+
+Deliberate cleanup retained the exact 191-wheel strict closure, both
+validation summaries, runtime manifests, selftest logs, doctest logs, reduced
+analyses, build inventories, and command evidence.  It removed only the two
+completed validation installs, the accepted run's disposable source checkout
+and host venv, and four superseded closure link trees after every retained
+wheel hash passed and their inventories were archived.  The archived
+`SHA256SUMS` file hashes are:
+
+```text
+post60 CPython 3.13:          604298617695f36a2c979d98cba882b43a5b9e2a2befd36d27fae8a0b27e1847
+post62 CPython 3.12:          c435e45b4d3b326007ad581f1511752ea99c866948e4669e03407dad673b83a7
+rejected post62 CPython 3.13: c0bbce3eb7b855b857ada462079e8dfc87d0c091695aa01394db3f6a9fadc37f
+rejected post27 CPython 3.13: c12107e3e8bb15342b7a8f97f7f81fedeb2d542ca19cb1946f6a7d1721495dc2
+```
+
+The obsolete `/sage-manylinux_2_28_aarch64` native prefix was also removed;
+it is the superseded non-fat profile that the rejected launcher had injected
+and must not be reused for `post64`.  The current isolated
+`/sage-fat-v1-manylinux_2_28_aarch64` profile remains intact.  Final guest
+capacity is 112,253,087,744 bytes, above the binary 100 GiB heavy-build
+threshold.
+
+All three bounded checks of the higher-priority `host` target succeeded at
+`2026-07-23T08:02:46Z`, but `/mnt/cocalc-scratch` was absent on the reached
+native `x86_64` machine.  Its 24,883,167,232-byte root filesystem had only
+9,462,665,216 bytes free.  The separate `/mnt/cocalc` volume had
+108,549,521,408 bytes free, but it is outside the assigned build root.
+Historical `post64` build and watcher units were not found and inactive, and
+the authoritative run root was not visible, so no x86_64 result was inferred
+and no duplicate was launched.  The directly fetched public manifest remains
+the 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with
+fourteen Sagelite primary wheels and no `post64` artifact.  Nothing was
+published.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
