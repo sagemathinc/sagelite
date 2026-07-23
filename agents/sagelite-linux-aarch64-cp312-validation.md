@@ -68,6 +68,14 @@ The watcher will assemble a deterministic strict closure and run independent
 fresh short and full gates only after build success. No `post64` wheel,
 validation pass, cell acceptance, or publication is claimed yet.
 
+Read-only reconciliation at `2026-07-23T04:32:44Z` confirmed the recorded
+build PID `2417688` and watcher PID `2417699` were still alive with commands
+matching this exact run. The native manylinux aarch64 container had been up
+for 20 minutes, and the durable log had grown to 358,847 bytes while advancing
+through the CPython 3.12 NumPy, CyPari, and PPLPy prerequisite builds. The
+guest retained 101,388,050,432 bytes free. No build or watcher exit artifact
+and no wheel existed, so the run was left untouched and no result is claimed.
+
 ## 2026-07-19 Post63 Wheel And Strict Short/Full Passes
 
 The exact pushed build recorded below completed with exit code zero and
