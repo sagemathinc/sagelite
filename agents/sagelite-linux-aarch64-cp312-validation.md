@@ -139,6 +139,23 @@ container were healthy, and 102,028,226,560 bytes remained free.  No short
 exit artifact, `pip check`, selftest, doctest, full-gate, cell-acceptance, or
 publication result is claimed yet.
 
+The fresh short gate subsequently completed with exit code zero at
+`2026-07-23T07:23:30Z`.  It passed the strict 191-wheel preflight,
+binary-only installation, `pip check`, runtime isolation, and every selftest
+probe.  Its explicit installed `--optional=sage --short 600` sweep passed all
+3,953 modules with zero failed modules in 530.4 seconds, and the validator
+exited zero after 1,270.772 seconds.  The independent reducer has no
+actionable buckets.
+
+The guard then launched a separate fresh full gate at
+`2026-07-23T07:23:32Z` from the unchanged strict closure.  At the
+`2026-07-23T07:32:33Z` reconciliation, its independent binary-only
+installation and `pip check` had passed, the runtime manifest and all selftest
+probes had completed, and the native validation container remained healthy
+under the original watcher PID `2878439`.  No full-gate exit artifact exists
+yet, so no full pass, synchronized cell acceptance, or publication is
+claimed.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
