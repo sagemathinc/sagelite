@@ -1,5 +1,50 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-23 Post64 Exact Rebuild Started
+
+The scheduled matrix iteration first reconciled the higher-priority Linux
+`x86_64` builder. The `host` alias reached native Linux `x86_64`, but the
+required `/mnt/cocalc-scratch` run remained invisible because that path
+resolved to the 24,883,167,232-byte root filesystem with only
+14,571,065,344 bytes free. The authoritative CPython 3.12 `post64` run was
+left untouched, no result was inferred from inactive service properties on
+the currently reached machine, and no duplicate x86_64 build was started.
+The separate `/mnt/cocalc` volume had 78,018,404,352 bytes free, below the
+binary 100 GiB heavy-build threshold and outside the runbook-assigned root.
+The directly fetched public manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact.
+
+Independent preflight found native macOS and its Linux aarch64 guest idle.
+`/Volumes/sage` had 110,031,936 KiB free immediately after the guarded launch,
+and the guest had 107,212,017,664 bytes free. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is now building natively with
+Homebrew CPython 3.14.6 under tmux session
+`sagelite_cp314_post64_build`; the fail-fast watcher is active as
+`sagelite_cp314_post64_watch`. Durable artifacts are at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260723-021858-014ae4bf443
+```
+
+The build reuses the intact CPython-independent native prefix from the
+accepted CPython 3.13 `post51` run. Its exact 144,131,658-byte source archive
+has SHA256
+`8029bc4e83392f3ac4a5bed0865511f664b16871350eba2d56be60a8c9f65311`,
+and its independently materialized clean tree matches committed tree
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`. The recorded environment is
+Darwin `arm64` with CPython 3.14.6. At `2026-07-23T02:20:00Z`, both durable
+processes remained active and the build log had entered native sdist
+configuration. The closure will reuse compatible wheels from the accepted
+`post64` CPython 3.13 wheelhouse and will resolve only the incompatible ABI
+replacements before independent fresh short and full gates.
+
+This is build-start evidence only. No `post64` CPython 3.14 wheel, validation
+pass, cell acceptance, or publication is claimed yet. Before this evidence
+edit, the canonical checkout, local tracking ref, and directly queried
+`origin/develop` ref were synchronized at
+`cbb6cfebdeec3ba48618deb7cbb952aeec0ef4e6`.
+
 ## 2026-07-19 Post63 Full Acceptance
 
 The scheduled matrix iteration first reconciled the higher-priority Linux
