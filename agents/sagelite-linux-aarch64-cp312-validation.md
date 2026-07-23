@@ -109,6 +109,36 @@ exact checkout remained clean at
 yet, this is build-progress evidence only; no completed wheel or validation
 result is claimed.
 
+The exact replacement build subsequently completed with exit code zero.  It
+produced 82 repaired primary and companion wheels totaling 4,668,166,457
+bytes.  The repaired primary is:
+
+```text
+sagelite-10.9.post64-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   247,696,859 bytes
+sha256: 26306644e6389b6df75ce3ff12abbcb4c94bbe64c402b15d013a09a691e14b43
+```
+
+The build-wheel `SHA256SUMS` file has SHA256
+`ecb76dd3f71847c0f64cd80c3048cf3db46e7963c16d2d98c10d6813c236ba29`.
+The guarded watcher then assembled a deterministic strict closure containing
+191 wheels totaling 16,783,450,660 bytes: one primary, 81 companions, and 109
+third-party wheels.  Its `SHA256SUMS` file has SHA256
+`87396176c16b92c8e420c953c5887bf8b32526fca8b3117875b44c9e4ba293b1`,
+and the validator independently computed staged-wheelhouse SHA256
+`348ce931e3258673119cbb823b361944658d6c8719f2c44bd396b758c153ce7b`.
+
+At `2026-07-23T07:02:19Z`, strict short validation started in a fresh
+CPython 3.12 slim container.  Strict repaired-wheelhouse preflight accepted
+all 191 staged wheel filenames and tags, the exact `cp312`/`aarch64` primary,
+and all 68 requested companion projects with zero missing projects.  At the
+`2026-07-23T07:02:50Z` checkpoint, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation was active under the
+original watcher PID `2878439`; the watcher service and fresh validation
+container were healthy, and 102,028,226,560 bytes remained free.  No short
+exit artifact, `pip check`, selftest, doctest, full-gate, cell-acceptance, or
+publication result is claimed yet.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
