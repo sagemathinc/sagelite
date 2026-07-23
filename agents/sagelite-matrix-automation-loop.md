@@ -5216,6 +5216,24 @@ checkpoint edit, the canonical checkout, its tracking ref, and the directly
 queried `origin/develop` ref were synchronized at
 `69a6928b2510952bbaf7ce8cda629f8d25f03994`. Nothing was published.
 
+Read-only reconciliation at `2026-07-23T16:01:29Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`, but the assigned
+`/mnt/cocalc-scratch` path remained absent and the authoritative CPython 3.12
+run root remained invisible. Both durable service names were not found and
+inactive with retained successful result and exit-status properties on the
+currently reached machine. The root filesystem had 9,258,999,808 bytes free,
+while the separate `/mnt/cocalc` volume had 105,111,674,880 bytes free, below
+the binary 100 GiB heavy-build threshold and outside the assigned automation
+root. Docker was absent, Podman had no active container, and no automation
+process was visible beyond the reconciliation command itself. No result was
+inferred and no duplicate build was launched. The directly fetched public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact. Before this checkpoint edit, the canonical checkout,
+its tracking ref, and the directly queried `origin/develop` ref were
+synchronized at `353dc7ef0572fe5a8d52be0442b158364195310c`. Nothing was
+published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -5292,7 +5310,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. In the latest reconciliation at `2026-07-23T15:31:37Z`, the alias reached a native `x86_64` machine, but `/mnt/cocalc-scratch` was absent and the authoritative run root remained invisible. Historical units were not found and inactive. The 24,883,167,232-byte root filesystem had only 9,268,875,264 bytes free; the separate `/mnt/cocalc` volume had 105,593,630,720 bytes free, below the binary 100 GiB threshold and outside the assigned root. No result is inferred and no duplicate was launched. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. In the latest reconciliation at `2026-07-23T16:01:29Z`, the alias reached a native `x86_64` machine, but `/mnt/cocalc-scratch` was absent and the authoritative run root remained invisible. Historical units were not found and inactive. The 24,883,167,232-byte root filesystem had only 9,258,999,808 bytes free; the separate `/mnt/cocalc` volume had 105,111,674,880 bytes free, below the binary 100 GiB threshold and outside the assigned root. No result is inferred and no duplicate was launched. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
