@@ -1,5 +1,39 @@
 # Sagelite macOS arm64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Exact Rebuild Started
+
+The scheduled iteration first reconciled the higher-priority Linux `x86_64`
+builder. The `host` alias reached native Linux `x86_64`, but the required
+`/mnt/cocalc-scratch` bulk run remained invisible because that path resolved
+to the 24,883,167,232-byte root filesystem with 14,686,146,560 bytes free.
+The authoritative CPython 3.12 `post64` run was left untouched, no result was
+inferred from inactive service properties on the currently reached machine,
+and no duplicate x86_64 build was started. The directly fetched public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact.
+
+Independent preflight found native macOS and its Linux aarch64 guest idle.
+`/Volumes/sage` had 113,143,080 KiB free, and the guest had
+106,314,702,848 bytes free. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is now building natively with
+Homebrew CPython 3.13.14 under tmux session
+`sagelite_cp313_post64_build` at:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp313-20260723-003300-014ae4bf443
+```
+
+The build reuses the retained CPython 3.13 native-prefix seed. Its exact
+144,131,658-byte source archive has SHA256
+`8029bc4e83392f3ac4a5bed0865511f664b16871350eba2d56be60a8c9f65311`,
+and its independently materialized clean tree matches committed tree
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`. The recorded environment is
+Darwin `arm64` with CPython 3.13.14. At `2026-07-23T00:33:31Z`, the durable
+build PID remained active and the log had entered native sdist configuration.
+This is build-start evidence only; no `post64` CPython 3.13 wheel, validation
+pass, cell acceptance, or publication is claimed yet.
+
 ## 2026-07-19 Post63 Full Acceptance
 
 Exact pushed `10.9.post63` source
