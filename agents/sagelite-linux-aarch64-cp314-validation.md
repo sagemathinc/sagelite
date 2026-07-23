@@ -2,10 +2,10 @@
 
 Last updated: 2026-07-23
 
-## 2026-07-23 Post64 Exact Fat-Binary Rebuild Start
+## 2026-07-23 Post64 Full Acceptance
 
 Exact pushed `post64` source
-`014ae4bf44318b6f5032053957a92291d4363b7a` is building natively at:
+`014ae4bf44318b6f5032053957a92291d4363b7a` was built natively at:
 
 ```text
 /home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443
@@ -36,7 +36,7 @@ b52ff9a3b2c4dc2bce41b3d4e39ce12cf24c5cdd74c066161282652e9e24fdad  validate-after
 1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
 ```
 
-The exact build subsequently completed with exit code zero and produced:
+The exact build completed with exit code zero and produced:
 
 ```text
 sagelite-10.9.post64-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
@@ -45,18 +45,44 @@ sha256: 6e2a1ea0006b69d6de7f5a8396fe183df1d38517fa3d7d84df6ef687cf5b7017
 ```
 
 The guarded watcher assembled a deterministic strict closure containing 180
-wheels totaling 16,780,148,113 bytes. The closure `SHA256SUMS` file has
-SHA256
-`de257fb318edfb120bb52c1fbfb43c1c9de3dd9a1d1212c7ab4e90b1723f99da`.
-At the latest `2026-07-23T11:33:32Z` check, the fresh short gate had passed
-strict preflight, binary-only `sagelite[all-needed-extras]==10.9.post64`
-installation, `pip check`, runtime isolation with zero leaks, all 102
-selftests, and all 3,953 installed `--optional=sage` modules with zero
-failures in 538.7 seconds. Packaged pytest had collected 229 tests with 2
-skips and reached 69 percent while the original watcher PID `4041408`
-remained active. The independent full gate remains guarded on a zero
-short-gate exit. No short or full pass, cell acceptance, or publication is
-claimed yet.
+wheels totaling 16,780,148,113 bytes: one primary, 81 companions, and 98
+third-party wheels. The closure `SHA256SUMS` file has SHA256
+`de257fb318edfb120bb52c1fbfb43c1c9de3dd9a1d1212c7ab4e90b1723f99da`,
+and every listed wheel passed a complete hash recheck after validation.
+
+The independent fresh short gate passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, all 102 selftests, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips. Its standard sweep took 538.7 seconds, and the validator
+exited zero.
+
+The separate fresh full gate repeated that contract. Its unrestricted
+installed sweep passed all 3,953 modules with zero failures in 879.0 seconds.
+Packaged pytest passed with 229 passes and 2 skips, the independent reducer
+reported zero failed modules, and the full validator exited zero after
+1,598.075 seconds at `2026-07-23T12:02:51Z`. The durable build, short, full,
+and watcher exit artifacts all contain zero.
+
+The retained authoritative artifacts are:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation-wheelhouse
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation-wheelhouse/SHA256SUMS
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation/short-post64/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation/full-post64/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation/full-post64/doctest-installed-linux-aarch64-cp314-post64-full-20260723-113843.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443/validation-full-command.log
+```
+
+Deliberate cleanup retained the exact strict closure and complete validation
+evidence while removing only the two completed validation installs, the
+disposable exact-source checkout, and the run-local host venv. Final guest
+capacity is 107,461,984,256 bytes. Exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is accepted locally for this
+cell as the sixth synchronized full-pass cell from the `post64`
+release-candidate revision. The public preview remains unchanged; no artifact
+was published.
 
 ## 2026-07-18 Post63 Full Acceptance
 
@@ -168,16 +194,16 @@ publication is claimed yet.
 
 ## Current status
 
-Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post63`.
-Exact pushed source `16d6d78012a4971870e165e3ae948a24b8f7ed9c` produced a
+Native Linux `aarch64` CPython 3.14 is `full` for Sagelite `10.9.post64`.
+Exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a` produced a
 repaired primary and strict 180-wheel closure. Independent fresh short and
 full gates passed strict preflight, wheel-only installation of
 `sagelite[all-needed-extras]`, `pip check`, runtime isolation with zero leaks,
 all 102 selftests, all 3,953 installed standard modules with zero failures,
 and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took
-881.5 seconds. This synchronizes the cell with the selected release-candidate
-revision and retains the narrowed `Integer.digits` signal guard validated by
-the earlier `post62` baseline.
+879.0 seconds. This is the sixth synchronized full-pass cell from the
+selected release-candidate revision and retains the narrowed `Integer.digits`
+signal guard validated by the earlier `post62` baseline.
 
 The earlier accepted `post38` primary was compiled against final CPython
 3.14.3 and validated under CPython 3.14.6. It includes the fix that avoids the
