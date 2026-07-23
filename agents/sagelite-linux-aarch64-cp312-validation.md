@@ -94,6 +94,21 @@ remained clean at `014ae4bf44318b6f5032053957a92291d4363b7a`, and the guest
 retained 99,790,200,832 bytes free.  The healthy in-progress run was left
 untouched; no wheel or validation result is claimed.
 
+Read-only reconciliation at `2026-07-23T06:32:17Z` found both services still
+loaded and active with the same build PID `2878432` and watcher PID `2878439`.
+No build, watcher, or validation exit artifact existed, and the durable
+wheel-output directories still contained zero wheels.  The native aarch64
+manylinux container had been active for about 81 minutes.  Its command log
+had grown to 2,207,791 bytes and showed that the 4,903-file primary
+installation and raw `sagelite-10.9.post64-cp312-cp312-linux_aarch64.whl`
+creation completed.  The repair helper then injected 3,375 native headers,
+built its temporary `cypari2` input, and entered `auditwheel` repair.  The
+exact checkout remained clean at
+`014ae4bf44318b6f5032053957a92291d4363b7a`, and the guest retained
+98,072,182,784 bytes free.  Because no repaired output or inventory exists
+yet, this is build-progress evidence only; no completed wheel or validation
+result is claimed.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
