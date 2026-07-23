@@ -4582,6 +4582,29 @@ exact binary-only closure under tmux session
 above the 30 GiB test-only threshold. No full-gate pass, synchronized cell
 acceptance, or publication is claimed yet.
 
+The separate fresh full gate then completed with exit code zero at
+`2026-07-23T03:42:41Z`. It repeated strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, all 102 selftest checks, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 226
+passes and 5 skips. The unrestricted sweep took 795.4 seconds, the independent
+reducer reported zero failed modules, and the full validator exited zero after
+2,251.462 seconds. A complete post-validation hash recheck passed for all 168
+wheels. Exact pushed source `014ae4bf443` is accepted locally for macOS arm64
+CPython 3.14 as the third synchronized full-pass cell for the `post64`
+release-candidate revision. Precise cleanup removed only the two completed
+validation installs while retaining the strict wheelhouse and all concise
+evidence, restoring 106,603,104 KiB free on `/Volumes/sage`.
+
+The same iteration reached `host` at `2026-07-23T03:31:09Z` as native Linux
+`x86_64`, but `/mnt/cocalc-scratch` still resolved to the
+24,883,167,232-byte root filesystem with only 14,580,781,056 bytes free. The
+authoritative CPython 3.12 `post64` run remained invisible and untouched; no
+result was inferred from not-found inactive service properties, and no
+duplicate was launched. The directly fetched public manifest remains the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen
+Sagelite primary wheels and no `post64` artifact. Nothing was published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4666,7 +4689,7 @@ Status meanings:
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post64`, local; `post9`, public) | full (`post63`), with coherent `post64` validation active. Exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. The guarded fresh short gate passed strict preflight, binary-only installation, `pip check`, runtime isolation, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. Its validator exited zero after 1,913.63 seconds. The separate fresh full gate began installing the exact closure at `2026-07-23T03:05:10Z`; no `post64` full pass is claimed yet. The earlier exact `post63` closure passed both fresh gates. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
+| macOS arm64 | 3.14 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. Independent fresh short and full gates passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep took 795.4 seconds and the full validator exited zero after 2,251.462 seconds; this is the third synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
 The recorded full passes establish that the standard installed runtime can
 pass on Linux x86_64, Linux aarch64, and macOS arm64. They are not a
@@ -4699,11 +4722,10 @@ Unless newer evidence changes the matrix, use this order:
    3.13 and 3.14. Each cell requires both fresh standard gates and an explicit
    old-CPU probe without BMI2 or ADX. Never reuse the old non-fat native
    prefix.
-2. Rebuild and rerun the remaining four Linux aarch64 and macOS arm64 cells
-   from the same exact `post64` source revision. The macOS CPython 3.12 and
-   3.13 cells already pass from that revision. The other cells' `post63` full
-   passes remain useful baselines but cannot complete a coherent `post64`
-   matrix.
+2. Rebuild and rerun the remaining three Linux aarch64 cells from the same
+   exact `post64` source revision. All three macOS arm64 cells already pass
+   from that revision. The Linux aarch64 cells' `post63` full passes remain
+   useful baselines but cannot complete a coherent `post64` matrix.
 3. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 4. Resume systematic optional-package expansion in install-smoke batches.

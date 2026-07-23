@@ -1,5 +1,41 @@
 # Sagelite macOS arm64 CPython 3.14 Validation
 
+## 2026-07-23 Post64 Full Acceptance
+
+The separate fresh full gate completed with exit code zero at
+`2026-07-23T03:42:41Z`. It repeated strict macOS preflight against the exact
+168-wheel closure, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, and all 102 selftest checks. The unrestricted
+installed `--optional=sage` sweep passed all 3,953 modules with zero failures
+in 795.4 seconds. Packaged pytest passed with 226 passes and 5 skips, the
+independent reducer reported zero failed modules, and the validator exited zero
+after 2,251.462 seconds.
+
+Exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a` is
+therefore accepted locally for macOS arm64 CPython 3.14 as the third
+synchronized full-pass cell for the `post64` release-candidate revision. A
+post-validation `sha256sum -c SHA256SUMS` recheck passed for all 168 wheels;
+the inventory digest remains
+`cc1c05424f3fd1fe6f1904b91abc4f72d9c51e046ab2c717e488be0630175f1e`.
+
+Precise cleanup removed only the two completed fresh validation installs,
+which occupied 19,934,096 KiB and 19,905,424 KiB. The strict wheelhouse,
+source inputs, logs, summaries, runtime manifests, and reducer evidence remain
+under:
+
+```text
+/Volumes/sage/sagelite-automation/macos-arm64-cp314-20260723-021858-014ae4bf443
+```
+
+Cleanup restored 106,603,104 KiB free on `/Volumes/sage`. At the same
+iteration's Linux reconciliation, `host` remained native `x86_64` but the
+assigned `/mnt/cocalc-scratch` run was invisible because the path resolved to
+the 24,883,167,232-byte root filesystem with 14,580,781,056 bytes free. The
+authoritative CPython 3.12 run was left untouched and no duplicate was
+launched. The public manifest remains the 177-wheel set generated on
+2026-07-09; nothing was published.
+
 ## 2026-07-23 Post64 Short Gate Passed And Full Gate Started
 
 The guarded fresh short gate completed with exit code zero at
