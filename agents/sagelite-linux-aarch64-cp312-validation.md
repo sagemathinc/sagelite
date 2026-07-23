@@ -1,5 +1,79 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-23 Post64 Failed Launcher And Exact Replacement
+
+The first exact `post64` build completed unsuccessfully before wheel creation.
+Its durable build and watcher exit artifacts both contain 1.  ECL
+`24.5.10` failed while linking its bootstrap executable because
+`libecl.so.24.5.10` referenced versioned `LIBFFI_*_8.0` symbols that the
+linker did not resolve.  The failure was caused by the automation launcher,
+not by the committed release configuration: its hand-written
+`CIBW_ENVIRONMENT` still injected the superseded non-fat
+`/host/sage-${AUDITWHEEL_PLAT}` prefix into `PATH`, `PYTHONPATH`,
+`LIBRARY_PATH`, `LD_LIBRARY_PATH`, `PKG_CONFIG_PATH`, and
+`CMAKE_PREFIX_PATH`.  The exact repository release configuration points all
+of those paths at `/host/sage-fat-v1-${AUDITWHEEL_PLAT}` and explicitly sets
+`SAGELITE_NATIVE_PREFIX` to that profile.
+
+The rejected run remains at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443
+```
+
+Its `command.log`, exit artifacts, launcher, metadata, and copied ECL
+`config.log`, `config.status`, Makefile, dynamic-section report, and
+libffi-symbol report remain under `failure-evidence/`.  After preserving and
+hashing that evidence, cleanup removed only the contaminated
+`/sage-fat-v1-manylinux_2_28_aarch64` prefix and the rejected run's
+disposable exact-source checkout and host venv.  The superseded accepted
+`post62` CPython 3.14 regenerated closure was also removed only after all 180
+wheel hashes passed and its complete inventory and `SHA256SUMS` were archived.
+This restored 112,309,026,816 bytes free in the guest.  No wheel or validation
+result is claimed from the rejected run.
+
+The exact fresh replacement is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-050507-014ae4bf443
+```
+
+Its launcher uses the repository's fat-prefix CIBW environment throughout,
+including:
+
+```text
+SAGELITE_NATIVE_PREFIX=/host/sage-fat-v1-${AUDITWHEEL_PLAT}
+```
+
+and has no reference to the superseded non-fat profile.  The corrected
+launcher SHA256 is
+`12c55916b1af650724dda770dad4da5c24e4bb9c166b121109d84e737bee7214`;
+the validation and watcher script hashes remain
+`520c692ba0f0e0bcb31fae3af022e6076064bf5b87cc2854f72855136d01cf1b`
+and
+`1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15`.
+The exact 145,833,961-byte source bundle again passed its expected SHA256,
+and all 191 retained seed-wheel hashes passed before launch.
+
+The replacement is active under:
+
+```text
+sagelite-post64-arm-cp312-build-r1.service  main PID 2878432
+sagelite-post64-arm-cp312-watch-r1.service  main PID 2878439
+```
+
+At `2026-07-23T05:11:08Z`, its checkout was clean at exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a`, `VERSION.txt` reported
+`10.9.post64`, and the actual manylinux container was native `aarch64`.  The
+container bind-mounted the guest root read/write at `/host`; its log selected
+`/host/sage-fat-v1-manylinux_2_28_aarch64`, initialized the empty profile
+with CPython 3.12, and entered bootstrap prerequisite installation.  Both
+durable services and the container were active, the command log was growing,
+and 111,298,437,120 bytes remained free.  The watcher will assemble the
+strict closure and run independent fresh short and full gates only after a
+zero build exit.  No replacement wheel, validation pass, cell acceptance, or
+publication is claimed yet.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the

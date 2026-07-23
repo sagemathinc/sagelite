@@ -4637,6 +4637,40 @@ and the build log had entered repository bootstrap. No `post64` Linux
 aarch64 wheel, validation pass, cell acceptance, or publication is claimed
 yet.
 
+The first exact Linux aarch64 CPython 3.12 `post64` build then exited 1
+before wheel creation. ECL `24.5.10` failed while linking its bootstrap
+executable because `libecl.so.24.5.10` referenced versioned
+`LIBFFI_*_8.0` symbols that the linker did not resolve. The failure was in
+the automation launcher rather than the committed release configuration:
+its hand-written `CIBW_ENVIRONMENT` still injected the superseded non-fat
+`/host/sage-${AUDITWHEEL_PLAT}` prefix through all compiler and runtime search
+paths. The watcher correctly exited 1 without starting validation. Its exact
+source metadata, command log, exit artifacts, launcher, and copied ECL
+configuration and binary evidence remain at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443`.
+No wheel or pass is claimed from that run.
+
+After evidence preservation, precise cleanup removed only the contaminated
+fat prefix and the rejected run's disposable checkout and host venv. The
+superseded accepted `post62` CPython 3.14 regenerated closure was removed
+only after all 180 hashes passed and its inventory and `SHA256SUMS` were
+archived, restoring 112,309,026,816 bytes free. The exact fresh replacement
+is active under `sagelite-post64-arm-cp312-build-r1.service` and
+`sagelite-post64-arm-cp312-watch-r1.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-050507-014ae4bf443`.
+Its corrected launcher uses the same isolated fat-prefix environment as
+`.github/workflows/release.yml`, has SHA256
+`12c55916b1af650724dda770dad4da5c24e4bb9c166b121109d84e737bee7214`,
+and contains no non-fat prefix reference. The exact source bundle and all 191
+seed-wheel hashes passed again. At `2026-07-23T05:11:08Z`, the clean checkout
+was at exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a`,
+the native aarch64 manylinux container had mounted the guest root read/write
+at `/host`, the log selected the empty
+`/host/sage-fat-v1-manylinux_2_28_aarch64` profile and entered bootstrap
+prerequisite installation, and both durable services remained active with
+111,298,437,120 bytes free. No replacement wheel, validation pass, cell
+acceptance, or publication is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4716,7 +4750,7 @@ Status meanings:
 | Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. At the latest reconciliation at `2026-07-23T04:01:24Z` the assigned bulk mount and run root were invisible and the 24,883,167,232-byte root filesystem had only 14,578,974,720 bytes free, so inactive service properties on the currently reached machine are not accepted as a result. The run remains untouched. Its watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
-| Linux aarch64 | 3.12 | exact `post64` synchronized rebuild active; `post63` local and `post9` public remain available | full (`post63`) baseline; exact pushed `post64` source `014ae4bf443` is building under `sagelite-post64-arm-cp312-build.service` at `/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443`. Its 191-wheel seed inventory, exact source bundle, native architecture, idle-builder, and 100 GiB capacity guards passed. At `2026-07-23T04:32:44Z`, the exact build and watcher PIDs, native manylinux container, and growing prerequisite-build log were healthy with 101,388,050,432 bytes free. The watcher will run independent fresh short and full gates after build success. No `post64` wheel or pass is claimed yet | smoke (`post8`), with system `git` for GitPython |
+| Linux aarch64 | 3.12 | exact `post64` synchronized replacement active; `post63` local and `post9` public remain available | full (`post63`) baseline; the first exact `post64` run was rejected before wheel creation because its hand-written launcher injected the superseded non-fat prefix and ECL failed to resolve versioned libffi symbols. Its evidence is preserved. Exact pushed source `014ae4bf443` is now building from a new empty fat profile under `sagelite-post64-arm-cp312-build-r1.service` at `/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-050507-014ae4bf443`. The corrected launcher matches the release fat-prefix environment, the source bundle and all 191 seed-wheel hashes passed, and at `2026-07-23T05:11:08Z` the clean exact checkout, native aarch64 manylinux container, and guarded watcher were active with 111,298,437,120 bytes free. No `post64` wheel or pass is claimed yet | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |
