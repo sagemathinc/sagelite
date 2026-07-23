@@ -83,6 +83,17 @@ several Python prerequisites before starting Primecount.  Guest capacity was
 106,428,116,992 bytes.  The healthy run was left untouched, and no wheel or
 validation result is inferred from this progress checkpoint.
 
+Read-only reconciliation at `2026-07-23T06:02:53Z` again found both exact-run
+services loaded and active with the same build and watcher PIDs.  No build,
+watcher, or validation exit artifact existed, and the run still contained
+zero wheels.  The native aarch64 manylinux container had been active for 51
+minutes.  Its durable log had grown to 377,978 bytes, Maxima installation had
+completed, and Fricas installation was active with the corrected isolated
+fat-prefix environment visible throughout the live build.  The exact checkout
+remained clean at `014ae4bf44318b6f5032053957a92291d4363b7a`, and the guest
+retained 99,790,200,832 bytes free.  The healthy in-progress run was left
+untouched; no wheel or validation result is claimed.
+
 ## 2026-07-23 Exact Post64 Synchronized Build Start
 
 Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
