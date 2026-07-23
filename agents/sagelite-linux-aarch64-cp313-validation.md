@@ -1,5 +1,30 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Primary Compilation Progress
+
+Read-only reconciliation at `2026-07-23T09:01:48Z` found the exact
+`post64` build and guarded watcher healthy and still in progress. Both
+durable services remained loaded and active with their original build PID
+`3816605` and watcher PID `3816615`; no build, watcher, or validation exit
+artifact existed, and the run still contained zero wheels. The native
+aarch64 manylinux container had been active for 25 minutes. Its durable log
+showed that the retained isolated fat prefix supplied all prerequisite
+libraries and executables, Meson configured all 580 Sage targets, and Ninja
+started the 1,795-target primary compilation. The guest retained
+102,729,207,808 bytes free. The run was left untouched.
+
+The same reconciliation reached `host` on its first bounded attempt as native
+Linux `x86_64`, but `/mnt/cocalc-scratch` remained absent and the
+authoritative CPython 3.12 run root remained invisible. The
+24,883,167,232-byte root filesystem had 9,446,723,584 bytes free, while the
+separate `/mnt/cocalc` volume had 107,882,762,240 bytes free but remains
+outside the assigned automation root. Historical service names were not
+found and inactive, Docker was absent, and Podman had no active container.
+No result was inferred and no duplicate was launched. A direct manifest
+fetch confirmed the unchanged 177-wheel public set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels
+and no `post64` artifact.
+
 ## 2026-07-23 Post64 Exact Fat-Binary Build Start
 
 The higher-priority Linux `x86_64` target was reachable at
