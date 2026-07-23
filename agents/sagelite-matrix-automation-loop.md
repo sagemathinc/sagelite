@@ -4605,6 +4605,38 @@ duplicate was launched. The directly fetched public manifest remains the
 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen
 Sagelite primary wheels and no `post64` artifact. Nothing was published.
 
+Read-only reconciliation at `2026-07-23T04:01:24Z` again reached `host` as
+native Linux `x86_64`, but `/mnt/cocalc-scratch` still resolved to the
+24,883,167,232-byte root filesystem with only 14,578,974,720 bytes free. The
+authoritative CPython 3.12 `post64` run remained invisible and untouched; no
+result was inferred from not-found inactive service properties, and no
+duplicate was launched. The separate `/mnt/cocalc` volume had
+77,849,694,208 bytes free, below the binary 100 GiB heavy-build threshold and
+outside the assigned root. Docker was absent, Podman had no active container,
+and no matching Sagelite process was visible. The directly fetched public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact.
+
+Independent preflight found native macOS and its Linux aarch64 Lima guest
+idle. Two unused Python slim test images and the reverified superseded
+`post63` source bundle were the only removed guest artifacts; the manylinux
+builder image, accepted wheelhouses, and validation evidence remain. Exact
+pushed `post64` source `014ae4bf443` is now building natively for Linux
+aarch64 CPython 3.12 under
+`sagelite-post64-arm-cp312-build.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443`.
+The exact 145,833,961-byte depth-one bundle has SHA256
+`b9e8799924c625055dff6cad4948c84d48ad159581f5e46b8bce42454b3e6eac`,
+and all 191 retained seed-wheel hashes passed. Pre-launch guest capacity was
+107,501,273,088 bytes. The guarded
+`sagelite-post64-arm-cp312-watch.service` will assemble a strict closure and
+run independent fresh short and full gates only after build success. At the
+latest `2026-07-23T04:11:48Z` check, both durable services remained active
+and the build log had entered repository bootstrap. No `post64` Linux
+aarch64 wheel, validation pass, cell acceptance, or publication is claimed
+yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4681,10 +4713,10 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. At the latest reconciliation at `2026-07-23T01:01:10Z` the assigned bulk mount and run root were invisible and the 24,883,167,232-byte root filesystem had only 14,685,184,000 bytes free, so inactive service properties on the currently reached machine are not accepted as a result. The run remains untouched. Its watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. At the latest reconciliation at `2026-07-23T04:01:24Z` the assigned bulk mount and run root were invisible and the 24,883,167,232-byte root filesystem had only 14,578,974,720 bytes free, so inactive service properties on the currently reached machine are not accepted as a result. The run remains untouched. Its watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
-| Linux aarch64 | 3.12 | yes (`post63`, local; `post9`, public) | full (`post63`); exact pushed source `16d6d78012a` produced 82 repaired primary and companion wheels and a strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 826.2 seconds; this is the third synchronized full-pass cell from the selected `post63` revision | smoke (`post8`), with system `git` for GitPython |
+| Linux aarch64 | 3.12 | exact `post64` synchronized rebuild active; `post63` local and `post9` public remain available | full (`post63`) baseline; exact pushed `post64` source `014ae4bf443` is building under `sagelite-post64-arm-cp312-build.service` at `/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443`. Its 191-wheel seed inventory, exact source bundle, native architecture, idle-builder, and 100 GiB capacity guards passed. The watcher will run independent fresh short and full gates after build success. No `post64` wheel or pass is claimed yet | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |

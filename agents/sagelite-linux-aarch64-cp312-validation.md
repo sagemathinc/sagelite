@@ -1,5 +1,73 @@
 # Sagelite Linux aarch64 CPython 3.12 Validation
 
+## 2026-07-23 Exact Post64 Synchronized Build Start
+
+Read-only reconciliation at `2026-07-23T04:01:24Z` reached the
+higher-priority Linux `x86_64` builder, but its assigned
+`/mnt/cocalc-scratch` run remained invisible because that path resolved to
+the 24,883,167,232-byte root filesystem with only 14,578,974,720 bytes free.
+The authoritative CPython 3.12 `post64` run was left untouched, no result was
+inferred from not-found inactive service properties on the currently reached
+machine, and no duplicate was launched. The directly fetched public manifest
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels and
+no `post64` artifact.
+
+Independent preflight found native macOS and its Linux aarch64 Lima guest
+idle. The outer host reported Darwin `arm64` with 106,603,176 KiB free on
+`/Volumes/sage`; the guest reported Linux `aarch64`. Guest capacity was
+initially 107,211,976,704 bytes, about 155 MiB below the binary 100 GiB
+heavy-build threshold. Precise cleanup removed only the two unused
+`python:3.12-slim-bookworm` and `python:3.14-slim-bookworm` test images. The
+retained manylinux builder image, accepted wheelhouses, and validation
+evidence remain. The superseded `post63` source bundle was removed only after
+its recorded SHA256 was reverified, then replaced by the exact `post64`
+source input.
+
+Exact pushed release-candidate source is:
+
+```text
+source SHA: 014ae4bf44318b6f5032053957a92291d4363b7a
+version:    10.9.post64
+bundle:     sagelite-014ae4bf443-depth1.bundle
+size:       145,833,961 bytes
+sha256:     b9e8799924c625055dff6cad4948c84d48ad159581f5e46b8bce42454b3e6eac
+```
+
+The bundle size and hash passed in the guest, and all 191 hashes in the
+retained accepted `post63` CPython 3.12 seed closure passed. The new native
+run is:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp312-20260723-040958-014ae4bf443
+```
+
+Its source checkout reached the exact pushed SHA, was clean before bootstrap,
+and reports `10.9.post64` from `VERSION.txt`. A native manylinux image probe
+reported `aarch64`. Pre-launch guest capacity was 107,501,273,088 bytes,
+above the binary 100 GiB threshold. The durable build and guarded watcher are
+active as:
+
+```text
+sagelite-post64-arm-cp312-build.service  main PID 2417688
+sagelite-post64-arm-cp312-watch.service  main PID 2417699
+```
+
+Script hashes are:
+
+```text
+5e7623721882956a32027e56df892c6ca66e1eed0a6ca85ab758f0c53085e1b8  start-build.sh
+520c692ba0f0e0bcb31fae3af022e6076064bf5b87cc2854f72855136d01cf1b  validate-after-build.sh
+1ecd09f1175f8f626fa23678ec70bc16ed2d210eec280bd5bd7a4fdcc66a7a15  watch-and-validate.sh
+```
+
+At the latest `2026-07-23T04:11:48Z` check, both services remained active,
+the durable log had entered repository bootstrap, and no exit-code artifact
+existed. The CPython 3.12 leg will emit a synchronized platform companion set.
+The watcher will assemble a deterministic strict closure and run independent
+fresh short and full gates only after build success. No `post64` wheel,
+validation pass, cell acceptance, or publication is claimed yet.
+
 ## 2026-07-19 Post63 Wheel And Strict Short/Full Passes
 
 The exact pushed build recorded below completed with exit code zero and
