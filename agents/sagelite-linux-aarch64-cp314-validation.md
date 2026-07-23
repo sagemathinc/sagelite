@@ -36,10 +36,14 @@ b52ff9a3b2c4dc2bce41b3d4e39ce12cf24c5cdd74c066161282652e9e24fdad  validate-after
 1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
 ```
 
-At the latest `2026-07-23T10:39:18Z` check, both durable services remained
-active under their original PIDs, the build log was advancing, and the guest
-retained 108,438,016,000 bytes free. No `post64` CPython 3.14 wheel,
-validation pass, cell acceptance, or publication is claimed yet.
+At the latest `2026-07-23T11:01:30Z` check, both durable services remained
+active under their original build PID `4041401` and watcher PID `4041408`.
+Neither service had an exit artifact and the run still contained zero wheels.
+The native manylinux container had configured all 580 Sage targets from the
+isolated fat prefix and Ninja had started the 1,795-target primary
+compilation. The guest retained 100,257,488,896 bytes free. No `post64`
+CPython 3.14 wheel, validation pass, cell acceptance, or publication is
+claimed yet.
 
 ## 2026-07-18 Post63 Full Acceptance
 
