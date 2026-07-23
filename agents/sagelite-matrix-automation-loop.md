@@ -4829,6 +4829,38 @@ launched. The directly fetched public manifest remains the 177-wheel set
 generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
 primary wheels and no `post64` artifact. Nothing was published.
 
+The next scheduled iteration reached `host` on its first bounded attempt at
+`2026-07-23T08:31:28Z` as native Linux `x86_64`, but its assigned
+`/mnt/cocalc-scratch` mount remained absent and the authoritative CPython
+3.12 `post64` run was still invisible. The 24,883,167,232-byte root
+filesystem had 9,455,128,576 bytes free. The separate `/mnt/cocalc`
+filesystem had 107,899,785,216 bytes free but remains outside the assigned
+automation root. Historical `post64` service names were not found and
+inactive, Docker was absent, and no result was inferred or duplicate
+x86_64 build launched. The directly fetched public manifest remains the
+177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen
+Sagelite primary wheels and no `post64` artifact.
+
+Independent preflight found native macOS and its Linux aarch64 Lima guest
+idle. The guest reported Linux `aarch64`, Docker reported `linux/aarch64`,
+and 112,253,075,456 bytes were free, above the binary 100 GiB heavy-build
+threshold. Complete SHA256 rechecks passed for the accepted CPython 3.12
+`post64` 191-wheel closure and the retained accepted CPython 3.13 `post63`
+closure. Exact pushed source `014ae4bf443` is now building natively for Linux
+aarch64 CPython 3.13 under
+`sagelite-post64-arm-cp313-build.service` at
+`/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443`.
+The guarded `sagelite-post64-arm-cp313-watch.service` will assemble a strict
+closure and run independent fresh short and full gates only after build
+success. The retained 145,833,961-byte exact-SHA bundle has verified SHA256
+`b9e8799924c625055dff6cad4948c84d48ad159581f5e46b8bce42454b3e6eac`.
+The exact checkout reports `10.9.post64`, and the actual manylinux container
+reports Linux `aarch64` with CPython 3.13.12. Docker inspection proves that
+the guest root is mounted read/write at `/host`, exposing the isolated
+`--enable-fat-binary` prefix at
+`/host/sage-fat-v1-manylinux_2_28_aarch64`. No `post64` CPython 3.13 wheel,
+validation pass, cell acceptance, or publication is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -4909,7 +4941,7 @@ Status meanings:
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 850.9 seconds; this is the first synchronized full-pass cell from the selected `post63` revision | none |
+| Linux aarch64 | 3.13 | exact `post64` fat-binary rebuild active; `post63` local remains available | `post64` build and guarded watcher active. Exact pushed source `014ae4bf443` is building under `sagelite-post64-arm-cp313-build.service` at `/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443`. Both retained seed closures passed complete hash rechecks; the actual manylinux container reports native `aarch64` with CPython 3.13.12 and exposes the isolated fat prefix read/write. No `post64` wheel or pass is claimed yet. The earlier full `post63` result remains a useful baseline but cannot complete the coherent `post64` matrix | none |
 | Linux aarch64 | 3.14 | yes (`post63`, local) | full (`post63`); exact pushed source `16d6d78012a` produced a repaired primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 881.5 seconds; this is the second synchronized full-pass cell from the selected `post63` revision | none |
 | macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |
 | macOS arm64 | 3.13 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
@@ -4946,10 +4978,12 @@ Unless newer evidence changes the matrix, use this order:
    3.13 and 3.14. Each cell requires both fresh standard gates and an explicit
    old-CPU probe without BMI2 or ADX. Never reuse the old non-fat native
    prefix.
-2. Rebuild and rerun the remaining three Linux aarch64 cells from the same
-   exact `post64` source revision. All three macOS arm64 cells already pass
-   from that revision. The Linux aarch64 cells' `post63` full passes remain
-   useful baselines but cannot complete a coherent `post64` matrix.
+2. Rebuild and rerun the remaining Linux aarch64 cells from the same exact
+   `post64` source revision. CPython 3.12 now passes and CPython 3.13 is
+   building under its guarded watcher; CPython 3.14 remains. All three macOS
+   arm64 cells already pass from that revision. The remaining Linux aarch64
+   `post63` full passes are useful baselines but cannot complete a coherent
+   `post64` matrix.
 3. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 4. Resume systematic optional-package expansion in install-smoke batches.

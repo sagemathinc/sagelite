@@ -1,5 +1,57 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Exact Fat-Binary Build Start
+
+The higher-priority Linux `x86_64` target was reachable at
+`2026-07-23T08:31:28Z`, but its assigned `/mnt/cocalc-scratch` mount was
+absent and the authoritative CPython 3.12 `post64` run remained invisible.
+The reached machine was native `x86_64`; its 24,883,167,232-byte root
+filesystem had 9,455,128,576 bytes free. The separate `/mnt/cocalc`
+filesystem had 107,899,785,216 bytes free but remains outside the assigned
+automation root. The historical service names were not found and inactive,
+Docker was absent, and no result was inferred. The public manifest remains
+the 177-wheel set generated at `2026-07-09T17:17:42.743310+00:00`, with
+fourteen Sagelite primary wheels and no `post64` artifact.
+
+Independent preflight found native macOS and the native Linux aarch64 Lima
+guest idle. The guest reported Linux `aarch64`, Docker reported
+`linux/aarch64`, and 112,253,075,456 bytes were free, above the binary
+100 GiB heavy-build threshold. The exact accepted CPython 3.12
+`post64` 191-wheel closure and the retained accepted CPython 3.13 `post63`
+closure both passed complete SHA256 rechecks. The latter supplies only the
+CPython 3.13 `cysignals` and `pycosat` supplements; the new build outputs
+will replace matching projects before deterministic binary-only resolution.
+
+Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is now building natively at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443
+sagelite-post64-arm-cp313-build.service  main PID 3816605
+sagelite-post64-arm-cp313-watch.service  main PID 3816615
+```
+
+The retained 145,833,961-byte exact-SHA bundle has SHA256
+`b9e8799924c625055dff6cad4948c84d48ad159581f5e46b8bce42454b3e6eac`.
+The detached checkout reports the exact selected source and
+`10.9.post64`. The actual manylinux container reports Linux `aarch64` and
+CPython 3.13.12. Docker inspection shows the guest root mounted read/write at
+`/host`, exposing the isolated fat prefix as
+`/host/sage-fat-v1-manylinux_2_28_aarch64`; its retained `config.status`
+contains `--enable-fat-binary`. The durable build entered native container
+prerequisite setup. Script hashes are:
+
+```text
+b94a09adbdc3cfe6a9973537aab23ec81d33437877dd0df144a41f4fe52c9687  start-build.sh
+16801fd451b31014834f27f6ddd0575588e607be223cf4cbbdfea5252035c4fc  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+The guarded watcher will assemble a strict CPython 3.13 closure and run
+independent fresh short and full gates only after build success. No `post64`
+CPython 3.13 wheel, install, validation pass, cell acceptance, or publication
+is claimed yet.
+
 ## 2026-07-18 Post63 Synchronized Full Pass
 
 The exact pushed `post63` native build completed with exit code zero from
