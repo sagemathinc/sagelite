@@ -1,5 +1,43 @@
 # Sagelite Linux aarch64 CPython 3.13 Validation
 
+## 2026-07-23 Post64 Synchronized Full Pass
+
+The separately named fresh full rerun completed with exit code zero at
+`2026-07-23T10:33:45Z`. It used the unchanged hash-verified 191-wheel
+closure from exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a`. Strict repaired-wheelhouse
+preflight accepted one primary, 81 companions, and 109 third-party wheels
+totaling 16,783,060,053 bytes, with wheelhouse SHA256
+`d61ae46e071ef79b62d8aea2fb922e28c5071bc6454d96e14f8e9525f3a293c8`.
+All 191 hashes passed again after validation.
+
+The fresh binary-only `sagelite[all-needed-extras]==10.9.post64`
+installation, `pip check`, runtime isolation with zero leaks, and all 102
+selftest checks passed. The unrestricted installed `--optional=sage` sweep
+passed all 3,953 modules with zero failures in 821.2 seconds. Packaged pytest
+passed with 229 passes and 2 skips, the independent reducer reported zero
+failed modules, and the validator exited zero after 1,604.539 seconds. The
+earlier 0.0028-second timing-tolerance overrun did not recur.
+
+The authoritative rerun evidence is retained at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/validation/full-post64-rerun1/validation-summary.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/validation/full-post64-rerun1/doctest-installed-linux-aarch64-cp313-post64-full-rerun1-20260723-101009.analysis.md
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/validation/full-post64-rerun1/doctest-installed-linux-aarch64-cp313-post64-full-rerun1-20260723-101009.analysis.json
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/validation-full-rerun1-command.log
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/validation-full-rerun1-exit-code
+/home/sage.guest/sagelite-automation/linux-aarch64-cp313-20260723-083518-014ae4bf443/post-validation-wheelhouse-hash-check.log
+```
+
+Exact pushed `post64` source `014ae4bf443` is accepted locally for Linux
+aarch64 CPython 3.13 as the fifth synchronized full-pass cell for this
+release-candidate revision. Deliberate cleanup retained the strict closure
+and all concise validation evidence while removing only the completed
+validation installs, disposable source checkout, and host venv. This restored
+109,551,865,856 bytes free before the next build preflight. No artifact was
+published.
+
 ## 2026-07-23 Post64 Full-Gate Timing Rejection And Fresh Rerun
 
 The first fresh full gate completed with exit code 1 at

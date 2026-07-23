@@ -1,6 +1,45 @@
 # Sagelite Linux aarch64 CPython 3.14 Validation
 
-Last updated: 2026-07-18
+Last updated: 2026-07-23
+
+## 2026-07-23 Post64 Exact Fat-Binary Rebuild Start
+
+Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` is building natively at:
+
+```text
+/home/sage.guest/sagelite-automation/linux-aarch64-cp314-20260723-103846-014ae4bf443
+sagelite-post64-arm-cp314-build.service
+sagelite-post64-arm-cp314-watch.service
+```
+
+The CPython 3.13 acceptance cleanup restored 109,551,865,856 bytes free,
+above the binary 100 GiB heavy-build threshold. The retained exact-SHA source
+bundle has size 145,833,961 bytes and verified SHA256
+`b9e8799924c625055dff6cad4948c84d48ad159581f5e46b8bce42454b3e6eac`.
+All 191 wheels in the accepted `post64` CPython 3.12 base closure and all 180
+wheels in the accepted `post63` CPython 3.14 ABI seed passed complete SHA256
+rechecks before launch.
+
+The detached checkout is clean at the exact selected source and reports
+`10.9.post64`. The actual manylinux container reports Linux `aarch64` and
+CPython 3.14.3. Its selected isolated native prefix is
+`/host/sage-fat-v1-manylinux_2_28_aarch64`; the cache guard correctly replaced
+the retained CPython 3.13 interpreter layer with CPython 3.14 before entering
+native prerequisite setup. The guarded watcher will assemble a strict closure
+and run independent fresh short and full gates only after build success.
+Launcher hashes are:
+
+```text
+444a35305a67a19e88ed7cf2763e963edc4f194a6eca672e4ffbf7dd383ebcf3  start-build.sh
+b52ff9a3b2c4dc2bce41b3d4e39ce12cf24c5cdd74c066161282652e9e24fdad  validate-after-build.sh
+1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
+```
+
+At the latest `2026-07-23T10:39:18Z` check, both durable services remained
+active under their original PIDs, the build log was advancing, and the guest
+retained 108,438,016,000 bytes free. No `post64` CPython 3.14 wheel,
+validation pass, cell acceptance, or publication is claimed yet.
 
 ## 2026-07-18 Post63 Full Acceptance
 
