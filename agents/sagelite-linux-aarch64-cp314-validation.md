@@ -36,13 +36,26 @@ b52ff9a3b2c4dc2bce41b3d4e39ce12cf24c5cdd74c066161282652e9e24fdad  validate-after
 1bb0d35374fe3b73de34e67bcd93f3bbd3406fdd9ecfddd1677eaf1c4b76c4c1  watch-and-validate.sh
 ```
 
-At the latest `2026-07-23T11:01:30Z` check, both durable services remained
-active under their original build PID `4041401` and watcher PID `4041408`.
-Neither service had an exit artifact and the run still contained zero wheels.
-The native manylinux container had configured all 580 Sage targets from the
-isolated fat prefix and Ninja had started the 1,795-target primary
-compilation. The guest retained 100,257,488,896 bytes free. No `post64`
-CPython 3.14 wheel, validation pass, cell acceptance, or publication is
+The exact build subsequently completed with exit code zero and produced:
+
+```text
+sagelite-10.9.post64-cp314-cp314-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+size:   248307872 bytes
+sha256: 6e2a1ea0006b69d6de7f5a8396fe183df1d38517fa3d7d84df6ef687cf5b7017
+```
+
+The guarded watcher assembled a deterministic strict closure containing 180
+wheels totaling 16,780,148,113 bytes. The closure `SHA256SUMS` file has
+SHA256
+`de257fb318edfb120bb52c1fbfb43c1c9de3dd9a1d1212c7ab4e90b1723f99da`.
+At the latest `2026-07-23T11:33:32Z` check, the fresh short gate had passed
+strict preflight, binary-only `sagelite[all-needed-extras]==10.9.post64`
+installation, `pip check`, runtime isolation with zero leaks, all 102
+selftests, and all 3,953 installed `--optional=sage` modules with zero
+failures in 538.7 seconds. Packaged pytest had collected 229 tests with 2
+skips and reached 69 percent while the original watcher PID `4041408`
+remained active. The independent full gate remains guarded on a zero
+short-gate exit. No short or full pass, cell acceptance, or publication is
 claimed yet.
 
 ## 2026-07-18 Post63 Full Acceptance
