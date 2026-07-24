@@ -1,5 +1,34 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-24 Resumed Post64 Build Healthy At 09:01 UTC
+
+Read-only reconciliation at `2026-07-24T09:01:41Z` found the controlled
+same-tree resume healthy. Both
+`sagelite-post64-x86-cp312-build-r1.service` and
+`sagelite-post64-x86-cp312-watch-r1.service` had remained continuously active
+since `08:41:52Z`; their main PIDs were 1866048 and 1866076. The build service
+still executed the recorded `build.sh` from the authoritative run root, and
+the source checkout remained clean at exact pushed SHA
+`014ae4bf44318b6f5032053957a92291d4363b7a`.
+
+The native manylinux container had been up for 19 minutes and was using about
+1,497% CPU with 80 processes. Its live process tree showed Maxima compiling
+through the retained fat ECL together with Sage C and C++ extension modules.
+Compiler invocations recorded `-march=x86-64 -mtune=generic`, while the build
+continued against `/host/sage-fat-v1-manylinux_2_28_x86_64`. The resumed
+command log had grown to 311,099 bytes, and direct container inspection showed
+new compiler processes and output files after its last buffered write. The
+watcher remained asleep behind the build-success gate. The assigned
+527,297,863,680-byte filesystem had 165,481,246,720 bytes free.
+
+No wheel, nonempty exit-code artifact, old-CPU result, validation pass, cell
+acceptance, or publication is claimed yet. The directly fetched public
+manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with no `post64` artifact. Before this
+evidence edit, the canonical checkout, local tracking ref, and directly
+queried `origin/develop` ref were synchronized at
+`ab26fc179c1105a921bc5d3d81ca1f9cdc6f918e`.
+
 ## 2026-07-24 Exact Post64 Fat-Binary Build Resumed At 08:41 UTC
 
 Read-only reconciliation at `2026-07-24T08:39:53Z` reached `host` on the

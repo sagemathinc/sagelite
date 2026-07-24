@@ -5912,6 +5912,21 @@ The directly fetched public manifest remains the 177-wheel set generated at
 versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Nothing was
 published.
 
+Read-only reconciliation at `2026-07-24T09:01:41Z` found the controlled
+same-tree resume healthy. Both durable services had remained continuously
+active since `08:41:52Z`. The exact source checkout was still clean at
+`014ae4bf443`, and the build service still executed the recorded launcher from
+the authoritative run root. The native manylinux container had been up for
+19 minutes and was using about 1,497% CPU with 80 processes while Maxima and
+Sage C and C++ extension modules compiled concurrently. Live compiler
+invocations recorded `-march=x86-64 -mtune=generic` and continued to use the
+isolated fat prefix. The resumed log had grown to 311,099 bytes, and direct
+container inspection showed continuing compiler and output-file progress
+after its last buffered write. The watcher remained asleep behind the
+build-success gate. The assigned filesystem had 165,481,246,720 bytes free.
+No wheel, nonempty exit-code artifact, old-CPU result, validation pass, or
+publication is claimed yet. The public manifest remains unchanged.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -5988,7 +6003,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `08:42:25Z`, both services were active; the actual manylinux container reported native `x86_64` with CPython 3.12.13 and the exact isolated fat prefix mounted read/write. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `09:01:41Z`, both services remained active; the native manylinux container was using about 1,497% CPU while Maxima and Sage extensions compiled with generic x86-64 flags against the isolated fat prefix. The assigned filesystem had 165,481,246,720 bytes free. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
