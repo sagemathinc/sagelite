@@ -1,5 +1,28 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-24 Assigned Bulk Run Inaccessible At 18:01 UTC
+
+Read-only reconciliation at `2026-07-24T18:01:32Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`, but the assigned
+`/mnt/cocalc-scratch` path was absent and the authoritative run root was
+therefore invisible. Both durable service names were not found and inactive
+with retained successful result and exit-status properties on the currently
+reached machine. Docker was absent, Podman had no active container, and no
+external process matched the automation names. No result was inferred, no
+remote state was changed, and no duplicate build was launched.
+
+The root filesystem had 17,409,421,312 bytes free. The separate
+`/mnt/cocalc` volume had 63,689,334,784 bytes free, below the binary 100 GiB
+heavy-build threshold and outside the runbook-assigned automation root. The
+controller filesystems used by this iteration had 59,463,962,624 bytes free
+under `/home/user` and 161,024,131,072 bytes free under `/scratch`. A direct
+public manifest fetch confirmed the unchanged 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Before this
+evidence edit, the canonical checkout, its tracking ref, and the directly
+queried `origin/develop` ref were synchronized at
+`4ab2d52c45803c89d0840932bdc7adbd33c3fe24`.
+
 ## 2026-07-24 Assigned Bulk Run Inaccessible At 17:31 UTC
 
 Read-only reconciliation at `2026-07-24T17:31:26Z` reached `host` on the
