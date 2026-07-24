@@ -1,5 +1,23 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-24 Assigned Host Unreachable At 09:32 UTC
+
+Three bounded read-only SSH attempts to `host` timed out during connection, so
+the authoritative run root, durable service state, log growth, exit-code
+artifacts, wheel outputs, and assigned bulk-filesystem capacity could not be
+reconciled. The possibly surviving exact-source build and guarded watcher were
+left untouched. No duplicate build was launched, no remote state was changed,
+and no wheel, old-CPU result, validation pass, cell acceptance, or publication
+is inferred.
+
+The public `dev/manifest.json` was fetched independently with a pip user agent
+and remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Before this
+evidence edit, the canonical checkout, its tracking ref, and the directly
+queried `origin/develop` ref were synchronized at
+`f4cbc927a10158cfc5a369f918019f61b2ea6e18`.
+
 ## 2026-07-24 Resumed Post64 Build Healthy At 09:01 UTC
 
 Read-only reconciliation at `2026-07-24T09:01:41Z` found the controlled
