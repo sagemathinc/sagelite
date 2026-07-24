@@ -6157,6 +6157,24 @@ checkpoint edit, the canonical checkout, its tracking ref, and the directly
 queried `origin/develop` ref were synchronized at
 `e6eacac4b5d6c7cc1ac4abdf8e7aeac939f71ff2`. Nothing was published.
 
+Read-only reconciliation at `2026-07-24T16:01:23Z` again reached `host` on
+the first bounded attempt as native Linux `x86_64`, but the assigned
+`/mnt/cocalc-scratch` path and authoritative run root remained invisible.
+Both durable service names were not found and inactive with retained
+successful result and exit-status properties on the currently reached
+machine. Docker was absent, Podman had no active container, and no external
+process matched the automation names. No result was inferred, no remote state
+was changed, and no duplicate build was launched. The root filesystem had
+17,428,680,704 bytes free. The separate `/mnt/cocalc` volume had
+63,707,721,728 bytes free, below the binary 100 GiB heavy-build threshold and
+outside the assigned automation root. The directly fetched public manifest
+remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Before this
+checkpoint edit, the canonical checkout, its tracking ref, and the directly
+queried `origin/develop` ref were synchronized at
+`b503faf13fbff553d9b9ac70bc0cca3ece145d41`. Nothing was published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
