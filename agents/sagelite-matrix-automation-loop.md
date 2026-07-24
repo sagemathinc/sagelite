@@ -5884,6 +5884,34 @@ queried `origin/develop` ref were synchronized at
 `014ae4bf44318b6f5032053957a92291d4363b7a` remains an ancestor of that
 branch. Nothing was published.
 
+Read-only reconciliation at `2026-07-24T08:39:53Z` reached `host` on the
+first bounded attempt as native Linux `x86_64` and found the assigned
+527,297,863,680-byte `/mnt/cocalc-scratch` ext4 filesystem restored, with
+174,154,424,320 bytes free. The authoritative CPython 3.12 run root was
+visible again. It contained no wheel; its original command log ended during
+primary compilation, and its build and orchestration exit-code files were
+zero bytes. The builder had rebooted at `2026-07-23T20:44:32Z`, both transient
+units were absent and inactive, and no Docker container or matching external
+process was active. No completion result was inferred from the retained
+successful unit properties.
+
+The exact source archive, committed tree, clean checkout, four launcher-script
+hashes, fat-prefix symlink, and `--enable-fat-binary` configuration all passed
+reconciliation. The interrupted control files were preserved separately.
+With the persistent prefix retaining the exact build's cached prerequisites,
+a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under the
+original `sagelite-post64-x86-cp312-build-r1.service` and
+`sagelite-post64-x86-cp312-watch-r1.service` names, using separately named
+resume logs. Both services were active at `2026-07-24T08:42:25Z`; the actual
+manylinux container reported native `x86_64` and CPython 3.12.13, and Docker
+inspection proved the intended fat prefix mounted read/write. The watcher
+remains gated on build success, the QEMU Nehalem probe without BMI2 or ADX,
+and independent fresh short and full gates. No wheel or pass is claimed yet.
+The directly fetched public manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Nothing was
+published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -5960,7 +5988,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild possibly active but inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. Exact pushed source `014ae4bf443` was building from an empty isolated fat profile under `sagelite-post64-x86-cp312-build-r1.service` at `/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`; native prerequisites through `msolve` completed and `fplll` installation began. In the latest reconciliation at `2026-07-24T08:31:21Z`, the alias reached a native `x86_64` machine, but `/mnt/cocalc-scratch` was absent and the authoritative run root remained invisible. Historical units were not found and inactive. The 24,883,167,232-byte root filesystem had only 9,566,752,768 bytes free; the separate `/mnt/cocalc` volume had 94,375,497,728 bytes free, below the binary 100 GiB threshold and outside the assigned root. No result is inferred and no duplicate was launched. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `08:42:25Z`, both services were active; the actual manylinux container reported native `x86_64` with CPython 3.12.13 and the exact isolated fat prefix mounted read/write. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |

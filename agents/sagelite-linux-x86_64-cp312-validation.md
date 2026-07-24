@@ -1,5 +1,50 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-24 Exact Post64 Fat-Binary Build Resumed At 08:41 UTC
+
+Read-only reconciliation at `2026-07-24T08:39:53Z` reached `host` on the
+first bounded attempt as native Linux `x86_64` and found the assigned
+527,297,863,680-byte `/mnt/cocalc-scratch` ext4 filesystem restored, with
+174,154,424,320 bytes free. The authoritative run root
+`/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443`
+was visible again. It contained no wheel. Its original command log ended
+during primary compilation, while `exit-code` and
+`orchestration-exit-code` were zero-byte files and therefore not valid
+results. The builder had rebooted at `2026-07-23T20:44:32Z`; both transient
+units were absent and inactive, and no Docker container or matching external
+process was active. No result was inferred from the retained successful unit
+properties.
+
+Exact pushed source `014ae4bf44318b6f5032053957a92291d4363b7a`, committed tree
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`, the clean checkout, and the
+146,483,200-byte source archive with SHA256
+`a7ce677432f01cff16fd93d88f6c12f3d988464d76a2c79aa215165d5df047ed`
+all passed. All four launcher scripts matched their recorded hashes. The
+persistent profile retained the exact build's cached prerequisites, its
+`config.status` recorded `--enable-fat-binary` and `SAGE_FAT_BINARY=yes`, and
+the host prefix symlink resolved to that profile. The interrupted zero-byte
+control files were preserved separately as
+`exit-code.interrupted-20260722` and
+`orchestration-exit-code.interrupted-20260722`.
+
+A controlled same-tree resume launched at `2026-07-24T08:41:52Z` under the
+original `sagelite-post64-x86-cp312-build-r1.service` and
+`sagelite-post64-x86-cp312-watch-r1.service` names. Its new durable logs are
+`resume1-20260724-0844-command.log` and
+`resume1-20260724-0844-orchestration.log` in the authoritative run root. At
+`2026-07-24T08:42:25Z`, both services were active. The actual manylinux
+container reported native `x86_64` and CPython 3.12.13, and Docker inspection
+proved that the exact isolated fat prefix was mounted read/write at
+`/host/sage-fat-v1-manylinux_2_28_x86_64`.
+
+The watcher remains gated on build exit zero. It will then assemble the exact
+closure, run the QEMU Nehalem probe after asserting that BMI2 and ADX are
+absent, and run independent fresh short and full gates. A direct public
+manifest fetch confirmed the unchanged 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. No wheel,
+validation pass, cell acceptance, or publication is claimed yet.
+
 ## 2026-07-24 Assigned Bulk Run Still Inaccessible At 08:31 UTC
 
 Read-only reconciliation at `2026-07-24T08:31:21Z` reached `host` on the
