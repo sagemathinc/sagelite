@@ -1,5 +1,37 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-24 Assigned Mount Still Too Small At 20:31 UTC
+
+Read-only reconciliation at `2026-07-24T20:31:37Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remained backed by the 52,521,566,208-byte
+`/dev/sdc` ext4 filesystem with 49,820,409,856 bytes free, rather than the
+previously observed 527,297,863,680-byte build filesystem. Its only entry was
+`lost+found`, and the authoritative exact-source run root remained absent.
+Both durable service names were not found and inactive with retained
+successful result and exit-status properties on the currently reached
+machine. Docker was absent, Podman had no active container, and a
+`/proc`-based check excluding the probe's own ancestor processes found no
+external process matching the service or run names. No result was inferred,
+no remote state was changed, and no duplicate build was launched.
+
+The assigned filesystem cannot satisfy the binary 100 GiB heavy-build
+threshold even when empty, so no cleanup can make it suitable for the
+`post64` rebuild. The root filesystem had 17,392,869,376 bytes free, and the
+separate `/mnt/cocalc` volume had 63,757,352,960 bytes free, also below the
+threshold and outside the runbook-assigned automation root. The controller
+filesystems used by this iteration had 59,450,490,880 bytes free under
+`/home/user` and 161,024,131,072 bytes free under `/scratch`.
+
+A direct public manifest fetch confirmed the unchanged 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels, versions `10.9.post8` and `10.9.post9`, and no `post64`
+artifact. Before this evidence edit, the canonical checkout, its tracking
+ref, and the directly queried `origin/develop` ref were synchronized at
+`82aa9818da689f49dce6bacaa7ccd4735c6312c2`. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` remains an ancestor of that
+branch.
+
 ## 2026-07-24 Assigned Mount Returned Too Small At 20:01 UTC
 
 Read-only reconciliation at `2026-07-24T20:01:38Z` reached `host` on the
