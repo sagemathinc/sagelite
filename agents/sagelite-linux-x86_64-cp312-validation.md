@@ -1,5 +1,37 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-25 Assigned Mount Still Too Small At 02:01 UTC
+
+Read-only reconciliation at `2026-07-25T02:01:40Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remained backed by the 52,521,566,208-byte
+`/dev/sdc` ext4 filesystem with 49,820,409,856 bytes free, rather than the
+previously observed 527,297,863,680-byte build filesystem. Its only entry was
+`lost+found`, and the authoritative exact-source run root remained absent.
+Both durable service names were not found and inactive with retained
+successful result and exit-status properties on the currently reached
+machine. Docker was absent, Podman had no active container, and an
+ancestor-safe process check found zero external processes matching the
+service or run names. No result was inferred, no remote state was changed,
+and no duplicate build was launched.
+
+The assigned filesystem cannot satisfy the binary 100 GiB heavy-build
+threshold even when empty, so no cleanup can make it suitable for the
+`post64` rebuild. The root filesystem had 17,445,564,416 bytes free, and the
+separate `/mnt/cocalc` volume had 63,664,222,208 bytes free, also below the
+threshold and outside the assigned automation root. The controller
+filesystems used by this iteration had 59,298,754,560 bytes free under
+`/home/user` and 161,024,094,208 bytes free under `/scratch`.
+
+A direct public manifest fetch confirmed the unchanged 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels, versions `10.9.post8` and `10.9.post9`, and no `post64`
+artifact. Before this evidence edit, the canonical checkout, its tracking
+ref, and the directly queried `origin/develop` ref were synchronized at
+`7fe22958a691b340b1328c4e14b97fea7845dd56`. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` remains an ancestor of that
+branch.
+
 ## 2026-07-25 Assigned Mount Still Too Small At 01:31 UTC
 
 Read-only reconciliation at `2026-07-25T01:31:47Z` reached `host` on the

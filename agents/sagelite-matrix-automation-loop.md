@@ -6564,6 +6564,28 @@ checkpoint edit, the canonical checkout, its tracking ref, and the directly
 queried `origin/develop` ref were synchronized at
 `8a5db535870fc45ba566b7da6f45d21503bfae0f`. Nothing was published.
 
+Read-only reconciliation at `2026-07-25T02:01:40Z` again reached `host` on
+the first bounded attempt as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remained the 52,521,566,208-byte `/dev/sdc` ext4
+filesystem with 49,820,409,856 bytes free, rather than the previously
+observed 527,297,863,680-byte build filesystem. Its only entry was
+`lost+found`, and the authoritative run root remained absent. Both durable
+service names were not found and inactive with retained successful result
+and exit-status properties on the currently reached machine. Docker was
+absent, Podman had no active container, and an ancestor-safe process check
+found zero external processes matching the service or run names. No result
+was inferred, no remote state was changed, and no duplicate build was
+launched. The assigned filesystem cannot meet the binary 100 GiB heavy-build
+threshold even when empty. The root filesystem had 17,445,564,416 bytes
+free, and the separate `/mnt/cocalc` volume had 63,664,222,208 bytes free,
+also below the threshold and outside the assigned automation root. The
+directly fetched public manifest remains the 177-wheel set generated at
+`2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite primary wheels,
+versions `10.9.post8` and `10.9.post9`, and no `post64` artifact. Before this
+checkpoint edit, the canonical checkout, its tracking ref, and the directly
+queried `origin/develop` ref were synchronized at
+`7fe22958a691b340b1328c4e14b97fea7845dd56`. Nothing was published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -6640,7 +6662,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild interrupted and inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `09:01:41Z`, both services remained active; the native manylinux container was using about 1,497% CPU while Maxima and Sage extensions compiled with generic x86-64 flags against the isolated fat prefix. The assigned filesystem had 165,481,246,720 bytes free. At `09:32:38Z`, all three bounded SSH attempts timed out. From `10:01:48Z` through `19:31:20Z`, the alias repeatedly reached a staging machine where the assigned mount and authoritative run were invisible. At `20:01:38Z`, `/mnt/cocalc-scratch` was mounted again, but as a 52,521,566,208-byte filesystem with only 49,820,409,856 bytes free; the authoritative run remained absent, Docker and the durable units were absent, and no matching process was active. Fresh read-only probes through `2026-07-25T01:31:47Z` confirmed the same undersized mount, absent run and units, and zero matching external processes. This filesystem cannot meet the 100 GiB heavy-build threshold even when empty. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild interrupted and inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `09:01:41Z`, both services remained active; the native manylinux container was using about 1,497% CPU while Maxima and Sage extensions compiled with generic x86-64 flags against the isolated fat prefix. The assigned filesystem had 165,481,246,720 bytes free. At `09:32:38Z`, all three bounded SSH attempts timed out. From `10:01:48Z` through `19:31:20Z`, the alias repeatedly reached a staging machine where the assigned mount and authoritative run were invisible. At `20:01:38Z`, `/mnt/cocalc-scratch` was mounted again, but as a 52,521,566,208-byte filesystem with only 49,820,409,856 bytes free; the authoritative run remained absent, Docker and the durable units were absent, and no matching process was active. Fresh read-only probes through `2026-07-25T02:01:40Z` confirmed the same undersized mount, absent run and units, and zero matching external processes. This filesystem cannot meet the 100 GiB heavy-build threshold even when empty. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
