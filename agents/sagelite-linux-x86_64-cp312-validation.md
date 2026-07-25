@@ -1,5 +1,36 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-25 Assigned Mount Still Too Small At 04:02 UTC
+
+Read-only reconciliation at `2026-07-25T04:02:30Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remained backed by the 52,521,566,208-byte
+`/dev/sdc` ext4 filesystem with 49,820,409,856 bytes free, rather than the
+previously observed 527,297,863,680-byte build filesystem. The authoritative
+exact-source run root remained absent. Both durable service names were not
+found and inactive with retained successful result and exit-status
+properties on the currently reached machine. Docker was absent, Podman had
+no active container, and an ancestor-safe process check found zero external
+processes matching the service or run names. No result was inferred, no
+remote state was changed, and no duplicate build was launched.
+
+The assigned filesystem cannot satisfy the binary 100 GiB heavy-build
+threshold even when empty, so no cleanup can make it suitable for the
+`post64` rebuild. The root filesystem had 17,438,007,296 bytes free, and the
+separate `/mnt/cocalc` volume had 63,629,824,000 bytes free, also below the
+threshold and outside the assigned automation root. The controller
+filesystems used by this iteration had 59,270,201,344 bytes free under
+`/home/user` and 161,024,094,208 bytes free under `/scratch`.
+
+A direct public manifest fetch confirmed the unchanged 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels, versions `10.9.post8` and `10.9.post9`, and no `post64`
+artifact. Before this evidence edit, the canonical checkout, its tracking
+ref, and the directly queried `origin/develop` ref were synchronized at
+`3bb8056cf5d1eb035844350572a203da9faf180a`. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` remains an ancestor of that
+branch.
+
 ## 2026-07-25 Assigned Mount Still Too Small At 03:31 UTC
 
 Read-only reconciliation at `2026-07-25T03:31:24Z` reached `host` on the
