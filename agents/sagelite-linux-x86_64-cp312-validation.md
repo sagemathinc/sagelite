@@ -1,5 +1,34 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-27 Assigned Mount Still Too Small At 07:31 UTC
+
+Read-only reconciliation at `2026-07-27T07:31:30Z` reached `host` on the
+first bounded attempt as native Linux `x86_64`. The assigned
+`/mnt/cocalc-scratch` path remained backed by the 52,521,566,208-byte
+`/dev/sdc` ext4 filesystem with 49,820,409,856 bytes free. Its only entry was
+`lost+found`, the authoritative exact-source run root remained absent, and
+both durable service names were not found and inactive. Docker was absent,
+Podman had no active container, and a literal process scan found zero
+external Sagelite, cibuildwheel, or authoritative-run matches. No result was
+inferred, no remote state was changed, and no duplicate build was launched.
+
+The assigned filesystem cannot satisfy the binary 100 GiB heavy-build
+threshold even when empty, so no cleanup can make it suitable for the
+`post64` rebuild. The root filesystem had 17,247,682,560 bytes free, and the
+separate `/mnt/cocalc` volume had 63,332,229,120 bytes free, also below the
+threshold and outside the assigned automation root. The controller
+filesystems used by this iteration had 55,804,133,376 bytes free under
+`/home/user` and 161,024,090,112 bytes free under `/scratch`.
+
+A direct public manifest fetch confirmed the unchanged 177-wheel set
+generated at `2026-07-09T17:17:42.743310+00:00`, with fourteen Sagelite
+primary wheels, versions `10.9.post8` and `10.9.post9`, and no `post64`
+artifact. Before this evidence edit, the canonical checkout, its tracking
+ref, and the directly queried `origin/develop` ref were synchronized at
+`3f68db304d93ce9c30ef9f06ff90f880ad7c60d4`. Exact pushed `post64` source
+`014ae4bf44318b6f5032053957a92291d4363b7a` remains an ancestor of that
+branch.
+
 ## 2026-07-27 Assigned Mount Still Too Small At 07:01 UTC
 
 Read-only reconciliation at `2026-07-27T07:01:07Z` reached `host` on the
