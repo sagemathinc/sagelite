@@ -55,7 +55,15 @@ passed strict repaired-wheelhouse preflight, a fresh binary-only
 isolation, all selftest probes, and the bounded installed `--optional=sage`
 suite. The validator exited zero at `01:38:43Z`; its installed-runtime phase
 took 1,421.436 seconds. The separate fresh full gate started at
-`2026-07-30T01:38:47Z`. Full acceptance remains pending.
+`2026-07-30T01:38:47Z`.
+
+The full gate exited zero at `2026-07-30T02:11:02Z`. It independently passed
+strict preflight, another fresh binary-only install, `pip check`, runtime
+isolation, all selftest probes, and all 3,953 installed standard modules with
+zero failures. The unrestricted `--optional=sage` sweep took 902.9 seconds,
+and the complete installed-runtime phase took 1,761.003 seconds. Together with
+the passing Nehalem probe, this accepts exact source `014ae4bf443` and
+`10.9.post64` for Linux x86_64 CPython 3.12.
 
 ## 2026-07-30 Exact Post64 Build Resumed On Restored Builder
 

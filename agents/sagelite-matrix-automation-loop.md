@@ -8648,6 +8648,14 @@ runtime isolation, all selftest probes, and the bounded installed
 separate fresh full gate began at `2026-07-30T01:38:47Z`; full cell acceptance
 remains pending. Nothing has been published.
 
+The fresh full gate exited zero at `2026-07-30T02:11:02Z`. It independently
+passed strict preflight, binary-only installation, `pip check`, runtime
+isolation, every selftest probe, and all 3,953 installed `--optional=sage`
+modules with zero failures. The unrestricted sweep took 902.9 seconds, and the
+complete installed-runtime phase took 1,761.003 seconds. Linux x86_64 CPython
+3.12 is the seventh synchronized full-pass cell from exact `post64` source
+`014ae4bf443`. Nothing has been published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8724,7 +8732,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | short (`post64`), full active. The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). The independent short gate passed strict preflight, fresh binary-only installation, `pip check`, runtime isolation, every selftest probe, and the bounded installed `--optional=sage` suite. A separate fresh full gate began at `2026-07-30T01:38:47Z`; full acceptance remains pending | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | full (`post64`). The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest probe, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep took 902.9 seconds and the full installed-runtime phase took 1,761.003 seconds; this is the seventh synchronized full-pass cell from exact source `014ae4bf443` | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
@@ -8734,11 +8742,9 @@ Status meanings:
 | macOS arm64 | 3.13 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. Independent fresh short and full gates passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep took 795.4 seconds and the full validator exited zero after 2,251.462 seconds; this is the third synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
-The recorded full passes establish that the standard installed runtime can
-pass on Linux x86_64, Linux aarch64, and macOS arm64. They are not a
-synchronized 3-by-3 release-candidate run. Final matrix completion requires a
-fresh full pass for all nine cells from one selected release-candidate
-revision.
+Seven of nine cells now have synchronized full acceptance from exact `post64`
+source `014ae4bf443`. Matrix completion requires the same fresh portable build,
+old-CPU probe, and full gate for Linux x86_64 CPython 3.13 and 3.14.
 
 The optional-wheel-ready extra currently names 19 packages:
 
