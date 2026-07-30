@@ -1,5 +1,49 @@
 # Sagelite Linux x86_64 CPython 3.13 Validation
 
+## 2026-07-30 Exact Post64 Portable Rebuild Started
+
+After Linux x86_64 CPython 3.12 became the seventh synchronized full-pass
+cell, deliberate cleanup removed only its completed 21 GB full-install venv.
+Its validated wheelhouse, strict closure, summaries, logs, and reducer evidence
+remain. This restored 144 GiB free on the assigned `/mnt/cocalc-scratch`
+filesystem.
+
+The staged CPython 3.13 run is:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp313-20260730-012400-014ae4bf443
+```
+
+Its checkout is clean at exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` (`10.9.post64`). The
+146,483,200-byte source archive again passed SHA256
+`a7ce677432f01cff16fd93d88f6c12f3d988464d76a2c79aa215165d5df047ed`.
+The isolated prefix still resolves to the fat-binary profile built from this
+source, Docker was idle, and every launcher passed its recorded hash:
+
+```text
+2ed9e8f80c95a4b86897335aa0248f9e926a4ddc5c8232360b242efd3b13e457  build.sh
+495622237b68e1cc72e22df1db2c0cc50c698ae262f623155289b56667f0b6f3  follow-post64.sh
+f76eacb80d008f475445ccb01545631c9f0914ae65cf0b28b9e639c67fb4b711  oldcpu-post64.sh
+d73fa19e720f733ee5fc86ea3f501545fbdeeab0053da08ef39e938cbcb1adf6  validate-post64.sh
+```
+
+The guarded watcher pins the previously accepted CPython 3.13 x86_64
+`pycosat==0.6.6` wheel by SHA256, reuses only the synchronized post64
+ABI-independent companions, and requires the corrected fresh QEMU Nehalem
+probe plus independent short and full gates. The durable build and watcher
+started at `2026-07-30T02:14:22Z` with main PIDs 1129004 and 1129011:
+
+```text
+sagelite-post64-x86-cp313-build-r1.service
+sagelite-post64-x86-cp313-watch-r1.service
+```
+
+The build passed its exact-source guards and entered bootstrap. No post64
+CPython 3.13 wheel or validation pass is claimed yet. The directly fetched
+public manifest remains the 177-wheel set generated on 2026-07-09, with no
+post64 artifact.
+
 ## 2026-07-17 Post60 Release-Candidate Build Start
 
 The scheduled matrix iteration selected Linux `x86_64` with CPython 3.13,
