@@ -44,6 +44,22 @@ CPython 3.13 wheel or validation pass is claimed yet. The directly fetched
 public manifest remains the 177-wheel set generated on 2026-07-09, with no
 post64 artifact.
 
+The build exited zero after about 31 minutes and produced four repaired wheels.
+The primary is:
+
+```text
+filename: sagelite-10.9.post64-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:     261575877
+sha256:   ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589
+```
+
+The guarded watcher verified the accepted portable database and CPython 3.13
+`pycosat` input, assembled the exact new primary and 9,744,065-byte `pplpy`
+wheel, and resolved a strict 192-wheel closure totaling 14,364,637,365 bytes.
+The corrected fresh QEMU Nehalem probe began at
+`2026-07-30T02:46:53Z`. Independent short and full gates remain required, so
+no validation pass or cell acceptance is claimed yet.
+
 ## 2026-07-17 Post60 Release-Candidate Build Start
 
 The scheduled matrix iteration selected Linux `x86_64` with CPython 3.13,
