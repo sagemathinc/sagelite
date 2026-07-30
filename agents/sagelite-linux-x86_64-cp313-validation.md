@@ -60,6 +60,13 @@ The corrected fresh QEMU Nehalem probe began at
 `2026-07-30T02:46:53Z`. Independent short and full gates remain required, so
 no validation pass or cell acceptance is claimed yet.
 
+The Nehalem probe passed at `2026-07-30T02:49:45Z`. The independent fresh
+short gate then passed strict preflight, binary-only
+`sagelite[all-needed-extras]` installation, `pip check`, runtime isolation,
+all selftest probes, and the bounded installed `--optional=sage` suite,
+exiting zero at `03:16:12Z`. The separate fresh full gate started at
+`2026-07-30T03:16:16Z`; full acceptance remains pending.
+
 ## 2026-07-17 Post60 Release-Candidate Build Start
 
 The scheduled matrix iteration selected Linux `x86_64` with CPython 3.13,
