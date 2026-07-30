@@ -8630,7 +8630,14 @@ CPython 3.12 x86_64 `pycosat==0.6.6` artifact was then verified against its
 A clean retry began under
 `sagelite-post64-x86-cp312-validation-r1.service` at
 `2026-07-30T01:02:29Z`; it resolved a 193-wheel, 14,366,331,710-byte closure
-and entered the QEMU Nehalem old-CPU probe. The short and full gates remain
+and entered the QEMU Nehalem old-CPU probe. The probe completed its wheel-only
+install and pre-BMI2/ADX CPUID assertion, then stopped on an invalid harness
+comparison between a Sage `Factorization` object and its expanded polynomial.
+A native replay proved the same comparison false and the factorization product
+correct, so this was not a portability failure. The failed evidence was
+preserved, the exact probe venv was removed, and the assertion was corrected
+to compare the product. Durable validation retry `r2` began from a fresh probe
+install at `2026-07-30T01:08:02Z`. The old-CPU, short, and full gates remain
 pending. Nothing has been published.
 
 ## Scratch Layout
@@ -8709,7 +8716,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | validation active. The exact build completed with 82 repaired wheels. The first closure attempt stopped safely before installation on the known external `pycosat` input; the accepted public wheel was hash-verified and added. A clean retry resolved 193 wheels totaling 14,366,331,710 bytes and entered the QEMU Nehalem probe at `2026-07-30T01:03:22Z`. Independent fresh short/full gates remain required; no pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | validation active. The exact build completed with 82 repaired wheels. After adding the hash-verified external `pycosat` wheel, resolution produced 193 wheels totaling 14,366,331,710 bytes. The first Nehalem run passed wheel-only installation and its pre-BMI2/ADX CPUID assertion, then exposed an invalid factorization-object comparison in the probe harness; native replay proved it was not a portability failure. The harness was corrected, the probe venv removed, and a fresh durable retry began at `2026-07-30T01:08:02Z`. Independent short/full gates remain required; no pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |

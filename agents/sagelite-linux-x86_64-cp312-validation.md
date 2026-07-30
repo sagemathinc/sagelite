@@ -33,8 +33,20 @@ sha256:   39b0dd1c21bf049377630193db34a0250abcedf6e94b65a0170eee8623e7b828
 A clean validation retry started at `2026-07-30T01:02:29Z` under
 `sagelite-post64-x86-cp312-validation-r1.service`. Binary-only resolution
 completed with 193 wheels totaling 14,366,331,710 bytes, and the QEMU Nehalem
-old-CPU probe began at `01:03:22Z`. The independent short and full gates remain
-required, so no validation pass or cell acceptance is claimed yet.
+old-CPU probe began at `01:03:22Z`. The probe installed the complete wheel-only
+closure and passed its pre-BMI2/ADX CPUID assertion, then stopped on an
+incorrect harness assertion that compared Sage's `Factorization` container
+directly with the expanded polynomial. A native replay proved that comparison
+is also false on the build CPU while `factor(...).prod()` has the required
+value. Thus this was not a `SIGILL` or portability failure.
+
+The original script, log, markers, and 21 GB probe venv were preserved or
+removed with the suffix `initial-factorization-object-assert-20260730`.
+The assertion was corrected to check the factorization product, and the probe
+venv was deleted so the retry starts from another fresh wheel-only install.
+Validation retry `r2` began durably at `2026-07-30T01:08:02Z`. The independent
+short and full gates remain required, so no validation pass or cell acceptance
+is claimed yet.
 
 ## 2026-07-30 Exact Post64 Build Resumed On Restored Builder
 
