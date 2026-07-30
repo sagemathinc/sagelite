@@ -48,6 +48,15 @@ Validation retry `r2` began durably at `2026-07-30T01:08:02Z`. The independent
 short and full gates remain required, so no validation pass or cell acceptance
 is claimed yet.
 
+The corrected fresh Nehalem probe passed at `2026-07-30T01:12:10Z` and
+reported `old_cpu_probe=pass leaf7_ebx=0x0`. The independent short gate then
+passed strict repaired-wheelhouse preflight, a fresh binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation, all selftest probes, and the bounded installed `--optional=sage`
+suite. The validator exited zero at `01:38:43Z`; its installed-runtime phase
+took 1,421.436 seconds. The separate fresh full gate started at
+`2026-07-30T01:38:47Z`. Full acceptance remains pending.
+
 ## 2026-07-30 Exact Post64 Build Resumed On Restored Builder
 
 After the user corrected the changing address behind the required `host`
