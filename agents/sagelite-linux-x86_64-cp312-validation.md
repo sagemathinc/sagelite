@@ -1,5 +1,42 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-30 Exact Post64 Build Resumed On Restored Builder
+
+After the user corrected the changing address behind the required `host`
+alias, read-only reconciliation at `2026-07-30T00:11:06Z` reached the
+original native Linux `x86_64` builder again. The assigned
+527,297,863,680-byte `/mnt/cocalc-scratch` ext4 filesystem, authoritative
+exact-source run, isolated fat-binary prefix, Docker 29.1.3 engine, and both
+interrupted run directories were visible. The filesystem had
+161,024,090,112 bytes free, Docker was idle, and no Sagelite process or
+durable unit was active.
+
+The interrupted run still had no primary wheel or valid exit code. Its exact
+pushed source `014ae4bf44318b6f5032053957a92291d4363b7a`, committed tree
+`08c39ac15ef341f68af0676dfb4f9b61de0010db`, 146,483,200-byte source
+archive with SHA256
+`a7ce677432f01cff16fd93d88f6c12f3d988464d76a2c79aa215165d5df047ed`,
+four launcher hashes, and `SAGE_FAT_BINARY=yes` cached configuration all
+passed their guards. The 62-wheel partial companion output from the
+interrupted first resume was preserved outside the source checkout, the
+empty invalid control files were archived, and the host prefix link left as
+an empty directory by the reboot was restored to the exact retained profile.
+The source checkout was then clean.
+
+An initial transient-unit wrapper at `00:13:43Z` failed before either script
+executed because its shell redirection expanded without the remote paths.
+Journal evidence records status 2 for that wrapper, both intended logs
+remained empty, and no build state changed. The corrected launch uses
+systemd's native append-to-file output properties. At
+`2026-07-30T00:14:44Z`, both
+`sagelite-post64-x86-cp312-build-r1.service` and
+`sagelite-post64-x86-cp312-watch-r1.service` were active with main PIDs
+474359 and 474387. The exact resumed build entered the native manylinux
+CPython 3.12 contract, and the watcher remains guarded on build exit zero
+before closure assembly, the QEMU Nehalem probe, and independent fresh short
+and full gates. No wheel, validation pass, cell acceptance, or publication is
+claimed yet.
+
 ## 2026-07-27 Assigned Mount Still Too Small At 10:01 UTC
 
 Read-only reconciliation at `2026-07-27T10:01:15Z` reached `host` on the

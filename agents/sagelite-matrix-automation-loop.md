@@ -8594,6 +8594,29 @@ checkpoint edit, the canonical checkout, its tracking ref, and the directly
 queried `origin/develop` ref were synchronized at
 `9511474fe3d4f6f158ab2905a34dacae918efe4c`. Nothing was published.
 
+After the user corrected the changing address behind `host`, read-only
+reconciliation at `2026-07-30T00:11:06Z` reached the original native Linux
+`x86_64` builder again. The assigned 527,297,863,680-byte
+`/mnt/cocalc-scratch` filesystem, authoritative exact-source run, retained
+fat-binary prefix, and Docker 29.1.3 engine were visible, with
+161,024,090,112 bytes free and no active automation process. Exact pushed
+`post64` source `014ae4bf443`, committed tree, source archive, launcher
+hashes, fat configuration, clean checkout, idle-Docker, and capacity guards
+passed. The interrupted partial companion output and invalid empty control
+files were preserved, and the host prefix link was restored after proving
+the reboot had left only an empty directory.
+
+An initial transient-unit output wrapper failed at `00:13:43Z` before either
+automation script executed; its intended logs remained empty and no build
+state changed. The corrected launch uses systemd's native append-to-file
+output settings. At `2026-07-30T00:14:44Z`, the exact controlled resume was
+active under `sagelite-post64-x86-cp312-build-r1.service` with its guarded
+`sagelite-post64-x86-cp312-watch-r1.service`. The build entered the native
+manylinux CPython 3.12 contract. The watcher will assemble the strict closure
+and run the QEMU Nehalem old-CPU probe plus independent fresh short and full
+gates only after build exit zero. No wheel, validation pass, cell acceptance,
+or publication is claimed yet.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8670,7 +8693,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild interrupted and inaccessible; `post9` public rejected for CPU portability | rejected pending rebuild. The assigned 527,297,863,680-byte bulk filesystem and authoritative exact-source run returned at `2026-07-24T08:39:53Z`. The interrupted attempt had no wheel or valid exit code after a builder reboot. Source, archive, committed tree, script hashes, fat-profile configuration, and capacity guards passed, and a controlled same-tree resume launched at `2026-07-24T08:41:52Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. At `09:01:41Z`, both services remained active; the native manylinux container was using about 1,497% CPU while Maxima and Sage extensions compiled with generic x86-64 flags against the isolated fat prefix. The assigned filesystem had 165,481,246,720 bytes free. At `09:32:38Z`, all three bounded SSH attempts timed out. From `10:01:48Z` through `19:31:20Z`, the alias repeatedly reached a staging machine where the assigned mount and authoritative run were invisible. At `20:01:38Z`, `/mnt/cocalc-scratch` was mounted again, but as a 52,521,566,208-byte filesystem with only 49,820,409,856 bytes free; the authoritative run remained absent, Docker and the durable units were absent, and no matching process was active. Fresh read-only probes through `2026-07-27T10:01:15Z` confirmed the same undersized mount, absent run and units, and zero matching external processes. This filesystem cannot meet the 100 GiB heavy-build threshold even when empty. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. After the `host` address was corrected, the original 527,297,863,680-byte bulk filesystem, authoritative exact-source run, Docker engine, and isolated fat prefix returned with 161,024,090,112 bytes free. Source, archive, committed tree, script hashes, fat-profile configuration, clean-checkout, idle-Docker, and capacity guards passed. After preserving the interrupted partial output and correcting a pre-execution transient-unit wrapper failure that changed no build state, the exact controlled resume launched successfully at `2026-07-30T00:14:32Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
