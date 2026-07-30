@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-27
+Last reviewed: 2026-07-30
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -8617,6 +8617,22 @@ and run the QEMU Nehalem old-CPU probe plus independent fresh short and full
 gates only after build exit zero. No wheel, validation pass, cell acceptance,
 or publication is claimed yet.
 
+The resumed CPython 3.12 build completed successfully at
+`2026-07-30T00:59:05Z` with 82 repaired wheels. Its 261,763,687-byte
+`10.9.post64` primary has SHA256
+`fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`.
+The initial binary-only validation closure correctly stopped before
+installation because the source-built companion set does not supply the
+external `pycosat` wheel. That evidence was preserved. The accepted public
+CPython 3.12 x86_64 `pycosat==0.6.6` artifact was then verified against its
+206,914-byte manifest record and SHA256
+`39b0dd1c21bf049377630193db34a0250abcedf6e94b65a0170eee8623e7b828`.
+A clean retry began under
+`sagelite-post64-x86-cp312-validation-r1.service` at
+`2026-07-30T01:02:29Z`; it resolved a 193-wheel, 14,366,331,710-byte closure
+and entered the QEMU Nehalem old-CPU probe. The short and full gates remain
+pending. Nothing has been published.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8693,7 +8709,7 @@ Status meanings:
 
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | exact `post64` fat-binary rebuild active; `post9` public rejected for CPU portability | rejected pending rebuild. After the `host` address was corrected, the original 527,297,863,680-byte bulk filesystem, authoritative exact-source run, Docker engine, and isolated fat prefix returned with 161,024,090,112 bytes free. Source, archive, committed tree, script hashes, fat-profile configuration, clean-checkout, idle-Docker, and capacity guards passed. After preserving the interrupted partial output and correcting a pre-execution transient-unit wrapper failure that changed no build state, the exact controlled resume launched successfully at `2026-07-30T00:14:32Z` under `sagelite-post64-x86-cp312-build-r1.service` with its guarded watcher. The watcher still requires a QEMU Nehalem probe without BMI2 or ADX plus independent fresh short/full gates. No wheel or pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | validation active. The exact build completed with 82 repaired wheels. The first closure attempt stopped safely before installation on the known external `pycosat` input; the accepted public wheel was hash-verified and added. A clean retry resolved 193 wheels totaling 14,366,331,710 bytes and entered the QEMU Nehalem probe at `2026-07-30T01:03:22Z`. Independent fresh short/full gates remain required; no pass is claimed yet | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; the earlier full `post60` gate used the same host-tuned native prefix. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |

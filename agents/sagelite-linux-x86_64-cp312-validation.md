@@ -1,5 +1,41 @@
 # Sagelite Linux x86_64 CPython 3.12 Validation
 
+## 2026-07-30 Exact Post64 Wheel Built; Clean Validation Retry Active
+
+The resumed exact-source build completed successfully at
+`2026-07-30T00:59:05Z`. Its authoritative wheelhouse contains 82 repaired
+wheels with an 82-entry SHA256 inventory. The primary is:
+
+```text
+path:   /mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp312-20260722-175911-014ae4bf443/wheelhouse/sagelite-10.9.post64-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   261763687
+sha256: fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20
+```
+
+The native build records `-march=x86-64 -mtune=generic`, while the selected
+Sage prefix was configured with `SAGE_FAT_BINARY=yes` and
+`--enable-fat-binary`.
+
+The guarded validator then correctly stopped before installation when its
+binary-only closure exposed one missing external input,
+`pycosat>=0.6.3`. This is not a source-tree build failure. The initial closure
+failure was preserved with the suffix
+`initial-missing-pycosat-20260730`. The accepted public CPython 3.12 x86_64
+wheel was fetched into the ABI-input set and checked against the public
+manifest:
+
+```text
+filename: pycosat-0.6.6-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
+size:     206914
+sha256:   39b0dd1c21bf049377630193db34a0250abcedf6e94b65a0170eee8623e7b828
+```
+
+A clean validation retry started at `2026-07-30T01:02:29Z` under
+`sagelite-post64-x86-cp312-validation-r1.service`. Binary-only resolution
+completed with 193 wheels totaling 14,366,331,710 bytes, and the QEMU Nehalem
+old-CPU probe began at `01:03:22Z`. The independent short and full gates remain
+required, so no validation pass or cell acceptance is claimed yet.
+
 ## 2026-07-30 Exact Post64 Build Resumed On Restored Builder
 
 After the user corrected the changing address behind the required `host`
