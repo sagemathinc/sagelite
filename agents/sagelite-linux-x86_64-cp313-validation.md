@@ -1,5 +1,20 @@
 # Sagelite Linux x86_64 CPython 3.13 Validation
 
+## 2026-08-01 Builder Alias Timed Out; Full Gate Unreconciled
+
+At `2026-08-01T20:14:24Z`, `20:14:34Z`, and `20:14:44Z`, three bounded
+SSH attempts through the required `host` alias timed out before establishing
+a session. The durable full-gate service, container, logs, summaries, and
+artifacts therefore could not be reconciled. No pass or failure is inferred,
+and no duplicate build or validation run was started.
+
+The last authoritative evidence remains the corrected fresh Nehalem pass and
+independent short-gate pass, followed by the full gate starting at
+`2026-07-30T03:16:16Z`. The directly fetched public manifest remains the
+177-wheel set generated on 2026-07-09, with no post64 artifact. Continue only
+after the alias points at the running x86 builder again, then reconcile the
+existing durable service before deciding whether any retry is required.
+
 ## 2026-07-30 Exact Post64 Portable Rebuild Started
 
 After Linux x86_64 CPython 3.12 became the seventh synchronized full-pass

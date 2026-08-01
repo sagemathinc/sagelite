@@ -1,6 +1,6 @@
 # Sagelite Matrix Automation Loop
 
-Last reviewed: 2026-07-30
+Last reviewed: 2026-08-01
 
 This is the authoritative operating runbook for an automated Codex loop that
 advances Sagelite toward a complete wheel and standard-test matrix. Read this
@@ -8656,6 +8656,16 @@ complete installed-runtime phase took 1,761.003 seconds. Linux x86_64 CPython
 3.12 is the seventh synchronized full-pass cell from exact `post64` source
 `014ae4bf443`. Nothing has been published.
 
+At `2026-08-01T20:14:24Z`, `20:14:34Z`, and `20:14:44Z`, three bounded
+attempts to reconnect through the required x86 builder `host` alias timed out
+before establishing an SSH session. Consequently, the durable CPython 3.13
+full-gate service that started at `2026-07-30T03:16:16Z` could not be
+reconciled, and no result is inferred. No duplicate run was launched. The
+CPython 3.14 run remains staged but unlaunched. The directly fetched public
+manifest is still the 177-wheel set generated on 2026-07-09, with no post64
+artifact. Resume by restoring the alias or builder, then reconcile the
+existing CPython 3.13 durable service before taking further action.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8733,7 +8743,7 @@ Status meanings:
 | Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | full (`post64`). The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest probe, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep took 902.9 seconds and the full installed-runtime phase took 1,761.003 seconds; this is the seventh synchronized full-pass cell from exact source `014ae4bf443` | smoke (`post8`), now rejected for CPU portability |
-| Linux x86_64 | 3.13 | yes (`post64`, local); exact portable primary is 261,575,877 bytes with SHA256 `ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589`; `post60` local and `post9` public rejected for CPU portability | short (`post64`), full active. The exact build and strict 192-wheel closure passed the corrected fresh Nehalem probe. The independent short gate passed strict preflight, fresh binary-only installation, `pip check`, runtime isolation, every selftest probe, and the bounded installed `--optional=sage` suite at `2026-07-30T03:16:12Z`. The separate fresh full gate started at `03:16:16Z`; full acceptance remains pending | smoke (`post8`), now rejected for CPU portability |
+| Linux x86_64 | 3.13 | yes (`post64`, local); exact portable primary is 261,575,877 bytes with SHA256 `ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589`; `post60` local and `post9` public rejected for CPU portability | short (`post64`), full unreconciled. The exact build and strict 192-wheel closure passed the corrected fresh Nehalem probe. The independent short gate passed strict preflight, fresh binary-only installation, `pip check`, runtime isolation, every selftest probe, and the bounded installed `--optional=sage` suite at `2026-07-30T03:16:12Z`. The separate fresh full gate started at `03:16:16Z`, but three bounded SSH attempts on 2026-08-01 timed out before its durable service could be reconciled. No full result is inferred and no duplicate was launched | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.14 | `post64` rebuild required; `post60` local and `post9` public rejected for CPU portability | rejected; public `post9` raises `SIGILL` inside the bundled non-fat GMP on an older developer CPU. Rebuild from the exact pushed fat-binary source and rerun both fresh gates plus the old-CPU probe | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post64`, local); `post63` local remains available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,440,598-byte primary and strict 191-wheel closure. The fresh short gate passed, the first full gate rejected one narrow timing-tolerance example, and a separately named fresh full rerun passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took 821.2 seconds and the validator exited zero after 1,604.539 seconds; this is the fifth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp313-validation.md` | none |
