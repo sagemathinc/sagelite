@@ -1,5 +1,34 @@
 # Sagelite Linux x86_64 CPython 3.13 Validation
 
+## 2026-08-01 Full-Gate Timeout Reconciled; Fresh Rerun Active
+
+Restored access to `host` exposed the complete durable result that was
+previously unreconciled. The first full gate finished at
+`2026-07-30T03:53:13Z` with exit code 4. Strict preflight, fresh binary-only
+installation, `pip check`, runtime isolation, every selftest probe, and
+packaged pytest with 229 passes and 2 skips all passed. The unrestricted
+`--optional=sage` sweep saw 3,954 modules and rejected exactly one:
+`sage.matrix.matrix_integer_dense` exceeded the worker timeout while testing
+interruptibility under eight-way contention. The reducer classified it as
+one performance-only timeout with zero failed examples.
+
+An isolated replay of that complete module with the exact failing seed
+`173739665110549422722552542604863276289` passed all tests in 12.6 seconds
+against the unchanged failed-gate install. A separately named fresh full
+rerun from the unchanged strict 192-wheel closure started at
+`2026-08-01T20:31:09Z` under:
+
+```text
+sagelite-post64-x86-cp313-full-rerun1.service
+```
+
+Its launcher independently guards exact clean source, build, old-CPU, short,
+failed-full, targeted-replay, primary-wheel SHA256, complete closure SHA256,
+idle Docker, and test capacity before creating a new binary-only install.
+The focused replay is diagnostic only; no full pass or cell acceptance is
+claimed until this independent rerun exits zero with reduced analysis showing
+zero failures.
+
 ## 2026-08-01 Builder Alias Timed Out; Full Gate Unreconciled
 
 At `2026-08-01T20:14:24Z`, `20:14:34Z`, and `20:14:44Z`, three bounded
