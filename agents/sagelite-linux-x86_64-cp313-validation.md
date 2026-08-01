@@ -1,5 +1,22 @@
 # Sagelite Linux x86_64 CPython 3.13 Validation
 
+## 2026-08-01 Fresh Full Rerun Passed
+
+The separately named fresh full rerun exited zero at
+`2026-08-01T21:05:17Z`. It passed strict preflight, a new binary-only
+installation of the unchanged 192-wheel closure, `pip check`, runtime
+isolation, every selftest probe, all 3,953 installed `--optional=sage`
+modules with zero failures, and packaged pytest with 229 passes and 2 skips.
+The unrestricted sweep took 953.2 seconds; the validator took 1,984.408
+seconds overall. Linux x86_64 CPython 3.13 is the eighth synchronized
+full-pass cell from exact source `014ae4bf443`.
+
+After preserving the wheelhouse, checksums, launchers, logs, summaries, and
+reducer evidence, deliberate cleanup removed only the two completed 21 GB
+full-install environments and their small disposable test homes. This raised
+free space on `/mnt/cocalc-scratch` to 153,127,497,728 bytes. Nothing has been
+published.
+
 ## 2026-08-01 Full-Gate Timeout Reconciled; Fresh Rerun Active
 
 Restored access to `host` exposed the complete durable result that was

@@ -1,5 +1,34 @@
 # Sagelite Linux x86_64 CPython 3.14 Validation
 
+## 2026-08-01 Exact Post64 Portable Rebuild Started
+
+After Linux x86_64 CPython 3.13 became the eighth synchronized full-pass
+cell, its completed install environments were removed while all concise
+evidence and wheel artifacts were retained. The already staged final matrix
+run is:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260730-014100-014ae4bf443
+```
+
+Its checkout is clean at exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` (`10.9.post64`), the source
+archive and all four launcher hashes passed, Docker was idle, the persistent
+fat-binary prefix was intact, and the assigned filesystem had
+153,127,497,728 bytes free. The durable build and guarded watcher started at
+`2026-08-01T21:06:50Z` under:
+
+```text
+sagelite-post64-x86-cp314-build-r1.service
+sagelite-post64-x86-cp314-watch-r1.service
+```
+
+The watcher pins the previously accepted CPython 3.14 x86_64 `pycosat`
+wheel and portable 4D polytope database by SHA256, then requires a corrected
+fresh QEMU Nehalem probe and independent short and full gates. No post64
+CPython 3.14 wheel or validation pass is claimed yet, and nothing has been
+published.
+
 ## 2026-07-15 Preflight Blocker
 
 The scheduled matrix iteration selected Linux `x86_64` with CPython 3.14, the
