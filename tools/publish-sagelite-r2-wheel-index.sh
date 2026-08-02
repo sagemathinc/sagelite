@@ -45,7 +45,7 @@ if [ ! -d "${wheelhouse}" ]; then
   exit 1
 fi
 
-wheel_count="$(find "${wheelhouse}" -maxdepth 1 -type f -name '*.whl' | wc -l)"
+wheel_count="$(find -L "${wheelhouse}" -maxdepth 1 -type f -name '*.whl' | wc -l)"
 if [ "${wheel_count}" -eq 0 ]; then
   echo "no wheels found in ${wheelhouse}" >&2
   exit 1
@@ -171,6 +171,7 @@ root_dest="s3://${bucket}/${prefix}/"
 echo "Publishing ${wheel_count} wheel(s) to ${wheel_dest}"
 "${aws_bin}" s3 sync "${wheelhouse}/" "${wheel_dest}" \
   --endpoint-url "${endpoint}" \
+  --follow-symlinks \
   --exclude "*" \
   --include "*.whl" \
   --cache-control "public, max-age=31536000, immutable" \
