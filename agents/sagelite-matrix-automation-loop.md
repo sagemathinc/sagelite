@@ -8695,6 +8695,18 @@ started at `2026-08-01T21:06:50Z` under
 version, launcher hashes, source archive, architecture, idle Docker,
 persistent prefix, and capacity guards passed. Nothing has been published.
 
+That final build, its QEMU Nehalem old-CPU probe, and both independent gates
+subsequently exited zero. The 261,850,177-byte primary has SHA256
+`46c5ec1dfc80b65fc6968f942164d8adf2f9f81ee6dc8849b76c6c98b6b43b4f`.
+The strict closure contains 180 wheels totaling 14,360,482,199 bytes. The
+fresh full gate passed binary-only installation, `pip check`, runtime
+isolation, all 102 selftests, all 3,953 installed modules with zero failures,
+and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took
+925.4 seconds and the validator exited zero after 1,933.391 seconds at
+`2026-08-01T22:40:31Z`. This is the ninth synchronized full-pass cell from
+exact source `014ae4bf443`; merged-index assembly and public verification
+remain before preview completion.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8773,7 +8785,7 @@ Status meanings:
 |---|---:|---|---|---|
 | Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | full (`post64`). The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest probe, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep took 902.9 seconds and the full installed-runtime phase took 1,761.003 seconds; this is the seventh synchronized full-pass cell from exact source `014ae4bf443` | smoke (`post8`), now rejected for CPU portability |
 | Linux x86_64 | 3.13 | yes (`post64`, local); exact portable primary is 261,575,877 bytes with SHA256 `ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589`; `post60` local and `post9` public rejected for CPU portability | full (`post64`). The exact build and strict 192-wheel closure passed the corrected fresh Nehalem probe and independent short gate. The first full gate rejected one performance-only worker timeout with zero failed examples; its exact-seed module replay passed. A separately named fresh full rerun passed a new binary-only installation, `pip check`, runtime isolation, every selftest, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 953.2 seconds and the validator took 1,984.408 seconds; this is the eighth synchronized full-pass cell | smoke (`post8`), now rejected for CPU portability |
-| Linux x86_64 | 3.14 | `post64` build active; `post60` local and `post9` public rejected for CPU portability | rejected historical evidence; exact portable rebuild and guarded watcher started at `2026-08-01T21:06:50Z` after all source, script, architecture, prefix, Docker-idle, and capacity guards passed. Old-CPU, short, and full gates remain pending | smoke (`post9`), rejected for CPU portability |
+| Linux x86_64 | 3.14 | yes (`post64`, local); exact portable primary is 261,850,177 bytes with SHA256 `46c5ec1dfc80b65fc6968f942164d8adf2f9f81ee6dc8849b76c6c98b6b43b4f`; `post60` local and `post9` public rejected for CPU portability | full (`post64`). The exact build and strict 180-wheel closure passed the corrected fresh Nehalem probe and independent short and full gates. The full gate passed a new binary-only installation, `pip check`, runtime isolation, all 102 selftests, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 925.4 seconds and the validator took 1,933.391 seconds; this is the ninth synchronized full-pass cell | smoke (`post9`), rejected for CPU portability |
 | Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
 | Linux aarch64 | 3.13 | yes (`post64`, local); `post63` local remains available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,440,598-byte primary and strict 191-wheel closure. The fresh short gate passed, the first full gate rejected one narrow timing-tolerance example, and a separately named fresh full rerun passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took 821.2 seconds and the validator exited zero after 1,604.539 seconds; this is the fifth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp313-validation.md` | none |
 | Linux aarch64 | 3.14 | yes (`post64`, local); `post63` local remains available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 248,307,872-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 879.0 seconds and the full validator exited zero after 1,598.075 seconds; this is the sixth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp314-validation.md` | none |
@@ -8781,9 +8793,10 @@ Status meanings:
 | macOS arm64 | 3.13 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
 | macOS arm64 | 3.14 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. Independent fresh short and full gates passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep took 795.4 seconds and the full validator exited zero after 2,251.462 seconds; this is the third synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
 
-Seven of nine cells now have synchronized full acceptance from exact `post64`
-source `014ae4bf443`. Matrix completion requires the same fresh portable build,
-old-CPU probe, and full gate for Linux x86_64 CPython 3.13 and 3.14.
+All nine cells now have synchronized full acceptance from exact `post64`
+source `014ae4bf443`. Local matrix validation is complete. Preview completion
+still requires a deduplicated merged R2 index and fresh public-index install
+verification for every row.
 
 The optional-wheel-ready extra currently names 19 packages:
 
@@ -8802,17 +8815,11 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 Unless newer evidence changes the matrix, use this order:
 
-1. Exact pushed `post64` source `014ae4bf443` supersedes `post63` as the
-   release candidate because every existing Linux x86_64 wheel is rejected
-   for CPU portability. Once the assigned bulk filesystem returns with at
-   least 100 GiB free, build Linux x86_64 CPython 3.12 first from the new empty
-   fat profile so it emits the synchronized companion set, then build CPython
-   3.13 and 3.14. Each cell requires both fresh standard gates and an explicit
-   old-CPU probe without BMI2 or ADX. Never reuse the old non-fat native
-   prefix.
-2. All three Linux aarch64 and all three macOS arm64 cells now pass from the
-   same exact `post64` source revision. Retain their strict closures and
-   validation evidence while completing the three Linux x86_64 cells.
+1. Assemble a deduplicated merged preview wheelhouse from all nine accepted
+   `post64` closures, verify every retained hash and collision, dry-run the R2
+   publisher, and publish only the complete merged set to `dev`.
+2. Run fresh public-index installs and the documented copy-paste checks for
+   every platform and Python row, then record sizes and installed disk usage.
 3. Validate the current optional-wheel-ready extra across all nine cells,
    using environment markers for genuinely unavailable packages.
 4. Resume systematic optional-package expansion in install-smoke batches.

@@ -1,5 +1,42 @@
 # Sagelite Linux x86_64 CPython 3.14 Validation
 
+## 2026-08-01 Exact Post64 Portable Rebuild Accepted
+
+The final Linux x86_64 cell completed successfully from exact pushed source
+`014ae4bf44318b6f5032053957a92291d4363b7a` (`10.9.post64`). The build
+produced:
+
+```text
+sagelite-10.9.post64-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+size:   261850177 bytes
+sha256: 46c5ec1dfc80b65fc6968f942164d8adf2f9f81ee6dc8849b76c6c98b6b43b4f
+```
+
+The strict closure contains 180 wheels totaling 14,360,482,199 bytes, with
+wheelhouse SHA256
+`0275a2813da7153b918b530a8087b8241d779e0c6de38924c86c3b3b998fed5b`.
+The corrected QEMU Nehalem probe passed with BMI2 and ADX absent
+(`leaf7_ebx=0x0`).
+
+Independent fresh short and full gates passed strict preflight, binary-only
+`sagelite[all-needed-extras]==10.9.post64` installation, `pip check`, runtime
+isolation with zero leaks, all 102 selftests, all 3,953 installed
+`--optional=sage` modules with zero failures, and packaged pytest with 229
+passes and 2 skips. The unrestricted sweep took 925.4 seconds, packaged
+pytest took 432.47 seconds, and the full validator exited zero after
+1,933.391 seconds at `2026-08-01T22:40:31Z`. The build, old-CPU, short, full,
+and watcher exit artifacts all contain zero.
+
+Linux x86_64 CPython 3.14 is therefore the ninth synchronized full-pass cell
+from the selected `post64` release-candidate revision. The authoritative run
+and its retained wheelhouse and validation evidence are:
+
+```text
+/mnt/cocalc-scratch/sagelite-automation/linux-x86_64-cp314-20260730-014100-014ae4bf443
+```
+
+Nothing had been published when this local acceptance was recorded.
+
 ## 2026-08-01 Exact Post64 Portable Rebuild Started
 
 After Linux x86_64 CPython 3.13 became the eighth synchronized full-pass
