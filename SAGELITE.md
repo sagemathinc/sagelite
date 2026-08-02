@@ -28,7 +28,7 @@ To test in a fresh virtual environment, use:
 python3.14 -m venv sagelite-test
 . sagelite-test/bin/activate
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post64"
 python -c "from sage.all import *; x = polygen(QQ); print((x**4 - 1).factor()); print(gap.eval('2+2'))"
 ```
 
@@ -40,14 +40,14 @@ To install into an existing Python environment instead, run:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post64"
 ```
 
 An initial batch of optional packages that are available as compatible wheels
 can also be requested explicitly:
 
 ```bash
-python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post9"
+python -m pip install --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite[optional-wheel-ready]==10.9.post64"
 ```
 
 This currently adds `admcycles`, `biopython`, `clarabel`, `cvxpy`, `cylp`,
@@ -71,16 +71,19 @@ Two packages in this optional batch have non-Python runtime expectations:
 Disk-space guidance:
 
 - A fresh preview install currently uses about 5 GB for the virtual
-  environment on Linux `x86_64` and Linux `aarch64`.
+  environment. The release-validation command
+  `sagelite[all-needed-extras]` also installs the large standard databases and
+  uses about 20 GB on macOS arm64 and 22 GB on Linux.
 
-- Have at least 10 GB free before installing. 15 GB or more is more comfortable
-  because `pip` may also keep downloaded wheels and temporary files while it
-  installs.
+- Have at least 15 GB free for the normal preview install. For
+  `all-needed-extras`, have at least 45 GB free on the filesystem used by both
+  the virtual environment and temporary files: `pip` can temporarily hold the
+  downloaded wheels as well as the installed copy.
 
 - If disk space is tight, use `--no-cache-dir` to avoid keeping a second copy
   of downloaded wheels:
   ```bash
-  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post9"
+  python -m pip install --no-cache-dir --extra-index-url https://sagelite.sagemath.org/dev/simple/ "sagelite==10.9.post64"
   ```
 
 - Running the full Sage doctest suite needs substantially more temporary space
@@ -101,8 +104,8 @@ extra-index-url = https://sagelite.sagemath.org/dev/simple/
 With that in place, users can run ordinary commands such as:
 
 ```bash
-python -m pip install "sagelite==10.9.post9"
-python -m pip install "sagelite[optional-wheel-ready]==10.9.post9"
+python -m pip install "sagelite==10.9.post64"
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post64"
 python -m pip install pynormaliz
 ```
 
@@ -127,7 +130,7 @@ For a small cocalc.ai-style base image, the recommended shape is:
 python3.14 -m venv /opt/sagelite
 /opt/sagelite/bin/python -m pip install --upgrade pip
 printf '%s\n' '[global]' 'extra-index-url = https://sagelite.sagemath.org/dev/simple/' > /opt/sagelite/pip.conf
-/opt/sagelite/bin/python -m pip install --no-cache-dir "sagelite==10.9.post9"
+/opt/sagelite/bin/python -m pip install --no-cache-dir "sagelite==10.9.post64"
 /opt/sagelite/bin/python -m pip cache purge
 ```
 
@@ -136,7 +139,7 @@ the base image focused on the standard Sage install. Users can add optional
 packages later with ordinary commands such as:
 
 ```bash
-python -m pip install "sagelite[optional-wheel-ready]==10.9.post9"
+python -m pip install "sagelite[optional-wheel-ready]==10.9.post64"
 python -m pip install pynormaliz
 python -m pip install pygraphviz
 ```
@@ -150,19 +153,17 @@ Current preview platform support:
 
 - Linux `x86_64`, CPython 3.12, 3.13, and 3.14,
   `manylinux_2_27`/`manylinux_2_28`
-- Linux `aarch64`, CPython 3.12, `manylinux_2_27`/`manylinux_2_28`
+- Linux `aarch64`, CPython 3.12, 3.13, and 3.14,
+  `manylinux_2_27`/`manylinux_2_28`
 - macOS `arm64`, CPython 3.12, 3.13, and 3.14, currently tagged
   `macosx_26_0_arm64`
 
 Current limits:
 
 - These are preview wheels, not the final PyPI release.
-- The current public Linux `x86_64` wheels were built with CPU-specific GMP
-  and OpenBLAS tuning and can terminate with `SIGILL` on older processors that
-  lack BMI2 or ADX. A portable fat-binary rebuild is in progress; do not treat
-  the current Linux `x86_64` preview as a broad CPU-compatible wheel.
-- Linux `x86_64` CPython 3.13 and 3.14 are staged for feedback, but have
-  smoke-test coverage rather than full doctest coverage.
+- The Linux wheels use portable fat-binary GMP and OpenBLAS builds. The
+  `x86_64` release was additionally exercised under a QEMU Nehalem CPU model
+  with BMI2 and ADX disabled.
 - macOS support is arm64 only. Intel macOS wheels are not a priority for this
   preview.
 - The current macOS wheels require a compatible macOS 26+ arm64 environment
@@ -173,50 +174,23 @@ Current limits:
 
 Test status:
 
-- The Linux `x86_64` CPython 3.12 installed-wheel baseline has passed the full
-  standard non-optional Sage doctest suite.
-- The macOS arm64 CPython 3.12 installed-wheel baseline has passed the full
-  standard non-optional Sage doctest suite and packaged pytest tests from
-  exact pushed `10.9.post63` source. Both fresh short and full gates passed all
-  3,953 installed standard modules with zero failures; the unrestricted sweep
-  took 746.2 seconds, and packaged pytest passed with 226 passes and 5 skips.
-  Full-suite macOS validation currently sets
+- All nine combinations of Linux `x86_64`, Linux `aarch64`, and macOS arm64
+  with CPython 3.12, 3.13, and 3.14 passed independent fresh installed-wheel
+  validation from exact pushed `10.9.post64` source. Each full gate used a
+  binary-only `sagelite[all-needed-extras]` install, passed `pip check`, found
+  zero runtime-isolation leaks, passed all 102 packaged selftests, and passed
+  all 3,953 installed standard Sage modules with zero failures. Packaged
+  pytest passed with 229 passes and 2 skips on Linux and 226 passes and 5 skips
+  on macOS.
+- Fresh installs from the public preview index have also passed on all nine
+  platform/Python combinations for `sagelite[all-needed-extras]==10.9.post64`.
+  Each public gate passed `pip check`, zero-leak runtime isolation, all 102
+  selftests, and factorization, matrix, and GAP smoke tests.
+- Linux `x86_64` additionally passed a fresh QEMU Nehalem probe with BMI2 and
+  ADX absent, covering the portable fat-binary requirement.
+- Full-suite macOS validation currently sets
   `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` to avoid a macOS Objective-C
   fork-safety abort in proxy detection code used by one URL-opening doctest.
-- The macOS arm64 CPython 3.13 installed-wheel baseline has also passed from
-  the same exact pushed `10.9.post63` source. Both fresh strict gates passed
-  binary-only installation, `pip check`, runtime isolation, all selftests,
-  packaged pytest with 226 passes and 5 skips, and all 3,953 installed
-  standard modules with zero failures. The unrestricted sweep took 732.6
-  seconds.
-- The macOS arm64 CPython 3.14 installed-wheel baseline has passed from that
-  same exact pushed source. Its strict 168-wheel closure passed independent
-  fresh short and full gates, including binary-only installation, `pip check`,
-  zero runtime leaks, all selftests, packaged pytest with 226 passes and 5
-  skips, and all 3,953 installed standard modules with zero failures. The
-  unrestricted sweep took 788.7 seconds.
-- Fresh public-index smoke tests have passed on Linux `x86_64` for CPython
-  3.12, 3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`,
-  including `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
-  invocation, and imports of the optional wheel-ready package batch.
-- A fresh public-index smoke test has passed on Linux `x86_64` for CPython
-  3.14 with `sagelite[optional-wheel-ready]==10.9.post9`, including
-  `pip check`, Sage import, basic matrix arithmetic, `joblib` import,
-  `highspy` import, and a tiny HiGHS solve through `highspy`.
-- Fresh copy-paste public-index installs of `sagelite==10.9.post8` have passed
-  on Linux `x86_64`, macOS arm64, and Linux `aarch64` for CPython 3.12. These
-  installs used the documented command line and picked up
-  `sagelite-graphviz-runtime==10.9.post3`.
-- Fresh public-index smoke tests have passed on macOS arm64 for CPython 3.12,
-  3.13, and 3.14 with `sagelite[optional-wheel-ready]==10.9.post8`, including
-  `pip check`, polynomial arithmetic, integer matrix arithmetic, GAP
-  invocation, and imports of the optional wheel-ready package batch.
-- A fresh public-index install and smoke test has passed on Linux `aarch64`
-  for CPython 3.12 with `sagelite[optional-wheel-ready]==10.9.post8`. The
-  binary-only install and `pip check` pass without system packages. The
-  optional import smoke also passes in a Debian slim container after adding
-  system `git` for `GitPython`. Linux `aarch64` should still be treated as
-  needing more real-world feedback before PyPI promotion.
 
 Feedback is welcome. Please open issues at
 https://github.com/sagemathinc/sagelite/issues with the platform, Python

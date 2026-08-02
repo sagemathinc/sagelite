@@ -8707,6 +8707,52 @@ and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took
 exact source `014ae4bf443`; merged-index assembly and public verification
 remain before preview completion.
 
+### `post64` merged preview publication
+
+On 2026-08-02, the nine accepted exact-source closures were assembled into
+the deduplicated publication wheelhouse
+`/scratch/sagelite-r2-work/wheelhouse-dev-post64-nine-cell-20260802-final`.
+All 544 staged symlinks resolved. The merged set contains 544 unique wheel
+filenames for 195 normalized projects and totals 22,893,867,436 bytes. Every
+one of the 177 filenames already in the public preview retained its exact
+SHA256, so the merge was additive and immutable; it added exactly the nine
+`10.9.post64` primary wheels plus their newly required companion closure.
+
+The R2 publisher dry run passed, followed by the real publication to
+`https://sagelite.sagemath.org/dev/`. The public manifest was generated at
+`2026-08-02T06:12:37.691813+00:00`, reports 544 wheels, and has SHA256
+`868169d4821625d7be733ffb7255682aab7b81e5f0bc65496604561e58c2365b`.
+The public root, simple project page, and all nine primary URLs were checked
+after publication. The publisher was taught to follow symlink-staged wheels
+in commit `50569d0cebb`; this preserves a small deduplicated staging tree
+without omitting linked artifacts.
+
+Fresh binary-only public-index release gates then passed independently on all
+nine supported platform/Python rows. Each installed
+`sagelite[all-needed-extras]==10.9.post64`, passed `pip check`, found zero
+entries in all five runtime-isolation leak classes, passed all 102 packaged
+selftests, and passed factorization, finite-field matrix, and GAP smoke tests.
+Installed sizes were 21,685,624--21,699,472 KiB on Linux `x86_64`,
+21,875,200--21,886,860 KiB on Linux `aarch64`, and
+19,932,400--19,941,432 KiB on macOS arm64. Durable per-row evidence is listed
+in `agents/sagelite-copy-paste-preview-validation.md`.
+
+The publication run also exposed an independent host-capacity hazard: Ubuntu
+Apport core dumps under `/var/lib/apport` had filled the builder root
+filesystem. After the user removed the dumps, Apport was disabled and its
+service, path, timer, and socket units were stopped and disabled. Keep bulk
+build, pip temporary, and install paths on the assigned scratch volume, and
+trim discard-capable guest filesystems after deleting large temporary
+environments so sparse VM disks release host space.
+
+The public delivery path currently ignores HTTP byte-range requests: a
+bounded `Range` probe against the 9.1 GB polytopes wheel returned `200` with
+the full 9,100,370,523-byte object rather than `206`. Pip therefore restarts
+that wheel after an interrupted connection despite reporting a resume
+attempt. The public validator uses a larger bounded retry budget, but proper
+range handling should be fixed in the R2/Cloudflare delivery path before
+broad distribution of the largest data wheels.
+
 ## Scratch Layout
 
 Use UTC timestamps and the committed source SHA in every run identifier:
@@ -8767,9 +8813,11 @@ The public preview index is:
 https://sagelite.sagemath.org/dev/simple/
 ```
 
-The current preview release is `10.9.post9`. At the last review, the public
-R2 manifest contained 177 wheel files and fourteen Sagelite primary wheels:
-seven each for `10.9.post8` and `10.9.post9`.
+The current preview release is `10.9.post64`. The public R2 manifest contains
+544 wheel files for 195 projects, including nine `post64` Sagelite primary
+wheels: Linux `x86_64`, Linux `aarch64`, and macOS arm64 for CPython 3.12,
+3.13, and 3.14. The prior 177 public wheel filenames remain indexed with
+unchanged hashes.
 
 Status meanings:
 
@@ -8781,22 +8829,22 @@ Status meanings:
 - a version in parentheses identifies the preview version that supplied the
   recorded evidence.
 
-| Platform | Python | Primary wheel | Standard validation | Optional-wheel-ready validation |
+| Platform | Python | Primary wheel | Standard validation | Public-index release-gate validation |
 |---|---:|---|---|---|
-| Linux x86_64 | 3.12 | yes (`post64`, local); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20`; `post9` public rejected for CPU portability | full (`post64`). The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest probe, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep took 902.9 seconds and the full installed-runtime phase took 1,761.003 seconds; this is the seventh synchronized full-pass cell from exact source `014ae4bf443` | smoke (`post8`), now rejected for CPU portability |
-| Linux x86_64 | 3.13 | yes (`post64`, local); exact portable primary is 261,575,877 bytes with SHA256 `ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589`; `post60` local and `post9` public rejected for CPU portability | full (`post64`). The exact build and strict 192-wheel closure passed the corrected fresh Nehalem probe and independent short gate. The first full gate rejected one performance-only worker timeout with zero failed examples; its exact-seed module replay passed. A separately named fresh full rerun passed a new binary-only installation, `pip check`, runtime isolation, every selftest, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 953.2 seconds and the validator took 1,984.408 seconds; this is the eighth synchronized full-pass cell | smoke (`post8`), now rejected for CPU portability |
-| Linux x86_64 | 3.14 | yes (`post64`, local); exact portable primary is 261,850,177 bytes with SHA256 `46c5ec1dfc80b65fc6968f942164d8adf2f9f81ee6dc8849b76c6c98b6b43b4f`; `post60` local and `post9` public rejected for CPU portability | full (`post64`). The exact build and strict 180-wheel closure passed the corrected fresh Nehalem probe and independent short and full gates. The full gate passed a new binary-only installation, `pip check`, runtime isolation, all 102 selftests, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 925.4 seconds and the validator took 1,933.391 seconds; this is the ninth synchronized full-pass cell | smoke (`post9`), rejected for CPU portability |
-| Linux aarch64 | 3.12 | yes (`post64`, local); `post63` local and `post9` public remain available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | smoke (`post8`), with system `git` for GitPython |
-| Linux aarch64 | 3.13 | yes (`post64`, local); `post63` local remains available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,440,598-byte primary and strict 191-wheel closure. The fresh short gate passed, the first full gate rejected one narrow timing-tolerance example, and a separately named fresh full rerun passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took 821.2 seconds and the validator exited zero after 1,604.539 seconds; this is the fifth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp313-validation.md` | none |
-| Linux aarch64 | 3.14 | yes (`post64`, local); `post63` local remains available | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 248,307,872-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 879.0 seconds and the full validator exited zero after 1,598.075 seconds; this is the sixth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp314-validation.md` | none |
-| macOS arm64 | 3.12 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | smoke (`post8`) |
-| macOS arm64 | 3.13 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | smoke (`post8`) |
-| macOS arm64 | 3.14 | yes (`post64`, local; `post9`, public) | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. Independent fresh short and full gates passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep took 795.4 seconds and the full validator exited zero after 2,251.462 seconds; this is the third synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | smoke (`post8`) |
+| Linux x86_64 | 3.12 | yes (`post64`, public); exact fat-binary primary is 261,763,687 bytes with SHA256 `fac807fa6cca4756c7edb0e3abbcbe35bd6268960d38b72ff917ff7ccbc2eb20` | full (`post64`). The exact 82-wheel build and 193-wheel closure passed a fresh QEMU Nehalem probe with BMI2/ADX absent (`leaf7_ebx=0x0`). Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation, every selftest probe, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep took 902.9 seconds and the full installed-runtime phase took 1,761.003 seconds; this is the seventh synchronized full-pass cell from exact source `014ae4bf443` | full public release gate (`post64`): 21,699,472 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| Linux x86_64 | 3.13 | yes (`post64`, public); exact portable primary is 261,575,877 bytes with SHA256 `ae5624131009064ca0ed34378f5b19c9a2eea677219b5693e6315ef763f82589` | full (`post64`). The exact build and strict 192-wheel closure passed the corrected fresh Nehalem probe and independent short gate. The first full gate rejected one performance-only worker timeout with zero failed examples; its exact-seed module replay passed. A separately named fresh full rerun passed a new binary-only installation, `pip check`, runtime isolation, every selftest, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 953.2 seconds and the validator took 1,984.408 seconds; this is the eighth synchronized full-pass cell | full public release gate (`post64`): 21,688,044 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| Linux x86_64 | 3.14 | yes (`post64`, public); exact portable primary is 261,850,177 bytes with SHA256 `46c5ec1dfc80b65fc6968f942164d8adf2f9f81ee6dc8849b76c6c98b6b43b4f` | full (`post64`). The exact build and strict 180-wheel closure passed the corrected fresh Nehalem probe and independent short and full gates. The full gate passed a new binary-only installation, `pip check`, runtime isolation, all 102 selftests, all 3,953 installed modules with zero failures, and packaged pytest with 229 passes and 2 skips. The sweep took 925.4 seconds and the validator took 1,933.391 seconds; this is the ninth synchronized full-pass cell | full public release gate (`post64`): 21,685,624 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| Linux aarch64 | 3.12 | yes (`post64`, public); exact primary is 247,696,859 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,696,859-byte primary and strict 191-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, and all 3,953 installed `--optional=sage` modules with zero failures. The unrestricted sweep completed in 827.0 seconds and the full validator exited zero after 1,557.82 seconds; this is the fourth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp312-validation.md` | full public release gate (`post64`): 21,886,860 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| Linux aarch64 | 3.13 | yes (`post64`, public); exact primary is 247,440,598 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 247,440,598-byte primary and strict 191-wheel closure. The fresh short gate passed, the first full gate rejected one narrow timing-tolerance example, and a separately named fresh full rerun passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep took 821.2 seconds and the validator exited zero after 1,604.539 seconds; this is the fifth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp313-validation.md` | full public release gate (`post64`): 21,878,424 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| Linux aarch64 | 3.14 | yes (`post64`, public); exact primary is 248,307,872 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 248,307,872-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 229 passes and 2 skips. The unrestricted sweep completed in 879.0 seconds and the full validator exited zero after 1,598.075 seconds; this is the sixth synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-linux-aarch64-cp314-validation.md` | full public release gate (`post64`): 21,875,200 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| macOS arm64 | 3.12 | yes (`post64`, public); exact primary is 102,262,120 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,262,120-byte primary and strict 180-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 738.2 seconds; this is the first synchronized full-pass cell from the selected `post64` revision | full public release gate (`post64`): 19,941,432 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| macOS arm64 | 3.13 | yes (`post64`, public); exact primary is 102,094,222 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,094,222-byte primary and strict 179-wheel closure. Independent fresh short and full gates passed strict preflight, binary-only `sagelite[all-needed-extras]` installation, `pip check`, runtime isolation with zero leaks, all 102 selftest checks, all 3,953 installed `--optional=sage` modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep completed in 735.2 seconds; this is the second synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp313-validation.md` | full public release gate (`post64`): 19,933,816 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
+| macOS arm64 | 3.14 | yes (`post64`, public); exact primary is 102,367,424 bytes | full (`post64`); exact pushed source `014ae4bf443` produced a repaired 102,367,424-byte primary and strict 168-wheel closure containing all 68 companions. Independent fresh short and full gates passed strict preflight, binary-only installation, `pip check`, runtime isolation with zero leaks, all 102 selftests, all 3,953 standard modules with zero failures, and packaged pytest with 226 passes and 5 skips. The unrestricted sweep took 795.4 seconds and the full validator exited zero after 2,251.462 seconds; this is the third synchronized full-pass cell from the selected `post64` revision. Detailed evidence is in `agents/sagelite-macos-arm64-cp314-validation.md` | full public release gate (`post64`): 19,932,400 KiB installed; binary-only install, `pip check`, zero isolation leaks, 102 selftests, and factorization/matrix/GAP smoke passed |
 
-All nine cells now have synchronized full acceptance from exact `post64`
-source `014ae4bf443`. Local matrix validation is complete. Preview completion
-still requires a deduplicated merged R2 index and fresh public-index install
-verification for every row.
+All nine cells have synchronized full acceptance from exact `post64` source
+`014ae4bf443`, and all nine public-index release gates pass independently.
+The deduplicated R2 preview publication and public matrix verification are
+complete.
 
 The optional-wheel-ready extra currently names 19 packages:
 
@@ -8813,16 +8861,15 @@ selected only on Linux x86_64 CPython 3.12. `GitPython` expects system `git`.
 
 ## Work Order
 
-Unless newer evidence changes the matrix, use this order:
+The merged R2 publication and nine-cell public release gate were completed on
+2026-08-02. No PyPI publication was performed. Unless newer evidence changes
+the matrix, the next ordered work is:
 
-1. Assemble a deduplicated merged preview wheelhouse from all nine accepted
-   `post64` closures, verify every retained hash and collision, dry-run the R2
-   publisher, and publish only the complete merged set to `dev`.
-2. Run fresh public-index installs and the documented copy-paste checks for
-   every platform and Python row, then record sizes and installed disk usage.
-3. Validate the current optional-wheel-ready extra across all nine cells,
-   using environment markers for genuinely unavailable packages.
-4. Resume systematic optional-package expansion in install-smoke batches.
+1. Prepare the PyPI publication plan and execute it only after new explicit
+   user authorization.
+2. Independently validate the current optional-wheel-ready extra across all
+   nine cells, using environment markers for genuinely unavailable packages.
+3. Resume systematic optional-package expansion in install-smoke batches.
 
 If a failure is shared by several cells, fix it once on the fastest relevant
 cell, validate the focused fix there, then rebuild and retest every affected
@@ -9215,16 +9262,14 @@ active target.
 
 ## Project Completion
 
-The matrix goal is complete when one release-candidate source SHA has all nine
-rows marked `full`, with wheel-only clean-install evidence and public-index
-install smoke for every row. At that point:
-
-1. regenerate the merged R2 preview index from the nine validated cells;
-2. rerun the documented copy-paste install commands;
-3. summarize wheel sizes and installed disk usage per platform;
-4. collect developer feedback for a defined preview period;
-5. prepare, but do not execute, a PyPI publication plan for a thin `sage`
-   package and the Sagelite/companion distributions.
+The matrix goal was completed on 2026-08-02: exact source `014ae4bf443` has
+all nine rows marked `full`, the immutable merged R2 preview is public, and
+every row has independent wheel-only public-index evidence. Wheel sizes,
+installed sizes, and durable evidence paths are recorded above. Remaining
+release work is to collect developer feedback for a defined preview period
+and, only after new explicit user authorization, prepare and execute the PyPI
+publication plan for a thin `sage` package and the Sagelite/companion
+distributions.
 
 Broad optional-package coverage remains an ongoing track after matrix
 completion. Its progress should be reported as package and platform counts,
@@ -9243,6 +9288,8 @@ not folded into the standard-suite pass rate.
 - Optional package inventory: `agents/sagelite-optional-package-inventory.md`
 - Copy-paste preview evidence:
   `agents/sagelite-copy-paste-preview-validation.md`
+- Public-index release-gate runner:
+  `tools/validate-sagelite-public-install.sh`
 - Linux x86_64 CPython 3.12 evidence:
   `agents/sagelite-linux-x86_64-cp312-validation.md`
 - Linux x86_64 CPU portability evidence:
